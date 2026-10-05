@@ -13,11 +13,25 @@
 #include "Toy2/Buzz.h"
 #include "Toy2/Levels.h"
 #include "Toy2/MainMenu.h"
+#include "Toy2/Actor.h"
+#include "Toy2/Animation.h"
+#include "Toy2/Collision.h"
+#include "Toy2/KiteTail.h"
+#include "Toy2/Sector.h"
 
 #include "Nu3D/Font.h"
 #include "Nu3D/Viewport.h"
 #include "Nu3D/Camera.h"
+#include "Nu3D/Light.h"
+#include "Nu3D/Link.h"
+#include "Nu3D/Math.h"
+#include "Nu3D/Scene.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Effects.h"
+#include "Renderer/Glue.h"
+#include "Renderer/Shadows.h"
+#include "Renderer/Sprite.h"
+#include "Renderer/SpriteSheets.h"
 #include "AudioManager/AudioManager.h"
 #include "NGNLoader/NGNLoader.h"
 
@@ -146,6 +160,31 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00534550
 	int32_t g_unused0;
+
+	// GLOBAL: TOY2 0x00559C5C
+	int32_t g_renderGame;
+
+	// GLOBAL: TOY2 0x005546A0
+	int32_t g_curSector;
+
+	// GLOBAL: TOY2 0x0054DEA0
+	int32_t g_curSectorCopy1;
+
+	// GLOBAL: TOY2 0x005D2A8C
+	int32_t g_curSectorCopy2;
+
+	// GLOBAL: TOY2 0x0054E04E
+	int16_t g_pickupAnimTimer;
+
+	// GLOBAL: TOY2 0x005D2A94
+	uint8_t g_type59VisibleIndices[36];
+
+	// GLOBAL: TOY2 0x00508D28
+	ViewportPreset g_viewportPresets[3] = {
+		{ 3000.0, 3500.0, 50.0, 55.0, 10000.0, 0.0 },
+		{ 5000.0, 6500.0, 40.0, 60.0, 10000.0, 0.0 },
+		{ 10000.0, 12000.0, 40.0, 60.0, 12000.0, 1000.0 },
+	};
 }
 
 namespace Toy2
@@ -196,8 +235,410 @@ namespace Toy2
 		void Tick() {}
 	}
 
-	// STUB: TOY2 0x00440F70
-	void RenderGame(int32_t fullRender) {}
+	// FUNCTION: TOY2 0x00440F70
+	void RenderGame(int32_t fullRender)
+	{
+		// the camera data lives in the shared math scratch buffer, treat it as dwords like the original does
+		uint32_t* mathScratch = (uint32_t*)Collision::g_mathScratch;
+
+		// never set to anything but 0
+		if (g_renderGame)
+			return;
+
+		if (g_showBlackFrames)
+		{
+			g_showBlackFrames = 0;
+			Renderer::ShowBlackFrames();
+		}
+
+		Renderer::Sprite::g_parallaxDepthZPos = 0.9999f;
+
+		// TODO:  (the original swaps red and blue here)
+		RGBA clearColor;
+		clearColor.a = 0xFF;
+		clearColor.b = MainMenu::g_menuClearColor.r >> 1;
+		clearColor.g = MainMenu::g_menuClearColor.g >> 1;
+		clearColor.r = MainMenu::g_menuClearColor.b >> 1;
+
+		Renderer::Glue::ReleaseBackdrop();
+
+		g_curSector = Levels::GetSectorAtPosition((Vector3I*)&mathScratch[221]);
+		g_curSectorCopy1 = g_curSector;
+		g_curSectorCopy2 = g_curSector;
+
+		int32_t sectorIndex = g_curSector;
+		Sector::UpdateLighting();
+
+		Renderer::SetViewportPreset();
+
+		Nu3D::Scene::RenderLayerFlags layerFlags = (Nu3D::Scene::RenderLayerFlags)0;
+
+		// some levels need to override the sector being rendered or the viewport distance
+		switch (g_levelFileIndex)
+		{
+			case 2:
+				if (g_curSectorCopy1 == 3)
+				{
+					if ((int32_t)mathScratch[222] < -104000)
+					{
+						layerFlags = Nu3D::Scene::RENDERLAYER_FAR_FORCE_SCAN;
+						sectorIndex = -1;
+					}
+				}
+				else if ((int32_t)mathScratch[222] < -74000)
+				{
+					layerFlags = Nu3D::Scene::RENDERLAYER_FAR_FORCE_SCAN;
+					sectorIndex = -1;
+				}
+				break;
+
+			case 3:
+			case 9:
+				Renderer::SetViewportPresetByDetail(0x7FFFFFFF);
+				layerFlags = Nu3D::Scene::RENDERLAYER_INFINITE_VIEWPORT;
+				break;
+
+			case 4:
+			{
+				int32_t sector = g_curSectorCopy2;
+
+				if (g_curSectorCopy2 == 2 && Nu3D::Camera::g_cameraWorldPos.y < -7900.0)
+				{
+					sector = 1;
+					g_curSectorCopy1 = 1;
+					g_curSector = 1;
+					g_curSectorCopy2 = 1;
+					sectorIndex = 1;
+				}
+
+				Vector3I checkPos;
+				checkPos.x = 334743;
+				checkPos.y = -66813;
+				checkPos.z = 386446;
+
+				if (sector == 2 || Nu3D::Math::IsWithinDistance(&checkPos, &g_buzzActor.posAngles.pos, 250))
+					Renderer::SetViewportPresetByDetail(0x7FFFFFFF);
+
+				break;
+			}
+
+			case 10:
+				if (g_curSector == 4 && Nu3D::Camera::g_cameraWorldPos.y < -40800.0 && Nu3D::Camera::g_cameraWorldPos.x > -800.0 &&
+					Nu3D::Camera::g_cameraWorldPos.x < 800.0 && Nu3D::Camera::g_cameraWorldPos.z > -5500.0 &&
+					Nu3D::Camera::g_cameraWorldPos.z < -3900.0)
+				{
+					sectorIndex = 5;
+					g_curSectorCopy1 = 5;
+					g_curSector = 5;
+				}
+
+				break;
+
+			case 11:
+				if (g_curSector == 5 || g_curSector == 7)
+					Renderer::SetViewportPresetByDetail(0x7FFFFFFF);
+
+				break;
+
+			case 14:
+				Renderer::ConfigureFog(24000.0, 46000.0, clearColor);
+				break;
+		}
+
+		Animation::AnimateActors(Actor::g_activeActorArray);
+		ProcessMiscEventsEx();
+
+		if (g_hasBackdrop || g_hasStaticBackdrop)
+		{
+			Renderer::ClearScreen(clearColor, 2);
+		}
+		else
+		{
+			Renderer::ClearScreen(clearColor, 3);
+			Renderer::ConfigureFog(24000.0, 48000.0, clearColor);
+		}
+
+		Nu3D::Light::SetDirectionalLight(-g_buzzActor.lightDirection.x,
+			-g_buzzActor.lightDirection.y,
+			-g_buzzActor.lightDirection.z,
+			g_buzzActor.color.r,
+			g_buzzActor.color.g,
+			g_buzzActor.color.b);
+
+		if (Renderer::BeginScene())
+		{
+			Renderer::UpdateBackgroundScroll(Nu3D::Camera::g_cameraPitch, -Nu3D::Camera::g_cameraYaw);
+
+			Renderer::SetFogEnable(0);
+			Renderer::RenderParallaxBackground(1);
+			Renderer::SetFogEnable(1);
+
+			// TODO: NOTE: the original hands this an uninitialised stack variable, which can't be intentional.
+			// Sector::UpdateLighting sets it to the camera view matrix, so do the same here.
+			Nu3D::Camera::SetObjectViewMatrix((Matrix3x3I16*)&mathScratch[229]);
+
+			Nu3D::Scene::RenderWorldGeometry(sectorIndex, layerFlags);
+			Nu3D::Scene::RenderActors(Actor::g_activeActorArray);
+
+			if (fullRender)
+			{
+				Renderer::Shadows::DrawAll();
+
+				uint32_t bitmapWidth = 255;
+				uint32_t bitmapHeight = 255;
+
+				int16_t animTimer = g_pickupAnimTimer;
+
+				if (! g_isPaused)
+				{
+					animTimer = Renderer::g_frameDelta + g_pickupAnimTimer;
+					g_pickupAnimTimer = animTimer;
+
+					if (animTimer > 19)
+					{
+						animTimer -= 20;
+						g_pickupAnimTimer = animTimer;
+					}
+				}
+
+				int32_t tileFrame = animTimer >> 1;
+
+				Vector3F cameraPos;
+				Nu3D::Math::GetPositionVector(&Nu3D::Camera::g_secondaryCamera.matrix, &cameraPos);
+
+				int32_t cullDistance = Levels::g_type63CullDistance / 4;
+				int32_t cullDistanceSquared = cullDistance * cullDistance;
+
+				// type 63 records are the collectables, they are either a sprite (animated through a 10 frame sprite sheet),
+				// or a link to a 3D object that gets spun around
+				if (Levels::g_recordData[63])
+				{
+					Levels::Type63* pickup = (Levels::Type63*)Levels::g_recordData[63]->data;
+					uint16_t recordCount = Levels::g_recordData[63]->recordCount;
+
+					for (int32_t i = 0; i < recordCount; i++, pickup++)
+					{
+						// every pickup is offset 2 frames further along the animation than the last one
+						tileFrame += 2;
+
+						if (tileFrame > 9)
+							tileFrame -= 10;
+
+						pickup->props.flags &= ~0x80;
+
+						if (pickup->pos.y == 0x80000000)
+							continue;
+
+						int32_t deltaZ = ((int32_t)cameraPos.z - pickup->pos.z) >> 4;
+						int32_t deltaX = ((int32_t)cameraPos.x - pickup->pos.x) >> 4;
+						int32_t distanceSquared = deltaX * deltaX + deltaZ * deltaZ - 100;
+
+						if (distanceSquared >= cullDistanceSquared)
+							continue;
+
+						// fade the pickup in as the camera gets closer
+						int32_t alpha;
+
+						if (((cullDistanceSquared - distanceSquared) & 0xFFFFFFC0) <= 16320)
+							alpha = (cullDistanceSquared - distanceSquared) >> 6;
+						else
+							alpha = 255;
+
+						if (pickup->props.linkId < 0x30)
+						{
+							Vector3F position;
+							position.x = pickup->pos.x;
+							position.y = pickup->pos.y;
+							position.z = pickup->pos.z;
+
+							Renderer::SpriteSheet* sheet = Renderer::g_spriteSheets[pickup->props.linkId];
+							int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+							if (textureDataIndex)
+								NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+							Vector2F uvTopLeft;
+							Vector2F uvBottomRight;
+
+							uvTopLeft.x = sheet->tiles[tileFrame].x / (double)(int32_t)bitmapWidth;
+							uvTopLeft.y = sheet->tiles[tileFrame].y / (float)(int32_t)bitmapHeight;
+							uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileFrame].x) / (double)(int32_t)bitmapWidth;
+							uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileFrame].y) / (float)(int32_t)bitmapHeight;
+
+							pickup->props.flags |= 0x80;
+
+							RGBA color;
+							color.value = (alpha << 24) + 0xFFFFFF;
+
+							Renderer::Sprite::QueueQuadSprite(&position,
+								0,
+								100.0,
+								100.0,
+								&uvTopLeft,
+								&uvBottomRight,
+								textureDataIndex,
+								color,
+								Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
+
+							// a blob shadow on the floor underneath it
+							position.x = pickup->pos.x;
+							position.y = pickup->props.floorPos - 10.0;
+							position.z = pickup->pos.z;
+
+							int32_t shadowTexture = NGNLoader::GetTextureDataIndex(31);
+
+							if (shadowTexture)
+								NGNLoader::RetrieveTextureData(shadowTexture, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+							uvTopLeft.x = 96.0 / (double)(int32_t)bitmapWidth;
+							uvTopLeft.y = 96.0 / (float)(int32_t)bitmapHeight;
+							uvBottomRight.x = 127.0 / (double)(int32_t)bitmapWidth;
+							uvBottomRight.y = 127.0 / (float)(int32_t)bitmapHeight;
+
+							if ((Renderer::g_deviceBlendShadeCapsCpy & 4) != 0)
+							{
+								color.value = 0xFFAAAAAA;
+
+								Renderer::Sprite::QueueGroundAlignedSprite(&position,
+									0,
+									80.0,
+									80.0,
+									&uvTopLeft,
+									&uvBottomRight,
+									shadowTexture,
+									color,
+									Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_ALT);
+							}
+							else
+							{
+								color.value = 0x88000000;
+
+								Renderer::Sprite::QueueGroundAlignedSprite(&position,
+									0,
+									80.0,
+									80.0,
+									&uvTopLeft,
+									&uvBottomRight,
+									shadowTexture,
+									color,
+									Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
+							}
+						}
+						else
+						{
+							if (! g_isPaused)
+							{
+								Vector3I rotation = { 0, 0, 0 };
+
+								Nu3D::Link::GetRotation8Bit(pickup->props.linkId, &rotation);
+								Nu3D::Link::SetRotationAbsolute8bit(pickup->props.linkId,
+									rotation.x + 10 * Renderer::g_frameDelta,
+									rotation.y + 2 * Renderer::g_frameDelta * (3 * ((i >> 2) & 3) + 7),
+									rotation.z + 2 * Renderer::g_frameDelta * ((i & 7) + 4));
+							}
+
+							pickup->props.flags |= 0x80;
+						}
+					}
+				}
+
+				// type 59 records are light sprites, remember which ones are visible
+				int32_t visibleCount = 0;
+				uint32_t lightBitmapWidth = 255;
+				uint32_t lightBitmapHeight = 255;
+				float cullDistanceSquaredF = (float)cullDistanceSquared;
+
+				Nu3D::Math::GetPositionVector(&Nu3D::Camera::g_secondaryCamera.matrix, &cameraPos);
+
+				if (Levels::g_recordData[59])
+				{
+					Vector3I* record = Levels::g_recordData[59]->data;
+					uint16_t recordCount = Levels::g_recordData[59]->recordCount;
+
+					for (int32_t i = 0; i < recordCount; i++, record++)
+					{
+						Vector3F position;
+						position.x = record->x;
+						position.y = record->y - 250;
+						position.z = record->z;
+
+						Vector3F offset;
+						Nu3D::Math::VertexSubtract(&offset, &position, &cameraPos);
+
+						double distanceSquared = (offset.z * offset.z + offset.y * offset.y + offset.x * offset.x) * 0.0009765625;
+
+						if (distanceSquared < cullDistanceSquaredF && record->y != 0x80000000)
+						{
+							if (distanceSquared < 65536.0 && (Nu3D::Frustum::TestSphereAllPlanes(&position, 250.0) & 0x55555575) == 0)
+								g_type59VisibleIndices[visibleCount++] = i;
+
+							Renderer::SpriteSheet* sheet = Renderer::g_spriteSheets[30];
+							int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+							if (textureDataIndex)
+								NGNLoader::RetrieveTextureData(textureDataIndex, &lightBitmapWidth, &lightBitmapHeight, 0, 0, 0);
+
+							Vector2F uvTopLeft;
+							Vector2F uvBottomRight;
+
+							uvTopLeft.x = sheet->tiles[0].x / (double)(int32_t)lightBitmapWidth;
+							uvTopLeft.y = sheet->tiles[0].y / (float)(int32_t)lightBitmapHeight;
+							uvBottomRight.x = (sheet->tileWidth + sheet->tiles[0].x) / (double)(int32_t)lightBitmapWidth;
+							uvBottomRight.y = (sheet->tileHeight + sheet->tiles[0].y) / (float)(int32_t)lightBitmapHeight;
+
+							RGBA white;
+							white.value = 0xFFFFFFFF;
+
+							Renderer::Sprite::QueueQuadSprite(&position,
+								0,
+								150.0,
+								250.0,
+								&uvTopLeft,
+								&uvBottomRight,
+								textureDataIndex,
+								white,
+								Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
+						}
+					}
+				}
+
+				g_type59VisibleIndices[visibleCount] = 0xFF;
+
+				Renderer::Particles::DrawParticles();
+
+				// the beam queue is filled from the end, so everything from the current count onwards is pending
+				for (int32_t i = Renderer::Beam::g_beamRequestCount; Renderer::Beam::g_beamRequestCount < 100; ++Renderer::Beam::g_beamRequestCount)
+				{
+					Renderer::Beam::BeamRequest* beam = &Renderer::Beam::g_beamRequests[i];
+
+					Renderer::Beam::DrawSegmentedBeam(
+						beam->spriteSheetId, beam->halfWidth, beam->segmentLength, &beam->origin, &beam->direction, beam->tintB, beam->tintG, beam->tintR);
+
+					i = Renderer::Beam::g_beamRequestCount + 1;
+				}
+
+				Renderer::DrawFallingParticles();
+				Renderer::DrawLensFlares();
+
+				if (g_levelFileIndex == 2)
+					KiteTail::Draw();
+			}
+
+			if (! Renderer::GetIsSoftwareRendering())
+				Renderer::DrawCinematicBars();
+
+			Renderer::DrawTintOverlay();
+			Renderer::FlushRenderQueues();
+			Renderer::SetFogEnable(0);
+			Renderer::Sprite::DrawQueuedSprite();
+			DevDraw::DrawSlots();
+			Renderer::EndScene(1);
+		}
+
+		Renderer::DoFrameDelay(1);
+		Nu3D::Camera::ToggleCameraSkew(0);
+		Nu3D::Camera::SetSkewPhase((Renderer::g_frameDelta << 16) / 360);
+	}
 
 	// STUB: TOY2 0x00454020
 	void ShowPostGameSaveMenu() {}

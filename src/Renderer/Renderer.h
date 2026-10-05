@@ -63,6 +63,9 @@ namespace Renderer
 		Nu3D::Primitive* primitive;
 		Nu3D::InstanceData* instanceData;
 		Nu3D::Material* material;
+
+		static RenderEntry* AllocObj(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* instance);
+		static void InsertIntoBucket(RenderEntry* renderEntry);
 	};
 
 	extern float g_gammaCorrection;
@@ -71,12 +74,23 @@ namespace Renderer
 	extern float g_virtualScreenWidth;
 	extern float g_virtualScreenHeight;
 	extern float g_parallaxCurHorizScroll;
+	extern int32_t g_enableCinematicBars;
+	extern float g_nearRenderDistance;
+	extern float g_farRenderDistance;
 	extern int32_t g_deviceBlendShadeCapsCpy;
 	extern int32_t g_boundTextureIndices[8];
 	extern Nu3D::Material* g_boundMaterial;
 
 	void Cleanup();
 	void Init();
+	void ConfigureFog(float fogStart, float fogEnd, RGBA color);
+	void SetFogEnable(int32_t enableFog);
+	void SetRenderDistance(float nearDistance, float farDistance);
+	void SetViewportPreset();
+	void SetViewportPresetByDetail(int32_t detail);
+	void ShowBlackFrames();
+	void UpdateBackgroundScroll(int16_t horizontalScroll, int16_t verticalScroll);
+	void DrawCinematicBars();
 	void SetIsSoftwareRendering(int32_t value);
 	void SetVirtualRatioTo54();
 	void DoFrameDelay(int32_t isGameplayFrame);
@@ -94,6 +108,8 @@ namespace Renderer
 	void DrawMainMenuText(int16_t yPos, char* text, int32_t fadeAlpha);
 	void DrawTintOverlay();
 
+	void SetRenderState(int32_t newStateFlags);
+	void SetTextureStageState(int32_t newState, DWORD textureStage);
 	void InitRenderState(int32_t newStage);
 	void ResetParallax();
 	void RenderParallaxBackground(int32_t forceRender);

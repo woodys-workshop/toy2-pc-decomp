@@ -23,6 +23,8 @@ namespace Nu3D
 			LPDIRECT3DVERTEXBUFFER vertexBuffer;
 
 			static BOOL CreateVertexBuffer(PatchVertices* patchVertices, int32_t flags);
+			static void ReleaseBuffer(PatchVertices* patchVertices);
+			static void FreeVertices(PatchVertices* patchVertices);
 		};
 
 		Patch* next;

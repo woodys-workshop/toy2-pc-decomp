@@ -8,11 +8,13 @@
 #include "Nu3D/Link.h"
 #include "Nu3D/Camera.h"
 #include "Nu3D/Math.h"
+#include "NGNLoader/NGNLoader.h"
 #include "Nullsub.h"
 #include "SaveManager.h"
 #include "AudioManager/AudioManager.h"
 
 #include <MATH.H>
+#include <STDIO.H>
 
 namespace Toy2
 {
@@ -133,14 +135,218 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00452170
 		void ResetCursor() { g_levelSelectCursor = 0; }
 
+		// GLOBAL: TOY2 0x00500B20
+		float g_arrowRects[56] = {
+			0.0, 0.0, 255.0, 64.0,
+			0.0, 64.0, 72.0, 146.0,
+			0.0, 146.0, 72.0, 226.0,
+			0.0, 226.0, 72.0, 305.0,
+			0.0, 306.0, 255.0, 382.0,
+			72.0, 64.0, 78.0, 70.0,
+			72.0, 299.0, 78.0, 305.0,
+			256.0, 0.0, 511.0, 64.0,
+			440.0, 64.0, 511.0, 146.0,
+			440.0, 146.0, 511.0, 226.0,
+			440.0, 226.0, 511.0, 305.0,
+			256.0, 306.0, 511.0, 382.0,
+			434.0, 64.0, 440.0, 70.0,
+			434.0, 299.0, 440.0, 305.0,
+		};
+
+		// GLOBAL: TOY2 0x00500AB0
+		Vector2F g_arrowUVs[14] = {
+			{ 0.0, 0.0 },
+			{ 0.99609375, 0.25 },
+			{ 0.0, 0.578125 },
+			{ 0.28515625, 0.89453125 },
+			{ 0.296875, 0.578125 },
+			{ 0.58203125, 0.88671875 },
+			{ 0.6015625, 0.578125 },
+			{ 0.88671875, 0.88671875 },
+			{ 0.0, 0.265625 },
+			{ 0.99609375, 0.5625 },
+			{ 0.90625, 0.578125 },
+			{ 0.9296875, 0.6015625 },
+			{ 0.90625, 0.62109375 },
+			{ 0.9296875, 0.64453125 },
+		};
+
 		// FUNCTION: TOY2 0x00438650
-		void TurnTowardLookDir(LevelSelectCamera* levelSelectCam, int32_t turnRate) {}
+		void TurnTowardLookDir(LevelSelectCamera* levelSelectCam, int32_t turnRate)
+		{
+			int32_t z = levelSelectCam->lookDir.z;
+			int32_t x = levelSelectCam->lookDir.x;
+			int32_t y = levelSelectCam->lookDir.y;
+
+			int32_t maxTurn = turnRate * Renderer::g_frameDelta;
+
+			// yaw
+			int32_t yaw = levelSelectCam->angles.yaw;
+			int32_t yawDelta = (Nu3D::Math::CartesianToFixedAngle(x, z) - yaw) & 0xFFF;
+
+			if (yawDelta >= 2048)
+			{
+				int32_t step = (4096 - yawDelta) >> 3;
+
+				if (step >= maxTurn)
+					yaw -= maxTurn;
+				else
+					yaw -= step;
+			}
+			else
+			{
+				int32_t step = yawDelta >> 3;
+
+				if (step >= maxTurn)
+					yaw += maxTurn;
+				else
+					yaw += step;
+			}
+
+			levelSelectCam->angles.yaw = yaw;
+
+			// pitch
+			int32_t pitch = levelSelectCam->angles.pitch;
+			int32_t pitchAngle;
+
+			if (y >= 0)
+				pitchAngle = Nu3D::Math::CartesianToFixedAngle(-(y * y), x * x + z * z);
+			else
+				pitchAngle = Nu3D::Math::CartesianToFixedAngle(y * y, x * x + z * z);
+
+			int32_t pitchDelta = -(pitch + pitchAngle) & 0xFFF;
+
+			if (pitchDelta >= 2048)
+			{
+				int32_t step = (4096 - pitchDelta) >> 3;
+
+				if (step >= maxTurn)
+					levelSelectCam->angles.pitch = pitch - maxTurn;
+				else
+					levelSelectCam->angles.pitch = pitch - step;
+			}
+			else
+			{
+				int32_t step = pitchDelta >> 3;
+
+				if (step >= maxTurn)
+					levelSelectCam->angles.pitch = pitch + maxTurn;
+				else
+					levelSelectCam->angles.pitch = step + pitch;
+			}
+		}
 
 		// FUNCTION: TOY2 0x00438790
-		void ApplyWallRepulsion(LevelSelectCamera* levelSelectCam, Vector3I* velocity, int32_t recordType) {}
+		void ApplyWallRepulsion(LevelSelectCamera* levelSelectCam, Vector3I* velocity, int32_t recordType)
+		{
+			// Pushes the camera away from walls, every pair of points in the record is a wall the camera can't go through
+
+			Levels::RecordData* record = Levels::g_recordData[recordType];
+
+			Vector3I localVec;
+			localVec.y = 0;
+
+			int32_t index = 0;
+			int32_t processed = 0;
+
+			if (! record->recordCount)
+				return;
+
+			do
+			{
+				int32_t camY = levelSelectCam->pos.y / 32;
+
+				// only walls that are around the height of the camera
+				if (camY < record->data[index].y && camY > record->data[index + 1].y)
+				{
+					int32_t wallZ = record->data[index].z;
+					int32_t wallDeltaZ = (record->data[index + 1].z - wallZ) >> 2;
+					int32_t wallDeltaX = (record->data[index + 1].x - record->data[index].x) >> 2;
+
+					int32_t wallLengthSq = wallDeltaX * wallDeltaX + wallDeltaZ * wallDeltaZ;
+
+					int32_t camZ = levelSelectCam->pos.z / 32;
+					int32_t camDeltaX = (levelSelectCam->pos.x / 32 - record->data[index].x) >> 2;
+					int32_t camDeltaZ = (camZ - wallZ) >> 2;
+
+					int32_t distanceSq = camDeltaX * camDeltaX + camDeltaZ * camDeltaZ;
+
+					if (distanceSq < wallLengthSq)
+					{
+						int32_t offsetX = levelSelectCam->pos.x / 32 - record->data[index].x;
+						int32_t offsetZ = camZ - record->data[index].z;
+
+						// scale it down until it fits in the fixed point normalise
+						while (abs(offsetX) > 0x4000 || abs(offsetZ) > 0x4000)
+						{
+							offsetX >>= 1;
+							offsetZ >>= 1;
+						}
+
+						localVec.x = offsetX;
+						localVec.z = offsetZ;
+
+						Nu3D::Math::NormalizeToFixedPoint(&localVec, &localVec);
+
+						// the closer to the wall, the harder it pushes (up to a limit)
+						int32_t strength = 2048 - (distanceSq << 11) / wallLengthSq;
+
+						if (strength > 384)
+							strength = 384;
+
+						velocity->x = ((strength * localVec.x) >> 12) + velocity->x;
+						velocity->z = ((strength * localVec.z) >> 12) + velocity->z;
+					}
+				}
+
+				record = Levels::g_recordData[recordType];
+				index += 2;
+				processed += 2;
+			} while (processed < record->recordCount);
+		}
 
 		// FUNCTION: TOY2 0x00494130
-		void DrawArrows() {}
+		void DrawArrows()
+		{
+			// the arrows zoom in from the edges of the screen, over 55 frames
+			double progress = Renderer::g_frameDelta + g_arrowZoomProgress;
+
+			if (progress <= 55.0)
+				g_arrowZoomProgress = progress;
+			else
+				g_arrowZoomProgress = 55.0;
+
+			float doubleProgress = g_arrowZoomProgress + g_arrowZoomProgress;
+			float invHeight = 1.0 / (384.0 - doubleProgress);
+			float invWidth = 1.0 / (512.0 - doubleProgress);
+
+			RGBA white;
+			white.value = 0xFFFFFFFF;
+
+			// 7 rects for the left arrows (texture 32), then 7 for the right arrows (texture 33)
+			for (int32_t texture = 0; texture < 2; texture++)
+			{
+				int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(32 + texture);
+
+				for (int32_t i = 0; i < 7; i++)
+				{
+					float* rect = &g_arrowRects[(texture * 7 + i) * 4];
+
+					float width = invWidth * (rect[2] - rect[0] + 1.0);
+					float height = invHeight * (rect[3] - rect[1] + 1.0);
+
+					Renderer::Sprite::Queue2DSprite((rect[0] - g_arrowZoomProgress) * invWidth,
+						(rect[1] - g_arrowZoomProgress) * invHeight,
+						width,
+						height,
+						&g_arrowUVs[i * 2],
+						&g_arrowUVs[i * 2 + 1],
+						textureDataIndex,
+						white,
+						Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x00438A50
 		int32_t Tick()
@@ -340,14 +546,18 @@ namespace Toy2
 				int32_t* pathProgress2 = &pathData.pathProgress[2];
 
 				do
+				{
 					Nu3D::Link::FollowWaypointPath(pathObj2++, 8, pathProgress2++);
+				}
 				while (pathObj2 < 96);
 
 				int32_t pathObj3 = 96;
 				int32_t* pathProgres3 = &pathData.pathProgress[9];
 
 				do
+				{
 					Nu3D::Link::FollowWaypointPath(pathObj3++, 9, pathProgres3++);
+				}
 				while (pathObj3 < 100);
 
 				int32_t levelPointBase = 3 * curLevel;
@@ -396,19 +606,19 @@ namespace Toy2
 
 					int32_t wobbleZ = Numerics::g_sinCosLUT[(29 * sceneTimer) & 0xFFF] >> 5;
 
-					velocity.x = (Renderer::g_frameDelta * targetDelta.x) >> 4;
+					velocity.x = ((int32_t)Renderer::g_frameDelta * targetDelta.x) >> 4;
 					targetDelta.z = wobbleZ + deltaZ;
-					velocity.y = (Renderer::g_frameDelta * targetDelta.y) >> 4;
-					velocity.z = (Renderer::g_frameDelta * (wobbleZ + deltaZ)) >> 4;
+					velocity.y = ((int32_t)Renderer::g_frameDelta * targetDelta.y) >> 4;
+					velocity.z = ((int32_t)Renderer::g_frameDelta * (wobbleZ + deltaZ)) >> 4;
 				}
 				else
 				{
 					Nu3D::Math::NormalizeToFixedPoint(&targetDelta, &targetDelta);
 
 					subPointTimer = 3;
-					velocity.x += (Renderer::g_frameDelta * ((targetDelta.x >> 1) - velocity.x)) >> 5;
-					velocity.y += (Renderer::g_frameDelta * ((targetDelta.y >> 1) - velocity.y)) >> 4;
-					velocity.z += (Renderer::g_frameDelta * ((targetDelta.z >> 1) - velocity.z)) >> 5;
+					velocity.x += ((int32_t)Renderer::g_frameDelta * ((targetDelta.x >> 1) - velocity.x)) >> 5;
+					velocity.y += ((int32_t)Renderer::g_frameDelta * ((targetDelta.y >> 1) - velocity.y)) >> 4;
+					velocity.z += ((int32_t)Renderer::g_frameDelta * ((targetDelta.z >> 1) - velocity.z)) >> 5;
 				}
 
 				Toy2::LevelSelect::ApplyWallRepulsion(&levelSelectCam, &velocity, 3);

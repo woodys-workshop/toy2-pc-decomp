@@ -10,6 +10,12 @@ namespace NGNLoader
 
 namespace Nu3D
 {
+	// TODO: Fix
+	namespace Area
+	{
+		void ResetPortalStates(NGNLoader::NGNImage* ngnImage);
+	}
+
 	namespace Portal
 	{
 		struct ScalerEntry
@@ -53,9 +59,25 @@ namespace Nu3D
 		};
 
 		extern uint8_t g_visibleAreaFlags[64];
+		extern int32_t g_renderedScalerCount;
+		extern int32_t g_portalRecursionDepth;
+		extern uint8_t g_minPortalRecursionDepth;
+		extern int32_t g_hiddenShapeId;
+		extern int32_t g_lastRenderableAreaIndex;
+		extern Link::DynamicScaler* g_portalMirrorScaler;
+		extern int32_t g_mirrorRenderToggle;
 
 		void ClearVisibleAreaFlags();
+		void MarkAllAreasVisible();
+	}
 
+	namespace Area
+	{
+		void RenderBucketThroughPortals(NGNLoader::NGNImage* ngnImage, int32_t bucketIdx, int32_t gscaleType, Portal::PortalState* rotEntry);
+	}
+
+	namespace Portal
+	{
 		STATIC_ASSERT(sizeof(AreaPortal) == 0x20);
 		STATIC_ASSERT(sizeof(PortalState) == 0x14);
 		STATIC_ASSERT(sizeof(PortalBucket) == 0x8);

@@ -67,6 +67,7 @@ namespace Toy2
 		};
 
 		extern Toy2Actor* g_activeActors[65];
+		extern Toy2Actor* g_activeActorArray[64];
 
 		void GetCreatureList(uint8_t* creatureIdList);
 

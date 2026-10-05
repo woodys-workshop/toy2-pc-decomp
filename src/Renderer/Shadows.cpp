@@ -9,5 +9,8 @@ namespace Renderer
 
 		// GLOBAL: TOY2 0x0054DD64
 		int32_t g_unusedShadowVar;
+
+		// STUB: TOY2 0x00445720
+		void DrawAll() {}
 	}
 }

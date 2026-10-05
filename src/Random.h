@@ -2,5 +2,5 @@
 
 #include "Common.h"
 
-static uint8_t g_randDatBuffer[2048];
-static uint8_t* g_randDatBufferPtr;
+extern uint8_t g_randDatBuffer[2048];
+extern uint8_t* g_randDatBufferPtr;

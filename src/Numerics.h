@@ -41,10 +41,25 @@ struct Angles
 	uint16_t yaw;
 };
 
+struct AnglesWithRoll
+{
+	Angles angles;
+	int16_t roll;
+	int16_t unkRoll;
+};
+
 struct PosAndAngles
 {
 	Vector3I pos;
 	Angles angles;
+};
+
+struct WorldPos
+{
+	int32_t x;
+	int32_t y;
+	int32_t z;
+	int32_t x2;
 };
 
 struct PointI

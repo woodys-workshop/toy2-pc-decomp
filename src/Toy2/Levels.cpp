@@ -122,6 +122,19 @@ namespace Toy2
 		// STUB: TOY2 0x004CEA20
 		void FlushRenderer() {}
 
+		// STUB: TOY2 0x004885C0
+		int32_t GetSectorAtPosition(Vector3I* position)
+		{
+			// NOTE: only the path for levels without zone data is ported (level select is one of them).
+			// Levels with zone data walk the collision triangles to find the sector under the position, that part
+			// returns "no sector" (-1) for now, which makes the world render by scanning the cells around the camera.
+
+			if (! g_hasZoneData)
+				return 0;
+
+			return -1;
+		}
+
 		// FUNCTION: TOY2 0x004CE8B0
 		int32_t InitLevelDefaults()
 		{
@@ -301,15 +314,15 @@ namespace Toy2
 
 			l_type65Idx = 65;
 
-			if (*reinterpret_cast<int32_t*>(l_recordPtr - 4) > 0)
+			if (*reinterpret_cast<uint16_t*>(l_recordPtr - 4) > 0)
 			{
-				l_totalRecordCount = *reinterpret_cast<int32_t*>(l_recordPtr - 4);
+				l_totalRecordCount = *reinterpret_cast<uint16_t*>(l_recordPtr - 4);
 
 				printf("Total Record Count -> %d\n", l_totalRecordCount);
 
 				do
 				{
-					l_recordType = *reinterpret_cast<int16_t*>(l_recordPtr + 2);
+					l_recordType = *reinterpret_cast<uint16_t*>(l_recordPtr + 2);
 
 					if (l_recordType >= 0)
 					{
@@ -320,7 +333,7 @@ namespace Toy2
 							g_type64Count = l_type64Count;
 							g_type64Structs[l_type64Idx].recordPtr = l_recordPtr;
 
-							l_recordPtr += 12 * *reinterpret_cast<int32_t*>(l_recordPtr) + 4;
+							l_recordPtr += 12 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
 						}
 						else
 						{
@@ -363,16 +376,16 @@ namespace Toy2
 								// ++l_type65Idx;
 							}
 
-							if (*reinterpret_cast<int16_t*>(l_recordPtr + 2) == 63)
-								l_recordPtr += 16 * *reinterpret_cast<int32_t*>(l_recordPtr) + 4;
+							if (*reinterpret_cast<uint16_t*>(l_recordPtr + 2) == 63)
+								l_recordPtr += 16 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
 							else
-								l_recordPtr += 12 * *reinterpret_cast<int32_t*>(l_recordPtr) + 4;
+								l_recordPtr += 12 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
 						}
 					}
 					else
 					{
 						g_recordData[-l_recordType] = reinterpret_cast<RecordData*>(l_recordPtr);
-						l_recordPtr += 4 * ((3 * *reinterpret_cast<int32_t*>(l_recordPtr) + 1) / 2) + 16;
+						l_recordPtr += 4 * ((3 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 1) / 2) + 16;
 					}
 
 					--l_totalRecordCount;

@@ -6,5 +6,8 @@ namespace Toy2
 	{
 		// STUB: TOY2 0x004CD120
 		void ResetNodeAngles() {}
+
+		// STUB: TOY2 0x004CD880
+		void AnimateActors(Actor::Toy2Actor** actorList) {}
 	}
 }

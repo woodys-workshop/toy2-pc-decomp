@@ -1,4 +1,5 @@
 #include "SoftwareRenderer.h"
+#include "Renderer/Renderer.h"
 
 namespace SoftwareRenderer
 {
@@ -40,6 +41,151 @@ namespace SoftwareRenderer
 
 	// GLOBAL: TOY2 0x00882910
 	int32_t g_bitsPerPixel;
+
+	// GLOBAL: TOY2 0x00884014
+	D3DMATRIX *g_viewTransform;
+
+	// GLOBAL: TOY2 0x00884018
+	D3DMATRIX *g_projectionTransform;
+
+	// GLOBAL: TOY2 0x008F7E90
+	SortedTriangle g_sortedTriPool[3000];
+
+	// GLOBAL: TOY2 0x0095B860
+	SortedTriangle* g_depthBuckets[1024];
+
+	// GLOBAL: TOY2 0x009F6010
+	int32_t g_sortedTrianglesDisabled;
+
+	// GLOBAL: TOY2 0x00508728
+	int32_t g_instanceCounter = 3000;
+
+	// GLOBAL: TOY2 0x00DBB090
+	float g_cameraFarZ;
+
+	// GLOBAL: TOY2 0x00DBB080
+	float g_cameraNearZ;
+
+	// FUNCTION: TOY2 0x004B5E40
+	void SubmitSortedTriangle(int32_t renderFlags,
+		Renderer::RenderEntry* renderEntry,
+		int32_t textureIdx,
+		Nu3D::VertexTL* vertex1,
+		Nu3D::VertexTL* vertex2,
+		Nu3D::VertexTL* vertex3)
+	{
+		if (g_sortedTrianglesDisabled || ! g_instanceCounter)
+			return;
+
+		SortedTriangle* triangle = &g_sortedTriPool[--g_instanceCounter];
+
+		triangle->renderFlags = renderFlags;
+		triangle->renderEntry = renderEntry;
+		triangle->textureIdx = textureIdx;
+
+		memcpy(&triangle->vertices[0], vertex1, sizeof(Nu3D::VertexTL));
+		memcpy(&triangle->vertices[1], vertex2, sizeof(Nu3D::VertexTL));
+		memcpy(&triangle->vertices[2], vertex3, sizeof(Nu3D::VertexTL));
+
+		// the nearest depth of the 3 vertices (depths are 0.0 - 1.0 here)
+		float nearestZ;
+
+		float z1 = triangle->vertices[1].position.z;
+		float z2 = triangle->vertices[2].position.z;
+		float lowestZ = z2 <= z1 ? z2 : z1;
+
+		if (triangle->vertices[0].position.z >= lowestZ)
+			nearestZ = lowestZ;
+		else
+			nearestZ = triangle->vertices[0].position.z;
+
+		float sortKey = nearestZ * 1023.0;
+		triangle->sortKey = sortKey;
+
+		int32_t bucket = (int32_t)sortKey & 0x3FF;
+
+		// every bucket is kept sorted, furthest (highest key) first
+		SortedTriangle* previous = 0;
+		SortedTriangle* current = g_depthBuckets[bucket];
+
+		while (current)
+		{
+			if (current->sortKey <= sortKey)
+				break;
+
+			previous = current;
+			current = current->next;
+		}
+
+		if (previous)
+		{
+			previous->next = triangle;
+			triangle->next = current;
+		}
+		else
+		{
+			g_depthBuckets[bucket] = triangle;
+			triangle->next = current;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004B5FB0
+	HRESULT SubmitTriangleList(int32_t renderFlags, LPDIRECT3DVERTEXBUFFER buffer, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount)
+	{
+		LPVOID data;
+
+		HRESULT result = DrawingAPI::LockVertexBuffer(buffer, 0x801, &data, 0);
+
+		if (result)
+			return result;
+
+		Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
+
+		// last triangle first
+		for (int32_t i = vertexCount - 3; vertexCount > 0; i -= 3, vertexCount -= 3)
+			SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[indices[i]], &vertices[indices[i + 1]], &vertices[indices[i + 2]]);
+
+		return DrawingAPI::UnlockVertexBuffer(buffer);
+	}
+
+	// FUNCTION: TOY2 0x004B6040
+	HRESULT SubmitTriangleStrip(int32_t renderFlags, LPDIRECT3DVERTEXBUFFER buffer, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount)
+	{
+		LPVOID data;
+
+		HRESULT result = DrawingAPI::LockVertexBuffer(buffer, 0x801, &data, 0);
+
+		if (result)
+			return result;
+
+		Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
+
+		int32_t index1 = indices[1];
+		int32_t index2 = indices[2];
+		uint16_t* nextIndex = indices + 3;
+		int32_t remaining = vertexCount - 3;
+
+		SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[indices[0]], &vertices[index1], &vertices[index2]);
+
+		if (vertexCount != 3)
+		{
+			do
+			{
+				int32_t previous = index1;
+				index1 = index2;
+				--remaining;
+				index2 = *nextIndex++;
+
+				// strips alternate their winding order, so every second triangle is flipped
+				if ((remaining & 1) != 0)
+					SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[previous], &vertices[index1], &vertices[index2]);
+				else
+					SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[index2], &vertices[index1], &vertices[previous]);
+			} while (remaining);
+		}
+
+		return DrawingAPI::UnlockVertexBuffer(buffer);
+	}
 
 	// STUB: TOY2 0x00452130
 	void SwapRenderBuffer() {}
@@ -85,6 +231,13 @@ namespace SoftwareRenderer
 
 	// STUB: TOY2 0x00470C70
 	void UnkFunc7() {}
+
+	// FUNCTION: TOY2 0x004C1C20
+	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ)
+	{
+		g_cameraNearZ = cameraNearZ;
+		g_cameraFarZ = cameraFarZ;
+	}
 }
 
 namespace SoftwareDevice

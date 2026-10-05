@@ -14,6 +14,19 @@ namespace Toy2
 			Vector3I data[];
 		};
 
+		struct Type63Properties
+		{
+			uint8_t linkId;
+			uint8_t flags;
+			uint16_t floorPos;
+		};
+
+		struct Type63
+		{
+			Vector3I pos;
+			Type63Properties props;
+		};
+
 		struct ModelTypeData_A
 		{
 			int32_t unk0;
@@ -123,14 +136,18 @@ namespace Toy2
 		};
 
 		extern RecordData* g_recordData[96];
+		extern int32_t g_type63CullDistance;
+		extern int32_t g_hasZoneData;
 		extern uint8_t g_levelDataHeapBase[1249280];
 		extern uint8_t* g_levelDataHeapBasePtr;
 		extern int32_t g_levelLoadConfig;
 		extern uint8_t* g_levelLoadArena;
 
 		void InitLevelPlay(int32_t levelId);
+		int32_t GetSectorAtPosition(Vector3I* position);
 
 		STATIC_ASSERT(sizeof(RecordData) == 0x4);
+		STATIC_ASSERT(sizeof(Type63) == 0x10);
 		STATIC_ASSERT(sizeof(ModelTypeData_A) == 0x24);
 		STATIC_ASSERT(sizeof(ModelTypeData_B) == 0x20);
 		STATIC_ASSERT(sizeof(InstanceSection) == 0x14);

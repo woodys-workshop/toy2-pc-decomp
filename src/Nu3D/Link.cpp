@@ -3,6 +3,7 @@
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
 #include "NGNLoader/NGNLoader.h"
+#include "Toy2/Levels.h"
 
 namespace Nu3D
 {
@@ -157,7 +158,166 @@ namespace Nu3D
 			}
 		}
 
+		// FUNCTION: TOY2 0x004CCD40
+		void GetRotation8Bit(int32_t linkId, Vector3I* out)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
+
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+			{
+				Linker* link = &links[linkId];
+
+				if (link->dynamicScaler)
+				{
+					out->x = link->currentRot.x >> 4;
+					out->y = link->currentRot.y >> 4;
+					out->z = link->currentRot.z >> 4;
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CCCE0
+		void SetRotationAbsolute8bit(int32_t linkId, int32_t x, int32_t y, int32_t z)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
+
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+			{
+				Linker* link = &links[linkId];
+
+				if (link->dynamicScaler)
+				{
+					link->currentRot.x = 16 * x;
+					link->currentRot.y = 16 * y;
+					link->currentRot.z = 16 * z;
+
+					RebuildMatrixAndCommit(link);
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CCEF0
+		void GetCurrentPosFixed(int32_t linkId, Vector3I* out)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
+
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+			{
+				Linker* link = &links[linkId];
+
+				if (link->dynamicScaler)
+				{
+					int32_t shift = link->dynamicScaler->gscaleType != 0 ? 3 : 5;
+
+					out->x = (int32_t)link->currentPos.x << shift;
+					out->y = (int32_t)link->currentPos.y << shift;
+					out->z = (int32_t)link->currentPos.z << shift;
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CCE30
+		void SetPositionRawAndCommit(int32_t linkId, int32_t x, int32_t y, int32_t z)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
+
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+			{
+				Linker* link = &links[linkId];
+				DynamicScaler* scaler = link->dynamicScaler;
+
+				if (scaler)
+				{
+					if (scaler->gscaleType)
+					{
+						x *= 4;
+						y *= 4;
+						z *= 4;
+					}
+
+					link->currentPos.x = x;
+					link->currentPos.y = y;
+					link->currentPos.z = z;
+
+					scaler->transformMatrix._41 = x;
+					scaler->transformMatrix._42 = link->currentPos.y;
+					scaler->transformMatrix._43 = link->currentPos.z;
+
+					scaler->translation.x = link->currentPos.x;
+					scaler->translation.y = link->currentPos.y;
+					scaler->translation.z = link->currentPos.z;
+
+					UnlinkScalerThenReinsert(scaler, NGNLoader::g_ngnImage);
+				}
+			}
+		}
+
 		// FUNCTION: TOY2 0x00438910
-		void FollowWaypointPath(int32_t linkId, int32_t pathTableIdx, int32_t* progress) {}
+		void FollowWaypointPath(int32_t linkId, int32_t pathTableIdx, int32_t* progress)
+		{
+			// Moves a link along a path (a record of waypoints) a bit further each call, turning it to face the way it goes
+			*progress += 64;
+
+			Toy2::Levels::RecordData* path = Toy2::Levels::g_recordData[pathTableIdx];
+
+			// loop back to the start once there are no waypoints left
+			if ((*progress >> 8) > path->recordCount - 5)
+				*progress = 0;
+
+			// the top 24 bits of the progress are the waypoint, the bottom 8 bits are how far to the next one
+			int32_t waypoint = *progress >> 8;
+			int32_t blend = *progress & 0xFF;
+
+			Vector3I* from = &path->data[waypoint];
+			Vector3I* to = &path->data[waypoint + 1];
+
+			int32_t targetX = (blend * to->x + (255 - blend) * from->x) / 8;
+			int32_t targetY = (blend * to->y + (255 - blend) * from->y) / 8;
+			int32_t targetZ = (blend * to->z + (255 - blend) * from->z) / 8;
+
+			Vector3I currentPos;
+			Vector3I currentRot;
+
+			GetCurrentPosFixed(linkId, &currentPos);
+			GetRotation8Bit(linkId, &currentRot);
+
+			int32_t angleToTarget = Math::CartesianToFixedAngle(targetZ - currentPos.z, currentPos.x - targetX);
+			int32_t angleDelta = (currentRot.y - angleToTarget - 2048) & 0xFFF;
+
+			int32_t newRotY;
+
+			// turn a quarter of the way towards the target each time
+			if (angleDelta <= 2048)
+				newRotY = currentRot.y - (angleDelta >> 2);
+			else
+				newRotY = ((4096 - angleDelta) >> 2) + currentRot.y;
+
+			SetRotationAbsolute8bit(linkId, 0, newRotY, 0);
+			SetPositionRawAndCommit(linkId, targetX >> 5, targetY >> 5, targetZ >> 5);
+		}
 	}
 }

@@ -14,6 +14,7 @@ namespace NGNLoader
 	void Init();
 	void DetectBackdropTextures();
 	int32_t GetTextureDataIndex(uint32_t textureIndex);
+	uint32_t GetTextureDataIndexByName(char* texName);
 	NGNTextureData* GetTextureDataByIndex(uint32_t texDataIndex);
 	void RetrieveTextureData(
 		int32_t texDataIndex, uint32_t* bitmapWidthOut, uint32_t* bitmapHeightOut, uint32_t* textureWidth, uint32_t* textureHeight, uint32_t** textureData);

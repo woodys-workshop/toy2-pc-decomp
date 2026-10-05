@@ -14,6 +14,17 @@ namespace Toy2
 		int32_t displayModeIndex;
 	};
 
+	// TODO: Perhaps it should be somewhere else?
+	struct ViewportPreset
+	{
+		float viewportLR;
+		float viewportTB;
+		float farLayerNearZ;
+		float nearZ;
+		float nearDistance;
+		float farDistance;
+	};
+
 	struct SectorBackdropTexIdTable
 	{
 		int32_t primary[10];
@@ -26,6 +37,7 @@ namespace Toy2
 	uint32_t ComputeTokenProgress();
 
 	extern ToyCfg g_toyCfgData;
+	extern ViewportPreset g_viewportPresets[3];
 	extern int32_t g_levelFileIndex;
 	extern int32_t g_isElevatorHopLevel;
 	extern int32_t g_hasBackdrop;
@@ -36,9 +48,16 @@ namespace Toy2
 	extern int32_t g_showBlackFrames;
 	extern int32_t g_demoMode;
 	extern int32_t g_hasStaticBackdrop;
+	extern int32_t g_renderGame;
+	extern int32_t g_curSector;
+	extern int32_t g_curSectorCopy1;
+	extern int32_t g_curSectorCopy2;
+	extern int16_t g_pickupAnimTimer;
+	extern uint8_t g_type59VisibleIndices[36];
 	extern int32_t g_nextBackdropId;
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[15];
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
+	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
 }

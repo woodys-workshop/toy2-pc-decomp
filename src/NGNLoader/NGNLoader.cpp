@@ -801,8 +801,57 @@ namespace NGNLoader
 		return result;
 	}
 
-	// STUB: TOY2 0x004B9630
-	void BuildTex14(int32_t unused) {}
+	// FUNCTION: TOY2 0x004BB2F0
+	uint32_t GetTextureDataIndexByName(char* texName)
+	{
+		NGNTextureParams texParams;
+		texParams.rawTexStr = texName;
+
+		NGNTextureData* textureData = GetTextureData(&texParams, 1);
+
+		if (textureData)
+			return textureData->textureIndex;
+		else
+			return 0;
+	}
+
+	// FUNCTION: TOY2 0x004B9630
+	void BuildTex14(int32_t unused)
+	{
+		// the original never initialises the colour (it is whatever was on the stack), at runtime it is always black,
+		// which is what keeps the reflection overlay faint, so use that to be deterministic
+		RGBColor color;
+		color.r = 0.0;
+		color.g = 0.0;
+		color.b = 0.0;
+
+		Nu3D::g_tex14Version1 = Nu3D::Material::CreateFromColor(&color);
+
+		if (Nu3D::g_tex14Version1)
+		{
+			Nu3D::Material::SetOpacity(Nu3D::g_tex14Version1, 0.5);
+			Nu3D::Material::AttachTexture(Nu3D::g_tex14Version1, GetTextureDataIndexByName("tex14"));
+			Nu3D::g_tex14Version1->metadata |= 2;
+		}
+
+		Nu3D::g_tex14Version2 = Nu3D::Material::CreateFromColor(&color);
+
+		if (Nu3D::g_tex14Version2)
+		{
+			Nu3D::Material::SetOpacity(Nu3D::g_tex14Version2, 0.5);
+			Nu3D::Material::AttachTexture(Nu3D::g_tex14Version2, GetTextureDataIndexByName("tex14"));
+			Nu3D::g_tex14Version2->metadata |= 16;
+		}
+
+		Nu3D::g_tex14Version3 = Nu3D::Material::CreateFromColor(&color);
+
+		if (Nu3D::g_tex14Version3)
+		{
+			Nu3D::Material::SetOpacity(Nu3D::g_tex14Version3, 0.5);
+			Nu3D::Material::AttachTexture(Nu3D::g_tex14Version3, GetTextureDataIndexByName("tex14"));
+			Nu3D::g_tex14Version3->metadata |= 32;
+		}
+	}
 
 	// FUNCTION: TOY2 0x004C36A0 [MATCHED]
 	void BuildGrid(int32_t gridWidth, int32_t gridHeight, int32_t type, NGNImage* ngnImage)

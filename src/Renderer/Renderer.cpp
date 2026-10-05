@@ -11,6 +11,7 @@
 #include "Renderer/Sprite.h"
 #include "Toy2/Toy2.h"
 #include "Renderer/Glue.h"
+#include "Renderer/RenderQueue.h"
 #include "Toy2/D3DApp.h"
 
 namespace Renderer
@@ -183,33 +184,54 @@ namespace Renderer
 
 	// GLOBAL: TOY2 0x00E4D96C
 	int32_t g_deviceBlendShadeCapsCpy;
+
+	// GLOBAL: TOY2 0x005088B0
+	float g_nearRenderDistance = 144000000.0;
+
+	// GLOBAL: TOY2 0x005088B4
+	float g_farRenderDistance = 1000000.0;
+
+	// GLOBAL: TOY2 0x00830C4C
+	float g_parallaxPrevVertInput;
+
+	// GLOBAL: TOY2 0x00731F24
+	float g_parallaxScrollDelta;
+
+	// GLOBAL: TOY2 0x004F73B0
+	int32_t g_parallaxVertOffset = 32;
+
+	// GLOBAL: TOY2 0x0050A1F8
+	int32_t g_enableCinematicBars;
+
+	// GLOBAL: TOY2 0x00559C60
+	int32_t g_letterboxTimer;
 }
 
 namespace DrawingAPI
 {
 	// GLOBAL: TOY2 0x00508724
-	Device_DrawIndexedPrimitive* DrawIndexedPrimitive;
+	Device_DrawIndexedPrimitive* DrawIndexedPrimitive = HardwareDevice::DrawIndexedPrimitive;
 
 	// GLOBAL: TOY2 0x00508720
-	Device_DrawIndexedPrimitiveVB* DrawIndexedPrimitiveVB;
+	Device_DrawIndexedPrimitiveVB* DrawIndexedPrimitiveVB = HardwareDevice::DrawIndexedPrimitiveVB;
 
 	// GLOBAL: TOY2 0x005084FC
-	Device_ReleaseVertexBuffer* ReleaseVertexBuffer;
+	Device_ReleaseVertexBuffer* ReleaseVertexBuffer = HardwareDevice::ReleaseVertexBuffer;
 
 	// GLOBAL: TOY2 0x00508500
-	Device_CreateVertexBuffer* CreateVertexBuffer;
+	Device_CreateVertexBuffer* CreateVertexBuffer = HardwareDevice::CreateVertexBuffer;
 
 	// GLOBAL: TOY2 0x00508504
-	Device_LockVertexBuffer* LockVertexBuffer;
+	Device_LockVertexBuffer* LockVertexBuffer = HardwareDevice::LockVertexBuffer;
 
 	// GLOBAL: TOY2 0x00508508
-	Device_UnlockVertexBuffer* UnlockVertexBuffer;
+	Device_UnlockVertexBuffer* UnlockVertexBuffer = HardwareDevice::UnlockVertexBuffer;
 
 	// GLOBAL: TOY2 0x0050850C
-	Device_OptimizeVertexBuffer* OptimizeVertexBuffer;
+	Device_OptimizeVertexBuffer* OptimizeVertexBuffer = HardwareDevice::OptimizeVertexBuffer;
 
 	// GLOBAL: TOY2 0x00508510
-	Device_ProcessVerticesOnBuffer* ProcessVerticesOnBuffer;
+	Device_ProcessVerticesOnBuffer* ProcessVerticesOnBuffer = HardwareDevice::ProcessVerticesOnBuffer;
 
 	// FUNCTION: TOY2 0x004B2BF0
 	void SetVertexAPIs(int32_t isSoftwareRendering)
@@ -237,9 +259,6 @@ namespace DrawingAPI
 
 namespace Renderer
 {
-	// STUB: TOY2 0x004B5CE0
-	int32_t Set508718(int32_t value) { return 0; }
-
 	// FUNCTION: TOY2 0x004B2CE0
 	void DisableFog() { g_fogEnabled = 0; }
 
@@ -447,9 +466,6 @@ namespace Renderer
 		for (int32_t texture = 1; texture < g_maxSimultaneousTextures; ++texture)
 			SetTextureStageState(0, texture);
 	}
-
-	// STUB: TOY2 0x004B62C0
-	void ResetRenderPools() {}
 
 	// FUNCTION: TOY2 0x004B9710
 	void InitResources()
@@ -754,8 +770,10 @@ namespace Renderer
 			DrawingDevice::SetRenderState(D3DRENDERSTATE_FOGCOLOR, g_fogColor & 0xFFFFFF);
 
 			DrawingDevice::SetLightState(D3DLIGHTSTATE_FOGMODE, 3);
-			DrawingDevice::SetLightState(D3DLIGHTSTATE_FOGSTART, g_fogStart);
-			DrawingDevice::SetLightState(D3DLIGHTSTATE_FOGEND, g_fogEnd);
+			// TODO: Double check this
+			// D3D wants the bits of the floats here, not their integer value
+			DrawingDevice::SetLightState(D3DLIGHTSTATE_FOGSTART, *(DWORD*)&g_fogStart);
+			DrawingDevice::SetLightState(D3DLIGHTSTATE_FOGEND, *(DWORD*)&g_fogEnd);
 		}
 		else
 		{
@@ -1143,15 +1161,6 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B8400
-	void FlushMaterialBuckets() {}
-
-	// FUNCTION: TOY2 0x004B6A90
-	void FlushTransparentBuckets() {}
-
-	// FUNCTION: TOY2 0x004B5CF0
-	void FlushPrimitives() {}
-
 	// FUNCTION: TOY2 0x004B6A50
 	void FlushRenderQueues()
 	{
@@ -1234,6 +1243,208 @@ namespace Renderer
 				DrawingDevice::BindTexWithStage(-1, idx);
 			}
 		}
+	}
+
+	// FUNCTION: TOY2 0x004B2CF0
+	void ConfigureFog(float fogStart, float fogEnd, RGBA color)
+	{
+		g_fogEnabled = 1;
+		g_fogStart = fogStart;
+		g_fogEnd = fogEnd;
+		g_fogColor = ApplyGammaCorrection(color).value;
+	}
+
+	// FUNCTION: TOY2 0x004B2D20
+	void SetFogEnable(int32_t enableFog)
+	{
+		if (g_fogEnabled)
+		{
+			if (enableFog)
+				DrawingDevice::SetRenderState(D3DRENDERSTATE_FOGENABLE, 1);
+			else
+				DrawingDevice::SetRenderState(D3DRENDERSTATE_FOGENABLE, 0);
+		}
+	}
+
+	// FUNCTION: TOY2 0x004BC410
+	void SetRenderDistance(float nearDistance, float farDistance)
+	{
+		// distances are kept squared so they can be compared against squared object distances
+		g_nearRenderDistance = nearDistance * nearDistance;
+		g_farRenderDistance = farDistance * farDistance;
+	}
+
+	// FUNCTION: TOY2 0x004CDD80
+	void SetViewportPreset() { SetViewportPresetByDetail(Toy2::g_toyCfgData.detail); }
+
+	// FUNCTION: TOY2 0x004CDD10
+	void SetViewportPresetByDetail(int32_t detail)
+	{
+		int32_t preset = detail;
+
+		if (detail > 2)
+			preset = 2;
+		else if (detail < 0)
+			preset = 0;
+
+		SetRenderDistance(Toy2::g_viewportPresets[preset].nearDistance, Toy2::g_viewportPresets[preset].farDistance);
+
+		float viewportTB = Toy2::g_viewportPresets[preset].viewportTB;
+		float nearZ = Toy2::g_viewportPresets[preset].nearZ;
+
+		Nu3D::Camera::g_farLayerViewportLR = Toy2::g_viewportPresets[preset].viewportLR;
+
+		float farLayerNearZ = Toy2::g_viewportPresets[preset].farLayerNearZ;
+
+		Nu3D::Camera::g_cameraViewportTB = viewportTB;
+		Nu3D::Camera::g_cameraNearZ = nearZ;
+		Nu3D::Camera::g_farLayerNearZ = farLayerNearZ;
+	}
+
+	// FUNCTION: TOY2 0x004CE5B0
+	void ShowBlackFrames()
+	{
+		RGBA black;
+		black.value = 0;
+
+		// clear and present twice so both buffers of the swap chain are black
+		ClearScreen(black, 3);
+
+		if (BeginScene())
+			EndScene(1);
+
+		ClearScreen(black, 3);
+
+		if (BeginScene())
+			EndScene(1);
+	}
+
+	// FUNCTION: TOY2 0x0048F230
+	void UpdateBackgroundScroll(int16_t horizontalScroll, int16_t verticalScroll)
+	{
+		int32_t texIndex;
+
+		if (Toy2::g_hasStaticBackdrop)
+			texIndex = NGNLoader::GetTextureDataIndex(37);
+		else
+			texIndex = NGNLoader::GetTextureDataIndex(Toy2::g_nextBackdropId);
+
+		if (texIndex && g_drawParallaxTexture)
+		{
+			uint32_t* textureData;
+			uint32_t textureWidth;
+			uint32_t textureHeight;
+			uint32_t bitmapWidth;
+			uint32_t bitmapHeight;
+
+			NGNLoader::RetrieveTextureData(texIndex, &bitmapWidth, &bitmapHeight, &textureWidth, &textureHeight, &textureData);
+
+			g_parallaxTexFirstPixel.value = *textureData;
+			g_parallaxTexLastPixel.value = textureData[textureHeight * textureWidth - 1];
+
+			g_parallaxTexWidthRatio = bitmapWidth / g_virtualScreenWidth;
+			g_parallaxTexHeightRatio = bitmapHeight / g_virtualScreenHeight;
+
+			// the yaw input is a 16-bit angle, work out how far it moved since last frame (accounting for wrap around)
+			double verticalInput = verticalScroll;
+			int32_t verticalDelta = (int32_t)(verticalInput - g_parallaxPrevVertInput);
+
+			g_parallaxPrevVertInput = verticalInput;
+
+			if (verticalDelta > 32768)
+				verticalDelta -= 65536;
+
+			if (verticalDelta < -32768)
+				verticalDelta += 65536;
+
+			g_parallaxScrollDelta = verticalDelta * 0.000015258789 * 4.1887903;
+
+			double horizontalPos = g_parallaxCurHorizScroll + g_parallaxScrollDelta;
+
+			g_parallaxCurHorizScroll = horizontalPos;
+
+			// keep the scroll position within one texture width
+			float negWidth = -g_parallaxTexWidthRatio;
+
+			if (horizontalPos <= negWidth)
+			{
+				do
+					horizontalPos = horizontalPos + g_parallaxTexWidthRatio;
+				while (horizontalPos <= negWidth);
+
+				g_parallaxCurHorizScroll = horizontalPos;
+			}
+
+			if (horizontalPos > 0.0)
+			{
+				do
+					horizontalPos = horizontalPos - g_parallaxTexWidthRatio;
+				while (horizontalPos > 0.0);
+
+				g_parallaxCurHorizScroll = horizontalPos;
+			}
+
+			g_parallaxHorizOffset = horizontalScroll * 0.000015258789;
+			g_parallaxHorizOffset =
+				g_parallaxHorizOffset / (Nu3D::Camera::g_primaryCamera->aspectHOverW * 0.23873241) + g_parallaxVertOffset / g_virtualScreenHeight;
+		}
+	}
+
+	// FUNCTION: TOY2 0x00440E90
+	void DrawCinematicBars()
+	{
+		Vector2F uvTopLeft;
+		Vector2F uvBottomRight;
+
+		uvTopLeft.x = 0.0;
+		uvTopLeft.y = 0.0;
+
+		uvBottomRight.x = 1.0;
+		uvBottomRight.y = 1.0;
+
+		// the bars slide in/out over 25 frames, the timer is how far along they currently are
+		if (! g_enableCinematicBars)
+		{
+			int32_t timer = g_letterboxTimer - g_frameDelta;
+
+			if (timer < 0)
+			{
+				g_letterboxTimer = 0;
+				return;
+			}
+
+			g_letterboxTimer = timer;
+
+			if (timer <= 0)
+				return;
+		}
+		else
+		{
+			int32_t timer = g_frameDelta + g_letterboxTimer;
+
+			if (timer > 25)
+			{
+				g_letterboxTimer = 25;
+			}
+			else
+			{
+				g_letterboxTimer = timer;
+
+				if (timer <= 0)
+					return;
+			}
+		}
+
+		float height = g_letterboxTimer * 0.0040000002;
+
+		RGBA black;
+		black.value = 0xFF000000;
+
+		Sprite::Queue2DSprite(0.0, 0.0, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+
+		float yPos = 1.0 - height;
+
+		Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 	}
 }
 

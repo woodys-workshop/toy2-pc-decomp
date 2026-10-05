@@ -1,9 +1,11 @@
 #include "Renderer/Sprite.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/RenderQueue.h"
 #include "Renderer/SpriteSheets.h"
 #include "Nu3D/Sprite.h"
 #include "SoftwareRenderer.h"
 #include "NGNLoader/NGNLoader.h"
+#include "Nu3D/Camera.h"
 #include "DrawingDevice.h"
 #include "Logger.h"
 
@@ -195,20 +197,252 @@ namespace Renderer
 			}
 		}
 
+		// TODO: Important, inline
+		// draws a tile of a sprite sheet, positions are in virtual screen space (xScale converts x to 0.0 - 1.0)
+		static int16_t DrawSheetTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, RGBA color, double xScale)
+		{
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (! sheet)
+				return 1;
+
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+
+			uvTopLeft.x = 0.0;
+			uvTopLeft.y = 0.0;
+			uvBottomRight.x = 0.0;
+			uvBottomRight.y = 0.0;
+
+			if (textureDataIndex)
+			{
+				uint32_t bitmapWidth;
+				uint32_t bitmapHeight;
+				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
+
+				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
+				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
+				uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / width;
+				uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / height;
+			}
+
+			double yScale = 1.0 / g_virtualScreenHeight;
+
+			Queue2DSprite(xPos * xScale,
+				yPos * yScale,
+				sheet->tileWidth * xScale,
+				sheet->tileHeight * yScale,
+				&uvTopLeft,
+				&uvBottomRight,
+				textureDataIndex,
+				color,
+				RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+
+			return 1;
+		}
+
+		// the screen can be tinted (fades), the plain sprites take that tint as their colour
+		static RGBA CameraTintColor()
+		{
+			RGBA color;
+			color.a = 0xFF;
+			color.b = Nu3D::Camera::g_cameraTintBlue;
+			color.g = Nu3D::Camera::g_cameraTintGreen;
+			color.r = Nu3D::Camera::g_cameraTintRed;
+
+			return color;
+		}
+
 		// FUNCTION: TOY2 0x004946A0
-		int16_t DrawTiledFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex) { return 0; }
+		int16_t DrawTiledFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
+		{
+			// always lays out on a 320 wide screen, no matter the virtual screen size
+			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, CameraTintColor(), 0.003125);
+		}
 
 		// FUNCTION: TOY2 0x00494820
-		int16_t DrawTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex) { return 0; }
+		int16_t DrawTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
+		{
+			float xScale = 1.0 / g_virtualScreenWidth;
+
+			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, CameraTintColor(), xScale);
+		}
 
 		// FUNCTION: TOY2 0x00493DC0
-		int16_t DrawColouredFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t red, uint8_t green, uint8_t blue) { return 0; }
+		int16_t DrawColouredFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t red, uint8_t green, uint8_t blue)
+		{
+			// (the original really does swap red and blue)
+			RGBA color;
+			color.a = 0xFF;
+			color.b = red;
+			color.g = green;
+			color.r = blue;
+
+			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, color, 0.003125);
+		}
 
 		// FUNCTION: TOY2 0x00493C30
-		int16_t DrawColoured(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t blue, uint8_t green, uint8_t red) { return 0; }
+		int16_t DrawColoured(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t blue, uint8_t green, uint8_t red)
+		{
+			RGBA color;
+			color.a = 0xFF;
+			color.b = blue;
+			color.g = green;
+			color.r = red;
+
+			float xScale = 1.0 / g_virtualScreenWidth;
+
+			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, color, xScale);
+		}
+
+		// FUNCTION: TOY2 0x0049D390
+		void DrawBitmapText(char* text, int32_t screenY, int32_t screenX, uint8_t colorB, uint8_t colorG, uint8_t colorR)
+		{
+			// Draws centered text from the UI glyph texture. The glyphs are on an 8 wide grid of 32x32 tiles, the first
+			// 26 are the letters, followed by the digits, a few symbols are placed by hand.
+
+			int32_t textLength = strlen(text);
+			int32_t texelX = screenX - 13 * textLength / 2;
+
+			for (int32_t i = 0; i < textLength; i++, texelX += 13)
+			{
+				uint8_t character = text[i];
+				int32_t glyphX;
+				int32_t glyphY;
+
+				switch (character)
+				{
+					case '!':
+						glyphX = 96;
+						glyphY = 160;
+						break;
+
+					case '\'':
+						glyphX = 224;
+						glyphY = 160;
+						break;
+
+					case '(':
+						glyphX = 160;
+						glyphY = 160;
+						break;
+
+					case ')':
+						glyphX = 192;
+						glyphY = 160;
+						break;
+
+					case ',':
+						glyphX = 160;
+						glyphY = 128;
+						break;
+
+					case '.':
+						glyphX = 128;
+						glyphY = 128;
+						break;
+
+					case '/':
+						glyphX = 32;
+						glyphY = 160;
+						break;
+
+					case ':':
+						glyphX = 224;
+						glyphY = 128;
+						break;
+
+					case ';':
+						glyphX = 192;
+						glyphY = 128;
+						break;
+
+					case '?':
+						glyphX = 128;
+						glyphY = 160;
+						break;
+
+					case '\\':
+						glyphX = 0;
+						glyphY = 160;
+						break;
+
+					case 0xB2:
+						glyphX = 96;
+						glyphY = 64;
+						break;
+
+					case 0xB3:
+						glyphX = 112;
+						glyphY = 64;
+						break;
+
+					case 0xB9:
+						glyphX = 80;
+						glyphY = 64;
+						break;
+
+					case 0xBA:
+						glyphX = 64;
+						glyphY = 64;
+						break;
+
+					default:
+					{
+						int32_t glyphIndex;
+
+						if (character >= 'a' && character <= 'z')
+							glyphIndex = character - 'a';
+						else if (character >= 'A' && character <= 'Z')
+							glyphIndex = character - 'A';
+						else if (character >= '0' && character <= '9')
+							glyphIndex = character - 22;
+						else
+							continue;
+
+						glyphX = 32 * (glyphIndex % 8);
+						glyphY = 32 * (glyphIndex / 8);
+					}
+				}
+
+				Vector2F uvMin;
+				Vector2F uvMax;
+
+				uvMin.x = glyphX * 0.0039215689;
+				uvMin.y = glyphY * 0.0039215689;
+				uvMax.x = (glyphX + 31.0) * 0.0039215689;
+				uvMax.y = (glyphY + 31.0) * 0.0039215689;
+
+				int32_t fontTextureIndex = NGNLoader::GetTextureDataIndex(31);
+
+				RGBA color;
+				color.b = colorB;
+				color.a = 0xFF;
+				color.g = colorG;
+				color.r = colorR;
+
+				double invHeight = 1.0 / g_virtualScreenHeight;
+				float invWidth = 1.0 / g_virtualScreenWidth;
+
+				Queue2DSprite(texelX * invWidth,
+					screenY * invHeight,
+					invWidth * 16.0,
+					invHeight * 16.0,
+					&uvMin,
+					&uvMax,
+					fontTextureIndex,
+					color,
+					RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+			}
+		}
 
 		// FUNCTION: TOY2 0x0049D750
-		void DrawWhiteText(char *text, int32_t screenY, int32_t screenX) {}
+		void DrawWhiteText(char* text, int32_t screenY, int32_t screenX) { DrawBitmapText(text, screenY, screenX, 255, 255, 255); }
 
 		// FUNCTION: TOY2 0x00493F40
 		int16_t DrawScaled(int16_t xPos,
@@ -315,28 +549,32 @@ namespace Renderer
 			g_spriteBuffer2DCount = 2000;
 		}
 
-		// STUB: TOY2 0x004B6AD0
-		void DispatchCommand(Nu3D::Sprite* command)
+		// STUB: TOY2 0x004B8E60
+		void QueueQuadSprite(Vector3F* position,
+			int32_t trigIndex,
+			float width,
+			float height,
+			Vector2F* uvTopLeft,
+			Vector2F* uvBottomRight,
+			int32_t textureIndex,
+			RGBA color,
+			int32_t renderFlags)
 		{
-			Nu3D::Sprite* commandPointer = command;
-
-			if (commandPointer)
-			{
-				do
-				{
-					switch (commandPointer->type)
-					{
-						case RENDER_2D_SPRITE:
-							Sprite::Render2DSprite(commandPointer);
-						default:
-							break;
-					}
-
-					commandPointer = commandPointer->next;
-
-				} while (commandPointer);
-			}
 		}
+
+		// STUB: TOY2 0x004B8A30
+		void QueueGroundAlignedSprite(Vector3F* position,
+			int32_t trigIndex,
+			float width,
+			float height,
+			Vector2F* uvTopLeft,
+			Vector2F* uvBottomRight,
+			int32_t textureIndex,
+			RGBA color,
+			int32_t renderFlags)
+		{
+		}
+
 
 		// FUNCTION: TOY2 0x004B8460
 		void DrawQueuedSprite()

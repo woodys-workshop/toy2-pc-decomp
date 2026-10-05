@@ -109,6 +109,7 @@ namespace DrawingDevice
 	LPDIRECTDRAW4 GetDDraw4();
 	LPDIRECT3D3 GetD3D();
 	LPDIRECT3DDEVICE3 GetD3DDevice();
+	LPDIRECT3DVIEWPORT3 GetViewport();
 	int32_t GetWidth();
 	int32_t GetHeight();
 	int32_t GetDestWidth();
@@ -124,6 +125,11 @@ namespace DrawingDevice
 	LPD3DDEVICEDESC CopySurfaceDesc(LPD3DDEVICEDESC outSurfaceDesc);
 	HRESULT SetRenderState(D3DRENDERSTATETYPE renderStateType, DWORD value);
 	HRESULT SetLightState(D3DLIGHTSTATETYPE lightState, DWORD value);
+	HRESULT CreateLight(LPDIRECT3DLIGHT* outLight);
+	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT d3dLight);
+	HRESULT AddLight(LPDIRECT3DLIGHT light);
+	HRESULT DeleteLight(LPDIRECT3DLIGHT light);
+	int32_t ReleaseLight(LPDIRECT3DLIGHT light);
 	HRESULT SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE state, DWORD value);
 	HRESULT ClearScreen(DWORD clearFlags, D3DCOLOR clearColor);
 	HRESULT BeginScene();
@@ -131,6 +137,10 @@ namespace DrawingDevice
 	void EndScene();
 	HRESULT BindTexWithStage(int32_t textureIndex, int32_t stageIndex);
 	HRESULT BindTexToStage0(int32_t textureIndex);
+	HRESULT SetViewTransform(D3DMATRIX* matrix);
+	HRESULT SetWorldTransform(D3DMATRIX* matrix);
+	HRESULT DrawPrimitive(D3DPRIMITIVETYPE primitiveType, DWORD vertexTypeDesc, void* vertices, DWORD vertexCount, DWORD flags);
+	HRESULT SetProjectionTransform(D3DMATRIX* matrix);
 
 	STATIC_ASSERT(sizeof(DrawingDeviceSlot) == 0x18);
 	STATIC_ASSERT(sizeof(CD3DFramework) == 0x234);

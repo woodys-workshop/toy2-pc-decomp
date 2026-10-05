@@ -58,6 +58,11 @@ namespace Nu3D
 		static void SetOpacity(Material* material, float alpha);
 	};
 
+	// the environment mapped (reflection) versions of the material currently being drawn
+	extern Material* g_tex14Version1;
+	extern Material* g_tex14Version2;
+	extern Material* g_tex14Version3;
+
 	STATIC_ASSERT(sizeof(Material) == 0x84);
 	STATIC_ASSERT(sizeof(MaterialFile) == 0x38);
 }

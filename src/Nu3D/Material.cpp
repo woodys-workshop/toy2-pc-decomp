@@ -12,6 +12,15 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x00A4CC8C
 	Material* g_materialFreeListHead;
 
+	// GLOBAL: TOY2 0x009F5FE4
+	Material* g_tex14Version1;
+
+	// GLOBAL: TOY2 0x009F5FE8
+	Material* g_tex14Version2;
+
+	// GLOBAL: TOY2 0x009F5FEC
+	Material* g_tex14Version3;
+
 	// GLOBAL: TOY2 0x00AAD798
 	int32_t g_unusedMaterialVar;
 

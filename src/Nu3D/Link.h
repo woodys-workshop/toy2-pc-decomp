@@ -44,6 +44,10 @@ namespace Nu3D
 		DynamicScaler** GetCellByPos(Vector3I* pos, NGNLoader::NGNImage* ngnImage);
 		int32_t ComputeCellFromXZ(Vector3I* pos, float x, float z, int32_t layer, NGNLoader::NGNImage* ngnImage);
 		void InsertScalerAtComputedCell(DynamicScaler* scaler, int32_t type, NGNLoader::NGNImage* ngnImage);
+		void GetCurrentPosFixed(int32_t linkId, Vector3I* out);
+		void SetPositionRawAndCommit(int32_t linkId, int32_t x, int32_t y, int32_t z);
+		void GetRotation8Bit(int32_t linkId, Vector3I* out);
+		void SetRotationAbsolute8bit(int32_t linkId, int32_t x, int32_t y, int32_t z);
 		void SetScaleFromFixedOffsets(int32_t linkId, int32_t x, int32_t y, int32_t z);
 		void FollowWaypointPath(int32_t linkId, int32_t pathTableIdx, int32_t* progress);
 

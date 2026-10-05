@@ -106,6 +106,10 @@ set(TOY2_SOURCES
     src/Toy2/Animation.cpp
     src/Toy2/Weather.cpp
     src/Toy2/Weather.h
+    src/Toy2/Sector.cpp
+    src/Toy2/Sector.h
+    src/Toy2/KiteTail.cpp
+    src/Toy2/KiteTail.h
 
     # Nu3D
     src/Nu3D/Creature.h
@@ -136,6 +140,8 @@ set(TOY2_SOURCES
     src/Nu3D/Particles.cpp
     src/Nu3D/Math.cpp
     src/Nu3D/Math.h
+    src/Nu3D/Scene.cpp
+    src/Nu3D/Scene.h
 
     # Renderer
     src/Renderer/Renderer.h
@@ -143,6 +149,11 @@ set(TOY2_SOURCES
     src/Renderer/RenderType.h
     src/Renderer/Sprite.h
     src/Renderer/Sprite.cpp
+    src/Renderer/RenderQueue.cpp
+    src/Renderer/RenderQueue.h
+    src/Renderer/RenderDraw.cpp
+    src/Renderer/Effects.cpp
+    src/Renderer/Effects.h
     src/Renderer/Shadows.cpp
     src/Renderer/Shadows.h
     src/Renderer/SpriteSheets.cpp

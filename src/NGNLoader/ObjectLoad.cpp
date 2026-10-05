@@ -467,7 +467,7 @@ namespace NGNLoader
 			uint32_t type;
 			int16_t materialIndex;
 			int16_t primCount;
-			Nu3D::Primitive* primObject;
+			Nu3D::Primitive* primObject = 0;
 			int32_t localVertCount;
 			int32_t verticesSize;
 			uint32_t processedPrimCount = 0;
@@ -557,7 +557,7 @@ namespace NGNLoader
 					localVertCount = verticesSize;
 				}
 
-				Nu3D::Primitive* primObject = Nu3D::Primitive::Build(verticesSize, 1);
+				primObject = Nu3D::Primitive::Build(verticesSize, 1);
 
 				if (! primObject)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 634)("unable to alloc OBJ3D with %d vrts", verticesSize);

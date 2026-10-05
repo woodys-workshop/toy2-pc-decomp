@@ -6,3 +6,6 @@ external/include/directx6
 external/libs/directx6
 reccmp-user.yml
 reccmp-build.yml
+
+*.md
+!README.md

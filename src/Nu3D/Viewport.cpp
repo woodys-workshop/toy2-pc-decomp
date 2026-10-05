@@ -2,8 +2,8 @@
 #include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "SoftwareRenderer.h"
-#include <directx6/ddraw.h>
-#include <directx6/d3d.h>
+#include "Nu3D/Math.h"
+#include "Nu3D/Camera.h"
 
 #include <STDIO.H>
 
@@ -67,6 +67,15 @@ namespace Nu3D
 
 		// GLOBAL: TOY2 0x00E4D8E8
 		ViewportRectAlt g_viewClipRect;
+
+		// GLOBAL: TOY2 0x008845B0
+		D3DMATRIX g_clipNormMatrixCache;
+
+		// GLOBAL: TOY2 0x008845F0
+		D3DMATRIX g_screenSpaceMatrixCache;
+
+		// GLOBAL: TOY2 0x009F6030
+		FrustumData g_frustumData;
 
 		// FUNCTION: TOY2 0x004B55D0
 		void Init()
@@ -150,6 +159,245 @@ namespace Nu3D
 				g_viewClipRect.bottom = spriteRect.right;
 				g_viewClipRect.right = spriteRect.bottom;
 			}
+		}
+
+		// FUNCTION: TOY2 0x004B5AD0
+		void BuildClipNormMatrix()
+		{
+			g_clipNormMatrixCache._12 = 0.0;
+			g_clipNormMatrixCache._13 = 0.0;
+			g_clipNormMatrixCache._14 = 0.0;
+			g_clipNormMatrixCache._21 = 0.0;
+			g_clipNormMatrixCache._23 = 0.0;
+			g_clipNormMatrixCache._24 = 0.0;
+			g_clipNormMatrixCache._31 = 0.0;
+			g_clipNormMatrixCache._32 = 0.0;
+			g_clipNormMatrixCache._34 = 0.0;
+			g_clipNormMatrixCache._44 = 1.0;
+
+			g_clipNormMatrixDirty = 0;
+
+			g_clipNormMatrixCache._11 = 2.0 / g_pendingViewport.dvClipWidth;
+			g_clipNormMatrixCache._22 = 2.0 / g_pendingViewport.dvClipHeight;
+			g_clipNormMatrixCache._33 = 1.0 / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ;
+
+			g_clipNormMatrixCache._41 =
+				-1.0 - (g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth + g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth);
+
+			g_clipNormMatrixCache._42 =
+				1.0 - (g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight + g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight);
+
+			g_clipNormMatrixCache._43 = -(g_pendingViewport.dvMinZ / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ);
+		}
+
+		// FUNCTION: TOY2 0x004B5AA0
+		void GetClipNormMatrix(D3DMATRIX* out)
+		{
+			if (g_clipNormMatrixDirty)
+				BuildClipNormMatrix();
+
+			*out = g_clipNormMatrixCache;
+		}
+
+		// FUNCTION: TOY2 0x004B5C00
+		void BuildScreenSpaceMatrix()
+		{
+			float width = (float)g_pendingViewport.dwWidth;
+			float height = (float)g_pendingViewport.dwHeight;
+
+			memset(&g_screenSpaceMatrixCache, 0, sizeof(g_screenSpaceMatrixCache));
+			g_screenSpaceMatrixCache._11 = width * 0.5f;
+			g_screenSpaceMatrixCache._22 = height * -0.5f;
+			g_screenSpaceMatrixCache._33 = 1.0f;
+			g_screenSpaceMatrixCache._41 = (float)g_pendingViewport.dwX + width * 0.5f;
+			g_screenSpaceMatrixCache._42 = (float)g_pendingViewport.dwY + height * 0.5f;
+			g_screenSpaceMatrixCache._44 = 1.0f;
+			g_screenSpaceMatrixDirty = 0;
+		}
+
+		// FUNCTION: TOY2 0x004B5BD0
+		void GetScreenSpaceMatrix(D3DMATRIX* out)
+		{
+			if (g_screenSpaceMatrixDirty)
+				BuildScreenSpaceMatrix();
+
+			*out = g_screenSpaceMatrixCache;
+		}
+
+		// FUNCTION: TOY2 0x004BABE0
+		void CacheViewport(ViewportCache* viewportCache)
+		{
+			// the original copies the frustum data and the first 3 dwords of the frustum info in one go
+			memcpy(&viewportCache->frustum, &g_frustumData, sizeof(g_frustumData));
+			memcpy(viewportCache->frustumInfo, &g_fustrumInfo, sizeof(viewportCache->frustumInfo));
+
+			viewportCache->clipRect = g_viewClipRect;
+			viewportCache->frustumCount = g_fustrumInfo.fustrumCount;
+		}
+
+		// FUNCTION: TOY2 0x004B5700
+		void SetClipRect(float left, float top, float right, float bottom)
+		{
+			float width = right - left + 1.0;
+			float height = bottom - top + 1.0;
+
+			if (left != g_currentViewportX || top != g_currentViewportY || width != g_currentViewportWidth || height != g_currentViewportHeight)
+			{
+				if (left <= g_minViewportX)
+					left = g_minViewportX;
+
+				if (top <= g_minViewportY)
+					top = g_minViewportY;
+
+				double widthLimit = g_drawDeviceWidth - 1.0;
+
+				if (width >= widthLimit)
+					width = widthLimit;
+
+				double heightLimit = g_drawDeviceHeight - 1.0;
+
+				if (height >= heightLimit)
+					height = heightLimit;
+
+				if (width >= 0.0 && height >= 0.0)
+				{
+					g_currentViewportX = left;
+					g_currentViewportY = top;
+					g_currentViewportWidth = width;
+					g_currentViewportHeight = height;
+
+					g_pendingViewport.dwX = left;
+					g_pendingViewport.dwY = top;
+					g_pendingViewport.dwWidth = width;
+					g_pendingViewport.dwHeight = height;
+
+					double clipXOffset = (left - g_minViewportX) / g_drawDeviceWidth;
+					g_pendingViewport.dvClipX = clipXOffset + clipXOffset - 1.0 - g_clipOffsetX;
+
+					double clipYOffset = (top - g_minViewportY) / g_drawDeviceHeight;
+					g_pendingViewport.dvClipY = 1.0 - (clipYOffset + clipYOffset) - g_clipOffsetY;
+
+					g_pendingViewport.dvClipWidth = width / g_drawDeviceWidth + width / g_drawDeviceWidth;
+					g_pendingViewport.dvClipHeight = height / g_drawDeviceHeight + height / g_drawDeviceHeight;
+
+					DrawingDevice::SetViewport(&g_pendingViewport);
+
+					g_clipNormMatrixDirty = 1;
+					g_screenSpaceMatrixDirty = 1;
+
+					++g_viewportChangeCount;
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004BAC70
+		void RestoreViewportCache(ViewportCache* viewportCache)
+		{
+			memcpy(&g_frustumData, &viewportCache->frustum, sizeof(g_frustumData));
+			memcpy(&g_fustrumInfo, viewportCache->frustumInfo, sizeof(viewportCache->frustumInfo));
+
+			g_viewClipRect = viewportCache->clipRect;
+			g_fustrumInfo.fustrumCount = viewportCache->frustumCount;
+
+			if (g_fustrumInfo.unkInt7)
+				SetClipRect(g_viewClipRect.left, g_viewClipRect.top, g_viewClipRect.right, g_viewClipRect.bottom);
+
+			Camera::RebuildTransformPipeline();
+		}
+	}
+}
+
+// TODO: Fix, should e in its own class
+namespace Nu3D
+{
+	namespace Frustum
+	{
+		// FUNCTION: TOY2 0x004BA1F0
+		int32_t TestSphereAllPlanes(Vector3F* point, float distance)
+		{
+			int32_t index = 2;
+			int32_t result = 0;
+
+			// the first two planes (near/far) are skipped, every plane after that uses two bits of the result:
+			// 01 = sphere is fully outside this plane, 10 = sphere is intersecting this plane
+			if (Viewport::g_fustrumInfo.fustrumCount > 2)
+			{
+				for (Plane* plane = &Viewport::g_frustumData.leftRightPlane;; ++plane)
+				{
+					float signedDistanceToPlane = Math::GetSignedDistanceToPlane(point, plane);
+
+					if (signedDistanceToPlane > distance)
+						break;
+
+					if (signedDistanceToPlane > -distance)
+						result |= 2 << (2 * index);
+
+					if (++index >= Viewport::g_fustrumInfo.fustrumCount)
+						return result;
+				}
+
+				return (1 << (2 * index)) | result;
+			}
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x004BA270
+		int32_t TestSphereAllPlanesAlt(Vector3F* point, float distance)
+		{
+			int32_t index = 2;
+			int32_t result = 0;
+
+			if (Viewport::g_fustrumInfo.fustrumCount > 2)
+			{
+				for (Plane* plane = &Viewport::g_frustumData.leftRightPlane;; ++plane)
+				{
+					float signedDistanceToPlane = Math::GetSignedDistanceToPlane(point, plane);
+
+					if (signedDistanceToPlane > distance)
+						break;
+
+					if (signedDistanceToPlane > -distance)
+						result |= 2 << (2 * index);
+
+					if (++index >= Viewport::g_fustrumInfo.fustrumCount)
+						return result;
+				}
+
+				return (1 << (2 * index)) | result;
+			}
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x004BA2F0
+		int32_t TestSphereDepthPlanes(Vector3F* point, float distance)
+		{
+			int32_t index = 1;
+			int32_t result = 0;
+
+			if (Viewport::g_fustrumInfo.fustrumCount <= 1)
+				return result;
+
+			// same as above but starting at the far plane, and skipping the left/right and top/bottom planes
+			for (Plane* plane = &Viewport::g_frustumData.farPlane;; ++plane)
+			{
+				if (plane != &Viewport::g_frustumData.leftRightPlane && plane != &Viewport::g_frustumData.topBottomPlane)
+				{
+					float signedDistanceToPlane = Math::GetSignedDistanceToPlane(point, plane);
+
+					if (signedDistanceToPlane > distance)
+						break;
+
+					if (signedDistanceToPlane > -distance)
+						result |= 2 << (2 * index);
+				}
+
+				if (++index >= Viewport::g_fustrumInfo.fustrumCount)
+					return result;
+			}
+
+			return (1 << (2 * index)) | result;
 		}
 	}
 }

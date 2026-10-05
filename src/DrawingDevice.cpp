@@ -1,6 +1,7 @@
 #include "DrawingDevice.h"
 #include "Nu3D/BmpDataNode.h"
 #include "NGNLoader/NGNLoader.h"
+#include "SoftwareRenderer.h"
 #include "Common.h"
 
 #include <STDIO.H>
@@ -15,6 +16,9 @@ namespace DrawingDevice
 
 	// GLOBAL: TOY2 0x00884030
 	DDAppDevice::App* g_primaryDDApp;
+
+	// GLOBAL: TOY2 0x00884010
+	D3DMATRIX* g_curWorldTransform;
 
 	// GLOBAL: TOY2 0x005281D4
 	int32_t g_validDrawDevice;
@@ -410,7 +414,7 @@ namespace DrawingDevice
 	// FUNCTION: TOY2 0x004AF420
 	HRESULT CD3DFramework::CreateZBuffer()
 	{
-		if ((m_ddDeviceDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0)
+		if ((m_ddDeviceDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR) != 0)
 			return 0;
 
 		DDSURFACEDESC2 surfaceDesc;
@@ -682,6 +686,38 @@ namespace DrawingDevice
 	// FUNCTION: TOY2 0x004ABFA0
 	HRESULT SetLightState(D3DLIGHTSTATETYPE lightState, DWORD value) { return g_drawingDevice->m_pd3dDevice->SetLightState(lightState, value); }
 
+	// FUNCTION: TOY2 0x004ABAE0
+	LPDIRECT3DVIEWPORT3 GetViewport() { return g_drawingDevice->m_pvViewport; }
+
+	// FUNCTION: TOY2 0x004ABF30
+	HRESULT CreateLight(LPDIRECT3DLIGHT* outLight) { return GetD3D()->CreateLight(outLight, 0); }
+
+	// FUNCTION: TOY2 0x004ABF50
+	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT d3dLight) { return light->SetLight(d3dLight); }
+
+	// FUNCTION: TOY2 0x004ABF60
+	HRESULT AddLight(LPDIRECT3DLIGHT light) { return GetViewport()->AddLight(light); }
+
+	// FUNCTION: TOY2 0x004ABF80
+	HRESULT DeleteLight(LPDIRECT3DLIGHT light) { return GetViewport()->DeleteLight(light); }
+
+	// FUNCTION: TOY2 0x004ABFC0
+	int32_t ReleaseLight(LPDIRECT3DLIGHT light) { return light->Release(); }
+
+	// FUNCTION: TOY2 0x004ABFD0
+	HRESULT SetWorldTransform(D3DMATRIX* matrix)
+	{
+		g_curWorldTransform = matrix;
+
+		return g_drawingDevice->m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_WORLD, matrix);
+	}
+
+	// FUNCTION: TOY2 0x004AC2A0
+	HRESULT DrawPrimitive(D3DPRIMITIVETYPE primitiveType, DWORD vertexTypeDesc, void* vertices, DWORD vertexCount, DWORD flags)
+	{
+		return g_drawingDevice->m_pd3dDevice->DrawPrimitive(primitiveType, vertexTypeDesc, vertices, vertexCount, flags);
+	}
+
 	// FUNCTION: TOY2 0x004AC150
 	HRESULT SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE state, DWORD value)
 	{
@@ -766,6 +802,22 @@ namespace DrawingDevice
 			return Nu3D::SetTexture(0, bmpDataNode);
 		else
 			return Nu3D::SetTexture(0, 0);
+	}
+
+	// FUNCTION: TOY2 0x004ABFF0
+	HRESULT SetViewTransform(D3DMATRIX* matrix)
+	{
+		SoftwareRenderer::g_viewTransform = matrix;
+
+		return g_drawingDevice->m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_VIEW, matrix);
+	}
+
+	// FUNCTION: TOY2 0x004AC010
+	HRESULT SetProjectionTransform(D3DMATRIX* matrix)
+	{
+		SoftwareRenderer::g_projectionTransform = matrix;
+
+		return g_drawingDevice->m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION, matrix);
 	}
 }
 
