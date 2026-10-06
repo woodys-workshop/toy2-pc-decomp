@@ -4,6 +4,14 @@
 #include "Renderer/RenderType.h"
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
+#include <windows.h>
+
+namespace Nu3D
+{
+	struct BmpDataNode;
+	struct Patch;
+}
+
 
 #define D3DFVF_0x152 (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 #define D3DFVF_0x1C4 (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
@@ -66,6 +74,7 @@ namespace Renderer
 
 		static RenderEntry* AllocObj(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* instance);
 		static void InsertIntoBucket(RenderEntry* renderEntry);
+		static RenderEntry* AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct);
 	};
 
 	extern float g_gammaCorrection;
@@ -118,6 +127,22 @@ namespace Renderer
 	void BindTexture(int32_t texIndex);
 
 	STATIC_ASSERT(sizeof(RenderEntry) == 0x18);
+
+	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue);
+	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth);
+	void BlitTextureByIndexOffset(int32_t texIndex, int32_t destX, int32_t destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY);
+	void DrawMenuText(int16_t yPos, char* text, int32_t shadow);
+	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale);
+	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth);
+	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...);
+	void BlitBitmapWithWrapping(Nu3D::BmpDataNode* bmpDataNode, int32_t srcX, int32_t srcY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, LONG destX, LONG destY);
+	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage);
+	void ProcessPatch(Nu3D::InstanceData* spriteStruct, Nu3D::Patch* patch);
+	void SetVertexColorModulation(int32_t red, int32_t green, int32_t blue);
+	int32_t EnableVertexColorModulation(int32_t a1);
+	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState);
+	int32_t Set9F5FF8(int32_t value);
+	void BlitTextureByIndex(int32_t texIndex, LONG destX, LONG destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY);
 }
 
 namespace DevDraw
@@ -125,4 +150,6 @@ namespace DevDraw
 	extern int32_t g_vertexCount;
 
 	int16_t DrawSlots();
+	int16_t FlushDrawBufferSlot(int16_t bufferIndex);
+	int16_t FlushTransparentDrawBufferSlot(int16_t bufferIndex);
 }

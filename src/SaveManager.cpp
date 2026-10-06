@@ -104,4 +104,22 @@ namespace SaveManager
 
 	// STUB: TOY2 0x0049B830
 	void SaveToFile(int32_t saveNum, const char* saveName) {}
+
+	// STUB: TOY2 0x004151E0
+	void ClearBindByControlId(GameControlId controlId) {}
+
+	// STUB: TOY2 0x00415210
+	void ClearBindByInputCode(ToyInputCodes inputCode) {}
+
+	// STUB: TOY2 0x00415240
+	int32_t GetInputCodeByControlId(GameControlId controlId) { return 0; }
+
+	// STUB: TOY2 0x00415270
+	int32_t GetControlSettingId(ToyInputCodes inputCode) { return 0; }
+
+	// STUB: TOY2 0x00498470
+	void SetLightShadowEffects(uint32_t on) {}
+
+	// STUB: TOY2 0x004A2C80
+	void TransferProgressData(SaveManager::Save0Data* saveData) {}
 }

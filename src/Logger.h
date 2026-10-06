@@ -20,4 +20,6 @@ namespace Logger
 	void LogDDError(const char* message, HRESULT error);
 	void DebugLog(char *format, ...);
 	char* ErrorToMessage(HRESULT error);
+
+	void LogErrorNotSetLn(char* format, ...);
 }

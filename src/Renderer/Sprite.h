@@ -3,6 +3,15 @@
 #include "Common.h"
 #include "Numerics.h"
 
+namespace Nu3D
+{
+	struct Sprite;
+}
+
+struct Vector3I;
+struct Vector3F;
+struct Vector2F;
+
 namespace Renderer
 {
 	namespace Sprite
@@ -59,5 +68,16 @@ namespace Renderer
 
 		void ResetQueue();
 		void DrawQueuedSprite();
+
+		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags);
+		int16_t DrawScaledFixed(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, uint8_t red, uint8_t green, uint8_t blue, int16_t flags, int32_t scaleX, int32_t scaleY);
+		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex);
+		void QueueSegment(Vector3I* start, Vector3I* delta, uint8_t b, uint8_t g, uint8_t r);
+		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration);
+		void QueueBillboardSprite(Vector3F* position, int32_t trigIndex, float width, float height, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags);
+		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags);
+		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color);
+
+		void InsertIntoBucket(Nu3D::Sprite* sprite);
 	}
 }

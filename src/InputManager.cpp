@@ -455,4 +455,26 @@ namespace InputManager
 		UpdateInputState();
 		g_curButtonsPressed = g_buttonsPressed;
 	}
+
+	// STUB: TOY2 0x00415120
+	int32_t GetPressedInput() { return 0; }
+
+	// STUB: TOY2 0x004152A0
+	char* GetGameControlName(ToyInputCodes index) { return 0; }
+
+	// STUB: TOY2 0x00415460
+	void Cleanup() {}
+
+	// STUB: TOY2 0x00415800
+	int32_t FindKeyPressed() { return 0; }
+
+	// STUB: TOY2 0x00415860
+	int32_t FindKeyReleased() { return 0; }
+
+	// STUB: TOY2 0x00498620
+	int32_t GetCurButtonsPressed() { return 0; }
+
+	// STUB: TOY2 0x0049EBA0
+	void UpdateDirectionInputState() {}
 }
+

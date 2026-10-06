@@ -43,6 +43,26 @@ namespace Nu3D
 		static void SetTextClipRect(int32_t x1, int32_t y1, int32_t x2, int32_t y2);
 		static void BuildFontTextures();
 		static void SetTextCursor(float x, float y);
+
+		static void SetRenderFlags(int32_t option);
+		static void SetFontScale(float scaleX, float scaleY);
+		static void Destroy(Font* font);
+		static Font* BuildObject(int32_t charSetLength);
+		static void ClearList();
+		static BOOL BuildTexResource(Font* font);
+		static void ResetContext();
+		static HDC CreateDC();
+		static HBITMAP CreateAtlasBmp(int32_t width, int32_t height);
+		static char* DrawScaledTextString(char* string);
+		static int32_t DrawScaledGlyph(char charValue);
+		static int32_t DrawClippedScaledGlyph(char charValue);
+		static int32_t ComputeScaledCharClip(char charValue);
+		static char* DrawTextString(char* string);
+		static int32_t DrawUnscaledGlyph(char charValue);
+		static int32_t DrawClippedUnscaledGlyph(char charValue);
+		static int32_t ComputeUnscaledCharClip(char charValue);
+		static int32_t CalculateScaledTextSize(char* string);
+		static int32_t CalculateUnscaledTextSize(char* string);
 	};
 
 	extern float g_scaledFontAscent;

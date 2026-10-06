@@ -14,6 +14,8 @@ namespace Nu3D
 			int32_t indexCount;
 			uint16_t* indices;
 			Plane* triMeta;
+
+			static void Destroy(Header* primHeader);
 		};
 
 		Primitive* next;
@@ -37,6 +39,9 @@ namespace Nu3D
 		static Header* BuildHeader(int32_t size);
 		static Primitive* Build(int32_t verticesSize, int32_t headerCount);
 		static int32_t InitHeader(Header* primHeader, int32_t drawType, int32_t indexCount);
+
+		static void Destroy(Primitive* l_prim);
+		static void Remove(Primitive* prim);
 	};
 
 	extern Primitive* g_primListHead;

@@ -3,6 +3,7 @@
 #include "Common.h"
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
+#include <windows.h>
 
 namespace DrawingDevice
 {
@@ -147,6 +148,14 @@ namespace DrawingDevice
 	STATIC_ASSERT(sizeof(DDAppDevice::DisplayMode) == 0xA8);
 	STATIC_ASSERT(sizeof(DDAppDevice::App) == 0x384);
 	STATIC_ASSERT(sizeof(DDAppDevice) == 0x154);
+
+	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc);
+	HRESULT UnlockPrimarySurface();
+	int32_t RestoreToGDISurface(int32_t refreshWindow);
+	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface);
+	HRESULT SetTexture(DWORD flags, LPDIRECT3DTEXTURE2 texture);
+	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext);
+	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc);
 }
 
 namespace HardwareDevice

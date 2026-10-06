@@ -9,6 +9,13 @@
 
 namespace Nu3D
 {
+	struct Creature;
+	struct Vertex;
+}
+
+
+namespace Nu3D
+{
 	struct BmpDataNode
 	{
 		LPDIRECTDRAWSURFACE4 surface;
@@ -30,6 +37,8 @@ namespace Nu3D
 		int32_t refCount;
 		BmpDataNode* next;
 		BmpDataNode* prev;
+
+		static LPDIRECT3DTEXTURE2 GetTexture(BmpDataNode* bmpDataNode);
 	};
 
 	struct PixelFormatInfo
@@ -63,4 +72,14 @@ namespace Nu3D
 	void FreeAllBmpDataNodes_T();
 
 	STATIC_ASSERT(sizeof(BmpDataNode) == 0x110);
+
+	int32_t ReleaseBmpDataNode_T(Nu3D::BmpDataNode* Block);
+	HRESULT BuildBmpNode(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags);
+	HRESULT BuildBmpNodeWithAlpha(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags, HANDLE alphaBmp);
+	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName);
+	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode);
+	Nu3D::BmpDataNode* BuildRawBmpNode(HANDLE mainBmp, HANDLE alphaBmp, const char* texName, int32_t flags);
+	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags);
+	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex);
+	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex);
 }

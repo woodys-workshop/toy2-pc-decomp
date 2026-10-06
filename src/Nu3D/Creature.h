@@ -5,6 +5,7 @@
 #include "Nu3D/Patch.h"
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
+#include "Common.h"
 
 namespace Nu3D
 {
@@ -22,6 +23,10 @@ namespace Nu3D
 		int32_t** unkVar10;
 		void** animData;
 		int32_t animCount;
+
+		static void Destroy(Creature* creature);
+		static int32_t SetNodeVisible(Creature* creature, int32_t nodeIdx, int32_t visible);
+		static void SetNodeVisibleByIndex(int32_t creatureIndex, int32_t nodeIdx, int32_t visible);
 	};
 
     STATIC_ASSERT(sizeof(Creature) == 0x30);

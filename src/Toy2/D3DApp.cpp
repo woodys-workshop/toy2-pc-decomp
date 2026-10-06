@@ -968,4 +968,10 @@ namespace D3DApp
 
 	// FUNCTION: TOY2 0x004A6B10
 	void SysParmsOnExit() { SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, g_sysParamsInfo, &g_sysParamsInfo, 0); }
+
+	// STUB: TOY2 0x0040D2C0
+	CHAR* GetErrorNotSet() { return 0; }
+
+	// STUB: TOY2 0x004ADFF0
+	char* ErrorToString(int32_t d3dError) { return 0; }
 }

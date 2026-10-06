@@ -1222,5 +1222,20 @@ namespace Toy2
 
 			Logger::Log("InitLevelPlay : END.\n");
 		}
+
+		// STUB: TOY2 0x00434090
+		int32_t Method2(int32_t a1, int16_t a2) { return 0; }
+
+		// STUB: TOY2 0x0048B660
+		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4) {}
+
+		// STUB: TOY2 0x0049FAB0
+		void Method3(int32_t a1, int32_t a2) {}
+	}
+
+	namespace Terrain
+	{
+		// STUB: TOY2 0x00489980
+		int32_t LoadAll(const char* fileName, int32_t index, void** buffer) { return 0; }
 	}
 }

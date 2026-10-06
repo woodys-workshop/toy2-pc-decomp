@@ -259,4 +259,10 @@ namespace Nu3D
 
 		Renderer::Set508718(5);
 	}
+
+	namespace Portal
+	{
+		// STUB: TOY2 0x004BC160
+		int32_t IsAreaVisible(uint8_t index) { return 0; }
+	}
 }

@@ -2,6 +2,8 @@
 
 #include "Nu3D/Nu3D.h"
 #include "Nu3D/Link.h"
+#include "Common.h"
+#include <windows.h>
 
 namespace NGNLoader
 {
@@ -83,5 +85,7 @@ namespace Nu3D
 		STATIC_ASSERT(sizeof(PortalBucket) == 0x8);
 		STATIC_ASSERT(sizeof(ScalerEntry) == 0x8);
 		STATIC_ASSERT(sizeof(PortalHashTable) == 0x200);
+
+		int32_t IsAreaVisible(uint8_t index);
 	}
 }

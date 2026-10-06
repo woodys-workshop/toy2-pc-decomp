@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Numerics.h"
+#include "Common.h"
 
 namespace Nu3D
 {
@@ -38,5 +39,16 @@ namespace Nu3D
         extern ParticleInstance g_particleInstances[64];
 
 	    STATIC_ASSERT(sizeof(ParticleInstance) == 0x3C);
+
+		void Init();
+		Nu3D::Particles::ParticleInstance* SpawnInstance(int32_t spawnX, int32_t spawnY, int32_t spawnZ, int32_t velX, int32_t velY, int32_t velZ, int32_t scale, int16_t flags, int32_t secondaryParam, int32_t particleTypeIndex);
+		Nu3D::Particles::ParticleInstance* SpawnFromPreset(int32_t spawnX, int32_t spawnY, int32_t spawnZ, int32_t particleIndex, int32_t presetIndex);
+		void SpawnBreakBurst(Nu3D::Particles::ParticleInstance* a2, uint8_t flag);
+		void DeathEffect(Nu3D::Particles::ParticleInstance* particle);
+		void Update();
+		void ReflectWallsSquareArena(Nu3D::Particles::ParticleInstance* particle);
+		void UpdateArenaBounce(Nu3D::Particles::ParticleInstance* particle);
+		void UpdateDrainTrail(Nu3D::Particles::ParticleInstance* a1);
+		void UpdateUnkShort6(Nu3D::Particles::ParticleInstance* instance);
 	}
 }

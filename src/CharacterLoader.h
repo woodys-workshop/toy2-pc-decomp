@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include <windows.h>
 
 namespace CharacterLoader
 {
@@ -35,6 +36,12 @@ namespace CharacterLoader
 		int16_t unkInt27_;
 	};
 
+	struct CharacterBoundData
+	{
+		Vector3I16 boundingOffset;
+		int16_t boundingSphereRadius;
+	};
+
 	extern BoneTransform g_boneTransforms[300];
 	extern int16_t g_unk54717C;
 	extern int16_t g_unk546D78;
@@ -42,7 +49,22 @@ namespace CharacterLoader
 	extern int32_t g_alternateAllParse[128];
 	extern uint8_t* g_charFileDataCache[128];
 
-	void Start(int32_t *value, uint8_t **buffer, uint8_t *creatureList);
+	void Start(int32_t* value, uint8_t** buffer, uint8_t* creatureList);
+	uint16_t* LoadFirstSection(int32_t a1, char a2);
+	void Load(const char* fileName, int32_t* a2, uint8_t** levelData, int16_t creatureId, uint32_t* a5, CharacterLoader::CharacterBoundData* boundData);
+	void LoadBuzzLight(
+		const char* charName,
+		int16_t* boneCursor,
+		void** buffer,
+		int16_t creatureId,
+		int32_t* attachBone,
+		CharacterLoader::CharacterBoundData* boundData);
+	void LoadCharacterData(int32_t* result, uint8_t** levelData, uint8_t* creatureList);
+	int32_t InitGlobals();
+	void LoadSecondSection(int16_t a1);
+	int32_t AlternateAllParse(int32_t boneIdx, int32_t data);
+	int32_t LoadAll(const char* fileName, int32_t index, void** buffer);
 
 	STATIC_ASSERT(sizeof(BoneTransform) == 0x6C);
+	STATIC_ASSERT(sizeof(CharacterBoundData) == 0x8);
 }

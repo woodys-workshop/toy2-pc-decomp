@@ -1,6 +1,20 @@
 #pragma once
 
 #include "Common.h"
+#include "Numerics.h"
+#include <windows.h>
+
+namespace Toy2
+{
+	namespace Actor
+	{
+		struct Toy2Actor;
+	}
+}
+
+struct Vector3I;
+struct WorldPos;
+
 
 namespace Toy2
 {
@@ -60,4 +74,79 @@ namespace Toy2
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
+
+	struct BeamShot
+	{
+		Vector3I headPos;
+		Vector3I originPos;
+		Vector3I velocity;
+		int16_t lifeTimer;
+		int16_t moveTimer;
+		uint8_t tintB;
+		uint8_t tintG;
+		uint8_t tintR;
+		uint8_t halfWidth;
+	};
+
+	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
+
+	namespace Game
+	{
+		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn);
+		void ActorCollisionCheck();
+		void UpdateActors();
+		void MenuLoop();
+	}
+
+	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag);
+	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo);
+	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec);
+	void InitialiseLevel7();
+	void InitialiseLevel9();
+	int32_t InitialiseLevel10();
+	int32_t InitialiseLevel14();
+	void ReadIniFile();
+	void ResetBuzzState();
+	void InitZoneData();
+	void ShowModelNode(int32_t creatureIndex, int32_t nodeIdx);
+	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx);
+	void LoadLevelGraphics(int32_t level);
+	void ResetBackdropState();
+	int32_t* BuildPerspectiveDivideTable(int32_t centerX);
+	void ProfileCPU();
+	void ProcessMiscEvents();
+	int32_t PlayMovie(int32_t movieId);
+	int32_t TickSaveMenuMachine(int32_t showSaveMenu);
+	int32_t ShowControlConfig();
+	void ShowGraphicsConfig();
+	void PlayLevelMusic();
+	void UnusedVarUpdate();
+	void RenderHUD();
+	void InitialiseLevelVariables(int32_t levelIndex);
+	void HandleLevelInteractions(int32_t levelId);
+	void UpdateFrameTimers();
+	void ResetGadgets();
+	void ActivateGravityBoots();
+	void RespawnCosmicShield();
+	Toy2::BeamShot* SpawnBeamShot(int32_t beamType, int16_t aimYaw, int16_t aimPitch, WorldPos* origin, WorldPos* headOffset, int32_t range, Toy2::Actor::Toy2Actor* autoAimActor);
+	int32_t ShowTokenSparkle();
+
+	namespace PostGameSaveMenu
+	{
+		int32_t Tick();
+	}
+
+	namespace MovieViewer
+	{
+		int32_t Tick(int32_t a1);
+	}
+
+	namespace Ini
+	{
+		void ParseDefText();
+
+		int16_t KeyNameToScancode(char keyName);
+	}
+
+	int32_t TickSlide(int32_t widgetIndex);
 }

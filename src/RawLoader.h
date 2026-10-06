@@ -33,6 +33,7 @@ namespace RawLoader
 	extern CreatureListRam g_creatureListRam[64];
 
 	void LoadPacketData(char* fileName);
+	void LoadRawAndNGN(const char* filePath);
 
 	STATIC_ASSERT(sizeof(CreatureListRam) == 0x20);
 	STATIC_ASSERT(sizeof(CreatureListRam::EntityControl) == 0x4);

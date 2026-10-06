@@ -253,6 +253,300 @@ namespace SoftwareRenderer
 		g_cameraNearZ = cameraNearZ;
 		g_cameraFarZ = cameraFarZ;
 	}
+
+	// STUB: TOY2 0x0040BAE0
+	int32_t ClearRenderSurfaces() { return 0; }
+
+	// STUB: TOY2 0x0040CD80
+	int32_t ShowBackBuffer() { return 0; }
+
+	// STUB: TOY2 0x004319E0
+	void UnkFunc11() {}
+
+	// STUB: TOY2 0x00454D30
+	int32_t UnkRenderAPI5(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x004560E0
+	int32_t UnkRenderAPI6(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00457440
+	int32_t UnkRenderAPI7(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00458770
+	int32_t UnkRenderAPI8(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00459AB0
+	uint32_t* UnkRenderAPI10(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045A5C0
+	uint32_t* UnkRenderAPI11(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045B0B0
+	uint32_t* UnkRenderAPI12(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045BBC0
+	int32_t UnkRenderAPI9(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045C6B0
+	uint32_t* UnkRenderAPI4(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045D110
+	uint32_t* UnkRenderAPI3(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045DB80
+	int32_t UnkRenderAPI1(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0045E390
+	int32_t UnkRenderAPI13(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00461D20
+	int32_t UnkRenderAPI14(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00463090
+	int32_t UnkRenderAPI21(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00463B80
+	uint32_t* UnkRenderAPI22(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00464690
+	uint32_t* UnkRenderAPI23(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00465180
+	uint32_t* UnkRenderAPI24(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00467080
+	int32_t UnkRenderAPI17(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00468430
+	uint32_t* UnkRenderAPI16(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00468E90
+	uint32_t* UnkRenderAPI15(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00469900
+	int32_t UnkRenderAPI18(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0046AC60
+	int32_t UnkRenderAPI19(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0046BF90
+	int32_t UnkRenderAPI20(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0046D2C0
+	int32_t UnkRenderAPI2(int32_t* a1, int32_t* a2, int32_t* a3, int32_t* a4, int32_t a5) { return 0; }
+
+	// STUB: TOY2 0x0046D7B0
+	int32_t UnkRenderAPI25(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00470BF0
+	void SetPaletteOnAPI() {}
+
+	// STUB: TOY2 0x00470D00
+	void UnkFunc9(int32_t a1) {}
+
+	// STUB: TOY2 0x00470D60
+	int32_t UnkFunc10() { return 0; }
+
+	// STUB: TOY2 0x00470FB0
+	char* UnkFunc15() { return 0; }
+
+	// STUB: TOY2 0x004710C0
+	void UnkFunc12(uint8_t* a1, int32_t a2) {}
+
+	// STUB: TOY2 0x00471190
+	char* UnkFunc13() { return 0; }
+
+	// STUB: TOY2 0x00471250
+	char* UnkFunc14() { return 0; }
+
+	// STUB: TOY2 0x00471300
+	void SetNewPalette(int32_t a1, int32_t a2) {}
+
+	// STUB: TOY2 0x00471520
+	int32_t UnkRenderAPI26(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00471B30
+	int32_t UnkRenderAPI30(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00472E70
+	int32_t UnkRenderAPI31(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00474190
+	int32_t UnkRenderAPI32(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00474C80
+	int32_t UnkRenderAPI33(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00476340
+	int32_t UnkRenderAPI29(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x00476D00
+	int32_t UnkRenderAPI28(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x004776C0
+	int32_t UnkRenderAPI27(int32_t* a1, int32_t* a2, int32_t* a3, int32_t* a4, int32_t a5) { return 0; }
+
+	// STUB: TOY2 0x00477EB0
+	int32_t UnkRenderAPI34(int32_t* a1) { return 0; }
+
+	// STUB: TOY2 0x0047C800
+	void UnkFunc4() {}
+
+	// STUB: TOY2 0x0047C870
+	void UnlockBackBuffer() {}
+
+	// STUB: TOY2 0x0047C8B0
+	int32_t UnkFunc1() { return 0; }
+
+	// STUB: TOY2 0x0047D120
+	void UnkFunc5() {}
+
+	// STUB: TOY2 0x0047D210
+	void UnkFunc8() {}
+
+	// STUB: TOY2 0x0047D540
+	int32_t UnkFunc6(uint32_t* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5) { return 0; }
+
+	// STUB: TOY2 0x0047D650
+	void UnkFunc66(SoftwareRenderer::UnkSoft2* a1, int32_t a2) {}
+
+	// STUB: TOY2 0x004AC1F0
+	int32_t UnkFunc20(uint32_t** a1) { return 0; }
+
+	// STUB: TOY2 0x004B2B80
+	int32_t GetStrideFromFVF(int32_t fvf) { return 0; }
+
+	// STUB: TOY2 0x004B6140
+	void SubmitTriangleStripRaw(int32_t renderFlags, LPDIRECT3DVERTEXBUFFER vertexBuffer, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount) {}
+
+	// STUB: TOY2 0x004B6220
+	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices) { return 0; }
+
+	// STUB: TOY2 0x004BC430
+	float* UnkFunc18(float* a1, float* a2) { return 0; }
+
+	// STUB: TOY2 0x004BC900
+	uint32_t UnkFunc27(int32_t a1, float* a2, float* a3, float* a4, uint32_t* a5) { return 0; }
+
+	// STUB: TOY2 0x004BC980
+	void UnkFunc30(const void** a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5) {}
+
+	// STUB: TOY2 0x004BCAD0
+	void UnkFunc29(const void** a1, int32_t a2, int32_t a3, int32_t a4) {}
+
+	// STUB: TOY2 0x004BCC70
+	void UnkFunc17(int32_t a1, int32_t a2, int32_t a3, int32_t a4) {}
+
+	// STUB: TOY2 0x004BCF60
+	BOOL UnkFunc28(float* a1, float* a2, float* a3) { return 0; }
+
+	// STUB: TOY2 0x004BCFA0
+	void UnkFunc26(int32_t a1) {}
+
+	// STUB: TOY2 0x004BD040
+	void UnkFunc24(int32_t a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6) {}
+
+	// STUB: TOY2 0x004BE0B0
+	void UnkFunc25(float** a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5) {}
+
+	// STUB: TOY2 0x004C0100
+	int32_t UnkFunc23(float** a1, int32_t a2) { return 0; }
+
+	// STUB: TOY2 0x004C0320
+	void UnkFunc22(int32_t a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6) {}
+
+	// STUB: TOY2 0x004C14A0
+	void UnkFunc19(int32_t a1, uint16_t* a2, uint32_t a3) {}
+
+	// STUB: TOY2 0x004C1540
+	void UnkFunc21(int32_t a1, uint16_t* a2, int32_t a3) {}
+
+	// STUB: TOY2 0x004C1720
+	void UnkFunc16(int32_t a1, int32_t a2, uint16_t* a3, uint32_t a4) {}
+
+	// STUB: TOY2 0x004C1C40
+	void InitialiseColourScaleTables() {}
+
+	// STUB: TOY2 0x004C1E70
+	void CommitZoom() {}
+
+	// STUB: TOY2 0x004C4340
+	uint32_t* UnkFunc59(int32_t a1, uint32_t* a2, int32_t* a3, uint32_t* a4) { return 0; }
+
+	// STUB: TOY2 0x004C4370
+	int16_t UnkFunc48(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C4640
+	int16_t UnkFunc47(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C48E0
+	int32_t UnkFunc55(uint32_t a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, uint32_t a7, int32_t a8, int32_t a9, uint32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C4A60
+	int32_t UnkFunc40(uint32_t a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, uint32_t a7, int32_t a8, int32_t a9, uint32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C4BE0
+	int32_t UnkFunc49(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C4E00
+	int32_t UnkFunc52(float* a1, float* a2, int32_t a3, int32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, uint32_t a8, uint32_t a9, uint32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C4F30
+	int32_t UnkFunc36(float* a1, float* a2, int32_t a3, int32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, uint32_t a8, uint32_t a9, uint32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5060
+	int32_t UnkFunc41(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5280
+	int32_t UnkFunc50(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5490
+	int32_t UnkFunc53(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C55B0
+	int32_t UnkFunc37(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C56D0
+	int32_t UnkFunc42(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C58E0
+	int32_t UnkFunc43(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5AC0
+	int32_t UnkFunc51(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5D80
+	int32_t UnkFunc56(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C5F00
+	int32_t UnkFunc38(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C6080
+	int32_t UnkFunc44(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+
+	// STUB: TOY2 0x004C6340
+	uint32_t* UnkFunc57(float* a1, int32_t a2) { return 0; }
+
+	// STUB: TOY2 0x004C6B80
+	uint32_t* UnkFunc46(float* a1, int32_t a2) { return 0; }
+
+	// STUB: TOY2 0x004C7630
+	uint32_t* UnkFunc45(float* a1, int32_t a2) { return 0; }
+
+	// STUB: TOY2 0x004C80D0
+	uint32_t* UnkFunc54(float* a1) { return 0; }
+
+	// STUB: TOY2 0x004C8930
+	uint32_t* UnkFunc39(float* a1) { return 0; }
+
+	// STUB: TOY2 0x004C9190
+	uint32_t* UnkFunc58(float* a1, int32_t a2) { return 0; }
+
+	// STUB: TOY2 0x004C9A50
+	uint32_t* UnkFunc34(float* a1) { return 0; }
+
+	// STUB: TOY2 0x004C9D00
+	uint32_t* UnkFunc35(int32_t a1) { return 0; }
 }
 
 namespace SoftwareDevice

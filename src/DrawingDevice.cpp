@@ -819,6 +819,27 @@ namespace DrawingDevice
 
 		return g_drawingDevice->m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION, matrix);
 	}
+
+	// STUB: TOY2 0x004ABC40
+	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc) { return 0; }
+
+	// STUB: TOY2 0x004ABC60
+	HRESULT UnlockPrimarySurface() { return 0; }
+
+	// STUB: TOY2 0x004ABD50
+	int32_t RestoreToGDISurface(int32_t refreshWindow) { return 0; }
+
+	// STUB: TOY2 0x004ABE30
+	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface) { return 0; }
+
+	// STUB: TOY2 0x004AC180
+	HRESULT SetTexture(DWORD flags, LPDIRECT3DTEXTURE2 texture) { return 0; }
+
+	// STUB: TOY2 0x004ABE90
+	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext) { return 0; }
+
+	// STUB: TOY2 0x004ABEA0
+	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc) { return 0; }
 }
 
 namespace HardwareDevice

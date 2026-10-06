@@ -1071,6 +1071,21 @@ namespace Nu3D
 
 			SoftwareRenderer::SetCameraNearFarZ(g_cameraNearZ, g_cameraFarZ);
 		}
+
+		// STUB: TOY2 0x0043D9E0
+		void WorldToView(Vector3I* a1, Vector3I* a2) {}
+
+		// STUB: TOY2 0x00448F00
+		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor) { return 0; }
+
+		// STUB: TOY2 0x0044F820
+		void EnableCameraSkew() {}
+
+		// STUB: TOY2 0x00450850
+		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1) { return 0; }
+
+		// STUB: TOY2 0x00451280
+		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8) { return 0; }
 	}
 
 	// STUB: TOY2 0x004B9B90

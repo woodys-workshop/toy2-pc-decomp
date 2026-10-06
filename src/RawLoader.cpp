@@ -497,4 +497,7 @@ namespace RawLoader
 		g_unused4 = g_type36Data1;
 		g_unused5 = g_unusedBuffer5;
 	}
+
+	// STUB: TOY2 0x00450010
+	void LoadRawAndNGN(const char* filePath) {}
 }

@@ -279,4 +279,13 @@ namespace Nu3D
 
 		return indices && triMeta;
 	}
+
+	// STUB: TOY2 0x004B2E30
+	void Primitive::Header::Destroy(Nu3D::Primitive::Header* primHeader) {}
+
+	// STUB: TOY2 0x004B3110
+	void Primitive::Destroy(Nu3D::Primitive* l_prim) {}
+
+	// STUB: TOY2 0x004B3190
+	void Primitive::Remove(Nu3D::Primitive* prim) {}
 }

@@ -870,4 +870,34 @@ namespace Nu3D
 
 	// FUNCTION: TOY2 0x004B1180
 	void FreeAllBmpDataNodes_T() { FreeAllBmpDataNodes(); }
+
+	// STUB: TOY2 0x004AC260
+	int32_t ReleaseBmpDataNode_T(Nu3D::BmpDataNode* Block) { return 0; }
+
+	// STUB: TOY2 0x004AD060
+	HRESULT BuildBmpNode(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags) { return 0; }
+
+	// STUB: TOY2 0x004AD090
+	HRESULT BuildBmpNodeWithAlpha(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags, HANDLE alphaBmp) { return 0; }
+
+	// STUB: TOY2 0x004AD0C0
+	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return 0; }
+
+	// STUB: TOY2 0x004AD1C0
+	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode) { return 0; }
+
+	// STUB: TOY2 0x004B0620
+	Nu3D::BmpDataNode* BuildRawBmpNode(HANDLE mainBmp, HANDLE alphaBmp, const char* texName, int32_t flags) { return 0; }
+
+	// STUB: TOY2 0x004BB270
+	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags) { return 0; }
+
+	// STUB: TOY2 0x004CA0C0
+	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex) {}
+
+	// STUB: TOY2 0x004CBC40
+	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex) {}
+
+	// STUB: TOY2 0x004AD130
+	LPDIRECT3DTEXTURE2 BmpDataNode::GetTexture(Nu3D::BmpDataNode* bmpDataNode) { return 0; }
 }

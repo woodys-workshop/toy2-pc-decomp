@@ -10,6 +10,7 @@
 #include "Logger.h"
 
 #include <STDIO.H>
+#include "Common.h"
 
 namespace Renderer
 {
@@ -684,5 +685,33 @@ namespace Renderer
 				SoftwareRenderer::UnkFunc32();
 			}
 		}
+
+		// STUB: TOY2 0x00493A60
+		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags) { return 0; }
+
+		// STUB: TOY2 0x004942D0
+		int16_t DrawScaledFixed(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, uint8_t red, uint8_t green, uint8_t blue, int16_t flags, int32_t scaleX, int32_t scaleY) { return 0; }
+
+		// STUB: TOY2 0x004949B0
+		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex) {}
+
+		// STUB: TOY2 0x0049D2D0
+		void QueueSegment(Vector3I* start, Vector3I* delta, uint8_t b, uint8_t g, uint8_t r) {}
+
+		// STUB: TOY2 0x0049D7A0
+		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration) {}
+
+		// STUB: TOY2 0x004B8F40
+		void QueueBillboardSprite(Vector3F* position, int32_t trigIndex, float width, float height, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags) {}
+
+		// STUB: TOY2 0x004B9100
+		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags) {}
+
+		// STUB: TOY2 0x004B9210
+		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color) {}
+
+		// STUB: TOY2 0x004B8B10
+		void InsertIntoBucket(Nu3D::Sprite* sprite) {}
 	}
 }
+

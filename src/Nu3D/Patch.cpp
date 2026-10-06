@@ -84,4 +84,19 @@ namespace Nu3D
 
 		return result == 0;
 	}
+
+	// STUB: TOY2 0x004B34F0
+	void Patch::PatchVertices::Destroy(Nu3D::Patch* patch) {}
+
+	// STUB: TOY2 0x004B3530
+	void Patch::Remove(Nu3D::Patch* patch) {}
+
+	// STUB: TOY2 0x004B3570
+	Nu3D::Patch* Patch::AllocAndResize(int32_t verticesSize, int32_t unknown) { return 0; }
+
+	// STUB: TOY2 0x004B35A0
+	Nu3D::Patch* Patch::Alloc() { return 0; }
+
+	// STUB: TOY2 0x004B3600
+	int32_t Patch::CreateAllVertexBuffers(Nu3D::Patch* patch) { return 0; }
 }

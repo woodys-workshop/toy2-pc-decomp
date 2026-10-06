@@ -14,6 +14,15 @@
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 
+namespace Nu3D
+{
+	namespace Portal
+	{
+		struct AreaPortal;
+	}
+}
+
+
 namespace NGNLoader
 {
 	struct TextureEntry
@@ -74,6 +83,10 @@ namespace NGNLoader
 		Nu3D::Creature** creatureData;
 		int32_t creatureCount;
 		TextureEntry textureEntries[64];
+
+		static void DestroyPortal(Nu3D::Portal::AreaPortal* portal);
+		static void DestroyPools(NGNImage* ngnImage);
+		static void Destroy(NGNImage* ngnImage);
 	};
 
 	struct NGNTextureData

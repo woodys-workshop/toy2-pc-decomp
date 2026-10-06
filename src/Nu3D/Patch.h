@@ -3,6 +3,7 @@
 #include "Nu3D/Nu3D.h"
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
+#include "Common.h"
 
 namespace Nu3D
 {
@@ -25,6 +26,8 @@ namespace Nu3D
 			static BOOL CreateVertexBuffer(PatchVertices* patchVertices, int32_t flags);
 			static void ReleaseBuffer(PatchVertices* patchVertices);
 			static void FreeVertices(PatchVertices* patchVertices);
+
+			static void Destroy(Patch* patch);
 		};
 
 		Patch* next;
@@ -37,6 +40,11 @@ namespace Nu3D
 		int16_t indexData[4];
 		int32_t unkVar14;
 		int32_t unkVar15;
+
+		static void Remove(Patch* patch);
+		static Patch* AllocAndResize(int32_t verticesSize, int32_t unknown);
+		static Patch* Alloc();
+		static int32_t CreateAllVertexBuffers(Patch* patch);
 	};
 
 	extern Patch* g_patchListHead;

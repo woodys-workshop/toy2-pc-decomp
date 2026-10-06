@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include <windows.h>
 
 namespace Toy2
 {
@@ -157,5 +158,14 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(ObjectList) == 0x4);
 		STATIC_ASSERT(sizeof(PortalEntry) == 0x2);
 		STATIC_ASSERT(sizeof(PortalZone) == 0x20);
+
+		int32_t Method2(int32_t a1, int16_t a2);
+		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4);
+		void Method3(int32_t a1, int32_t a2);
+	}
+
+	namespace Terrain
+	{
+		int32_t LoadAll(const char* fileName, int32_t index, void** buffer);
 	}
 }

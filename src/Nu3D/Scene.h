@@ -2,6 +2,14 @@
 
 #include "Common.h"
 #include "Toy2/Actor.h"
+#include <directx6/ddraw.h>
+#include <directx6/d3d.h>
+
+namespace Nu3D
+{
+	struct Creature;
+}
+
 
 namespace NGNLoader
 {
@@ -22,5 +30,7 @@ namespace Nu3D
 		void RenderWorldGeometry(int32_t sectorIndex, RenderLayerFlags layerFlags);
 		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList);
 		int32_t RenderCellsInRadius(int32_t radius, int32_t layer, NGNLoader::NGNImage* ngnImage);
+
+		void RenderActor(Nu3D::Creature* creature, D3DMATRIX* nodeMatrices, int32_t renderStage);
 	}
 }

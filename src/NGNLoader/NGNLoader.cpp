@@ -1178,4 +1178,19 @@ namespace NGNLoader
 		else
 			return 0;
 	}
+
+	// STUB: TOY2 0x004BB150
+	NGNLoader::NGNTextureData* ReleaseTextureData(NGNLoader::NGNTextureData* list) { return 0; }
+
+	// STUB: TOY2 0x004BB7D0
+	void ReleaseAllTextures() {}
+
+	// STUB: TOY2 0x004BB810
+	void ReleaseTextureCache(NGNLoader::NGNTextureCache* textureCache) {}
+
+	// STUB: TOY2 0x004CA040
+	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize) { return 0; }
+
+	// STUB: TOY2 0x004CA1D0
+	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature) { return 0; }
 }

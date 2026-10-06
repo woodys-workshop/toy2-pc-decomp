@@ -319,5 +319,20 @@ namespace Nu3D
 			SetRotationAbsolute8bit(linkId, 0, newRotY, 0);
 			SetPositionRawAndCommit(linkId, targetX >> 5, targetY >> 5, targetZ >> 5);
 		}
+
+		// STUB: TOY2 0x004CCC70
+		void SetRotationRelative8bit(int32_t linkId, int32_t x, int32_t y, int32_t z) {}
+
+		// STUB: TOY2 0x004CCDA0
+		void TransformVectorInt3x3(int32_t linkId, Vector3I* out) {}
+
+		// STUB: TOY2 0x004CCF70
+		void GetTargetPosFixed(int32_t linkId, Vector3I* out) {}
+
+		// STUB: TOY2 0x004CCFF0
+		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2) {}
+
+		// STUB: TOY2 0x004CD0C0
+		void CopyShapeId(int32_t linkIndex1, int32_t linkIndex2) {}
 	}
 }

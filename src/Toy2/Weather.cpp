@@ -9,5 +9,11 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0054F08C
 		int32_t g_weatherBasePointer;
+
+		// STUB: TOY2 0x0044ED60
+		void Init() {}
+
+		// STUB: TOY2 0x0044ED90
+		void StepPrecipitation(int32_t spawnRate, int32_t fallSpeed, int32_t particleType) {}
 	}
 }

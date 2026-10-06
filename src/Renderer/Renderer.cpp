@@ -1496,6 +1496,54 @@ namespace Renderer
 
 		Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 	}
+
+	// STUB: TOY2 0x00401B60
+	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue) {}
+
+	// STUB: TOY2 0x00401FB0
+	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
+
+	// STUB: TOY2 0x0049B260
+	void BlitTextureByIndexOffset(int32_t texIndex, int32_t destX, int32_t destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY) {}
+
+	// STUB: TOY2 0x0049B2A0
+	void DrawMenuText(int16_t yPos, char* text, int32_t shadow) {}
+
+	// STUB: TOY2 0x0049B3B0
+	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale) {}
+
+	// STUB: TOY2 0x0049B630
+	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
+
+	// STUB: TOY2 0x0049B990
+	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...) {}
+
+	// STUB: TOY2 0x004AFD30
+	void BlitBitmapWithWrapping(Nu3D::BmpDataNode* bmpDataNode, int32_t srcX, int32_t srcY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, LONG destX, LONG destY) {}
+
+	// STUB: TOY2 0x004B87F0
+	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage) {}
+
+	// STUB: TOY2 0x004B8940
+	void ProcessPatch(Nu3D::InstanceData* spriteStruct, Nu3D::Patch* patch) {}
+
+	// STUB: TOY2 0x004B92E0
+	void SetVertexColorModulation(int32_t red, int32_t green, int32_t blue) {}
+
+	// STUB: TOY2 0x004B9300
+	int32_t EnableVertexColorModulation(int32_t a1) { return 0; }
+
+	// STUB: TOY2 0x004B9600
+	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState) {}
+
+	// STUB: TOY2 0x004B9A60
+	int32_t Set9F5FF8(int32_t value) { return 0; }
+
+	// STUB: TOY2 0x004CE510
+	void BlitTextureByIndex(int32_t texIndex, LONG destX, LONG destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY) {}
+
+	// STUB: TOY2 0x004B89B0
+	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct) { return 0; }
 }
 
 namespace DevDraw
@@ -1505,4 +1553,10 @@ namespace DevDraw
 
 	// STUB: TOY2 0x004907E0
 	int16_t DrawSlots() { return 0; }
+
+	// STUB: TOY2 0x00490470
+	int16_t FlushDrawBufferSlot(int16_t bufferIndex) { return 0; }
+
+	// STUB: TOY2 0x004905C0
+	int16_t FlushTransparentDrawBufferSlot(int16_t bufferIndex) { return 0; }
 }

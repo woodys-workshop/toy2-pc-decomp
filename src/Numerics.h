@@ -7,6 +7,8 @@ struct Vector3F
 	float x;
 	float y;
 	float z;
+
+	static double Length(Vector3F* v1);
 };
 
 struct Vector3I

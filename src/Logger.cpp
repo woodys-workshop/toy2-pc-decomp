@@ -135,4 +135,7 @@ namespace Logger
 
 	// STUB: TOY2 0x0040D490;
 	char* ErrorToMessage(HRESULT error) { return "Unimplemented"; }
+
+	// STUB: TOY2 0x0040C130
+	void LogErrorNotSetLn(char* format, ...) {}
 }

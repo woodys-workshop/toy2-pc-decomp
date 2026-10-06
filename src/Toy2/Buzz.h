@@ -3,6 +3,26 @@
 #include "Common.h"
 #include "Numerics.h"
 
+struct PosAndAngles;
+struct Vector3I;
+
+namespace Toy2
+{
+	namespace Actor
+	{
+		struct Toy2Actor;
+	}
+}
+
+namespace Toy2
+{
+	namespace Levels
+	{
+		struct Type63;
+	}
+}
+
+
 namespace Toy2
 {
 	namespace Buzz
@@ -59,5 +79,50 @@ namespace Toy2
 		void Respawn();
 
 		STATIC_ASSERT(sizeof(Toy2BuzzActor) == 0xA0);
+
+		struct MovementParams
+		{
+			int32_t groundAccel;
+			int32_t airAccel;
+			int32_t turnSpeed;
+			int32_t initialJumpVelocity;
+			int32_t maxSpeed;
+			int32_t maxAirSpeed;
+			int32_t maxTurnRate;
+		};
+
+		STATIC_ASSERT(sizeof(MovementParams) == 0x1C);
+
+		void UpdateAnimationState();
+		void HandleDamage(int16_t hitAngle, uint8_t hitType);
+		void CheckParticleCollisions();
+		void Init(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t levelIndex);
+		void UpdateJumpAndGravity(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t initialJumpVelocity, int32_t forceJump);
+		int32_t UpdateHorizontalMovement(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams, int32_t flag);
+		void ResolveFooting(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		int32_t UpdateFacing(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams);
+		void TickGunFire(PosAndAngles* muzzlePos);
+		int32_t TickGroundSlam(Toy2::Actor::Toy2Actor* actor);
+		void TickSpinHover(Toy2::Buzz::Toy2BuzzActor* buzz);
+		int32_t HandleSwing(Toy2::Buzz::Toy2BuzzActor* buzz);
+		int32_t HandlePoleClimb(Toy2::Buzz::Toy2BuzzActor* buzz);
+		int32_t HandleZipline(Toy2::Buzz::Toy2BuzzActor* actor);
+		void HandleGameplay(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		void ResolveCollisions(Toy2::Buzz::Toy2BuzzActor* buzzActor, Vector3I* velocity, uint8_t* flags, int32_t index, int32_t halfStep);
+		void HandleCollisions(Toy2::Buzz::Toy2BuzzActor* buzzActor, Vector3I* velocity, int16_t* flags, int32_t index);
+		int32_t UpdateFloorHeight(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		void UpdateRespawnAnchor();
+		void UpdateContactEffects();
+		void RefreshDiscAmm();
+		void FireDiscLauncher(int16_t pitch);
+		void ResetGravityBoots();
+		void ActivateRocketBoots(Toy2::Levels::Type63* a1);
+		void DeactivateRocketBoots();
+		void TickCosmicShield();
+		void CancelGrapple();
+		uint32_t FireGrapple();
+		void TickGrapple();
+		void TickBeamShots();
+		void TickGadgets();
 	}
 }

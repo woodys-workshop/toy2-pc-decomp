@@ -224,6 +224,18 @@ namespace Toy2
 
 		// STUB: TOY2 0x0049DFE0
 		void MainLoop() {}
+
+		// STUB: TOY2 0x00406CD0
+		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn) {}
+
+		// STUB: TOY2 0x00407440
+		void ActorCollisionCheck() {}
+
+		// STUB: TOY2 0x004086F0
+		void UpdateActors() {}
+
+		// STUB: TOY2 0x0049F4B0
+		void MenuLoop() {}
 	}
 
 	namespace PostGameRecap
@@ -1612,6 +1624,126 @@ namespace Toy2
 	{
 		// Weird method, a good portion of these variables are never even used in the game
 	}
+
+	// STUB: TOY2 0x00414270
+	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag) {}
+
+	// STUB: TOY2 0x00414320
+	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo) { return 0; }
+
+	// STUB: TOY2 0x0041E020
+	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec) {}
+
+	// STUB: TOY2 0x00421090
+	void InitialiseLevel7() {}
+
+	// STUB: TOY2 0x00424390
+	void InitialiseLevel9() {}
+
+	// STUB: TOY2 0x00425B60
+	int32_t InitialiseLevel10() { return 0; }
+
+	// STUB: TOY2 0x0042E600
+	int32_t InitialiseLevel14() { return 0; }
+
+	// STUB: TOY2 0x00430E90
+	void ReadIniFile() {}
+
+	// STUB: TOY2 0x00433ED0
+	void ResetBuzzState() {}
+
+	// STUB: TOY2 0x0043E5A0
+	void InitZoneData() {}
+
+	// STUB: TOY2 0x0044F840
+	void ShowModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
+
+	// STUB: TOY2 0x0044F860
+	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
+
+	// STUB: TOY2 0x004500A0
+	void LoadLevelGraphics(int32_t level) {}
+
+	// STUB: TOY2 0x00453CA0
+	void ResetBackdropState() {}
+
+	// STUB: TOY2 0x0047D4E0
+	int32_t* BuildPerspectiveDivideTable(int32_t centerX) { return 0; }
+
+	// STUB: TOY2 0x0047EF80
+	void ProfileCPU() {}
+
+	// STUB: TOY2 0x00498550
+	void ProcessMiscEvents() {}
+
+	// STUB: TOY2 0x0049A930
+	int32_t PlayMovie(int32_t movieId) { return 0; }
+
+	// STUB: TOY2 0x0049B9E0
+	int32_t TickSaveMenuMachine(int32_t showSaveMenu) { return 0; }
+
+	// STUB: TOY2 0x0049C420
+	int32_t ShowControlConfig() { return 0; }
+
+	// STUB: TOY2 0x0049CAA0
+	void ShowGraphicsConfig() {}
+
+	// STUB: TOY2 0x0049EAC0
+	void PlayLevelMusic() {}
+
+	// STUB: TOY2 0x0049F490
+	void UnusedVarUpdate() {}
+
+	// STUB: TOY2 0x0049FD40
+	void RenderHUD() {}
+
+	// STUB: TOY2 0x004A1A50
+	void InitialiseLevelVariables(int32_t levelIndex) {}
+
+	// STUB: TOY2 0x004A1B00
+	void HandleLevelInteractions(int32_t levelId) {}
+
+	// STUB: TOY2 0x004A2960
+	void UpdateFrameTimers() {}
+
+	// STUB: TOY2 0x004A48B0
+	void ResetGadgets() {}
+
+	// STUB: TOY2 0x004A4B70
+	void ActivateGravityBoots() {}
+
+	// STUB: TOY2 0x004A5070
+	void RespawnCosmicShield() {}
+
+	// STUB: TOY2 0x004A5D30
+	Toy2::BeamShot* SpawnBeamShot(int32_t beamType, int16_t aimYaw, int16_t aimPitch, WorldPos* origin, WorldPos* headOffset, int32_t range, Toy2::Actor::Toy2Actor* autoAimActor) { return 0; }
+
+	// STUB: TOY2 0x004CD110
+	int32_t ShowTokenSparkle() { return 0; }
+
+	namespace PostGameSaveMenu
+	{
+		// STUB: TOY2 0x0043A130
+		int32_t Tick() { return 0; }
+	}
+
+	namespace MovieViewer
+	{
+		// STUB: TOY2 0x0043A600
+		int32_t Tick(int32_t a1) { return 0; }
+	}
+
+	namespace Ini
+	{
+		// STUB: TOY2 0x00430BF0
+		void ParseDefText() {}
+
+		// STUB: TOY2 0x00415640
+		int16_t KeyNameToScancode(char keyName) { return 0; }
+	}
+
+	// STUB: TOY2 0x0049FC60
+	int32_t TickSlide(int32_t widgetIndex) { return 0; }
 }
 
 // $FUNC DEBUG

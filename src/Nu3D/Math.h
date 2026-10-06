@@ -3,6 +3,13 @@
 #include "Numerics.h"
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
+#include "Common.h"
+#include <windows.h>
+
+struct Vector3I16;
+struct Vector3I;
+struct Vector3F;
+
 
 namespace Nu3D
 {
@@ -48,5 +55,23 @@ namespace Nu3D
 		void TransformPointByMatrix(Vector3F *out, Vector3F *point, D3DMATRIX *matrix);
 		Vector3F* ProjectPoint(Vector3F* out, Vector3F* in, D3DMATRIX* matrix);
 		Vector3F* TransformPointPerspective(Vector3F* result, Vector3F* point, D3DMATRIX* matrix);
+
+		struct PointI16
+		{
+			int16_t x;
+			int16_t y;
+		};
+
+		STATIC_ASSERT(sizeof(PointI16) == 0x4);
+
+		int32_t Cross2D(Nu3D::Math::PointI16 point1, Nu3D::Math::PointI16 point2, Nu3D::Math::PointI16 point3);
+		int32_t NormalizeToFixedPoint16(Vector3I16* in, Vector3I16* out);
+		int16_t PointIntersectsTriangle(int32_t pointX, int32_t pointY, int32_t pointZ, int32_t edge0X, int32_t edge0Y, int32_t edge0Z, int32_t edge1X, int32_t edge1Y, int32_t edge1Z, Vector3I16* normal, int32_t radius);
+		void _3DCrossProduct(Vector3I* a, Vector3I* b, Vector3I* out);
+		BOOL IsWithinDistanceXZ(Vector3I* pos1, Vector3I* pos2, int32_t distance);
+		D3DMATRIX* MatrixApplyScale(D3DMATRIX* a1, Vector3F* a2);
+		D3DMATRIX* MatrixRotatePitch(D3DMATRIX* a1, uint16_t a2);
+		D3DMATRIX* MatrixRotateYaw(D3DMATRIX* a1, uint16_t a2);
+		D3DMATRIX* MatrixRotateRoll(D3DMATRIX* matrix, int16_t trigIndex);
 	}
 }

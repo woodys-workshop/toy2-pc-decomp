@@ -180,5 +180,8 @@ namespace Nu3D
 
 		// STUB: TOY2 0x004CDC20
 		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList) {}
+
+		// STUB: TOY2 0x004CAA60
+		void RenderActor(Nu3D::Creature* creature, D3DMATRIX* nodeMatrices, int32_t renderStage) {}
 	}
 }

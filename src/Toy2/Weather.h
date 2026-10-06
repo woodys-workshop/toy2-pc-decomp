@@ -8,5 +8,8 @@ namespace Toy2
 	{
 		extern int32_t g_spawnAccumulator;
 		extern int32_t g_weatherBasePointer;
+
+		void Init();
+		void StepPrecipitation(int32_t spawnRate, int32_t fallSpeed, int32_t particleType);
 	}
 }

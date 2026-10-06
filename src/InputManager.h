@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "InputTypes.h"
+#include <windows.h>
 
 namespace InputManager
 {
@@ -24,4 +25,13 @@ namespace InputManager
 	void UpdateButtonStates();
 
 	STATIC_ASSERT(sizeof(InputMapping) == 0x8);
+
+	int32_t GetPressedInput();
+	char* GetGameControlName(ToyInputCodes index);
+	void Cleanup();
+	int32_t FindKeyPressed();
+	int32_t FindKeyReleased();
+	int32_t GetCurButtonsPressed();
+	void UpdateDirectionInputState();
 }
+
