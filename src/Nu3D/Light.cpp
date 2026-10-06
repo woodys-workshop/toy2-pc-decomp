@@ -33,21 +33,6 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x00B62424
 	Light* g_globalLight5;
 
-	// TODO: Inline this, its not a method
-	// converts a 0.0 - 1.0 colour channel to a clamped 0 - 255 byte
-	static uint8_t ColorChannelToByte(float channel)
-	{
-		__int64 value = (__int64)(channel * 255.0);
-
-		if (value > 0xFF)
-			return 0xFF;
-
-		if (value >= 0)
-			return (uint8_t)(channel * 255.0);
-
-		return 0;
-	}
-
 	// FUNCTION: TOY2 0x004C2FF0
 	int32_t Light::InitPool(int32_t poolSize)
 	{
@@ -308,10 +293,41 @@ namespace Nu3D
 			// the ambient light is not a real D3D light, it sets the device's ambient light state instead
 			RGBA ambient;
 
-			ambient.a = ColorChannelToByte(light->color.a);
-			ambient.r = ColorChannelToByte(light->color.r);
-			ambient.g = ColorChannelToByte(light->color.g);
-			ambient.b = ColorChannelToByte(light->color.b);
+			int64_t channel = (int64_t)(light->color.a * 255.0);
+
+			if (channel > 0xFF)
+				ambient.a = 0xFF;
+			else if (channel >= 0)
+				ambient.a = (uint8_t)(light->color.a * 255.0);
+			else
+				ambient.a = 0;
+
+			channel = (int64_t)(light->color.r * 255.0);
+
+			if (channel > 0xFF)
+				ambient.r = 0xFF;
+			else if (channel >= 0)
+				ambient.r = (uint8_t)(light->color.r * 255.0);
+			else
+				ambient.r = 0;
+
+			channel = (int64_t)(light->color.g * 255.0);
+
+			if (channel > 0xFF)
+				ambient.g = 0xFF;
+			else if (channel >= 0)
+				ambient.g = (uint8_t)(light->color.g * 255.0);
+			else
+				ambient.g = 0;
+
+			channel = (int64_t)(light->color.b * 255.0);
+
+			if (channel > 0xFF)
+				ambient.b = 0xFF;
+			else if (channel >= 0)
+				ambient.b = (uint8_t)(light->color.b * 255.0);
+			else
+				ambient.b = 0;
 
 			DrawingDevice::SetLightState(D3DLIGHTSTATE_AMBIENT, ambient.value);
 		}

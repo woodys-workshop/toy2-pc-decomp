@@ -326,9 +326,6 @@ namespace Renderer
 		int32_t textureIdx = 0;
 		int32_t vertexCount = 0;
 
-		// EXPERIMENT: zfunc less
-		DrawingDevice::SetRenderState(D3DRENDERSTATE_ZFUNC, 2);
-
 		for (int32_t bucket = 1023; bucket >= 0; bucket--)
 		{
 			for (SoftwareRenderer::SortedTriangle* triangle = SoftwareRenderer::g_depthBuckets[bucket]; triangle; triangle = triangle->next)
@@ -390,7 +387,6 @@ namespace Renderer
 		}
 
 		DrawPrimitive(g_vertsBuffer, vertexCount);
-		DrawingDevice::SetRenderState(D3DRENDERSTATE_ZFUNC, 4); // TODO: EXPERIMENT
 		SoftwareRenderer::g_instanceCounter = 3000;
 	}
 }

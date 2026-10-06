@@ -22,19 +22,6 @@ namespace Renderer
 
 	STATIC_ASSERT(sizeof(Metadata100Params) == sizeof(Nu3D::Sprite));
 
-	// TODO: Fix, inline
-	// the vertex buffer that transformed vertices (XYZRHW) are written to is 32 bytes per vertex, uv lives at +0x18
-	static float* TransformedVertexUV(void* lockedData, int32_t vertexIndex)
-	{
-		return (float*)((uint8_t*)lockedData + 32 * vertexIndex + 0x18);
-	}
-
-	// TODO: Fix, inline
-	static uint8_t* TransformedVertexColor(void* lockedData, int32_t vertexIndex)
-	{
-		return (uint8_t*)lockedData + 32 * vertexIndex + 0x10;
-	}
-
 	// FUNCTION: TOY2 0x004C27D0
 	void BindMaterial(Nu3D::Material* material, int32_t forceBind)
 	{
@@ -169,7 +156,8 @@ namespace Renderer
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
 				// modulation is 12 bit fixed point (4096 = 1.0), each channel clamps at 255
-				uint8_t* color = TransformedVertexColor(lockedData, i);
+				// transformed vertices (XYZRHW) are 32 bytes each, the diffuse colour lives at +0x10
+				uint8_t* color = (uint8_t*)lockedData + 32 * i + 0x10;
 
 				uint32_t red = colorR * color[2];
 				color[2] = (red & 0xFFFFF000) <= 0xFF000 ? red >> 12 : 255;
@@ -194,7 +182,7 @@ namespace Renderer
 		{
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
-				float* uv = TransformedVertexUV(lockedData, i);
+				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
 
 				uv[0] = horzOffset + patchVertices->data.vertices[i].coords.x;
 				uv[1] = vertOffset + patchVertices->data.vertices[i].coords.y;
@@ -218,12 +206,12 @@ namespace Renderer
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
 				Vector3F* normal = &patchVertices->data.vertices[i].normals;
-				float* uv = TransformedVertexUV(lockedData, i);
+				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
 
 				uv[0] = (normal->z * combined._31 + normal->y * combined._21 + normal->x * combined._11 + 1.0) * 0.5;
 				uv[1] = (1.0 - (normal->z * combined._32 + normal->y * combined._22 + normal->x * combined._12)) * 0.5;
 
-				TransformedVertexColor(lockedData, i)[3] = 96;
+				((uint8_t*)lockedData + 32 * i + 0x10)[3] = 96;
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
@@ -249,12 +237,14 @@ namespace Renderer
 				for (int32_t i = 0; i < verticesPerHeader; i++)
 				{
 					Vector3F* normal = &patchVertices->data.vertices[srcIndex + i].normals;
-					float* uv = TransformedVertexUV(lockedData, destIndex + i);
+
+					// TODO: These are literred everywhere, fix it with the actual struct definition
+					float* uv = (float*)((uint8_t*)lockedData + 32 * (destIndex + i) + 0x18);
 
 					uv[0] = (normal->z * combined._31 + normal->y * combined._21 + normal->x * combined._11 + 1.0) * 0.5;
 					uv[1] = (1.0 - (normal->z * combined._32 + normal->y * combined._22 + normal->x * combined._12)) * 0.5;
 
-					TransformedVertexColor(lockedData, destIndex + i)[3] = 0x80;
+					((uint8_t*)lockedData + 32 * (destIndex + i) + 0x10)[3] = 0x80;
 				}
 
 				if (headerCount == 2)
@@ -291,7 +281,7 @@ namespace Renderer
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
 				Vector3F projected;
-				float* uv = TransformedVertexUV(lockedData, i);
+				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
 
 				Nu3D::Math::ProjectPoint(&projected, &patchVertices->data.vertices[i].position, &combined);
 

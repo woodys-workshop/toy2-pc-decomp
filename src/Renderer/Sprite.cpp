@@ -197,9 +197,8 @@ namespace Renderer
 			}
 		}
 
-		// TODO: Important, inline
-		// draws a tile of a sprite sheet, positions are in virtual screen space (xScale converts x to 0.0 - 1.0)
-		static int16_t DrawSheetTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, RGBA color, double xScale)
+		// FUNCTION: TOY2 0x004946A0
+		int16_t DrawTiledFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
 		{
 			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
 
@@ -211,19 +210,14 @@ namespace Renderer
 			Vector2F uvTopLeft;
 			Vector2F uvBottomRight;
 
-			uvTopLeft.x = 0.0;
-			uvTopLeft.y = 0.0;
-			uvBottomRight.x = 0.0;
-			uvBottomRight.y = 0.0;
-
 			if (textureDataIndex)
 			{
 				uint32_t bitmapWidth;
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = (int32_t)bitmapWidth;
-				float height = (int32_t)bitmapHeight;
+				double width = bitmapWidth;
+				float height = bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -232,6 +226,62 @@ namespace Renderer
 			}
 
 			double yScale = 1.0 / g_virtualScreenHeight;
+
+			RGBA color;
+			color.a = 0xFF;
+			color.b = Nu3D::Camera::g_cameraTintBlue;
+			color.g = Nu3D::Camera::g_cameraTintGreen;
+			color.r = Nu3D::Camera::g_cameraTintRed;
+
+			Queue2DSprite(xPos * 0.003125,
+				yPos * yScale,
+				sheet->tileWidth * 0.003125,
+				sheet->tileHeight * yScale,
+				&uvTopLeft,
+				&uvBottomRight,
+				textureDataIndex,
+				color,
+				RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+
+			return 1;
+		}
+
+		// FUNCTION: TOY2 0x00494820
+		int16_t DrawTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
+		{
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (! sheet)
+				return 1;
+
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+
+			if (textureDataIndex)
+			{
+				uint32_t bitmapWidth;
+				uint32_t bitmapHeight;
+				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+				double width = bitmapWidth;
+				float height = bitmapHeight;
+
+				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
+				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
+				uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / width;
+				uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / height;
+			}
+
+			double yScale = 1.0 / g_virtualScreenHeight;
+
+			RGBA color;
+			color.a = 0xFF;
+			color.b = Nu3D::Camera::g_cameraTintBlue;
+			color.g = Nu3D::Camera::g_cameraTintGreen;
+			color.r = Nu3D::Camera::g_cameraTintRed;
+			float xScale = 1.0 / g_virtualScreenWidth;
 
 			Queue2DSprite(xPos * xScale,
 				yPos * yScale,
@@ -246,36 +296,36 @@ namespace Renderer
 			return 1;
 		}
 
-		// the screen can be tinted (fades), the plain sprites take that tint as their colour
-		static RGBA CameraTintColor()
-		{
-			RGBA color;
-			color.a = 0xFF;
-			color.b = Nu3D::Camera::g_cameraTintBlue;
-			color.g = Nu3D::Camera::g_cameraTintGreen;
-			color.r = Nu3D::Camera::g_cameraTintRed;
-
-			return color;
-		}
-
-		// FUNCTION: TOY2 0x004946A0
-		int16_t DrawTiledFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
-		{
-			// always lays out on a 320 wide screen, no matter the virtual screen size
-			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, CameraTintColor(), 0.003125);
-		}
-
-		// FUNCTION: TOY2 0x00494820
-		int16_t DrawTile(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex)
-		{
-			float xScale = 1.0 / g_virtualScreenWidth;
-
-			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, CameraTintColor(), xScale);
-		}
-
 		// FUNCTION: TOY2 0x00493DC0
 		int16_t DrawColouredFixed(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t red, uint8_t green, uint8_t blue)
 		{
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (! sheet)
+				return 1;
+
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+
+			if (textureDataIndex)
+			{
+				uint32_t bitmapWidth;
+				uint32_t bitmapHeight;
+				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+				double width = bitmapWidth;
+				float height = bitmapHeight;
+
+				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
+				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
+				uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / width;
+				uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / height;
+			}
+
+			double yScale = 1.0 / g_virtualScreenHeight;
+
 			// (the original really does swap red and blue)
 			RGBA color;
 			color.a = 0xFF;
@@ -283,21 +333,67 @@ namespace Renderer
 			color.g = green;
 			color.r = blue;
 
-			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, color, 0.003125);
+			Queue2DSprite(xPos * 0.003125,
+				yPos * yScale,
+				sheet->tileWidth * 0.003125,
+				sheet->tileHeight * yScale,
+				&uvTopLeft,
+				&uvBottomRight,
+				textureDataIndex,
+				color,
+				RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+
+			return 1;
 		}
 
 		// FUNCTION: TOY2 0x00493C30
 		int16_t DrawColoured(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t blue, uint8_t green, uint8_t red)
 		{
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (! sheet)
+				return 1;
+
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+
+			if (textureDataIndex)
+			{
+				uint32_t bitmapWidth;
+				uint32_t bitmapHeight;
+				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+				double width = bitmapWidth;
+				float height = bitmapHeight;
+
+				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
+				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
+				uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / width;
+				uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / height;
+			}
+
+			double yScale = 1.0 / g_virtualScreenHeight;
+
 			RGBA color;
 			color.a = 0xFF;
 			color.b = blue;
 			color.g = green;
 			color.r = red;
-
 			float xScale = 1.0 / g_virtualScreenWidth;
 
-			return DrawSheetTile(xPos, yPos, sheetIndex, tileIndex, color, xScale);
+			Queue2DSprite(xPos * xScale,
+				yPos * yScale,
+				sheet->tileWidth * xScale,
+				sheet->tileHeight * yScale,
+				&uvTopLeft,
+				&uvBottomRight,
+				textureDataIndex,
+				color,
+				RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+
+			return 1;
 		}
 
 		// FUNCTION: TOY2 0x0049D390

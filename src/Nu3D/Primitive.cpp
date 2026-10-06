@@ -27,25 +27,6 @@ namespace Nu3D
 		return result;
 	}
 
-	// TODO: Fix, inline this method, it doesn't exist
-	// returns the highest squared length of the 4 corner vertices of a billboard header
-	static float BillboardCornerRadiusSq(Primitive* prim, uint16_t* indices)
-	{
-		float radiusSq = 0.0;
-		int32_t firstCorner = indices[1];
-
-		for (int32_t corner = 0; corner < 4; corner++)
-		{
-			Vector3F* position = &prim->patchVerts.data.vertices[firstCorner + corner].position;
-			float lengthSq = position->x * position->x + position->y * position->y + position->z * position->z;
-
-			if (radiusSq <= lengthSq)
-				radiusSq = lengthSq;
-		}
-
-		return radiusSq;
-	}
-
 	// FUNCTION: TOY2 0x004CC480
 	void Primitive::ComputeBounds(Primitive* primitive)
 	{
@@ -102,7 +83,18 @@ namespace Nu3D
 				for (int32_t h = 0; h < prim->headerCount; h++)
 				{
 					uint16_t* indices = prim->header[h].indices;
-					float cornerRadiusSq = BillboardCornerRadiusSq(prim, indices);
+					// the highest squared length of the 4 corner vertices of the billboard
+					float cornerRadiusSq = 0.0;
+					int32_t firstCorner = indices[1];
+
+					for (int32_t corner = 0; corner < 4; corner++)
+					{
+						Vector3F* cornerPosition = &prim->patchVerts.data.vertices[firstCorner + corner].position;
+						float cornerLengthSq = cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
+
+						if (cornerRadiusSq <= cornerLengthSq)
+							cornerRadiusSq = cornerLengthSq;
+					}
 
 					Vector3F* center = &prim->patchVerts.data.vertices[indices[0]].position;
 
@@ -167,7 +159,18 @@ namespace Nu3D
 				for (int32_t h = 0; h < prim->headerCount; h++)
 				{
 					uint16_t* indices = prim->header[h].indices;
-					float cornerRadiusSq = BillboardCornerRadiusSq(prim, indices);
+					// the highest squared length of the 4 corner vertices of the billboard
+					float cornerRadiusSq = 0.0;
+					int32_t firstCorner = indices[1];
+
+					for (int32_t corner = 0; corner < 4; corner++)
+					{
+						Vector3F* cornerPosition = &prim->patchVerts.data.vertices[firstCorner + corner].position;
+						float cornerLengthSq = cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
+
+						if (cornerRadiusSq <= cornerLengthSq)
+							cornerRadiusSq = cornerLengthSq;
+					}
 
 					Vector3F offset;
 					Math::VertexSubtract(&offset, &prim->patchVerts.data.vertices[indices[0]].position, &primitive->boundsCenter);
