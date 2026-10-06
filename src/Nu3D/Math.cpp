@@ -1,5 +1,6 @@
 #include "Nu3D/Math.h"
 #include <MATH.H>
+#include <STDLIB.h>
 
 namespace Nu3D
 {
@@ -679,13 +680,33 @@ namespace Nu3D
 			}
 		}
 
-		// STUB: TOY2 0x00451F80
-		int32_t Cross2D(Nu3D::Math::PointI16 point1, Nu3D::Math::PointI16 point2, Nu3D::Math::PointI16 point3) { return 0; }
+		// FUNCTION: TOY2 0x00451F80
+		int32_t Cross2D(PointI16 point1, PointI16 point2, PointI16 point3)
+		{
+			return (point3.x - point2.x) * (point1.y - point2.y) - (point1.x - point2.x) * (point3.y - point2.y);
+		}
 
-		// STUB: TOY2 0x00452040
-		int32_t NormalizeToFixedPoint16(Vector3I16* in, Vector3I16* out) { return 0; }
+		// FUNCTION: TOY2 0x00452040 [MATCHED]
+		int32_t NormalizeToFixedPoint16(Vector3I16* in, Vector3I16* out)
+		{
+			int16_t x = in->x;
+			int32_t length = (int32_t)sqrt((double)(in->z * in->z + in->y * in->y + x * x));
 
-		// STUB: TOY2 0x00480AE0
+			if (in->x)
+				out->x = (int16_t)((x << 12) / length);
+
+			int16_t y = in->y;
+			if (y)
+				out->y = (int16_t)((y << 12) / length);
+
+			int16_t z = in->z;
+			if (z)
+				out->z = (int16_t)((z << 12) / length);
+
+			return 0;
+		}
+
+		// FUNCTION: TOY2 0x00480AE0
 		int16_t PointIntersectsTriangle(
 			int32_t pointX,
 			int32_t pointY,
@@ -699,25 +720,215 @@ namespace Nu3D
 			Vector3I16* normal,
 			int32_t radius)
 		{
-			return 0;
+			int32_t absNormalY = abs(normal->y);
+			int32_t absNormalX = abs(normal->x);
+			int32_t scale;
+
+			if (absNormalY >= absNormalX && absNormalY >= abs(normal->z))
+			{
+				if (normal->y < 0)
+				{
+					if (edge0Z * pointX - edge0X * pointZ >= 0 && edge1X * (pointZ - edge1Z) - edge1Z * (pointX - edge1X) >= 0
+						&& (edge1Z - edge0Z) * (pointX - edge0X) + (edge0X - edge1X) * (pointZ - edge0Z) >= 0)
+						return 1;
+				}
+				else
+				{
+					if (edge0X * (pointZ - edge0Z) - edge0Z * (pointX - edge0X) >= 0 && edge1Z * pointX - edge1X * pointZ >= 0
+						&& (edge0Z - edge1Z) * (pointX - edge1X) + (pointZ - edge1Z) * (edge1X - edge0X) >= 0)
+						return 1;
+				}
+			}
+			else if (absNormalX >= absNormalY && absNormalX >= abs(normal->z))
+			{
+				if (normal->x < 0)
+				{
+					if (edge0Y * (pointZ - edge0Z) - edge0Z * (pointY - edge0Y) >= 0 && edge1Z * pointY - edge1Y * pointZ >= 0
+						&& (edge0Z - edge1Z) * (pointY - edge1Y) + (pointZ - edge1Z) * (edge1Y - edge0Y) >= 0)
+						return 1;
+				}
+				else
+				{
+					if (edge0Z * pointY - edge0Y * pointZ >= 0 && edge1Y * (pointZ - edge1Z) - edge1Z * (pointY - edge1Y) >= 0
+						&& (edge0Y - edge1Y) * (pointZ - edge0Z) + (edge1Z - edge0Z) * (pointY - edge0Y) >= 0)
+						return 1;
+				}
+			}
+			else
+			{
+				if (normal->z < 0)
+				{
+					if (edge0X * pointY - edge0Y * pointX >= 0 && edge1Y * (pointX - edge1X) - edge1X * (pointY - edge1Y) >= 0
+						&& (edge0Y - edge1Y) * (pointX - edge0X) + (edge1X - edge0X) * (pointY - edge0Y) >= 0)
+						return 1;
+				}
+				else
+				{
+					if (edge0Y * (pointX - edge0X) - edge0X * (pointY - edge0Y) >= 0 && edge1X * pointY - edge1Y * pointX >= 0
+						&& (edge0X - edge1X) * (pointY - edge1Y) + (edge1Y - edge0Y) * (pointX - edge1X) >= 0)
+						return 1;
+				}
+			}
+
+			int32_t dot = edge1Z * pointZ + edge1Y * pointY + edge1X * pointX;
+			int32_t lenSq = edge1Z * edge1Z + edge1Y * edge1Y + edge1X * edge1X;
+
+			if (dot >= 0 && dot <= lenSq)
+			{
+				if ((lenSq & 0xFFFFFF00) == 0)
+					lenSq = 256;
+
+				scale = (dot << 6) / (lenSq >> 8);
+
+				if ((pointZ - ((edge1Z * scale) >> 14)) * (pointZ - ((edge1Z * scale) >> 14))
+						+ (pointY - ((edge1Y * scale) >> 14)) * (pointY - ((edge1Y * scale) >> 14))
+						+ (pointX - ((edge1X * scale) >> 14)) * (pointX - ((edge1X * scale) >> 14))
+					< 2 * (radius / 31) * (radius / 31))
+					return 1;
+			}
+
+			lenSq = edge0Z * edge0Z + edge0Y * edge0Y + edge0X * edge0X;
+			dot = edge0Z * pointZ + edge0Y * pointY + edge0X * pointX;
+
+			if (dot >= 0 && dot <= lenSq)
+			{
+				if ((lenSq & 0xFFFFFF00) == 0)
+					lenSq = 256;
+
+				scale = (dot << 6) / (lenSq >> 8);
+
+				if ((pointZ - ((edge0Z * scale) >> 14)) * (pointZ - ((edge0Z * scale) >> 14))
+						+ (pointY - ((edge0Y * scale) >> 14)) * (pointY - ((edge0Y * scale) >> 14))
+						+ (pointX - ((edge0X * scale) >> 14)) * (pointX - ((edge0X * scale) >> 14))
+					< 2 * (radius / 31) * (radius / 31))
+					return 1;
+			}
+
+			dot = (edge0X - edge1X) * (pointX - edge1X) + (edge0Z - edge1Z) * (pointZ - edge1Z) + (edge0Y - edge1Y) * (pointY - edge1Y);
+			lenSq = (edge0X - edge1X) * (edge0X - edge1X) + (edge0Y - edge1Y) * (edge0Y - edge1Y) + (edge0Z - edge1Z) * (edge0Z - edge1Z);
+
+			if (dot >= 0 && dot <= lenSq)
+			{
+				if ((lenSq & 0xFFFFFF00) == 0)
+					lenSq = 256;
+
+				scale = (dot << 6) / (lenSq >> 8);
+
+				if ((pointX - (((edge0X - edge1X) * scale) >> 14) - edge1X) * (pointX - (((edge0X - edge1X) * scale) >> 14) - edge1X)
+						+ (pointY - (((edge0Y - edge1Y) * scale) >> 14) - edge1Y) * (pointY - (((edge0Y - edge1Y) * scale) >> 14) - edge1Y)
+						+ (pointZ - (((edge0Z - edge1Z) * scale) >> 14) - edge1Z) * (pointZ - (((edge0Z - edge1Z) * scale) >> 14) - edge1Z)
+					< 2 * (radius / 31) * (radius / 31))
+					return 1;
+			}
+
+			if (pointZ * pointZ + pointY * pointY + pointX * pointX < 2 * (radius / 31) * (radius / 31)
+				|| (pointZ - edge0Z) * (pointZ - edge0Z) + (pointX - edge0X) * (pointX - edge0X) + (pointY - edge0Y) * (pointY - edge0Y)
+					< 2 * (radius / 31) * (radius / 31))
+				return 1;
+
+			return (pointX - edge1X) * (pointX - edge1X) + (pointZ - edge1Z) * (pointZ - edge1Z) + (pointY - edge1Y) * (pointY - edge1Y)
+				< 2 * (radius / 31) * (radius / 31);
 		}
 
-		// STUB: TOY2 0x00490B90
-		void CrossProduct3D(Vector3I* a, Vector3I* b, Vector3I* out) {}
+		// FUNCTION: TOY2 0x00490B90 [MATCHED]
+		void CrossProduct3D(Vector3I* a, Vector3I* b, Vector3I* out)
+		{
+			Vector3I result;
 
-		// STUB: TOY2 0x0049F3C0
-		BOOL IsWithinDistanceXZ(Vector3I* pos1, Vector3I* pos2, int32_t distance) { return 0; }
+			result.x = a->y * b->z - a->z * b->y;
+			result.y = a->z * b->x - a->x * b->z;
+			result.z = a->x * b->y - a->y * b->x;
 
-		// STUB: TOY2 0x004A98D0
-		D3DMATRIX* MatrixApplyScale(D3DMATRIX* a1, Vector3F* a2) { return 0; }
+			*out = result;
+		}
 
-		// STUB: TOY2 0x004A9AA0
-		D3DMATRIX* MatrixRotatePitch(D3DMATRIX* a1, uint16_t a2) { return 0; }
+		// FUNCTION: TOY2 0x0049F3C0 [MATCHED]
+		BOOL IsWithinDistanceXZ(Vector3I* pos1, Vector3I* pos2, int32_t distance)
+		{
+			int32_t deltaX = (pos1->x - pos2->x) >> 8;
+			int32_t deltaZ = (pos1->z - pos2->z) >> 8;
 
-		// STUB: TOY2 0x004A9CB0
-		D3DMATRIX* MatrixRotateYaw(D3DMATRIX* a1, uint16_t a2) { return 0; }
+			return deltaX * deltaX + deltaZ * deltaZ < distance * distance;
+		}
 
-		// STUB: TOY2 0x004A9EC0
-		D3DMATRIX* MatrixRotateRoll(D3DMATRIX* matrix, int16_t trigIndex) { return 0; }
+		// FUNCTION: TOY2 0x004A98D0 [MATCHED]
+		D3DMATRIX* MatrixApplyScale(D3DMATRIX* matrix, Vector3F* scale)
+		{
+			matrix->_11 = matrix->_11 * scale->x;
+			matrix->_12 = matrix->_12 * scale->x;
+			matrix->_13 = matrix->_13 * scale->x;
+			matrix->_21 = scale->y * matrix->_21;
+			matrix->_22 = scale->y * matrix->_22;
+			matrix->_23 = scale->y * matrix->_23;
+			matrix->_31 = scale->z * matrix->_31;
+			matrix->_32 = matrix->_32 * scale->z;
+			matrix->_33 = matrix->_33 * scale->z;
+
+			return matrix;
+		}
+
+		// FUNCTION: TOY2 0x004A9AA0
+		D3DMATRIX* MatrixRotatePitch(D3DMATRIX* matrix, int32_t angle)
+		{
+			float cosAngle = Numerics::g_trigLUT[(angle + 0x4000) & 0xFFFF];
+			float sinAngle = Numerics::g_trigLUT[angle & 0xFFFF];
+
+			float r1 = matrix->_21;
+			float r2 = matrix->_22;
+			float r3 = matrix->_23;
+
+			matrix->_21 = r1 * cosAngle + sinAngle * matrix->_31;
+			matrix->_22 = r2 * cosAngle + sinAngle * matrix->_32;
+			matrix->_23 = r3 * cosAngle + sinAngle * matrix->_33;
+			matrix->_31 = cosAngle * matrix->_31 - r1 * sinAngle;
+			matrix->_32 = cosAngle * matrix->_32 - r2 * sinAngle;
+			matrix->_33 = cosAngle * matrix->_33 - r3 * sinAngle;
+
+			return matrix;
+		}
+
+		// FUNCTION: TOY2 0x004A9CB0
+		D3DMATRIX* MatrixRotateYaw(D3DMATRIX* matrix, int32_t angle)
+		{
+			float cosAngle = Numerics::g_trigLUT[(angle + 0x4000) & 0xFFFF];
+			float sinAngle = Numerics::g_trigLUT[angle & 0xFFFF];
+
+			float r1 = matrix->_11;
+			float r0 = r1 * cosAngle - sinAngle * matrix->_31;
+			float r2 = matrix->_12;
+			float r3 = matrix->_13;
+
+			matrix->_11 = r0;
+			matrix->_12 = r2 * cosAngle - sinAngle * matrix->_32;
+			matrix->_13 = r3 * cosAngle - sinAngle * matrix->_33;
+			matrix->_31 = cosAngle * matrix->_31 + r1 * sinAngle;
+			matrix->_32 = cosAngle * matrix->_32 + r2 * sinAngle;
+			matrix->_33 = cosAngle * matrix->_33 + r3 * sinAngle;
+
+			return matrix;
+		}
+
+		// FUNCTION: TOY2 0x004A9EC0 [MATCHED]
+		D3DMATRIX* MatrixRotateRoll(D3DMATRIX* matrix, int32_t trigIndex)
+		{
+			float cosAngle = Numerics::g_trigLUT[(trigIndex + 0x4000) & 0xFFFF];
+			float sinAngle = Numerics::g_trigLUT[trigIndex & 0xFFFF];
+
+			float r1 = matrix->_11;
+			float r2 = matrix->_12;
+			float r3 = matrix->_13;
+
+			matrix->_11 = sinAngle * matrix->_21 + r1 * cosAngle;
+			matrix->_12 = sinAngle * matrix->_22 + r2 * cosAngle;
+			matrix->_13 = sinAngle * matrix->_23 + r3 * cosAngle;
+			matrix->_21 = cosAngle * matrix->_21 - r1 * sinAngle;
+			matrix->_22 = cosAngle * matrix->_22 - r2 * sinAngle;
+			matrix->_23 = cosAngle * matrix->_23 - r3 * sinAngle;
+
+			return matrix;
+		}
+
+		// FUNCTION: TOY2 0x004A92E0 [MATCHED]
+		double GetLength(Vector3F* v1) { return sqrt(v1->x * v1->x + v1->y * v1->y + v1->z * v1->z); }
 	}
 }

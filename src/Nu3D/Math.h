@@ -12,12 +12,6 @@ namespace Nu3D
 	{
 		extern Vector3F g_matrixScaleVector;
 
-		struct PointI16
-		{
-			int16_t x;
-			int16_t y;
-		};
-
 		void BuildIdentityMatrix(D3DMATRIX* matrix);
 		void ScaleMatrixByVector(D3DMATRIX* matrix, Vector3F* vector);
 		void RotateZFromLut(D3DMATRIX* matrix, int32_t trigOffset);
@@ -47,6 +41,7 @@ namespace Nu3D
 		float GetSignedDistanceToPlane(Vector3F* point, Plane* plane);
 		int32_t IsWithinDistance(Vector3I* v1, Vector3I* v2, int32_t maxDistance);
 		void BuildMatrixFromDirection(D3DMATRIX* matrix, Vector3F* direction);
+		
 
 		void GetRightVector(D3DMATRIX* matrix, Vector3F* out);
 		void GetUpVector(D3DMATRIX* matrix, Vector3F* out);
@@ -57,7 +52,7 @@ namespace Nu3D
 		Vector3F* ProjectPoint(Vector3F* out, Vector3F* in, D3DMATRIX* matrix);
 		Vector3F* TransformPointPerspective(Vector3F* result, Vector3F* point, D3DMATRIX* matrix);
 
-		int32_t Cross2D(Nu3D::Math::PointI16 point1, Nu3D::Math::PointI16 point2, Nu3D::Math::PointI16 point3);
+		int32_t Cross2D(PointI16 point1, PointI16 point2, PointI16 point3);
 		int32_t NormalizeToFixedPoint16(Vector3I16* in, Vector3I16* out);
 		int16_t PointIntersectsTriangle(
 			int32_t pointX,
@@ -73,10 +68,11 @@ namespace Nu3D
 			int32_t radius);
 		void CrossProduct3D(Vector3I* a, Vector3I* b, Vector3I* out);
 		BOOL IsWithinDistanceXZ(Vector3I* pos1, Vector3I* pos2, int32_t distance);
-		D3DMATRIX* MatrixApplyScale(D3DMATRIX* a1, Vector3F* a2);
-		D3DMATRIX* MatrixRotatePitch(D3DMATRIX* a1, uint16_t a2);
-		D3DMATRIX* MatrixRotateYaw(D3DMATRIX* a1, uint16_t a2);
-		D3DMATRIX* MatrixRotateRoll(D3DMATRIX* matrix, int16_t trigIndex);
+		D3DMATRIX* MatrixApplyScale(D3DMATRIX* matrix, Vector3F* scale);
+		D3DMATRIX* MatrixRotatePitch(D3DMATRIX* matrix, int32_t angle);
+		D3DMATRIX* MatrixRotateYaw(D3DMATRIX* matrix, int32_t angle);
+		D3DMATRIX* MatrixRotateRoll(D3DMATRIX* matrix, int32_t trigIndex);
+		double GetLength(Vector3F* v1);
 
 		STATIC_ASSERT(sizeof(PointI16) == 0x4);
 	}

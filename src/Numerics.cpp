@@ -42,6 +42,3 @@ namespace Numerics
 		}
 	}
 }
-
-// STUB: TOY2 0x004A92E0
-double Vector3F::Length(Vector3F* v1) { return 0.0; }

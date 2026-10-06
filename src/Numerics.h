@@ -7,8 +7,6 @@ struct Vector3F
 	float x;
 	float y;
 	float z;
-
-	static double Length(Vector3F* v1);
 };
 
 struct Vector3I
@@ -68,6 +66,12 @@ struct PointI
 {
 	int32_t x;
 	int32_t y;
+};
+
+struct PointI16
+{
+	int16_t x;
+	int16_t y;
 };
 
 struct Plane
