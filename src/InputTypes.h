@@ -18,6 +18,23 @@ enum GameControlId
 	INPUT_FIRE = 0x8000,
 };
 
+enum DirectionInputState
+{
+  DIR_SECRET_MENU = 0x1,
+  DIR_MENU = 0x8,
+  DIR_UP = 0x10,
+  DIR_RIGHT = 0x20,
+  DIR_DOWN = 0x40,
+  DIR_LEFT = 0x80,
+  DIR_CAMERA_LEFT = 0x100,
+  DIR_CAMERA_RIGHT = 0x200,
+  DIR_VISOR_TOGGLE = 0x400,
+  DIR_TARGET_LOCK = 0x800,
+  DIR_CAM_FLAG3 = 0x2000,
+  DIR_CAM_FLAG2 = 0x4000,
+  DIR_CAM_REVERSE = 0x8000,
+};
+
 enum ToyInputCodes
 {
 	TOY_INPUT_ESC = 0x1,

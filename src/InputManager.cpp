@@ -7,11 +7,11 @@
 
 namespace InputManager
 {
-	// GLOBAL: TOY2 0x0088279C
-	int16_t g_curButtonsPressed;
-
 	// GLOBAL: TOY2 0x00882794
 	int16_t g_prevButtonsPressed;
+
+	// GLOBAL: TOY2 0x0088279C
+	int16_t g_curButtonsPressed;
 
 	// GLOBAL: TOY2 0x00529B00
 	int16_t g_buttonsPressed;
@@ -91,6 +91,9 @@ namespace InputManager
 	// GLOBAL: TOY2 0x00529CD8
 	DIJOYSTATE g_joystickState;
 
+	// GLOBAL: TOY2 0x00529CB4
+	LPDIRECTINPUTDEVICE2A g_dInputUnused[4];
+
 	// GLOBAL: TOY2 0x00529CC4
 	int32_t g_joystickRawX;
 
@@ -113,7 +116,13 @@ namespace InputManager
 	int16_t g_joystickConnected;
 
 	// GLOBAL: TOY2 0x00529D40
-	int16_t g_joystickDirectionFlags;
+	int32_t g_joystickDirectionFlags;
+
+	// GLOBAL: TOY2 0x00503860
+	int16_t g_camMasks[14] = {
+		INPUT_FIRE, INPUT_JUMP,	  INPUT_SPIN, INPUT_JUMP, INPUT_FIRE,	INPUT_CANCEL, INPUT_JUMP,
+		INPUT_SPIN, INPUT_CANCEL, INPUT_FIRE, INPUT_JUMP, INPUT_CANCEL, INPUT_SPIN,	  INPUT_JUMP
+	};
 
 	// clang-format off
 	// GLOBAL: TOY2 0x004ED398
@@ -456,24 +465,115 @@ namespace InputManager
 		g_curButtonsPressed = g_buttonsPressed;
 	}
 
-	// STUB: TOY2 0x00415120
-	int32_t GetPressedInput() { return 0; }
+	// FUNCTION: TOY2 0x00415120 [MATCHED]
+	int32_t GetPressedInput()
+	{
+		for (int32_t i = 0; i < 256; i++)
+		{
+			if (g_inputStates[i])
+				return i;
+		}
 
-	// STUB: TOY2 0x004152A0
-	char* GetGameControlName(ToyInputCodes index) { return 0; }
+		for (int32_t j = 0; j < 32; j++)
+		{
+			if (g_joystickState.rgbButtons[j])
+				return j + 1024;
+		}
 
-	// STUB: TOY2 0x00415460
-	void Cleanup() {}
+		return g_joystickDirectionFlags != 0 ? 2048 : -1;
+	}
 
-	// STUB: TOY2 0x00415800
-	int32_t FindKeyPressed() { return 0; }
+	// FUNCTION: TOY2 0x004152A0 [MATCHED]
+	char* GetGameControlName(ToyInputCodes index)
+	{
+		for (int32_t i = 0; g_inputMapping[i].name; i++)
+		{
+			if (g_inputMapping[i].id == index)
+				return g_inputMapping[i].name;
+		}
 
-	// STUB: TOY2 0x00415860
-	int32_t FindKeyReleased() { return 0; }
+		return 0;
+	}
 
-	// STUB: TOY2 0x00498620
-	int32_t GetCurButtonsPressed() { return 0; }
+	// FUNCTION: TOY2 0x00415460
+	void Cleanup()
+	{
+		if (g_directInput)
+		{
+			if (g_directInputDevice)
+			{
+				g_directInputDevice->Unacquire();
+				g_directInputDevice->Release();
+			}
 
-	// STUB: TOY2 0x0049EBA0
-	void UpdateDirectionInputState() {}
+			for (int32_t i = 0; i < 4; i++)
+			{
+				if (g_dInputUnused[i])
+				{
+					g_dInputUnused[i]->Unacquire();
+					g_dInputUnused[i]->Release();
+				}
+			}
+
+			g_directInput->Release();
+		}
+	}
+
+	// FUNCTION: TOY2 0x00415800
+	int32_t FindKeyPressed()
+	{
+		for (int32_t i = 1; i < 256; i++)
+		{
+			uint8_t currentState = g_inputStates[i];
+			uint8_t previousState = g_previousInputStates[i];
+			uint8_t result;
+
+			if (result = currentState & previousState)
+			{
+				g_previousInputStates[i] = ~currentState;
+				return i;
+			}
+
+			g_previousInputStates[i] = ~currentState;
+		}
+
+		return 0;
+	}
+	
+	// FUNCTION: TOY2 0x00415860 [MATCHED]
+	int32_t FindKeyReleased()
+	{
+		for (int32_t i = 1; i < 256; i++)
+		{
+			uint8_t currentState = g_inputStates[i];
+			uint8_t result = g_previousInputStates[i] & currentState;
+
+			g_previousInputStates[i] = ~currentState;
+
+			if (result)
+				return i;
+		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x00498620 [MATCHED]
+	int32_t GetCurButtonsPressed() { return g_curButtonsPressed; }
+
+	// FUNCTION: TOY2 0x0049EBA0
+	void UpdateDirectionInputState()
+	{
+		int32_t cameraIndex = 3 * (SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_MASK);
+
+		g_directionInputState = g_curButtonsPressed & 0xFFF;
+
+		if (g_curButtonsPressed & g_camMasks[cameraIndex])
+			g_directionInputState |= DIR_CAM_REVERSE;
+
+		if (g_curButtonsPressed & g_camMasks[cameraIndex + 1])
+			g_directionInputState |= DIR_DOWN;
+
+		if (g_curButtonsPressed & g_camMasks[cameraIndex + 2])
+			g_directionInputState |= DIR_RIGHT;
+	}
 }
