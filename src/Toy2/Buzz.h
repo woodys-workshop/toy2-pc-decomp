@@ -4,7 +4,6 @@
 #include "Numerics.h"
 #include "Toy2/Levels.h"
 
-
 namespace Toy2
 {
 	namespace Buzz

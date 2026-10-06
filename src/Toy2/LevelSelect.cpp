@@ -86,21 +86,10 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x004F6DC4
 		LevelLinkPair g_levelSelectLinks[15] = {
-			{ g_hideLinks1, g_showLinks1 },
-			{ g_hideLinks2, g_showLinks2 },
-			{ g_hideLinks3, g_showLinks3 },
-			{ g_hideLinks4, g_showLinks4 },
-			{ g_hideLinks5, g_showLinks5 },
-			{ g_hideLinks6, g_showLinks6 },
-			{ g_hideLinks7, g_showLinks7 },
-			{ g_hideLinks8, g_showLinks8 },
-			{ g_hideLinks9, g_showLinks9 },
-			{ g_hideLinks10, g_showLinks10 },
-			{ g_hideLinks11, g_showLinks11 },
-			{ g_hideLinks12, g_showLinks12 },
-			{ g_hideLinks13, g_showLinks13 },
-			{ g_hideLinks14, g_showLinks14 },
-			{ g_hideLinks15, g_showLinks15 },
+			{ g_hideLinks1, g_showLinks1 },	  { g_hideLinks2, g_showLinks2 },	{ g_hideLinks3, g_showLinks3 },	  { g_hideLinks4, g_showLinks4 },
+			{ g_hideLinks5, g_showLinks5 },	  { g_hideLinks6, g_showLinks6 },	{ g_hideLinks7, g_showLinks7 },	  { g_hideLinks8, g_showLinks8 },
+			{ g_hideLinks9, g_showLinks9 },	  { g_hideLinks10, g_showLinks10 }, { g_hideLinks11, g_showLinks11 }, { g_hideLinks12, g_showLinks12 },
+			{ g_hideLinks13, g_showLinks13 }, { g_hideLinks14, g_showLinks14 }, { g_hideLinks15, g_showLinks15 },
 		};
 
 		// GLOBAL: TOY2 0x004F6BE4
@@ -137,20 +126,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x00500B20
 		float g_arrowRects[56] = {
-			0.0, 0.0, 255.0, 64.0,
-			0.0, 64.0, 72.0, 146.0,
-			0.0, 146.0, 72.0, 226.0,
-			0.0, 226.0, 72.0, 305.0,
-			0.0, 306.0, 255.0, 382.0,
-			72.0, 64.0, 78.0, 70.0,
-			72.0, 299.0, 78.0, 305.0,
-			256.0, 0.0, 511.0, 64.0,
-			440.0, 64.0, 511.0, 146.0,
-			440.0, 146.0, 511.0, 226.0,
-			440.0, 226.0, 511.0, 305.0,
-			256.0, 306.0, 511.0, 382.0,
-			434.0, 64.0, 440.0, 70.0,
-			434.0, 299.0, 440.0, 305.0,
+			0.0,   0.0,	  255.0, 64.0,	0.0,   64.0,  72.0,	 146.0, 0.0,   146.0, 72.0,	 226.0, 0.0,   226.0, 72.0,	 305.0, 0.0,   306.0, 255.0,
+			382.0, 72.0,  64.0,	 78.0,	70.0,  72.0,  299.0, 78.0,	305.0, 256.0, 0.0,	 511.0, 64.0,  440.0, 64.0,	 511.0, 146.0, 440.0, 146.0,
+			511.0, 226.0, 440.0, 226.0, 511.0, 305.0, 256.0, 306.0, 511.0, 382.0, 434.0, 64.0,	440.0, 70.0,  434.0, 299.0, 440.0, 305.0,
 		};
 
 		// GLOBAL: TOY2 0x00500AB0
@@ -335,7 +313,8 @@ namespace Toy2
 					float width = invWidth * (rect[2] - rect[0] + 1.0);
 					float height = invHeight * (rect[3] - rect[1] + 1.0);
 
-					Renderer::Sprite::Queue2DSprite((rect[0] - g_arrowZoomProgress) * invWidth,
+					Renderer::Sprite::Queue2DSprite(
+						(rect[0] - g_arrowZoomProgress) * invWidth,
 						(rect[1] - g_arrowZoomProgress) * invHeight,
 						width,
 						height,
@@ -548,8 +527,7 @@ namespace Toy2
 				do
 				{
 					Nu3D::Link::FollowWaypointPath(pathObj2++, 8, pathProgress2++);
-				}
-				while (pathObj2 < 96);
+				} while (pathObj2 < 96);
 
 				int32_t pathObj3 = 96;
 				int32_t* pathProgres3 = &pathData.pathProgress[9];
@@ -557,8 +535,7 @@ namespace Toy2
 				do
 				{
 					Nu3D::Link::FollowWaypointPath(pathObj3++, 9, pathProgres3++);
-				}
-				while (pathObj3 < 100);
+				} while (pathObj3 < 100);
 
 				int32_t levelPointBase = 3 * curLevel;
 				int32_t targetPointIdx = subPointIdx + 3 * curLevel;

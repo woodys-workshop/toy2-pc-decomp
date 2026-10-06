@@ -31,4 +31,3 @@ namespace InputManager
 
 	STATIC_ASSERT(sizeof(InputMapping) == 0x8);
 }
-

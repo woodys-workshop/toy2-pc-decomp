@@ -9,7 +9,6 @@
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 
-
 #define D3DFVF_0x152 (D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 #define D3DFVF_0x1C4 (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
 
@@ -24,8 +23,13 @@ namespace DrawingAPI
 {
 	// Drawing Methods
 	typedef HRESULT Device_DrawIndexedPrimitiveVB(
-		D3DPRIMITIVETYPE primitiveType, LPDIRECT3DVERTEXBUFFER vertexBuffer, WORD* indices, DWORD indexCount, DWORD flags);
-	typedef HRESULT Device_DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType,
+		D3DPRIMITIVETYPE primitiveType,
+		LPDIRECT3DVERTEXBUFFER vertexBuffer,
+		WORD* indices,
+		DWORD indexCount,
+		DWORD flags);
+	typedef HRESULT Device_DrawIndexedPrimitive(
+		D3DPRIMITIVETYPE d3dptPrimitiveType,
 		DWORD dwVertexTypeDesc,
 		LPVOID lpvVertices,
 		DWORD dwVertexCount,
@@ -39,7 +43,8 @@ namespace DrawingAPI
 	typedef HRESULT Device_LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
 	typedef HRESULT Device_UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	typedef HRESULT Device_OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
-	typedef HRESULT Device_ProcessVerticesOnBuffer(LPDIRECT3DVERTEXBUFFER destBuffer,
+	typedef HRESULT Device_ProcessVerticesOnBuffer(
+		LPDIRECT3DVERTEXBUFFER destBuffer,
 		DWORD dwVertexOp,
 		DWORD dwDestIndex,
 		DWORD dwCount,
@@ -125,7 +130,16 @@ namespace Renderer
 
 	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue);
 	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth);
-	void BlitTextureByIndexOffset(int32_t texIndex, int32_t destX, int32_t destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY);
+	void BlitTextureByIndexOffset(
+		int32_t texIndex,
+		int32_t destX,
+		int32_t destY,
+		int32_t width,
+		int32_t height,
+		int32_t horizontalWrapOffset,
+		int32_t verticalWrapOffset,
+		int32_t srcX,
+		int32_t srcY);
 	void DrawMenuText(int16_t yPos, char* text, int32_t shadow);
 	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale);
 	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth);

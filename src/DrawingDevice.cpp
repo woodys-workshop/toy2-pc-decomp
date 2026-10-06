@@ -299,7 +299,8 @@ namespace DrawingDevice
 			if (m_rcViewportRect.right == 320 && m_rcViewportRect.bottom == 200)
 				dmFlags = displayMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount == 8;
 
-			if (m_pDD->SetDisplayMode(m_rcViewportRect.right,
+			if (m_pDD->SetDisplayMode(
+					m_rcViewportRect.right,
 					m_rcViewportRect.bottom,
 					displayMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount,
 					displayMode->surfaceDesc.dwRefreshRate,
@@ -851,7 +852,8 @@ namespace HardwareDevice
 	}
 
 	// FUNCTION: TOY2 0x004AC300
-	HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType,
+	HRESULT DrawIndexedPrimitive(
+		D3DPRIMITIVETYPE d3dptPrimitiveType,
 		DWORD dwVertexTypeDesc,
 		LPVOID lpvVertices,
 		DWORD dwVertexCount,
@@ -887,7 +889,8 @@ namespace HardwareDevice
 	HRESULT OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags) { return buffer->Optimize(device, flags); }
 
 	// FUNCTION: TOY2 0x004AC030
-	HRESULT ProcessVerticesOnBuffer(LPDIRECT3DVERTEXBUFFER destBuffer,
+	HRESULT ProcessVerticesOnBuffer(
+		LPDIRECT3DVERTEXBUFFER destBuffer,
 		DWORD dwVertexOp,
 		DWORD dwDestIndex,
 		DWORD dwCount,

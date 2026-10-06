@@ -64,7 +64,7 @@ namespace Renderer
 			{
 				LPDIRECTDRAWSURFACE4 backBuffer = DrawingDevice::GetBackBuffer();
 
-                DDSURFACEDESC2 surfaceDesc;
+				DDSURFACEDESC2 surfaceDesc;
 				surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
 
 				backBuffer->GetSurfaceDesc(&surfaceDesc);

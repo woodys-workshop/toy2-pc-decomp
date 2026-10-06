@@ -37,12 +37,22 @@ namespace Nu3D
 		};
 
 		void Init();
-		Nu3D::Particles::ParticleInstance* SpawnInstance(int32_t spawnX, int32_t spawnY, int32_t spawnZ, int32_t velX, int32_t velY, int32_t velZ, int32_t scale, int16_t flags, int32_t secondaryParam, int32_t particleTypeIndex);
+		Nu3D::Particles::ParticleInstance* SpawnInstance(
+			int32_t spawnX,
+			int32_t spawnY,
+			int32_t spawnZ,
+			int32_t velX,
+			int32_t velY,
+			int32_t velZ,
+			int32_t scale,
+			int16_t flags,
+			int32_t secondaryParam,
+			int32_t particleTypeIndex);
 		Nu3D::Particles::ParticleInstance* SpawnFromPreset(int32_t spawnX, int32_t spawnY, int32_t spawnZ, int32_t particleIndex, int32_t presetIndex);
 		void Update();
 
-        extern ParticleInstance g_particleInstances[64];
+		extern ParticleInstance g_particleInstances[64];
 
-	    STATIC_ASSERT(sizeof(ParticleInstance) == 0x3C);
+		STATIC_ASSERT(sizeof(ParticleInstance) == 0x3C);
 	}
 }

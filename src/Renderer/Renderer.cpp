@@ -662,7 +662,7 @@ namespace Renderer
 		else
 		{
 			// Sleep away the bulk of the wait, spin for the last stretch so we land on the deadline
-			while(true)
+			while (true)
 			{
 				QueryPerformanceCounter(&now);
 				int64_t remainingTicks = nextFrameTime.QuadPart - now.QuadPart;
@@ -1192,7 +1192,8 @@ namespace Renderer
 						RGBA color;
 						color.value = -1;
 
-						Sprite::Queue2DSprite(g_parallaxCurHorizScroll,
+						Sprite::Queue2DSprite(
+							g_parallaxCurHorizScroll,
 							g_parallaxHorizOffset,
 							g_parallaxTexWidthRatio,
 							g_parallaxTexHeightRatio,
@@ -1505,7 +1506,17 @@ namespace Renderer
 	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
 
 	// STUB: TOY2 0x0049B260
-	void BlitTextureByIndexOffset(int32_t texIndex, int32_t destX, int32_t destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY) {}
+	void BlitTextureByIndexOffset(
+		int32_t texIndex,
+		int32_t destX,
+		int32_t destY,
+		int32_t width,
+		int32_t height,
+		int32_t horizontalWrapOffset,
+		int32_t verticalWrapOffset,
+		int32_t srcX,
+		int32_t srcY)
+	{}
 
 	// STUB: TOY2 0x0049B2A0
 	void DrawMenuText(int16_t yPos, char* text, int32_t shadow) {}
@@ -1520,7 +1531,17 @@ namespace Renderer
 	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...) {}
 
 	// STUB: TOY2 0x004AFD30
-	void BlitBitmapWithWrapping(Nu3D::BmpDataNode* bmpDataNode, int32_t srcX, int32_t srcY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, LONG destX, LONG destY) {}
+	void BlitBitmapWithWrapping(
+		Nu3D::BmpDataNode* bmpDataNode,
+		int32_t srcX,
+		int32_t srcY,
+		int32_t width,
+		int32_t height,
+		int32_t horizontalWrapOffset,
+		int32_t verticalWrapOffset,
+		LONG destX,
+		LONG destY)
+	{}
 
 	// STUB: TOY2 0x004B87F0
 	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage) {}
@@ -1541,7 +1562,17 @@ namespace Renderer
 	int32_t Set9F5FF8(int32_t value) { return 0; }
 
 	// STUB: TOY2 0x004CE510
-	void BlitTextureByIndex(int32_t texIndex, LONG destX, LONG destY, int32_t width, int32_t height, int32_t horizontalWrapOffset, int32_t verticalWrapOffset, int32_t srcX, int32_t srcY) {}
+	void BlitTextureByIndex(
+		int32_t texIndex,
+		LONG destX,
+		LONG destY,
+		int32_t width,
+		int32_t height,
+		int32_t horizontalWrapOffset,
+		int32_t verticalWrapOffset,
+		int32_t srcX,
+		int32_t srcY)
+	{}
 
 	// STUB: TOY2 0x004B89B0
 	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct) { return 0; }

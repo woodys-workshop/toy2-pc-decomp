@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "Numerics.h"
 
-
 namespace Renderer
 {
 	namespace Beam
@@ -24,8 +23,23 @@ namespace Renderer
 		extern BeamRequest g_beamRequests[100];
 
 		void DrawSegmentedBeam(
-			int32_t spriteSheet, int32_t halfWidth, int32_t segmentLength, WorldPos* origin, WorldPos* direction, uint8_t tintB, uint8_t tintG, uint8_t tintR);
-		void QueueBeam(int32_t spriteSheet, int32_t halfWidth, int32_t segementLength, WorldPos* origin, WorldPos* direction, uint8_t tintB, uint8_t tintG, uint8_t tintR);
+			int32_t spriteSheet,
+			int32_t halfWidth,
+			int32_t segmentLength,
+			WorldPos* origin,
+			WorldPos* direction,
+			uint8_t tintB,
+			uint8_t tintG,
+			uint8_t tintR);
+		void QueueBeam(
+			int32_t spriteSheet,
+			int32_t halfWidth,
+			int32_t segementLength,
+			WorldPos* origin,
+			WorldPos* direction,
+			uint8_t tintB,
+			uint8_t tintG,
+			uint8_t tintR);
 
 		STATIC_ASSERT(sizeof(BeamRequest) == 0x38);
 	}

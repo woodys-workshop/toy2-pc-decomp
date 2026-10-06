@@ -3,7 +3,6 @@
 #include "Common.h"
 #include "Toy2/Actor.h"
 
-
 namespace NGNLoader
 {
 	struct NGNImage;

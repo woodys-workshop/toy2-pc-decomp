@@ -393,6 +393,14 @@ namespace Renderer
 	namespace InstanceData
 	{
 		// STUB: TOY2 0x004B8840
-		Nu3D::InstanceData* AllocFromNodeMatrices(D3DMATRIX* nodeMatrices, Nu3D::Primitive::Header* headers, int32_t headerCount, int32_t** flags, int32_t renderStage) { return 0; }
+		Nu3D::InstanceData* AllocFromNodeMatrices(
+			D3DMATRIX* nodeMatrices,
+			Nu3D::Primitive::Header* headers,
+			int32_t headerCount,
+			int32_t** flags,
+			int32_t renderStage)
+		{
+			return 0;
+		}
 	}
 }

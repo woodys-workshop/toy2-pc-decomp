@@ -417,7 +417,13 @@ namespace SoftwareRenderer
 	int32_t GetStrideFromFVF(int32_t fvf) { return 0; }
 
 	// STUB: TOY2 0x004B6140
-	void SubmitTriangleStripRaw(int32_t renderFlags, LPDIRECT3DVERTEXBUFFER vertexBuffer, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount) {}
+	void SubmitTriangleStripRaw(
+		int32_t renderFlags,
+		LPDIRECT3DVERTEXBUFFER vertexBuffer,
+		Renderer::RenderEntry* renderEntry,
+		uint16_t* indices,
+		int32_t vertexCount)
+	{}
 
 	// STUB: TOY2 0x004B6220
 	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices) { return 0; }

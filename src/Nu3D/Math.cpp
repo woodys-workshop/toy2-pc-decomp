@@ -631,8 +631,9 @@ namespace Nu3D
 			float xAxisOriginalMagnitude = matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13;
 			float yAxisOriginalMagnitude = yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23;
 
-			float zAxisScale = sqrt((zAxis->x * zAxis->x + matrix->_32 * matrix->_32 + matrix->_33 * matrix->_33) /
-									(direction->x * direction->x + direction->y * direction->y + direction->z * direction->z));
+			float zAxisScale = sqrt(
+				(zAxis->x * zAxis->x + matrix->_32 * matrix->_32 + matrix->_33 * matrix->_33)
+				/ (direction->x * direction->x + direction->y * direction->y + direction->z * direction->z));
 
 			zAxis->x = zAxisScale * direction->x;
 			matrix->_32 = zAxisScale * direction->y;
@@ -685,7 +686,21 @@ namespace Nu3D
 		int32_t NormalizeToFixedPoint16(Vector3I16* in, Vector3I16* out) { return 0; }
 
 		// STUB: TOY2 0x00480AE0
-		int16_t PointIntersectsTriangle(int32_t pointX, int32_t pointY, int32_t pointZ, int32_t edge0X, int32_t edge0Y, int32_t edge0Z, int32_t edge1X, int32_t edge1Y, int32_t edge1Z, Vector3I16* normal, int32_t radius) { return 0; }
+		int16_t PointIntersectsTriangle(
+			int32_t pointX,
+			int32_t pointY,
+			int32_t pointZ,
+			int32_t edge0X,
+			int32_t edge0Y,
+			int32_t edge0Z,
+			int32_t edge1X,
+			int32_t edge1Y,
+			int32_t edge1Z,
+			Vector3I16* normal,
+			int32_t radius)
+		{
+			return 0;
+		}
 
 		// STUB: TOY2 0x00490B90
 		void CrossProduct3D(Vector3I* a, Vector3I* b, Vector3I* out) {}

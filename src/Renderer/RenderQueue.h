@@ -9,7 +9,6 @@
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 
-
 namespace Renderer
 {
 	extern Nu3D::Sprite* g_spriteBuckets[256];
@@ -61,7 +60,12 @@ namespace Renderer
 	namespace InstanceData
 	{
 		Nu3D::InstanceData* AllocFromMatrix(D3DMATRIX* matrix, int32_t renderFlags);
-		Nu3D::InstanceData* AllocFromNodeMatrices(D3DMATRIX* nodeMatrices, Nu3D::Primitive::Header* headers, int32_t headerCount, int32_t** flags, int32_t renderStage);
+		Nu3D::InstanceData* AllocFromNodeMatrices(
+			D3DMATRIX* nodeMatrices,
+			Nu3D::Primitive::Header* headers,
+			int32_t headerCount,
+			int32_t** flags,
+			int32_t renderStage);
 	}
 
 	namespace Vertices

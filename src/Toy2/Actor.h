@@ -5,7 +5,6 @@
 #include "Numerics.h"
 #include <windows.h>
 
-
 namespace Toy2
 {
 	namespace Actor
@@ -82,7 +81,14 @@ namespace Toy2
 		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ);
 		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx);
 		void RotatingHint(int32_t actorIdx, int32_t recordIdx, char** hintTable);
-		void ItemReturnReward(int32_t actorIdx, int32_t recordIdx, char* textInProgress, char* textFoundPiece, char* textComplete, int32_t camAngleValue, int32_t camAngle);
+		void ItemReturnReward(
+			int32_t actorIdx,
+			int32_t recordIdx,
+			char* textInProgress,
+			char* textFoundPiece,
+			char* textComplete,
+			int32_t camAngleValue,
+			int32_t camAngle);
 		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx);
 		void PopulateActiveActors();
 		void SetNodeAngle(Toy2::Actor::Toy2Actor* actor, int32_t index, int32_t x, int32_t y, int32_t z);

@@ -50,7 +50,15 @@ namespace Toy2
 		void RotatingHint(int32_t actorIdx, int32_t recordIdx, char** hintTable) {}
 
 		// STUB: TOY2 0x004A2480
-		void ItemReturnReward(int32_t actorIdx, int32_t recordIdx, char* textInProgress, char* textFoundPiece, char* textComplete, int32_t camAngleValue, int32_t camAngle) {}
+		void ItemReturnReward(
+			int32_t actorIdx,
+			int32_t recordIdx,
+			char* textInProgress,
+			char* textFoundPiece,
+			char* textComplete,
+			int32_t camAngleValue,
+			int32_t camAngle)
+		{}
 
 		// STUB: TOY2 0x004A26F0
 		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx) {}

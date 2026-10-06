@@ -30,7 +30,14 @@ namespace CharacterLoader
 	void Load(const char* fileName, int32_t* a2, uint8_t** levelData, int16_t creatureId, uint32_t* a5, CharacterLoader::CharacterBoundData* boundData) {}
 
 	// STUB: TOY2 0x0043AED0
-	void LoadBuzzLight(const char* charName, int16_t* boneCursor, void** buffer, int16_t creatureId, int32_t* attachBone, CharacterLoader::CharacterBoundData* boundData) {}
+	void LoadBuzzLight(
+		const char* charName,
+		int16_t* boneCursor,
+		void** buffer,
+		int16_t creatureId,
+		int32_t* attachBone,
+		CharacterLoader::CharacterBoundData* boundData)
+	{}
 
 	// STUB: TOY2 0x0043B0C0
 	void LoadCharacterData(int32_t* result, uint8_t** levelData, uint8_t* creatureList) {}
@@ -47,4 +54,3 @@ namespace CharacterLoader
 	// STUB: TOY2 0x0043D820
 	int32_t LoadAll(const char* fileName, int32_t index, void** buffer) { return 0; }
 }
-

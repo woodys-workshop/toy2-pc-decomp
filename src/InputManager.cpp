@@ -477,4 +477,3 @@ namespace InputManager
 	// STUB: TOY2 0x0049EBA0
 	void UpdateDirectionInputState() {}
 }
-

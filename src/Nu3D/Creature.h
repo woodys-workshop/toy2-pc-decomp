@@ -29,5 +29,5 @@ namespace Nu3D
 		static void SetNodeVisibleByIndex(int32_t creatureIndex, int32_t nodeIdx, int32_t visible);
 	};
 
-    STATIC_ASSERT(sizeof(Creature) == 0x30);
+	STATIC_ASSERT(sizeof(Creature) == 0x30);
 }

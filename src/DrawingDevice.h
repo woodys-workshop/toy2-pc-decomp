@@ -160,7 +160,8 @@ namespace HardwareDevice
 {
 	// Drawing Methods
 	HRESULT DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE primitiveType, LPDIRECT3DVERTEXBUFFER vertexBuffer, WORD* indices, DWORD indexCount, DWORD flags);
-	HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType,
+	HRESULT DrawIndexedPrimitive(
+		D3DPRIMITIVETYPE d3dptPrimitiveType,
 		DWORD dwVertexTypeDesc,
 		LPVOID lpvVertices,
 		DWORD dwVertexCount,
@@ -174,7 +175,8 @@ namespace HardwareDevice
 	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
 	HRESULT UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	HRESULT OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
-	HRESULT ProcessVerticesOnBuffer(LPDIRECT3DVERTEXBUFFER destBuffer,
+	HRESULT ProcessVerticesOnBuffer(
+		LPDIRECT3DVERTEXBUFFER destBuffer,
 		DWORD dwVertexOp,
 		DWORD dwDestIndex,
 		DWORD dwCount,

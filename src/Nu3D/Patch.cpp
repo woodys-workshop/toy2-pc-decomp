@@ -6,8 +6,8 @@
 
 namespace Nu3D
 {
-    // GLOBAL: TOY2 0x00884480
-    Patch *g_patchListHead;
+	// GLOBAL: TOY2 0x00884480
+	Patch* g_patchListHead;
 
 	// FUNCTION: TOY2 0x004B2EB0
 	void Patch::PatchVertices::ReleaseBuffer(PatchVertices* patchVertices)

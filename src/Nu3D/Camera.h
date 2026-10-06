@@ -8,7 +8,6 @@
 #include <directx6/d3d.h>
 #include <windows.h>
 
-
 namespace Nu3D
 {
 	// TODO: Fix

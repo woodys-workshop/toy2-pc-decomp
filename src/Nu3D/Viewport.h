@@ -66,7 +66,7 @@ namespace Nu3D
 		void Init();
 		void Reset();
 		void SetViewClipRect();
-        void GetViewClipRect(ViewportRect* output);
+		void GetViewClipRect(ViewportRect* output);
 		void GetClipNormMatrix(D3DMATRIX* out);
 		void GetScreenSpaceMatrix(D3DMATRIX* out);
 		void SetClipRect(float left, float top, float right, float bottom);

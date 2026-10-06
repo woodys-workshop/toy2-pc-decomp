@@ -18,7 +18,7 @@ namespace Logger
 	void LogLn(char* format, ...);
 	void LogD3DError(int32_t errorCode);
 	void LogDDError(const char* message, HRESULT error);
-	void DebugLog(char *format, ...);
+	void DebugLog(char* format, ...);
 	char* ErrorToMessage(HRESULT error);
 
 	void LogErrorNotSetLn(char* format, ...);

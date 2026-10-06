@@ -113,11 +113,7 @@ namespace ModeSelect
 
 	// GLOBAL: TOY2 0x004F56FC
 	const char* g_deviceSelectionInstructions[5] = {
-		"Please select your preferred display",
-		"device using the arrow keys.",
-		"Press the space bar to confirm",
-		"your choice.",
-		0,
+		"Please select your preferred display", "device using the arrow keys.", "Press the space bar to confirm", "your choice.", 0,
 	};
 
 	// GLOBAL: TOY2 0x004F5710
@@ -444,7 +440,12 @@ namespace ModeSelect
 
 	// FUNCTION: TOY2 0x004AC760
 	HRESULT CALLBACK D3DDeviceEnumCallback(
-		GUID* lpGuid, LPSTR lpDeviceDescription, LPSTR lpDeviceName, LPD3DDEVICEDESC lpD3DHWDeviceDesc, LPD3DDEVICEDESC lpD3DHELDeviceDesc, LPVOID lpContext)
+		GUID* lpGuid,
+		LPSTR lpDeviceDescription,
+		LPSTR lpDeviceName,
+		LPD3DDEVICEDESC lpD3DHWDeviceDesc,
+		LPD3DDEVICEDESC lpD3DHELDeviceDesc,
+		LPVOID lpContext)
 	{
 		using namespace DrawingDevice;
 
@@ -1040,7 +1041,7 @@ namespace ModeSelect
 					ApplyTextStyle(g_offscreenDC, g_instructionFont, 0xFFFFFF, 0);
 
 					for (const char* instructionLine = *instructionLines; instructionLine;
-						instructionLineYIter = (instructionLineYIter + g_instructionLineHeight))
+						 instructionLineYIter = (instructionLineYIter + g_instructionLineHeight))
 					{
 						DrawTextOutA(g_offscreenDC, g_textStartX, instructionLineYIter, instructionLine);
 
@@ -1238,7 +1239,8 @@ namespace ModeSelect
 		wndExStyle = 0;
 #endif
 
-		g_hWnd = CreateWindowExA(wndExStyle,
+		g_hWnd = CreateWindowExA(
+			wndExStyle,
 			"Screen Mode Select",
 			"Screen Mode Select",
 			CW_USEDEFAULT,
@@ -1396,7 +1398,7 @@ namespace ModeSelect
 							DDAppDevice* restoredDevice;
 
 							for (g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead; restoredDeviceIndex < g_savedDeviceIndex || g_savedDeviceIndex < 0;
-								g_ddAppSelectedDevice = restoredDevice)
+								 g_ddAppSelectedDevice = restoredDevice)
 							{
 								restoredDevice = deviceListHead->nextDevice;
 
@@ -1422,7 +1424,7 @@ namespace ModeSelect
 							DDAppDevice::DisplayMode* restoredMode;
 
 							for (g_ddAppSelectedDisplayMode = restoredModeListHead; restoredModeIndex < g_savedModeIndex || g_savedModeIndex < 0;
-								g_ddAppSelectedDisplayMode = restoredMode)
+								 g_ddAppSelectedDisplayMode = restoredMode)
 							{
 								restoredMode = restoredModeListHead->nextDisplayMode;
 
@@ -1623,7 +1625,7 @@ namespace ModeSelect
 								g_ddAppSelectedDisplayMode = upArrowMode;
 
 								for (DDAppDevice::DisplayMode* upArrowModeIter = upArrowMode->nextDisplayMode; upArrowModeIter;
-									upArrowModeIter = upArrowModeIter->nextDisplayMode)
+									 upArrowModeIter = upArrowModeIter->nextDisplayMode)
 								{
 									if (upArrowMode->surfaceDesc.dwHeight >= 480)
 										break;
@@ -1688,7 +1690,7 @@ namespace ModeSelect
 					DDAppDevice* fallbackDeviceIter;
 
 					for (g_ddAppSelectedDevice = selectedDevice; fallbackDeviceIndex < g_savedDeviceIndex || g_savedDeviceIndex < 0;
-						g_ddAppSelectedDevice = fallbackDeviceIter)
+						 g_ddAppSelectedDevice = fallbackDeviceIter)
 					{
 						fallbackDeviceIter = selectedDevice->nextDevice;
 
@@ -1715,7 +1717,7 @@ namespace ModeSelect
 					DDAppDevice::DisplayMode* fallbackMode;
 
 					for (g_ddAppSelectedDisplayMode = selectedModeListHead; restoredModeIndex < g_savedModeIndex || g_savedModeIndex < 0;
-						g_ddAppSelectedDisplayMode = fallbackMode)
+						 g_ddAppSelectedDisplayMode = fallbackMode)
 					{
 						fallbackMode = selectedModeListHead->nextDisplayMode;
 

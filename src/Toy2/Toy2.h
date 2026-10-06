@@ -4,7 +4,6 @@
 #include "Numerics.h"
 #include "Toy2/Actor.h"
 
-
 namespace Toy2
 {
 	struct ToyCfg
@@ -62,7 +61,14 @@ namespace Toy2
 	void PlayLevelMusic();
 	void ActivateGravityBoots();
 	void RespawnCosmicShield();
-	Toy2::BeamShot* SpawnBeamShot(int32_t beamType, int16_t aimYaw, int16_t aimPitch, WorldPos* origin, WorldPos* headOffset, int32_t range, Toy2::Actor::Toy2Actor* autoAimActor);
+	Toy2::BeamShot* SpawnBeamShot(
+		int32_t beamType,
+		int16_t aimYaw,
+		int16_t aimPitch,
+		WorldPos* origin,
+		WorldPos* headOffset,
+		int32_t range,
+		Toy2::Actor::Toy2Actor* autoAimActor);
 	int32_t ShowTokenSparkle();
 
 	extern ToyCfg g_toyCfgData;

@@ -1135,7 +1135,12 @@ namespace NGNLoader
 
 	// FUNCTION: TOY2 0x004BB5E0
 	void RetrieveTextureData(
-		int32_t texDataIndex, uint32_t* bitmapWidthOut, uint32_t* bitmapHeightOut, uint32_t* textureWidth, uint32_t* textureHeight, uint32_t** textureData)
+		int32_t texDataIndex,
+		uint32_t* bitmapWidthOut,
+		uint32_t* bitmapHeightOut,
+		uint32_t* textureWidth,
+		uint32_t* textureHeight,
+		uint32_t** textureData)
 	{
 		if (texDataIndex)
 		{

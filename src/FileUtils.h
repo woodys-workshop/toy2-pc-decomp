@@ -7,7 +7,7 @@ namespace FileUtils
 	extern char g_fileNameBuffer[260];
 
 	int32_t GetFileSize(const char* fileName);
-    
+
 	void AppendCDPath(char* path);
 	void AppendRegPathToBuffer();
 	void GetPathValue(char* pathOut);

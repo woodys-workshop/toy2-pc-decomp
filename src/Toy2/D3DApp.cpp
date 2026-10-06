@@ -73,7 +73,8 @@ namespace D3DApp
 
 		int32_t curDeviceCount = 1;
 
-		g_windowData.mainHwnd = CreateWindowExA(WS_EX_APPWINDOW,
+		g_windowData.mainHwnd = CreateWindowExA(
+			WS_EX_APPWINDOW,
 			"Examining Machine",
 			"Examining Machine",
 			WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
@@ -211,7 +212,8 @@ namespace D3DApp
 					Logger::Log("INFO Direct3D - Found no hardware RGB drivers.\n");
 					g_pcStruct.defaultDriver = g_pcStruct.examineDevices;
 
-					Logger::Log("INFO DirectDraw - Resetting to default driver >>>%s,%s<<<.\n",
+					Logger::Log(
+						"INFO DirectDraw - Resetting to default driver >>>%s,%s<<<.\n",
 						g_pcStruct.examineDevices[0].driverName,
 						g_pcStruct.examineDevices[0].driverDesc);
 
@@ -245,7 +247,8 @@ namespace D3DApp
 					g_pcStruct.fullscreenMode = 1;
 					g_pcStruct.selectedInterfaceDevice = &g_pcStruct.defaultDriver->interfaceDevices[interfaceDeviceIndex];
 
-					Logger::Log("INFO Direct3D - Hardware driver >>>%s, %s<<< selected\n",
+					Logger::Log(
+						"INFO Direct3D - Hardware driver >>>%s, %s<<< selected\n",
 						g_pcStruct.defaultDriver->interfaceDevices[interfaceDeviceIndex].baseName,
 						g_pcStruct.defaultDriver->interfaceDevices[interfaceDeviceIndex].description);
 				}
@@ -354,7 +357,8 @@ namespace D3DApp
 							defaultDriver = g_pcStruct.defaultDriver;
 						}
 					}
-					else if (defaultWidth == 640 && defaultDriver->displayModes[deviceLoopIndex].height == 480
+					else if (
+						defaultWidth == 640 && defaultDriver->displayModes[deviceLoopIndex].height == 480
 						&& defaultDriver->displayModes[deviceLoopIndex].rgbBitCount == 16)
 					{
 						g_pcStruct.mode = &defaultDriver->displayModes[deviceLoopIndex];
@@ -459,7 +463,8 @@ namespace D3DApp
 			int32_t lastError = GetLastError();
 
 			char* buffer = NULL;
-			FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			FormatMessageA(
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 				0,
 				lastError,
 				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),

@@ -35,4 +35,3 @@ namespace Toy2
 		void GetRootWorldPos(Vector3F* out, int32_t index) {}
 	}
 }
-

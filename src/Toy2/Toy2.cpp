@@ -371,7 +371,8 @@ namespace Toy2
 			Renderer::ConfigureFog(24000.0, 48000.0, clearColor);
 		}
 
-		Nu3D::Light::SetDirectionalLight(-g_buzzActor.lightDirection.x,
+		Nu3D::Light::SetDirectionalLight(
+			-g_buzzActor.lightDirection.x,
 			-g_buzzActor.lightDirection.y,
 			-g_buzzActor.lightDirection.z,
 			g_buzzActor.color.r,
@@ -483,7 +484,8 @@ namespace Toy2
 							RGBA color;
 							color.value = (alpha << 24) + 0xFFFFFF;
 
-							Renderer::Sprite::QueueQuadSprite(&position,
+							Renderer::Sprite::QueueQuadSprite(
+								&position,
 								0,
 								100.0,
 								100.0,
@@ -512,7 +514,8 @@ namespace Toy2
 							{
 								color.value = 0xFFAAAAAA;
 
-								Renderer::Sprite::QueueGroundAlignedSprite(&position,
+								Renderer::Sprite::QueueGroundAlignedSprite(
+									&position,
 									0,
 									80.0,
 									80.0,
@@ -526,7 +529,8 @@ namespace Toy2
 							{
 								color.value = 0x88000000;
 
-								Renderer::Sprite::QueueGroundAlignedSprite(&position,
+								Renderer::Sprite::QueueGroundAlignedSprite(
+									&position,
 									0,
 									80.0,
 									80.0,
@@ -544,7 +548,8 @@ namespace Toy2
 								Vector3I rotation = { 0, 0, 0 };
 
 								Nu3D::Link::GetRotation8Bit(pickup->props.linkId, &rotation);
-								Nu3D::Link::SetRotationAbsolute8bit(pickup->props.linkId,
+								Nu3D::Link::SetRotationAbsolute8bit(
+									pickup->props.linkId,
 									rotation.x + 10 * Renderer::g_frameDelta,
 									rotation.y + 2 * Renderer::g_frameDelta * (3 * ((i >> 2) & 3) + 7),
 									rotation.z + 2 * Renderer::g_frameDelta * ((i & 7) + 4));
@@ -602,7 +607,8 @@ namespace Toy2
 							RGBA white;
 							white.value = 0xFFFFFFFF;
 
-							Renderer::Sprite::QueueQuadSprite(&position,
+							Renderer::Sprite::QueueQuadSprite(
+								&position,
 								0,
 								150.0,
 								250.0,
@@ -1716,7 +1722,17 @@ namespace Toy2
 	void RespawnCosmicShield() {}
 
 	// STUB: TOY2 0x004A5D30
-	Toy2::BeamShot* SpawnBeamShot(int32_t beamType, int16_t aimYaw, int16_t aimPitch, WorldPos* origin, WorldPos* headOffset, int32_t range, Toy2::Actor::Toy2Actor* autoAimActor) { return 0; }
+	Toy2::BeamShot* SpawnBeamShot(
+		int32_t beamType,
+		int16_t aimYaw,
+		int16_t aimPitch,
+		WorldPos* origin,
+		WorldPos* headOffset,
+		int32_t range,
+		Toy2::Actor::Toy2Actor* autoAimActor)
+	{
+		return 0;
+	}
 
 	// STUB: TOY2 0x004CD110
 	int32_t ShowTokenSparkle() { return 0; }

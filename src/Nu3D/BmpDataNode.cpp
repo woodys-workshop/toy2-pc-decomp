@@ -720,8 +720,9 @@ namespace Nu3D
 				uint32_t width = surfaceDesc.dwWidth;
 				uint32_t bitCount = surfaceDesc.ddpfPixelFormat.dwRGBBitCount;
 
-				int32_t* srcRowPtr = (int32_t*)((uint8_t*)dibSection.dsBm.bmBits
-					+ dibSection.dsBm.bmWidthBytes * (dibSection.dsBm.bmHeight - currentRow * dibSection.dsBm.bmHeight / surfaceDesc.dwHeight - 1));
+				int32_t* srcRowPtr =
+					(int32_t*)((uint8_t*)dibSection.dsBm.bmBits
+							   + dibSection.dsBm.bmWidthBytes * (dibSection.dsBm.bmHeight - currentRow * dibSection.dsBm.bmHeight / surfaceDesc.dwHeight - 1));
 
 				int32_t* destRowPtr = (int32_t*)((uint8_t*)surfaceDesc.lpSurface + currentRow * surfaceDesc.lPitch);
 

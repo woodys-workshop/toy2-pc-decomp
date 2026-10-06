@@ -22,7 +22,6 @@ namespace Nu3D
 	}
 }
 
-
 namespace NGNLoader
 {
 	struct TextureEntry

@@ -48,7 +48,7 @@ namespace CharacterLoader
 	extern int32_t g_alternateAllParse[128];
 	extern uint8_t* g_charFileDataCache[128];
 
-	void Start(int32_t *value, uint8_t **buffer, uint8_t *creatureList);
+	void Start(int32_t* value, uint8_t** buffer, uint8_t* creatureList);
 
 	STATIC_ASSERT(sizeof(BoneTransform) == 0x6C);
 	STATIC_ASSERT(sizeof(CharacterBoundData) == 0x8);

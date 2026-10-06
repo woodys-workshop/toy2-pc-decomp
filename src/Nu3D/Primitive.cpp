@@ -90,7 +90,8 @@ namespace Nu3D
 					for (int32_t corner = 0; corner < 4; corner++)
 					{
 						Vector3F* cornerPosition = &prim->patchVerts.data.vertices[firstCorner + corner].position;
-						float cornerLengthSq = cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
+						float cornerLengthSq =
+							cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
 
 						if (cornerRadiusSq <= cornerLengthSq)
 							cornerRadiusSq = cornerLengthSq;
@@ -166,7 +167,8 @@ namespace Nu3D
 					for (int32_t corner = 0; corner < 4; corner++)
 					{
 						Vector3F* cornerPosition = &prim->patchVerts.data.vertices[firstCorner + corner].position;
-						float cornerLengthSq = cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
+						float cornerLengthSq =
+							cornerPosition->x * cornerPosition->x + cornerPosition->y * cornerPosition->y + cornerPosition->z * cornerPosition->z;
 
 						if (cornerRadiusSq <= cornerLengthSq)
 							cornerRadiusSq = cornerLengthSq;

@@ -144,7 +144,8 @@ namespace Renderer
 		}
 
 		// FUNCTION: TOY2 0x004B8CC0
-		void Queue2DSprite(float xPosition,
+		void Queue2DSprite(
+			float xPosition,
 			float yPosition,
 			float width,
 			float height,
@@ -233,7 +234,8 @@ namespace Renderer
 			color.g = Nu3D::Camera::g_cameraTintGreen;
 			color.r = Nu3D::Camera::g_cameraTintRed;
 
-			Queue2DSprite(xPos * 0.003125,
+			Queue2DSprite(
+				xPos * 0.003125,
 				yPos * yScale,
 				sheet->tileWidth * 0.003125,
 				sheet->tileHeight * yScale,
@@ -283,7 +285,8 @@ namespace Renderer
 			color.r = Nu3D::Camera::g_cameraTintRed;
 			float xScale = 1.0 / g_virtualScreenWidth;
 
-			Queue2DSprite(xPos * xScale,
+			Queue2DSprite(
+				xPos * xScale,
 				yPos * yScale,
 				sheet->tileWidth * xScale,
 				sheet->tileHeight * yScale,
@@ -333,7 +336,8 @@ namespace Renderer
 			color.g = green;
 			color.r = blue;
 
-			Queue2DSprite(xPos * 0.003125,
+			Queue2DSprite(
+				xPos * 0.003125,
 				yPos * yScale,
 				sheet->tileWidth * 0.003125,
 				sheet->tileHeight * yScale,
@@ -383,7 +387,8 @@ namespace Renderer
 			color.r = red;
 			float xScale = 1.0 / g_virtualScreenWidth;
 
-			Queue2DSprite(xPos * xScale,
+			Queue2DSprite(
+				xPos * xScale,
 				yPos * yScale,
 				sheet->tileWidth * xScale,
 				sheet->tileHeight * yScale,
@@ -488,8 +493,7 @@ namespace Renderer
 						glyphY = 64;
 						break;
 
-					default:
-					{
+					default: {
 						int32_t glyphIndex;
 
 						if (character >= 'a' && character <= 'z')
@@ -525,7 +529,8 @@ namespace Renderer
 				double invHeight = 1.0 / g_virtualScreenHeight;
 				float invWidth = 1.0 / g_virtualScreenWidth;
 
-				Queue2DSprite(texelX * invWidth,
+				Queue2DSprite(
+					texelX * invWidth,
 					screenY * invHeight,
 					invWidth * 16.0,
 					invHeight * 16.0,
@@ -541,7 +546,8 @@ namespace Renderer
 		void DrawWhiteText(char* text, int32_t screenY, int32_t screenX) { DrawBitmapText(text, screenY, screenX, 255, 255, 255); }
 
 		// FUNCTION: TOY2 0x00493F40
-		int16_t DrawScaled(int16_t xPos,
+		int16_t DrawScaled(
+			int16_t xPos,
 			int16_t yPos,
 			int32_t sheetIndex,
 			int32_t tileIndex,
@@ -625,7 +631,8 @@ namespace Renderer
 			float invHeight = 1.0 / g_virtualScreenHeight;
 			float invWidth = 1.0 / g_virtualScreenWidth;
 
-			Queue2DSprite(xPos * invWidth,
+			Queue2DSprite(
+				xPos * invWidth,
 				yPos * invHeight,
 				((scaleX * sheet->tileWidth) >> 12) * invWidth,
 				((scaleY * sheet->tileHeight) >> 12) * invHeight,
@@ -646,7 +653,8 @@ namespace Renderer
 		}
 
 		// STUB: TOY2 0x004B8E60
-		void QueueQuadSprite(Vector3F* position,
+		void QueueQuadSprite(
+			Vector3F* position,
 			int32_t trigIndex,
 			float width,
 			float height,
@@ -655,11 +663,11 @@ namespace Renderer
 			int32_t textureIndex,
 			RGBA color,
 			int32_t renderFlags)
-		{
-		}
+		{}
 
 		// STUB: TOY2 0x004B8A30
-		void QueueGroundAlignedSprite(Vector3F* position,
+		void QueueGroundAlignedSprite(
+			Vector3F* position,
 			int32_t trigIndex,
 			float width,
 			float height,
@@ -668,9 +676,7 @@ namespace Renderer
 			int32_t textureIndex,
 			RGBA color,
 			int32_t renderFlags)
-		{
-		}
-
+		{}
 
 		// FUNCTION: TOY2 0x004B8460
 		void DrawQueuedSprite()
@@ -686,10 +692,26 @@ namespace Renderer
 		}
 
 		// STUB: TOY2 0x00493A60
-		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags) { return 0; }
+		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags)
+		{
+			return 0;
+		}
 
 		// STUB: TOY2 0x004942D0
-		int16_t DrawScaledFixed(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, uint8_t red, uint8_t green, uint8_t blue, int16_t flags, int32_t scaleX, int32_t scaleY) { return 0; }
+		int16_t DrawScaledFixed(
+			int16_t xPos,
+			int16_t yPos,
+			int32_t sheetIndex,
+			int32_t tileIndex,
+			uint8_t red,
+			uint8_t green,
+			uint8_t blue,
+			int16_t flags,
+			int32_t scaleX,
+			int32_t scaleY)
+		{
+			return 0;
+		}
 
 		// STUB: TOY2 0x004949B0
 		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex) {}
@@ -701,7 +723,17 @@ namespace Renderer
 		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration) {}
 
 		// STUB: TOY2 0x004B8F40
-		void QueueBillboardSprite(Vector3F* position, int32_t trigIndex, float width, float height, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags) {}
+		void QueueBillboardSprite(
+			Vector3F* position,
+			int32_t trigIndex,
+			float width,
+			float height,
+			Vector2F* uvTopLeft,
+			Vector2F* uvBottomRight,
+			int32_t textureIndex,
+			RGBA color,
+			int32_t renderFlags)
+		{}
 
 		// STUB: TOY2 0x004B9100
 		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags) {}
@@ -713,4 +745,3 @@ namespace Renderer
 		void InsertIntoBucket(Nu3D::Sprite* sprite) {}
 	}
 }
-

@@ -1,8 +1,6 @@
 #include "AudioManager/AudioManager.h"
 #include <mmsystem.h>
-
-struct IDirectSound;
-struct IDirectSoundBuffer;
+#include <DSOUND.H>
 
 namespace AudioManager
 {

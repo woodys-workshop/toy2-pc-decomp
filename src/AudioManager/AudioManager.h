@@ -6,7 +6,6 @@
 #include "Toy2/Buzz.h"
 #include <windows.h>
 
-
 namespace AudioManager
 {
 	extern int32_t g_curTrackIndex;

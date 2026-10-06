@@ -4,7 +4,6 @@
 #include "Numerics.h"
 #include <windows.h>
 
-
 namespace Toy2
 {
 	namespace Collision
@@ -60,12 +59,24 @@ namespace Toy2
 			Vector3I16 platformVel;
 		};
 
-        extern CollisionMeshInstance g_collisionMeshInstances[300];
-        extern uint8_t g_mathScratch[1024];
+		extern CollisionMeshInstance g_collisionMeshInstances[300];
+		extern uint8_t g_mathScratch[1024];
 
-        void BuildCollisionWorld(int32_t level, uint8_t **buffer, int32_t terrainNum);
-		int32_t ResolveSubstep(Toy2::Collision::ResolvedVelocity* a1, WorldPos* a2, Vector3I* a3, Toy2::Collision::BuzzCollisionState* a4, uint16_t* a5, int32_t* a6, int32_t a7, int32_t a8);
-		int32_t ResolvePlatformFooting(Toy2::Collision::ResolvedVelocity* resolvedVelocity, WorldPos* worldPos, Vector3I* velocity, Toy2::Collision::BuzzCollisionState* collisionState);
+		void BuildCollisionWorld(int32_t level, uint8_t** buffer, int32_t terrainNum);
+		int32_t ResolveSubstep(
+			Toy2::Collision::ResolvedVelocity* a1,
+			WorldPos* a2,
+			Vector3I* a3,
+			Toy2::Collision::BuzzCollisionState* a4,
+			uint16_t* a5,
+			int32_t* a6,
+			int32_t a7,
+			int32_t a8);
+		int32_t ResolvePlatformFooting(
+			Toy2::Collision::ResolvedVelocity* resolvedVelocity,
+			WorldPos* worldPos,
+			Vector3I* velocity,
+			Toy2::Collision::BuzzCollisionState* collisionState);
 		void MarkPlatformAsMoving(int32_t platformIdx);
 		BOOL IsSafeFooting(int32_t a1, uint8_t* a2);
 		BOOL IsMeshMoving();

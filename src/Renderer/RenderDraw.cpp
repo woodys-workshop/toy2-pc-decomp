@@ -326,8 +326,8 @@ namespace Renderer
 		LPDIRECT3DVERTEXBUFFER destBuffer;
 
 		// vertices that need modifying after they were transformed need to go to a buffer that can be locked
-		if (instanceData->horzOffset != 0.0 || instanceData->vertOffset != 0.0 || (instanceData->renderModeFlags & 3) != 0 ||
-			(material->metadata & 0x100) != 0 || isTex14 || drawType == 4 || drawType == 5 || g_useSoftwareRasterizer)
+		if (instanceData->horzOffset != 0.0 || instanceData->vertOffset != 0.0 || (instanceData->renderModeFlags & 3) != 0 || (material->metadata & 0x100) != 0
+			|| isTex14 || drawType == 4 || drawType == 5 || g_useSoftwareRasterizer)
 		{
 			destBuffer = g_FVF_14C_Buffer_2.vertexBuffer;
 		}
@@ -372,8 +372,7 @@ namespace Renderer
 
 			if ((instanceData->renderModeFlags & 2) != 0)
 			{
-				Vertices::ModuleColor(
-					&primitive->patchVerts, instanceData->vertexModColor.r, instanceData->vertexModColor.g, instanceData->vertexModColor.b);
+				Vertices::ModuleColor(&primitive->patchVerts, instanceData->vertexModColor.r, instanceData->vertexModColor.g, instanceData->vertexModColor.b);
 			}
 
 			if (g_instanceHorzOffset != 0.0 || g_instanceVertOffset != 0.0)
@@ -422,8 +421,7 @@ namespace Renderer
 
 							break;
 
-						case 3:
-						{
+						case 3: {
 							// a list of quads, each of them drawn as a 4 index triangle strip
 							uint16_t* indices = header->indices;
 							int32_t indexCount = header->indexCount;
@@ -440,8 +438,7 @@ namespace Renderer
 						}
 
 						case 4:
-						case 5:
-						{
+						case 5: {
 							// billboards, indices[0] is the vertex to rotate around, followed by the 4 vertices of the quad
 							uint16_t* indices = header->indices;
 

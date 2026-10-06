@@ -12,11 +12,27 @@ namespace Renderer
 
 		// STUB: TOY2 0x0044E1A0
 		void DrawSegmentedBeam(
-			int32_t spriteSheet, int32_t halfWidth, int32_t segmentLength, WorldPos* origin, WorldPos* direction, uint8_t tintB, uint8_t tintG, uint8_t tintR)
+			int32_t spriteSheet,
+			int32_t halfWidth,
+			int32_t segmentLength,
+			WorldPos* origin,
+			WorldPos* direction,
+			uint8_t tintB,
+			uint8_t tintG,
+			uint8_t tintR)
 		{}
 
 		// STUB: TOY2 0x0044E100
-		void QueueBeam(int32_t spriteSheet, int32_t halfWidth, int32_t segementLength, WorldPos* origin, WorldPos* direction, uint8_t tintB, uint8_t tintG, uint8_t tintR) {}
+		void QueueBeam(
+			int32_t spriteSheet,
+			int32_t halfWidth,
+			int32_t segementLength,
+			WorldPos* origin,
+			WorldPos* direction,
+			uint8_t tintB,
+			uint8_t tintG,
+			uint8_t tintR)
+		{}
 	}
 
 	namespace Particles

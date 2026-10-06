@@ -92,7 +92,8 @@ namespace SoftwareRenderer
 	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ);
 
 	// the Submit* functions queue triangles for the software rasterizer, which is not decompiled
-	void SubmitSortedTriangle(int32_t renderFlags,
+	void SubmitSortedTriangle(
+		int32_t renderFlags,
 		Renderer::RenderEntry* renderEntry,
 		int32_t textureIdx,
 		Nu3D::VertexTL* vertex1,
@@ -139,7 +140,12 @@ namespace SoftwareRenderer
 	int32_t UnkRenderAPI34(int32_t* a1);
 	int32_t UnkFunc1();
 	void UnkFunc8();
-	void SubmitTriangleStripRaw(int32_t renderFlags, LPDIRECT3DVERTEXBUFFER vertexBuffer, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount);
+	void SubmitTriangleStripRaw(
+		int32_t renderFlags,
+		LPDIRECT3DVERTEXBUFFER vertexBuffer,
+		Renderer::RenderEntry* renderEntry,
+		uint16_t* indices,
+		int32_t vertexCount);
 	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices);
 }
 
@@ -147,7 +153,8 @@ namespace SoftwareDevice
 {
 	// Drawing Methods
 	HRESULT DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE primitiveType, LPDIRECT3DVERTEXBUFFER vertexBuffer, WORD* indices, DWORD indexCount, DWORD flags);
-	HRESULT DrawIndexedPrimitive(D3DPRIMITIVETYPE d3dptPrimitiveType,
+	HRESULT DrawIndexedPrimitive(
+		D3DPRIMITIVETYPE d3dptPrimitiveType,
 		DWORD dwVertexTypeDesc,
 		LPVOID lpvVertices,
 		DWORD dwVertexCount,
@@ -161,7 +168,8 @@ namespace SoftwareDevice
 	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
 	HRESULT UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	HRESULT OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
-	HRESULT ProcessVerticesOnBuffer(LPDIRECT3DVERTEXBUFFER destBuffer,
+	HRESULT ProcessVerticesOnBuffer(
+		LPDIRECT3DVERTEXBUFFER destBuffer,
 		DWORD dwVertexOp,
 		DWORD dwDestIndex,
 		DWORD dwCount,

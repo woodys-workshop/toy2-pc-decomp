@@ -73,7 +73,7 @@ namespace NGNLoader
 		{
 			fread(&g_curShapeNameLen, sizeof(uint8_t), 1, stream);
 			fread(g_curShapeName, sizeof(char), g_curShapeNameLen, stream);
-			
+
 			g_curShapeName[g_curShapeNameLen] = '\0';
 			return 1;
 		}
@@ -732,7 +732,8 @@ namespace NGNLoader
 
 									do
 									{
-										Nu3D::Math::CalculatePlaneFromTriangle(&vertices_[headerIndices[0]].position,
+										Nu3D::Math::CalculatePlaneFromTriangle(
+											&vertices_[headerIndices[0]].position,
 											&vertices_[headerIndices[1]].position,
 											&vertices_[headerIndices[2]].position,
 											&primObject->header->triMeta[triMetaIdx]);

@@ -105,7 +105,7 @@ namespace Nu3D
 				return 0;
 
 			ScalerEntry* newAlloc = &pool[image->scalerEntryCount];
-			
+
 			image->scalerEntryCount = image->scalerEntryCount + 1;
 
 			return newAlloc;
@@ -216,7 +216,8 @@ namespace Nu3D
 						{
 							Link::DynamicScaler* entryScaler = scalerEntry->scaler;
 
-							if ((entryScaler != Portal::g_portalMirrorScaler || Portal::g_mirrorRenderToggle) && entryScaler->shapeId != Portal::g_hiddenShapeId)
+							if ((entryScaler != Portal::g_portalMirrorScaler || Portal::g_mirrorRenderToggle)
+								&& entryScaler->shapeId != Portal::g_hiddenShapeId)
 							{
 								Renderer::Set508718(entryScaler->packedFlags);
 
@@ -241,8 +242,8 @@ namespace Nu3D
 		{
 			int32_t targetAreaIdx = portalState->targetAreaIdx;
 
-			if (targetAreaIdx != sourceAreaIdx && targetAreaIdx != -1 &&
-				(Frustum::TestSphereDepthPlanes(&portalState->portal->center, portalState->portal->radiusSquared) & 0x55555555) == 0)
+			if (targetAreaIdx != sourceAreaIdx && targetAreaIdx != -1
+				&& (Frustum::TestSphereDepthPlanes(&portalState->portal->center, portalState->portal->radiusSquared) & 0x55555555) == 0)
 			{
 				RenderBucketThroughPortals(ngnImage, portalState->targetAreaIdx, gscaleType, portalState);
 			}
