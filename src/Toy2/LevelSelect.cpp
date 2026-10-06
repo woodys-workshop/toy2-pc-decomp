@@ -571,7 +571,8 @@ namespace Toy2
 					atTarget = 1;
 					subPointTimer += Renderer::g_frameDelta;
 
-					if (subPointTimer < 3u)
+					// only the low byte of the timer is compared, so the camera picks a new sub point each time it wraps (every 256 frames)
+					if ((subPointTimer & 0xFF) < 3)
 					{
 						subPointTimer |= 3u;
 						int32_t randSubPoint = *g_randDatBufferPtr++ % 3;

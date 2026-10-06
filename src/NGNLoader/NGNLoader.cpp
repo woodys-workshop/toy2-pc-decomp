@@ -359,7 +359,7 @@ namespace NGNLoader
 				{
 					int32_t type;
 
-					if (shapeId & 0x8000 == 0)
+					if ((shapeId & 0x8000) == 0)
 					{
 						type = 0;
 					}
