@@ -1,4 +1,5 @@
 #include "Toy2/Buzz.h"
+#include "Toy2/Actor.h"
 
 namespace Toy2
 {

@@ -4,18 +4,6 @@
 #include <windows.h>
 #include <cstdio>
 #include "Common.h"
-#include <stdio.h>
-
-namespace NGNLoader
-{
-	struct NGNTextureData;
-	struct NGNTextureCache;
-}
-
-namespace Nu3D
-{
-	struct Creature;
-}
 
 
 namespace NGNLoader
@@ -35,10 +23,6 @@ namespace NGNLoader
 	HBITMAP GetBmpHandle(int32_t index);
 	int32_t CopyToDDSurfaceByIndex(int32_t texIndex, LPDIRECTDRAWSURFACE4 ddSurface);
 	uint32_t GetOrAllocateTexture(NGNTextureParams* texParams);
-
 	NGNLoader::NGNTextureData* ReleaseTextureData(NGNLoader::NGNTextureData* list);
 	void ReleaseAllTextures();
-	void ReleaseTextureCache(NGNLoader::NGNTextureCache* textureCache);
-	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize);
-	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature);
 }

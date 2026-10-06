@@ -13,6 +13,7 @@
 #include "Renderer/Glue.h"
 #include "Renderer/RenderQueue.h"
 #include "Toy2/D3DApp.h"
+#include <windows.h>
 
 namespace Renderer
 {

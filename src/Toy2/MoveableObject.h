@@ -2,14 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
-
-namespace Toy2
-{
-	namespace Buzz
-	{
-		struct Toy2BuzzActor;
-	}
-}
+#include "Toy2/Buzz.h"
 
 namespace Toy2
 {
@@ -32,10 +25,9 @@ namespace Toy2
 			int16_t modelNode;
 		};
 
-		STATIC_ASSERT(sizeof(MoveableObject) == 0x28);
-
-		void ComputeSegment(int32_t recordType, Toy2::MoveableObject::MoveableObject* l_moveableObject);
 		void InitTable(int16_t* array);
 		void Update(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+
+		STATIC_ASSERT(sizeof(MoveableObject) == 0x28);
 	}
 }

@@ -1,14 +1,7 @@
 #pragma once
 
 #include "Common.h"
-
-namespace Toy2
-{
-	namespace Levels
-	{
-		struct PortalEntry;
-	}
-}
+#include "Toy2/Levels.h"
 
 namespace Toy2
 {

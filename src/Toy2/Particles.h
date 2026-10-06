@@ -1,24 +1,9 @@
 #pragma once
 
 #include "Common.h"
-
-namespace Nu3D
-{
-	namespace Particles
-	{
-		struct ParticleInstance;
-	}
-}
-
-struct Vector3I;
-
-namespace Toy2
-{
-	namespace Actor
-	{
-		struct Toy2Actor;
-	}
-}
+#include "Nu3D/Particles.h"
+#include "Numerics.h"
+#include "Toy2/Actor.h"
 
 namespace Toy2
 {

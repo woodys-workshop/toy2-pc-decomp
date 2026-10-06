@@ -3,16 +3,15 @@
 #include "Nu3D/Nu3D.h"
 #include "Nu3D/Link.h"
 #include "Common.h"
-#include <windows.h>
 
 namespace NGNLoader
 {
 	struct NGNImage;
 }
 
+// TODO: Got no idea whats going on with the declarations here
 namespace Nu3D
 {
-	// TODO: Fix
 	namespace Area
 	{
 		void ResetPortalStates(NGNLoader::NGNImage* ngnImage);
@@ -80,12 +79,12 @@ namespace Nu3D
 
 	namespace Portal
 	{
+		int32_t IsAreaVisible(uint8_t index);
+
 		STATIC_ASSERT(sizeof(AreaPortal) == 0x20);
 		STATIC_ASSERT(sizeof(PortalState) == 0x14);
 		STATIC_ASSERT(sizeof(PortalBucket) == 0x8);
 		STATIC_ASSERT(sizeof(ScalerEntry) == 0x8);
 		STATIC_ASSERT(sizeof(PortalHashTable) == 0x200);
-
-		int32_t IsAreaVisible(uint8_t index);
 	}
 }

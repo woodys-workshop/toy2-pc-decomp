@@ -1,4 +1,5 @@
 #include "Toy2/Collectables.h"
+#include "Toy2/Levels.h"
 
 namespace Toy2
 {

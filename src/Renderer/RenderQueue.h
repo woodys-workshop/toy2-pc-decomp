@@ -9,11 +9,6 @@
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 
-namespace Nu3D
-{
-	struct InstanceData;
-}
-
 
 namespace Renderer
 {

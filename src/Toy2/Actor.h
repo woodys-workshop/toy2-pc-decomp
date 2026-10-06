@@ -2,9 +2,8 @@
 
 #include "Common.h"
 #include "RawLoader.h"
+#include "Numerics.h"
 #include <windows.h>
-
-struct Vector3I;
 
 
 namespace Toy2
@@ -74,18 +73,11 @@ namespace Toy2
 		extern Toy2Actor* g_activeActorArray[64];
 
 		void GetCreatureList(uint8_t* creatureIdList);
-
-		STATIC_ASSERT(sizeof(Toy2Actor) == 0x9C);
-		STATIC_ASSERT(sizeof(Toy2Actor::ActorBehaviourContext) == 0xC);
-
 		void UpdatePrimaryAnimation(Toy2::Actor::Toy2Actor* actor);
-		void StepCreatureAnimFrame(Toy2::Actor::Toy2Actor* actor);
 		void SetAnimation(Toy2::Actor::Toy2Actor* actor, int16_t state, int32_t animIdx);
 		void Kill(Toy2::Actor::Toy2Actor* actor, uint8_t phase);
-		void InitCreatureRam();
 		void UpdateAIMovement(Toy2::Actor::Toy2Actor* actor);
 		void HandleDamage(Toy2::Actor::Toy2Actor* actor, int32_t angle, int32_t hitType);
-		void HitType1Particles(int32_t a1, int32_t a2, int32_t a3);
 		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex);
 		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ);
 		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx);
@@ -94,6 +86,8 @@ namespace Toy2
 		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx);
 		void PopulateActiveActors();
 		void SetNodeAngle(Toy2::Actor::Toy2Actor* actor, int32_t index, int32_t x, int32_t y, int32_t z);
-		int32_t FindInActorList(Toy2::Actor::Toy2Actor* actor);
+
+		STATIC_ASSERT(sizeof(Toy2Actor) == 0x9C);
+		STATIC_ASSERT(sizeof(Toy2Actor::ActorBehaviourContext) == 0xC);
 	}
 }

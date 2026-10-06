@@ -1,4 +1,5 @@
 #include "NGNLoader/NGNTypes.h"
+#include "Nu3D/Portal.h"
 
 namespace NGNLoader
 {

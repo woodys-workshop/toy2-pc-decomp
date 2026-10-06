@@ -110,6 +110,62 @@ set(TOY2_SOURCES
     src/Toy2/Sector.h
     src/Toy2/KiteTail.cpp
     src/Toy2/KiteTail.h
+    src/Toy2/Camera.cpp
+    src/Toy2/Camera.h
+    src/Toy2/CreatureBehaviour.cpp
+    src/Toy2/CreatureBehaviour.h
+    src/Toy2/Cutscene.cpp
+    src/Toy2/Cutscene.h
+    src/Toy2/Dialogue.cpp
+    src/Toy2/Dialogue.h
+    src/Toy2/Gadget.cpp
+    src/Toy2/Gadget.h
+    src/Toy2/Level.cpp
+    src/Toy2/Level.h
+    src/Toy2/Lighting.cpp
+    src/Toy2/Lighting.h
+    src/Toy2/MoveableObject.cpp
+    src/Toy2/MoveableObject.h
+    src/Toy2/Particles.cpp
+    src/Toy2/Particles.h
+    src/Toy2/Platform.cpp
+    src/Toy2/Platform.h
+    src/Toy2/Portal.cpp
+    src/Toy2/Portal.h
+    src/Toy2/Shadow.cpp
+    src/Toy2/Shadow.h
+
+    # Toy2/Levels
+    src/Toy2/Levels/AirportInfiltration.cpp
+    src/Toy2/Levels/AirportInfiltration.h
+    src/Toy2/Levels/AlleysAndGullies.cpp
+    src/Toy2/Levels/AlleysAndGullies.h
+    src/Toy2/Levels/AlsPenthouse.cpp
+    src/Toy2/Levels/AlsPenthouse.h
+    src/Toy2/Levels/AlsSpaceLand.cpp
+    src/Toy2/Levels/AlsSpaceLand.h
+    src/Toy2/Levels/AlsToyBarn.cpp
+    src/Toy2/Levels/AlsToyBarn.h
+    src/Toy2/Levels/AndysHouse.cpp
+    src/Toy2/Levels/AndysHouse.h
+    src/Toy2/Levels/AndysNeighborhood.cpp
+    src/Toy2/Levels/AndysNeighborhood.h
+    src/Toy2/Levels/BarnEncounter.cpp
+    src/Toy2/Levels/BarnEncounter.h
+    src/Toy2/Levels/BombsAway.cpp
+    src/Toy2/Levels/BombsAway.h
+    src/Toy2/Levels/ConstructionYard.cpp
+    src/Toy2/Levels/ConstructionYard.h
+    src/Toy2/Levels/ElevatorHop.cpp
+    src/Toy2/Levels/ElevatorHop.h
+    src/Toy2/Levels/EvilEmperorZurg.cpp
+    src/Toy2/Levels/EvilEmperorZurg.h
+    src/Toy2/Levels/FinalShowdown.cpp
+    src/Toy2/Levels/FinalShowdown.h
+    src/Toy2/Levels/SlimeTime.cpp
+    src/Toy2/Levels/SlimeTime.h
+    src/Toy2/Levels/TarmacTrouble.cpp
+    src/Toy2/Levels/TarmacTrouble.h
 
     # Nu3D
     src/Nu3D/Creature.h
@@ -142,6 +198,11 @@ set(TOY2_SOURCES
     src/Nu3D/Math.h
     src/Nu3D/Scene.cpp
     src/Nu3D/Scene.h
+    src/Nu3D/Collision.cpp
+    src/Nu3D/Collision.h
+    src/Nu3D/Creature.cpp
+    src/Nu3D/FMV.cpp
+    src/Nu3D/FMV.h
 
     # Renderer
     src/Renderer/Renderer.h
@@ -160,6 +221,8 @@ set(TOY2_SOURCES
     src/Renderer/SpriteSheets.h
     src/Renderer/Glue.cpp
     src/Renderer/Glue.h
+    src/Renderer/LensFlare.cpp
+    src/Renderer/LensFlare.h
 
     # NGNLoader
     src/NGNLoader/NGNLoader.cpp
@@ -167,73 +230,12 @@ set(TOY2_SOURCES
     src/NGNLoader/NGNTypes.h
     src/NGNLoader/ObjectLoad.cpp
     src/NGNLoader/ObjectLoad.h
+    src/NGNLoader/NGNImage.cpp
 
     # AudioManager
     src/AudioManager/AudioManager.cpp
     src/AudioManager/AudioManager.h
 
-    src/NGNLoader/NGNImage.cpp
-    src/Nu3D/Collision.cpp
-    src/Nu3D/Collision.h
-    src/Nu3D/Creature.cpp
-    src/Nu3D/FMV.cpp
-    src/Nu3D/FMV.h
-    src/Renderer/LensFlare.cpp
-    src/Renderer/LensFlare.h
-    src/Toy2/Camera.cpp
-    src/Toy2/Camera.h
-    src/Toy2/CreatureBehaviour.cpp
-    src/Toy2/CreatureBehaviour.h
-    src/Toy2/Cutscene.cpp
-    src/Toy2/Cutscene.h
-    src/Toy2/Dialogue.cpp
-    src/Toy2/Dialogue.h
-    src/Toy2/Gadget.cpp
-    src/Toy2/Gadget.h
-    src/Toy2/Level.cpp
-    src/Toy2/Level.h
-    src/Toy2/Levels/AirportInfiltration.cpp
-    src/Toy2/Levels/AirportInfiltration.h
-    src/Toy2/Levels/AlleysAndGullies.cpp
-    src/Toy2/Levels/AlleysAndGullies.h
-    src/Toy2/Levels/AlsPenthouse.cpp
-    src/Toy2/Levels/AlsPenthouse.h
-    src/Toy2/Levels/AlsSpaceLand.cpp
-    src/Toy2/Levels/AlsSpaceLand.h
-    src/Toy2/Levels/AlsToyBarn.cpp
-    src/Toy2/Levels/AlsToyBarn.h
-    src/Toy2/Levels/AndysHouse.cpp
-    src/Toy2/Levels/AndysHouse.h
-    src/Toy2/Levels/AndysNeighborhood.cpp
-    src/Toy2/Levels/AndysNeighborhood.h
-    src/Toy2/Levels/BarnEncounter.cpp
-    src/Toy2/Levels/BarnEncounter.h
-    src/Toy2/Levels/BombsAway.cpp
-    src/Toy2/Levels/BombsAway.h
-    src/Toy2/Levels/ConstructionYard.cpp
-    src/Toy2/Levels/ConstructionYard.h
-    src/Toy2/Levels/ElevatorHop.cpp
-    src/Toy2/Levels/ElevatorHop.h
-    src/Toy2/Levels/EvilEmperorZurg.cpp
-    src/Toy2/Levels/EvilEmperorZurg.h
-    src/Toy2/Levels/FinalShowdown.cpp
-    src/Toy2/Levels/FinalShowdown.h
-    src/Toy2/Levels/SlimeTime.cpp
-    src/Toy2/Levels/SlimeTime.h
-    src/Toy2/Levels/TarmacTrouble.cpp
-    src/Toy2/Levels/TarmacTrouble.h
-    src/Toy2/Lighting.cpp
-    src/Toy2/Lighting.h
-    src/Toy2/MoveableObject.cpp
-    src/Toy2/MoveableObject.h
-    src/Toy2/Particles.cpp
-    src/Toy2/Particles.h
-    src/Toy2/Platform.cpp
-    src/Toy2/Platform.h
-    src/Toy2/Portal.cpp
-    src/Toy2/Portal.h
-    src/Toy2/Shadow.cpp
-    src/Toy2/Shadow.h
 )
 
 # Build the game

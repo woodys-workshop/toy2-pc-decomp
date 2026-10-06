@@ -1,10 +1,8 @@
 #pragma once
 
 #include "Common.h"
+#include "Numerics.h"
 #include <windows.h>
-
-struct Vector3I16;
-struct WorldPos;
 
 namespace Nu3D
 {
@@ -27,10 +25,6 @@ namespace Nu3D
 		int32_t ResolveGroundCeiling(WorldPos* worldPos, int32_t headRoom);
 		BOOL IsFloorWalkable();
 		int32_t GetSurfaceQuality(int32_t collisionState);
-		int32_t SweepAgainstEdges(int32_t* a1, int32_t* a2, int32_t* a3, uint32_t* a4, int32_t* a5, int32_t* a6, int32_t a7);
-		int32_t RaycastAgainstEdges(int32_t* a1, int32_t* a2, int32_t* a3, uint32_t* a4, int16_t* a5, int32_t* a6, int32_t* a7);
-		int32_t SweepAgainstCandidates(int32_t* a1, int32_t* a2, int32_t a3);
-		int32_t RaycastAgainstCandidates(int32_t a1, int32_t* a2, int32_t* a3);
 		int32_t SweepAndSlide(WorldPos* startPos, WorldPos* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius);
 		int32_t SweepQuery(int32_t* a1, int32_t* a2, int32_t a3, int32_t a4);
 	}

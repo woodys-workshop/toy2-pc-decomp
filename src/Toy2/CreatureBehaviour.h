@@ -5,14 +5,6 @@
 
 namespace Toy2
 {
-	namespace Actor
-	{
-		struct Toy2Actor;
-	}
-}
-
-namespace Toy2
-{
 	namespace CreatureBehaviour
 	{
 		void Zurg3(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
@@ -25,9 +17,7 @@ namespace Toy2
 		void Buzzard(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void Sheep(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void TinMan(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
-		void RCCar_Level1(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void Army(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
-		void RCCar_Level2(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void ZKite(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void LawnMower(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void Drill(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
@@ -50,6 +40,5 @@ namespace Toy2
 		void Smith(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void GunsL(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void ProsP(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor);
-		void RCCar_Method1(Toy2::Actor::Toy2Actor* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5);
 	}
 }

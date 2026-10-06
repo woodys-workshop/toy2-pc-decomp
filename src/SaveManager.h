@@ -55,6 +55,12 @@ namespace SaveManager
 	void InitProgressData(Save0Data* save);
 	void LoadProgressData(Save0Data* save);
 	void SaveToFile(int32_t saveNum, const char *saveName);
+	void ClearBindByControlId(GameControlId controlId);
+	void ClearBindByInputCode(ToyInputCodes inputCode);
+	int32_t GetInputCodeByControlId(GameControlId controlId);
+	int32_t GetControlSettingId(ToyInputCodes inputCode);
+	void SetLightShadowEffects(uint32_t on);
+	void TransferProgressData(SaveManager::Save0Data* saveData);
 
 	extern Save0Data g_save0Data;
 	extern Save99Data g_save99Data;
@@ -63,11 +69,4 @@ namespace SaveManager
 	STATIC_ASSERT(sizeof(Save0Data) == 0x188);
 	STATIC_ASSERT(sizeof(Save99Data) == 0x188);
 	STATIC_ASSERT(sizeof(SaveControlMapping) == 0x8);
-
-	void ClearBindByControlId(GameControlId controlId);
-	void ClearBindByInputCode(ToyInputCodes inputCode);
-	int32_t GetInputCodeByControlId(GameControlId controlId);
-	int32_t GetControlSettingId(ToyInputCodes inputCode);
-	void SetLightShadowEffects(uint32_t on);
-	void TransferProgressData(SaveManager::Save0Data* saveData);
 }

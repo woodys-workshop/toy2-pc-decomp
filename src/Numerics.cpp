@@ -8,7 +8,7 @@ namespace Numerics
 	float* g_trigLUT;
 
 	// GLOBAL: TOY2 0x004FE788
-	
+
 	// clang-format off
 	int16_t g_sinCosLUT[4096] = {
 		#include "SinCosLUT.inc"

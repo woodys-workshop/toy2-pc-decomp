@@ -3,15 +3,6 @@
 #include "Common.h"
 #include "Numerics.h"
 
-namespace Nu3D
-{
-	struct Sprite;
-}
-
-struct Vector3I;
-struct Vector3F;
-struct Vector2F;
-
 namespace Renderer
 {
 	namespace Sprite
@@ -77,7 +68,5 @@ namespace Renderer
 		void QueueBillboardSprite(Vector3F* position, int32_t trigIndex, float width, float height, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags);
 		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags);
 		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color);
-
-		void InsertIntoBucket(Nu3D::Sprite* sprite);
 	}
 }

@@ -26,7 +26,6 @@ namespace Nu3D
 			static BOOL CreateVertexBuffer(PatchVertices* patchVertices, int32_t flags);
 			static void ReleaseBuffer(PatchVertices* patchVertices);
 			static void FreeVertices(PatchVertices* patchVertices);
-
 			static void Destroy(Patch* patch);
 		};
 

@@ -1,4 +1,7 @@
 #include "Toy2/Animation.h"
+#include "Nu3D/Creature.h"
+#include <directx6/ddraw.h>
+#include <directx6/d3d.h>
 
 namespace Toy2
 {

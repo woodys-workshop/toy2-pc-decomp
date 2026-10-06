@@ -5,9 +5,6 @@
 #include <directx6/d3d.h>
 #include "Common.h"
 
-struct Vector3I;
-
-
 namespace NGNLoader
 {
 	struct NGNImage;
@@ -54,14 +51,13 @@ namespace Nu3D
 		void SetRotationAbsolute8bit(int32_t linkId, int32_t x, int32_t y, int32_t z);
 		void SetScaleFromFixedOffsets(int32_t linkId, int32_t x, int32_t y, int32_t z);
 		void FollowWaypointPath(int32_t linkId, int32_t pathTableIdx, int32_t* progress);
-
-		STATIC_ASSERT(sizeof(DynamicScaler) == 0x94);
-		STATIC_ASSERT(sizeof(Linker) == 0x74);
-
 		void SetRotationRelative8bit(int32_t linkId, int32_t x, int32_t y, int32_t z);
 		void TransformVectorInt3x3(int32_t linkId, Vector3I* out);
 		void GetTargetPosFixed(int32_t linkId, Vector3I* out);
 		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2);
 		void CopyShapeId(int32_t linkIndex1, int32_t linkIndex2);
+
+		STATIC_ASSERT(sizeof(DynamicScaler) == 0x94);
+		STATIC_ASSERT(sizeof(Linker) == 0x74);
 	}
 }

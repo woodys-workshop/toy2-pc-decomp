@@ -7,8 +7,11 @@
 #include "NGNLoader/NGNLoader.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderQueue.h"
+#include "Nu3D/Creature.h"
 
 #include <FLOAT.H>
+#include <directx6/ddraw.h>
+#include <directx6/d3d.h>
 
 namespace Nu3D
 {

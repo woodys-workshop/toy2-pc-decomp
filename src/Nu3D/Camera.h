@@ -2,29 +2,19 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include "Toy2/Actor.h"
 
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 #include <windows.h>
 
-struct Vector3I;
-
-namespace Toy2
-{
-	namespace Actor
-	{
-		struct Toy2Actor;
-	}
-}
-
 
 namespace Nu3D
 {
+	// TODO: Fix
 	namespace Portal
 	{
 		struct AreaPortal;
-
-
 	}
 
 	namespace Camera
@@ -47,6 +37,23 @@ namespace Nu3D
 			float viewportLR;
 			float viewportTB;
 			Vector3F scaleVector;
+		};
+
+		struct NineWords
+		{
+			int16_t unkWord1;
+			int16_t unkWord2;
+			int16_t unkWord3;
+			int16_t unkWord3_;
+			int16_t unkWord5;
+			int16_t unkWord6;
+			int16_t unkWord7;
+			int16_t unkWord8;
+			int16_t unkWord9;
+			int16_t unkWord10;
+			int32_t unkInt1;
+			int32_t unkInt2;
+			int32_t unkInt3;
 		};
 
 		extern int32_t g_billboardYaw;
@@ -81,34 +88,15 @@ namespace Nu3D
 		void TransformPointProjective(Vector3F* outPoints, Vector3F* inPoints, int32_t count, D3DMATRIX* localMatrix);
 		void UnprojectPointsFromCamera(Vector3F* out, Vector3F* in, int32_t count);
 		int32_t ClipViewToPortal(CameraInstance* camera, Portal::AreaPortal* portal);
-
-		STATIC_ASSERT(sizeof(ActiveCameraTransform) == 0x14);
-		STATIC_ASSERT(sizeof(CameraInstance) == 0x64);
-
-		struct NineWords
-		{
-			int16_t unkWord1;
-			int16_t unkWord2;
-			int16_t unkWord3;
-			int16_t unkWord3_;
-			int16_t unkWord5;
-			int16_t unkWord6;
-			int16_t unkWord7;
-			int16_t unkWord8;
-			int16_t unkWord9;
-			int16_t unkWord10;
-			int32_t unkInt1;
-			int32_t unkInt2;
-			int32_t unkInt3;
-		};
-
-		STATIC_ASSERT(sizeof(NineWords) == 0x20);
-
 		void WorldToView(Vector3I* a1, Vector3I* a2);
 		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor);
 		void EnableCameraSkew();
 		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1);
 		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8);
+
+		STATIC_ASSERT(sizeof(ActiveCameraTransform) == 0x14);
+		STATIC_ASSERT(sizeof(CameraInstance) == 0x64);
+		STATIC_ASSERT(sizeof(NineWords) == 0x20);
 	}
 
 	void DrawDebugPortalOutlines(Vector3F* points, int32_t count);

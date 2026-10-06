@@ -10,7 +10,6 @@
 #include "Logger.h"
 
 #include <STDIO.H>
-#include "Common.h"
 
 namespace Renderer
 {
