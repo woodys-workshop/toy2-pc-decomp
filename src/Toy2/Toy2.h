@@ -34,6 +34,11 @@ namespace Toy2
 		int32_t secondary[8];
 	};
 
+	struct SaveNameBuffer
+	{
+		char name[256];
+	};
+
 	struct BeamShot
 	{
 		Vector3I headPos;
@@ -102,6 +107,7 @@ namespace Toy2
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
 	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
+	STATIC_ASSERT(sizeof(SaveNameBuffer) == 0x100);
 
 	namespace Game
 	{

@@ -827,8 +827,8 @@ namespace DrawingDevice
 	// STUB: TOY2 0x004ABC60
 	HRESULT UnlockPrimarySurface() { return 0; }
 
-	// STUB: TOY2 0x004ABD50
-	int32_t RestoreToGDISurface(int32_t refreshWindow) { return 0; }
+	// FUNCTION: TOY2 0x004ABD50
+	int32_t RestoreToGDISurface(int32_t refreshWindow) { return g_drawingDevice->RestoreToGDISurface(refreshWindow); }
 
 	// STUB: TOY2 0x004ABE30
 	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface) { return 0; }

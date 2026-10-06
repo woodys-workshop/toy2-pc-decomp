@@ -85,6 +85,9 @@ namespace Renderer
 	extern float g_virtualScreenWidth;
 	extern float g_virtualScreenHeight;
 	extern float g_parallaxCurHorizScroll;
+	extern float g_parallaxHorizOffset;
+	extern float g_parallaxTexHeightRatio;
+	extern float g_parallaxTexWidthRatio;
 	extern int32_t g_enableCinematicBars;
 	extern float g_nearRenderDistance;
 	extern float g_farRenderDistance;

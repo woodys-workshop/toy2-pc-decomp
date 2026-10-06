@@ -9,6 +9,7 @@
 #include "SoftwareRenderer.h"
 #include "SaveManager.h"
 #include "Random.h"
+#include "Numerics.h"
 #include "Toy2/LevelSelect.h"
 #include "Toy2/Buzz.h"
 #include "Toy2/Levels.h"
@@ -37,9 +38,8 @@
 
 #include <WINDOWS.H>
 #include <STDIO.H>
+#include <MATH.H>
 #include <DINPUT.H>
-
-#include <Numerics.h>
 
 namespace Toy2
 {
@@ -166,6 +166,12 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00830C1C
 	int32_t g_inputSuppressFrames;
+
+	// GLOBAL: TOY2 0x0072E354
+	SaveNameBuffer g_saveNameBuffers[8];
+
+	// GLOBAL: TOY2 0x00731F18
+	int32_t g_savePromptPending;
 
 	// GLOBAL: TOY2 0x00500A58
 	SectorBackdropTexIdTable g_sectorBackdropTexTable = {
@@ -745,8 +751,471 @@ namespace Toy2
 	// STUB: TOY2 0x00453FA0
 	void ShowMovieViewer() {}
 
-	// STUB: TOY2 0x00453F20
-	int32_t ShowSaveScreen() { return 0; }
+	// FUNCTION: TOY2 0x0047D7C0
+	void UpdateAudioChannels() { AudioManager::UpdateChannels(); }
+
+	// FUNCTION: TOY2 0x0049B9E0
+	int32_t TickSaveMenuMachine(int32_t showSaveMenu)
+	{
+		// The load / save menu. The menu type is 0 = main menu, 1 = load slots, 2 = save slots and 3 = fading out to leave
+		char slotFileName[256];
+		char slotName[256];
+		char saveName[256];
+		char xOffsets[32];
+
+		size_t slotNameSize;
+
+		int32_t done = 0;
+		int32_t saveMenuType = 0;
+		int32_t menuCursor = 0;
+		int32_t loadedSave = 0;
+
+		Nu3D::Camera::g_cameraTintBlue = 0;
+		Nu3D::Camera::g_cameraTintGreen = 0;
+		Nu3D::Camera::g_cameraTintRed = 0;
+
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+
+		int32_t inputDelay = 30;
+		int32_t blinkTimer = 20;
+		int32_t slotCursor = 0;
+
+		if (showSaveMenu)
+			saveMenuType = 2;
+
+		// read the name of every save slot, and work out how far each one is pushed along the curve
+		size_t saveIndex = 0;
+		char* xOffset = xOffsets;
+		SaveNameBuffer* saveNameBuffer = g_saveNameBuffers;
+
+		do
+		{
+			size_t nextSaveIndex = saveIndex + 1;
+
+			sprintf(slotFileName, "Toy2%02d.sav", saveIndex + 1);
+
+			FILE* saveFile = fopen(slotFileName, "rb");
+
+			if (saveFile)
+			{
+				fread(&slotNameSize, 1, 4, saveFile);
+
+				if (slotNameSize && saveNameBuffer)
+				{
+					fread(saveNameBuffer, 1, slotNameSize, saveFile);
+
+					saveNameBuffer->name[slotNameSize] = 0;
+				}
+
+				fclose(saveFile);
+			}
+			else if (saveNameBuffer)
+			{
+				saveNameBuffer->name[0] = '\0';
+			}
+
+			*xOffset = (cos(saveIndex * 0.64269906 - 1.0) * 80.0);
+
+			++saveNameBuffer;
+
+			saveIndex = nextSaveIndex;
+
+			xOffset += 4;
+		} while (saveNameBuffer < &g_saveNameBuffers[8]);
+
+		do
+		{
+			D3DApp::ProcessWndEvents();
+
+			if (D3DApp::g_windowData.wndIsExiting)
+			{
+				DrawingDevice::RestoreToGDISurface(1);
+				Logger::GetErrorHandler("C:\\projects\\toy2\\toy2.cpp", 4670)(g_emptyStr);
+			}
+
+			if (InputManager::IsKeyPressed(DIK_F3))
+			{
+				SoftwareRenderer::ZoomOut();
+				g_extraControlsUnused = 15;
+			}
+
+			if (InputManager::IsKeyPressed(DIK_F4))
+			{
+				SoftwareRenderer::ZoomIn();
+				g_extraControlsUnused = 15;
+			}
+
+			if (InputManager::IsKeyPressed(DIK_F5))
+			{
+				Graphics::RemoveDetailLevel();
+				g_extraControlsUnused = 15;
+			}
+
+			if (InputManager::IsKeyPressed(DIK_F6))
+			{
+				Graphics::AddDetailLevel();
+				g_extraControlsUnused = 15;
+			}
+
+			InputManager::UpdateButtonStates();
+
+			if (g_inputSuppressFrames)
+			{
+				InputManager::g_curButtonsPressed = 0;
+				--g_inputSuppressFrames;
+			}
+
+			UpdateAudioChannels();
+
+			SoftwareRenderer::g_unk830C60 = 0;
+
+			Renderer::DoFrameDelay(0);
+			Nu3D::Camera::FadeToTargetTint();
+
+			RGBA clearColor;
+			clearColor.value = 0;
+			Renderer::ClearScreen(clearColor, 2);
+
+			if (Renderer::BeginScene())
+			{
+				Renderer::g_parallaxCurHorizScroll = 0.0;
+				Renderer::g_parallaxHorizOffset = 0.0;
+				Renderer::g_parallaxTexHeightRatio = 1.0;
+				Renderer::g_parallaxTexWidthRatio = 1.0;
+				Renderer::RenderParallaxBackground(0);
+
+				switch (saveMenuType)
+				{
+					case 0:
+						Renderer::g_parallaxCurHorizScroll = 0.0;
+
+						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+
+						g_hasBackdrop = 1;
+
+						Renderer::DrawFormattedText(256, 25, "load / save options");
+
+						// the selected entry blinks, so it is skipped for part of the blink timer
+						if ((menuCursor || blinkTimer < 10) && (Renderer::DrawFormattedText(256, 75, "load game"), menuCursor == 1) && blinkTimer >= 10
+							|| (Renderer::DrawFormattedText(256, 100, "save game"), menuCursor != 2) || blinkTimer < 10)
+						{
+							Renderer::DrawFormattedText(256, 125, "main menu");
+						}
+
+						if (inputDelay <= 0)
+						{
+							if (menuCursor && (InputManager::g_curButtonsPressed & INPUT_UP)
+								&& InputManager::g_curButtonsPressed != (InputManager::g_prevButtonsPressed & INPUT_UP))
+							{
+								--menuCursor;
+								AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							}
+
+							if (menuCursor < 2 && (InputManager::g_curButtonsPressed & INPUT_DOWN)
+								&& InputManager::g_curButtonsPressed != (InputManager::g_prevButtonsPressed & INPUT_DOWN))
+							{
+								++menuCursor;
+								AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							}
+
+							if (InputManager::g_curButtonsPressed & INPUT_JUMP)
+							{
+								if (menuCursor == 0 || menuCursor == 1)
+								{
+									saveMenuType = menuCursor == 0 ? 1 : 2;
+									slotCursor = 0;
+									inputDelay = 30;
+
+									AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+								}
+								else
+								{
+									AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+									saveMenuType = 3;
+									Nu3D::Camera::SetTint(0, 0, 0, 6);
+								}
+							}
+
+							if (InputManager::g_curButtonsPressed & INPUT_CANCEL)
+							{
+								AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+								saveMenuType = 3;
+								Nu3D::Camera::SetTint(0, 0, 0, 6);
+							}
+						}
+						break;
+
+					case 1: {
+						Renderer::g_parallaxCurHorizScroll = 0.0;
+
+						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+
+						g_hasBackdrop = 1;
+
+						Renderer::DrawFormattedText(256, 3, "select slot to load");
+
+						int32_t slot = 0;
+						int32_t slotY = 33;
+						char* slotXOffset = xOffsets;
+						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
+
+						do
+						{
+							if (slot != slotCursor || blinkTimer < 10)
+							{
+								if (nameBuffer->name[0])
+									Renderer::DrawFormattedText(*slotXOffset + 256, slotY, "%s", nameBuffer->name);
+								else
+									Renderer::DrawFormattedText(*slotXOffset + 256, slotY, "empty slot");
+							}
+
+							++nameBuffer;
+							++slot;
+							slotY += 23;
+							slotXOffset += 4;
+						} while (nameBuffer < &g_saveNameBuffers[8]);
+
+						Renderer::DrawFormattedText(256, 25 * slot + 28, "jump:select  cancel:menu");
+
+						int16_t buttons = InputManager::g_curButtonsPressed;
+
+						if ((InputManager::g_curButtonsPressed & INPUT_UP)
+							&& InputManager::g_curButtonsPressed != (InputManager::g_prevButtonsPressed & INPUT_UP) && slotCursor)
+						{
+							--slotCursor;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							buttons = InputManager::g_curButtonsPressed;
+						}
+
+						if ((buttons & INPUT_DOWN) && buttons != (InputManager::g_prevButtonsPressed & INPUT_DOWN) && slotCursor < 7)
+						{
+							++slotCursor;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							buttons = InputManager::g_curButtonsPressed;
+						}
+
+						if (inputDelay <= 0)
+						{
+							if ((buttons & INPUT_JUMP) && g_saveNameBuffers[slotCursor].name[0])
+							{
+								sprintf(slotFileName, "Toy2%02d.sav", slotCursor + 1);
+
+								FILE* saveFile = fopen(slotFileName, "rb");
+
+								if (saveFile)
+								{
+									fread(&slotNameSize, 1, 4, saveFile);
+
+									if (slotNameSize)
+									{
+										fread(slotName, 1, slotNameSize, saveFile);
+										slotName[slotNameSize] = 0;
+									}
+
+									if (slotCursor == 98)
+										fread(&SaveManager::g_save99Data, 1, 392, saveFile);
+									else
+										fread(&SaveManager::g_save0Data, 1, 392, saveFile);
+
+									fclose(saveFile);
+								}
+
+								saveMenuType = 3;
+								Nu3D::Camera::SetTint(0, 0, 0, 6);
+								AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+
+								buttons = InputManager::g_curButtonsPressed;
+								loadedSave = 1;
+							}
+
+							if (buttons & INPUT_CANCEL)
+							{
+								inputDelay = 30;
+								saveMenuType = 0;
+								AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+							}
+						}
+						break;
+					}
+
+					case 2: {
+						Renderer::g_parallaxCurHorizScroll = 0.0;
+
+						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+
+						g_hasBackdrop = 1;
+
+						Renderer::DrawFormattedText(256, 3, "select slot to save");
+
+						int32_t slot = 0;
+						int32_t slotY = 33;
+						char* slotXOffset = xOffsets;
+						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
+
+						do
+						{
+							if (slot != slotCursor || blinkTimer < 10)
+							{
+								if (nameBuffer->name[0])
+									Renderer::DrawFormattedText(*slotXOffset + 256, slotY, "%s", nameBuffer->name);
+								else
+									Renderer::DrawFormattedText(*slotXOffset + 256, slotY, "empty slot");
+							}
+
+							++nameBuffer;
+							++slot;
+							slotY += 23;
+							slotXOffset += 4;
+						} while (nameBuffer < &g_saveNameBuffers[8]);
+
+						if (showSaveMenu)
+							Renderer::DrawFormattedText(256, 25 * slot + 28, "jump:save  cancel:continue");
+						else
+							Renderer::DrawFormattedText(256, 25 * slot + 28, "jump:select  cancel:menu");
+
+						int16_t buttons = InputManager::g_curButtonsPressed;
+
+						if ((InputManager::g_curButtonsPressed & INPUT_UP)
+							&& InputManager::g_curButtonsPressed != (InputManager::g_prevButtonsPressed & INPUT_UP) && slotCursor)
+						{
+							--slotCursor;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							buttons = InputManager::g_curButtonsPressed;
+						}
+
+						if ((buttons & INPUT_DOWN) && buttons != (InputManager::g_prevButtonsPressed & INPUT_DOWN) && slotCursor < 7)
+						{
+							++slotCursor;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+							buttons = InputManager::g_curButtonsPressed;
+						}
+
+						if (inputDelay <= 0)
+						{
+							if (buttons & INPUT_JUMP)
+							{
+								int32_t tokenProgress = ComputeTokenProgress();
+
+								sprintf(saveName, "TOK %d LEV %d", (tokenProgress >> 16) & 0xFF, tokenProgress);
+								SaveManager::SaveToFile(slotCursor + 1, saveName);
+
+								saveMenuType = 3;
+								Nu3D::Camera::SetTint(0, 0, 0, 6);
+
+								// read the slot names again, so the new save shows up
+								int32_t refreshIndex = 0;
+								SaveNameBuffer* refreshBuffer = g_saveNameBuffers;
+
+								do
+								{
+									int32_t nextRefreshIndex = refreshIndex + 1;
+
+									sprintf(slotFileName, "Toy2%02d.sav", refreshIndex + 1);
+
+									FILE* saveFile = fopen(slotFileName, "rb");
+
+									if (saveFile)
+									{
+										fread(&slotNameSize, 1, 4, saveFile);
+
+										if (slotNameSize && refreshBuffer)
+										{
+											fread(refreshBuffer, 1, slotNameSize, saveFile);
+											refreshBuffer->name[slotNameSize] = 0;
+										}
+
+										fclose(saveFile);
+									}
+									else if (refreshBuffer)
+									{
+										refreshBuffer->name[0] = 0;
+									}
+
+									++refreshBuffer;
+									refreshIndex = nextRefreshIndex;
+								} while (refreshBuffer < &g_saveNameBuffers[8]);
+
+								AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+								buttons = InputManager::g_curButtonsPressed;
+							}
+
+							if (buttons & INPUT_CANCEL)
+							{
+								if (showSaveMenu)
+								{
+									AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+									saveMenuType = 3;
+									Nu3D::Camera::SetTint(0, 0, 0, 6);
+								}
+								else
+								{
+									inputDelay = 30;
+									saveMenuType = 0;
+									AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+								}
+							}
+						}
+						break;
+					}
+
+					case 3:
+						if (! Nu3D::Camera::g_cameraTintBlue)
+							done = 1;
+						break;
+				}
+
+				Renderer::DrawTintOverlay();
+				Renderer::Sprite::DrawQueuedSprite();
+				Renderer::EndScene(1);
+			}
+
+			if (inputDelay > 0)
+				inputDelay -= Renderer::g_frameDelta;
+
+			blinkTimer -= Renderer::g_frameDelta;
+
+			if (blinkTimer < 0)
+				blinkTimer += 20;
+
+		} while (! done);
+
+		return loadedSave;
+	}
+
+	// FUNCTION: TOY2 0x00453F20
+	int32_t ShowSaveScreen()
+	{
+		int32_t prevLevelFileIdx = g_levelFileIndex;
+
+		g_levelFileIndex = 16;
+		Levels::g_levelLoadConfig = 248;
+
+		g_hasStaticBackdrop = 0;
+		Renderer::g_virtualScreenWidth = 512.0;
+		Renderer::g_virtualScreenHeight = 256.0;
+		g_nextBackdropId = 36;
+		Levels::InitLevelPlay(16);
+
+		g_savePromptPending = 0;
+		SaveManager::TransferProgressData(&SaveManager::g_save0Data);
+
+		int32_t result = TickSaveMenuMachine(0);
+
+		SaveManager::LoadProgressData(&SaveManager::g_save0Data);
+
+		g_levelFileIndex = prevLevelFileIdx;
+
+		return result;
+	}
 
 	// STUB: TOY2 0x0049EB20
 	void UnlockAndPlayMovie(int32_t movieId, int32_t backgroundId, int32_t forcePlay) {}
@@ -1523,9 +1992,6 @@ namespace Toy2
 	// STUB: TOY2 0x00412E80
 	int32_t CleanupManagers() { return 0; }
 
-	// STUB: TOY2 0x0047D7C0
-	void UpdateAudioChannels() {}
-
 	// STUB: TOY2 0x00490BF0
 	int16_t UpdateD3DState() { return 0; }
 
@@ -1696,9 +2162,6 @@ namespace Toy2
 
 	// STUB: TOY2 0x0049A930
 	int32_t PlayMovie(int32_t movieId) { return 0; }
-
-	// STUB: TOY2 0x0049B9E0
-	int32_t TickSaveMenuMachine(int32_t showSaveMenu) { return 0; }
 
 	// STUB: TOY2 0x0049C420
 	int32_t ShowControlConfig() { return 0; }

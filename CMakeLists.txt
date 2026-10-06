@@ -15,6 +15,33 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/patcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
+# The git hash is shown on screen. Version.h is only rewritten when the hash changes, so it won't rebuild everything
+set(TOY2_GIT_HASH "unknown")
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE TOY2_GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} status --porcelain --untracked-files=no
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE TOY2_GIT_STATUS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    if(TOY2_GIT_STATUS)
+        set(TOY2_GIT_HASH "${TOY2_GIT_HASH}-dirty")
+    endif()
+endif()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/Version.h.in ${CMAKE_BINARY_DIR}/generated/Version.h @ONLY)
+include_directories(${CMAKE_BINARY_DIR}/generated)
+
 set(CMAKE_MSVC_RUNTIME_LIBRARY "")
 
 # C++ flags
@@ -207,6 +234,8 @@ set(TOY2_SOURCES
     # Renderer
     src/Renderer/Renderer.h
     src/Renderer/Renderer.cpp
+    src/Renderer/ApplyFixes.h
+    src/Renderer/ApplyFixes.cpp
     src/Renderer/RenderType.h
     src/Renderer/Sprite.h
     src/Renderer/Sprite.cpp

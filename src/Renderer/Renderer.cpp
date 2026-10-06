@@ -13,7 +13,11 @@
 #include "Renderer/Glue.h"
 #include "Renderer/RenderQueue.h"
 #include "Toy2/D3DApp.h"
-#include <windows.h>
+#include "Renderer/ApplyFixes.h"
+
+#include <WINDOWS.H>
+#include <STDARG.H>
+#include <STDIO.H>
 
 namespace Renderer
 {
@@ -629,54 +633,11 @@ namespace Renderer
 	void DoFrameDelay(int32_t isGameplayFrame)
 	{
 #ifdef APPLY_FIXES
-		// The original derives the frame time from an rdtsc calibrated clock and a Sleep(1) loop, which is
-		// unreliable on modern CPUs and timer resolutions and rounds up to whole 1/60s steps (so 17ms = 30fps).
-		// This version locks to a steady 60fps (30fps in demo mode, like the original) using the performance counter.
-		static LARGE_INTEGER frequency;
-		static LARGE_INTEGER nextFrameTime;
-		static int32_t timingInitialized = 0;
-
-		if (! timingInitialized)
-		{
-			timingInitialized = 1;
-			timeBeginPeriod(1);
-			QueryPerformanceFrequency(&frequency);
-			QueryPerformanceCounter(&nextFrameTime);
-		}
-
-		// Gameplay speed is expressed in 1/60s steps, 2 in demo mode
-		int32_t frameSteps = Toy2::g_demoMode ? 2 : 1;
-		g_frameDelta = frameSteps;
-
-		int64_t frameTicks = frequency.QuadPart * frameSteps / 60;
-		nextFrameTime.QuadPart += frameTicks;
-
-		LARGE_INTEGER now;
-		QueryPerformanceCounter(&now);
-
-		if (now.QuadPart > nextFrameTime.QuadPart + frameTicks * 4)
-		{
-			// Fell too far behind (loading, window drag, breakpoint), resync instead of fast forwarding
-			nextFrameTime.QuadPart = now.QuadPart;
-		}
-		else
-		{
-			// Sleep away the bulk of the wait, spin for the last stretch so we land on the deadline
-			while (true)
-			{
-				QueryPerformanceCounter(&now);
-				int64_t remainingTicks = nextFrameTime.QuadPart - now.QuadPart;
-
-				if (remainingTicks <= 0)
-					break;
-
-				if (remainingTicks * 1000 / frequency.QuadPart >= 2)
-					Sleep(1);
-			}
-		}
-
+		ApplyFixes::LockFrameRate();
+		return;
+#endif
 		g_lastFrameTimestamp = Nu3D::GetHighResolutionTime();
-#else
+
 		// This method does the FPS delay for each frame, it is the source of all pain
 		int32_t hrt = Nu3D::GetHighResolutionTime();
 		int32_t elapsedMs = hrt - g_lastFrameTimestamp;
@@ -780,7 +741,6 @@ namespace Renderer
 	LBL_UPDATE_TIMESTAMP:
 
 		g_lastFrameTimestamp = Nu3D::GetHighResolutionTime();
-#endif
 	}
 
 	// FUNCTION: TOY2 0x004C2080
@@ -854,6 +814,11 @@ namespace Renderer
 	void EndScene(int32_t presentFrame)
 	{
 		DrawingDevice::EndScene();
+
+#ifdef APPLY_FIXES
+		if (presentFrame && ! g_isSoftwareRendering)
+			ApplyFixes::DrawVersionStamp();
+#endif
 
 		if (presentFrame)
 		{
@@ -1527,8 +1492,18 @@ namespace Renderer
 	// STUB: TOY2 0x0049B630
 	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
 
-	// STUB: TOY2 0x0049B990
-	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...) {}
+	// FUNCTION: TOY2 0x0049B990
+	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...)
+	{
+		char buffer[512];
+
+		va_list argList;
+		va_start(argList, format);
+
+		vsprintf(buffer, format, argList);
+
+		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255);
+	}
 
 	// STUB: TOY2 0x004AFD30
 	void BlitBitmapWithWrapping(
