@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include "Toy2/Buzz.h"
 #include "Toy2/Actor.h"
 
 namespace Toy2
@@ -92,6 +93,11 @@ namespace Toy2
 	extern int32_t g_nextBackdropId;
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[16];
+	extern Buzz::Toy2BuzzActor g_buzzActor;
+	extern uint16_t g_playerUnlocks;
+	extern int16_t g_musicSliderToAmplitude[16];
+	extern int16_t g_soundSliderToAmplitude[16];
+	extern char g_emptyStr[8];
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);

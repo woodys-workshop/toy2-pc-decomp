@@ -1,7 +1,11 @@
 #include "SaveManager.h"
 #include "InputManager.h"
+#include "AudioManager/AudioManager.h"
+#include "Toy2/Toy2.h"
 
 #include <MEMORY.H>
+#include <STDIO.H>
+#include <STRING.H>
 
 namespace SaveManager
 {
@@ -14,31 +18,27 @@ namespace SaveManager
 	// GLOBAL: TOY2 0x00830CA8
 	uint32_t g_curLevelTokenData;
 
-	// FUNCTION: TOY2 0x00415180
-	void AddInputEntry(int32_t inputCode, int32_t controlId)
+	// FUNCTION: TOY2 0x00415180 [MATCHED]
+	void AddInputEntry(ToyInputCodes inputCode, GameControlId controlId)
 	{
 		int32_t saveStructIndex = 0;
 
-		SaveControlMapping* saveStructs = g_save99Data.saveStructs;
-
-		do
+		for (int32_t i = 0; i < 38; i++)
 		{
-			if (saveStructs->dInputCode != -1)
+			if (g_save99Data.saveStructs[i].dInputCode != -1)
 			{
-				if (saveStructIndex != (saveStructs - g_save99Data.saveStructs))
+				if (saveStructIndex != i)
 				{
-					g_save99Data.saveStructs[saveStructIndex] = *saveStructs;
+					g_save99Data.saveStructs[saveStructIndex].dInputCode = g_save99Data.saveStructs[i].dInputCode;
+					g_save99Data.saveStructs[saveStructIndex].gameControlId = g_save99Data.saveStructs[i].gameControlId;
 
-					saveStructs->dInputCode = -1;
-					saveStructs->gameControlId = 0;
+					g_save99Data.saveStructs[i].dInputCode = -1;
+					g_save99Data.saveStructs[i].gameControlId = 0;
 				}
 
 				++saveStructIndex;
 			}
-
-			++saveStructs;
-
-		} while (saveStructs < g_save99Data.unusedStructs);
+		}
 
 		if (saveStructIndex < 38)
 		{
@@ -47,21 +47,17 @@ namespace SaveManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x00414F20
+	// FUNCTION: TOY2 0x00414F20 [MATCHED]
 	void Init()
 	{
 		memset(InputManager::g_previousInputStates, 255, sizeof(InputManager::g_previousInputStates));
 
 		// Clear Save99Data entries
-		SaveControlMapping* mapping = g_save99Data.saveStructs;
-
-		do
+		for (int32_t i = 0; i < 38; i++)
 		{
-			mapping->dInputCode = TOY_INPUT_UNKNOWN;
-			mapping->gameControlId = 0;
-			mapping++;
-
-		} while (mapping < g_save99Data.unusedStructs);
+			g_save99Data.saveStructs[i].dInputCode = TOY_INPUT_UNKNOWN;
+			g_save99Data.saveStructs[i].gameControlId = 0;
+		}
 
 		AddInputEntry(TOY_INPUT_CAPITALA, INPUT_UP);
 		AddInputEntry(TOY_INPUT_CAPITALB, INPUT_DOWN);
@@ -96,30 +92,132 @@ namespace SaveManager
 		AddInputEntry(TOY_INPUT_F2, INPUT_MENU);
 	}
 
-	// STUB: TOY2 0x004A2C20
-	void InitProgressData(Save0Data* save) {}
+	// FUNCTION: TOY2 0x004A2C20 [MATCHED]
+	void InitProgressData(Save0Data* save)
+	{
+		save->lastLevel = 0;
+		save->unlocks = 0;
+		save->health = 14;
+		save->lives = 5;
 
-	// STUB: TOY2 0x004A2CC0
-	void LoadProgressData(Save0Data* save) {}
+		for (int32_t i = 1; i < 16; i++)
+			save->tokens[i] = 0;
 
-	// STUB: TOY2 0x0049B830
-	void SaveToFile(int32_t saveNum, const char* saveName) {}
+		for (int32_t j = 0; j < 48; j++)
+			save->moviesUnlocked[j] = 0;
+	}
 
-	// STUB: TOY2 0x004151E0
-	void ClearBindByControlId(GameControlId controlId) {}
+	// FUNCTION: TOY2 0x004A2CC0 [MATCHED]
+	void LoadProgressData(Save0Data* save)
+	{
+		Toy2::g_buzzActor.lives = save->lives;
+		Toy2::g_playerUnlocks = save->unlocks;
 
-	// STUB: TOY2 0x00415210
-	void ClearBindByInputCode(ToyInputCodes inputCode) {}
+		int16_t levelIndex = save->lastLevel;
 
-	// STUB: TOY2 0x00415240
-	int32_t GetInputCodeByControlId(GameControlId controlId) { return 0; }
+		Toy2::g_levelIndex = levelIndex;
+		Toy2::g_buzzActor.health = save->health;
 
-	// STUB: TOY2 0x00415270
-	int32_t GetControlSettingId(ToyInputCodes inputCode) { return 0; }
+		if (Toy2::g_levelIndex > 14)
+			Toy2::g_levelIndex = 14;
+		else if (Toy2::g_levelIndex < 0)
+			Toy2::g_levelIndex = 0;
 
-	// STUB: TOY2 0x00498470
-	void SetLightShadowEffects(uint32_t on) {}
+		g_curLevelTokenData = save->tokens[Toy2::g_levelFileConversion[Toy2::g_levelIndex]];
 
-	// STUB: TOY2 0x004A2C80
-	void TransferProgressData(SaveManager::Save0Data* saveData) {}
+		AudioManager::SetVolumes(2 * Toy2::g_musicSliderToAmplitude[save->musicVolume] / 3, 3 * Toy2::g_soundSliderToAmplitude[save->soundVolume] / 2);
+	}
+
+	// FUNCTION: TOY2 0x0049B830 [MATCHED]
+	void SaveToFile(int32_t saveNum, const char* saveName)
+	{
+		const char* emptyStrPtr = saveName;
+		char emptyStr = Toy2::g_emptyStr[0];
+
+		if (! saveName)
+			emptyStrPtr = &emptyStr;
+
+		char buffer[256];
+		sprintf(buffer, "Toy2%02d.sav", saveNum);
+
+		FILE* fileHandle = fopen(buffer, "wb");
+
+		if (fileHandle)
+		{
+			size_t strCount = strlen(emptyStrPtr);
+			fwrite(&strCount, 1, sizeof(size_t), fileHandle);
+
+			if (strCount)
+				fwrite(emptyStrPtr, 1, strCount, fileHandle);
+
+			if (saveNum == 99)
+				fwrite(&g_save99Data, 1, sizeof(Save99Data), fileHandle);
+			else
+				fwrite(&g_save0Data, 1, sizeof(Save0Data), fileHandle);
+
+			fclose(fileHandle);
+		}
+	}
+
+	// FUNCTION: TOY2 0x004151E0 [MATCHED]
+	void ClearBindByControlId(GameControlId controlId)
+	{
+		for (int32_t i = 0; i < 38; i++)
+		{
+			if (g_save99Data.saveStructs[i].gameControlId == controlId)
+			{
+				g_save99Data.saveStructs[i].dInputCode = -1;
+				g_save99Data.saveStructs[i].gameControlId = 0;
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x00415210 [MATCHED]
+	void ClearBindByInputCode(ToyInputCodes inputCode)
+	{
+		for (int32_t i = 0; i < 38; i++)
+		{
+			if (g_save99Data.saveStructs[i].dInputCode == inputCode)
+			{
+				g_save99Data.saveStructs[i].dInputCode = -1;
+				g_save99Data.saveStructs[i].gameControlId = 0;
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x00415240 [MATCHED]
+	int32_t GetInputCodeByControlId(GameControlId controlId)
+	{
+		for (int32_t i = 0; i < 38; i++)
+		{
+			if (g_save99Data.saveStructs[i].gameControlId == controlId)
+				return g_save99Data.saveStructs[i].dInputCode;
+		}
+
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x00415270 [MATCHED]
+	int32_t GetControlSettingId(ToyInputCodes inputCode)
+	{
+		for (int32_t i = 0; i < 38; i++)
+		{
+			if (g_save99Data.saveStructs[i].dInputCode == inputCode)
+				return g_save99Data.saveStructs[i].gameControlId;
+		}
+
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x00498470 [MATCHED]
+	void SetLightShadowEffects(uint32_t on) { g_save0Data.lightShadowEffects = on; }
+
+	// FUNCTION: TOY2 0x004A2C80 [MATCHED]
+	void TransferProgressData(Save0Data* saveData)
+	{
+		saveData->lives = Toy2::g_buzzActor.lives;
+		saveData->lastLevel = Toy2::g_levelIndex;
+		saveData->unlocks = Toy2::g_playerUnlocks;
+		saveData->health = Toy2::g_buzzActor.health;
+	}
 }

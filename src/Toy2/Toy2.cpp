@@ -113,6 +113,15 @@ namespace Toy2
 	// GLOBAL: TOY2 0x0052AD8A
 	int16_t g_levelIndex;
 
+	// GLOBAL: TOY2 0x005028A8
+	int16_t g_musicSliderToAmplitude[16] = { 0, 9, 18, 27, 36, 45, 54, 63, 72, 81, 90, 99, 108, 117, 126, 128 };
+
+	// GLOBAL: TOY2 0x005028C8
+	int16_t g_soundSliderToAmplitude[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+
+	// GLOBAL: TOY2 0x00528160
+	char g_emptyStr[8];
+
 	// GLOBAL: TOY2 0x0050268C
 	int32_t g_levelFileConversion[16] = { 1, 2, 6, 4, 5, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1 };
 
@@ -136,6 +145,9 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00830D50
 	int32_t g_quitToTitleFlag;
+
+	// GLOBAL: TOY2 0x0052F2D8
+	uint16_t g_playerUnlocks;
 
 	// GLOBAL: TOY2 0x0052F300
 	Buzz::Toy2BuzzActor g_buzzActor;

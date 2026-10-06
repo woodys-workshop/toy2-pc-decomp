@@ -34,7 +34,8 @@ namespace SaveManager
 		uint8_t zeros[304];
 		uint8_t lives;
 		uint8_t lastLevel;
-		uint16_t unlocks;
+		uint8_t unlocks;
+		uint8_t padByte0;
 		uint8_t cameraType;
 		uint8_t musicVolume;
 		uint8_t soundVolume;
@@ -43,11 +44,9 @@ namespace SaveManager
 		uint16_t unkData2;
 		uint16_t health;
 		uint8_t padByte2;
-		uint8_t tokens[15];
+		uint8_t tokens[16];
+		uint8_t moviesUnlocked[48];
 		uint8_t padByte3;
-		uint8_t moviesUnlocked[19];
-		uint32_t padInt;
-		uint8_t padBytes[26];
 	};
 #pragma pack(pop)
 
