@@ -114,7 +114,10 @@ namespace Toy2
 	int16_t g_levelIndex;
 
 	// GLOBAL: TOY2 0x0050268C
-	int32_t g_levelFileConversion[15] = { 1, 2, 6, 4, 5, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+	int32_t g_levelFileConversion[16] = { 1, 2, 6, 4, 5, 3, 7, 8, 9, 10, 11, 12, 13, 14, 15, -1 };
+
+	// GLOBAL: TOY2 0x00503840
+	int16_t g_tokenProgressTable[16] = { 0, 0, 3, 0, 0, 10, 0, 0, 18, 0, 0, 28, 0, 0, 40, 0 };
 
 	// GLOBAL: TOY2 0x0052AD7C
 	int32_t g_demoPathWriteIdx;
@@ -298,8 +301,7 @@ namespace Toy2
 				layerFlags = Nu3D::Scene::RENDERLAYER_INFINITE_VIEWPORT;
 				break;
 
-			case 4:
-			{
+			case 4: {
 				int32_t sector = g_curSectorCopy2;
 
 				if (g_curSectorCopy2 == 2 && Nu3D::Camera::g_cameraWorldPos.y < -7900.0)
@@ -323,9 +325,8 @@ namespace Toy2
 			}
 
 			case 10:
-				if (g_curSector == 4 && Nu3D::Camera::g_cameraWorldPos.y < -40800.0 && Nu3D::Camera::g_cameraWorldPos.x > -800.0 &&
-					Nu3D::Camera::g_cameraWorldPos.x < 800.0 && Nu3D::Camera::g_cameraWorldPos.z > -5500.0 &&
-					Nu3D::Camera::g_cameraWorldPos.z < -3900.0)
+				if (g_curSector == 4 && Nu3D::Camera::g_cameraWorldPos.y < -40800.0 && Nu3D::Camera::g_cameraWorldPos.x > -800.0
+					&& Nu3D::Camera::g_cameraWorldPos.x < 800.0 && Nu3D::Camera::g_cameraWorldPos.z > -5500.0 && Nu3D::Camera::g_cameraWorldPos.z < -3900.0)
 				{
 					sectorIndex = 5;
 					g_curSectorCopy1 = 5;
@@ -646,8 +647,33 @@ namespace Toy2
 	// STUB: TOY2 0x00453D90
 	void ShowActClearScreen() {}
 
-	// STUB: TOY2 0x0049EB50
-	uint32_t ComputeTokenProgress() { return 1; }
+	// FUNCTION: TOY2 0x0049EB50 [MATCHED]
+	uint32_t ComputeTokenProgress()
+	{
+		int32_t times = 0;
+		int32_t idx = 0;
+
+		for (idx = 0; idx < 15; idx++)
+		{
+			int32_t tokenData = SaveManager::g_save0Data.tokens[g_levelFileConversion[idx]];
+
+			if (! tokenData)
+				break;
+
+			int32_t innerIdx = 5;
+
+			do
+			{
+				if (tokenData & 1)
+					++times;
+
+				tokenData >>= 1;
+				--innerIdx;
+			} while (innerIdx);
+		}
+
+		return idx + (((times << 8) + g_tokenProgressTable[idx]) << 8);
+	}
 
 	// STUB: TOY2 0x00414720
 	int32_t EnterLevel(int32_t levelIndex) { return 0; }

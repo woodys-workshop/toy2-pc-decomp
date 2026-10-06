@@ -56,7 +56,7 @@ namespace Toy2
 	extern uint8_t g_type59VisibleIndices[36];
 	extern int32_t g_nextBackdropId;
 	extern int16_t g_levelIndex;
-	extern int32_t g_levelFileConversion[15];
+	extern int32_t g_levelFileConversion[16];
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
