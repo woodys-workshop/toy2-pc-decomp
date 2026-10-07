@@ -395,7 +395,7 @@ namespace Renderer
 		// FUNCTION: TOY2 0x004B8840
 		Nu3D::InstanceData* AllocFromNodeMatrices(
 			D3DMATRIX* nodeMatrices,
-			Nu3D::Primitive::Header* headers,
+			int32_t* nodeIndices,
 			int32_t headerCount,
 			int32_t** flags,
 			int32_t renderStage)
@@ -407,19 +407,19 @@ namespace Renderer
 
 			D3DMATRIX* destination = g_instanceData[index].matrices;
 
-			// every header names the node matrix to copy, a node that is hidden in the flags makes the whole instance be skipped
+			// every entry is the index of a node matrix to copy (4 bytes each), a node that is hidden in the flags makes the whole instance be skipped
 			while (headerCount)
 			{
-				if (flags && ((uint32_t)flags[headers->drawType] & 1))
+				if (flags && ((uint32_t)flags[*nodeIndices] & 1))
 				{
 					g_instanceDataCounter = index + 1;
 					return 0;
 				}
 
-				memcpy(destination, &nodeMatrices[headers->drawType], sizeof(D3DMATRIX));
+				memcpy(destination, &nodeMatrices[*nodeIndices], sizeof(D3DMATRIX));
 
 				destination++;
-				headers++;
+				nodeIndices++;
 				--headerCount;
 			}
 

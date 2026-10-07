@@ -5,11 +5,13 @@
 #include "Toy2/Platform.h"
 #include "Toy2/Shadow.h"
 
+#include <STDLIB.H>
+
 namespace Nu3D
 {
 	namespace Collision
 	{
-		// STUB: TOY2 0x00481140
+		// FUNCTION: TOY2 0x00481140
 		int16_t IsPointInTriangle(
 			int32_t x1,
 			int32_t y1,
@@ -22,6 +24,101 @@ namespace Nu3D
 			int32_t z3,
 			Vector3I16* normal)
 		{
+			int16_t y = normal->y;
+			int32_t absY = abs(y);
+			int32_t absX = abs(normal->x);
+			int32_t v13;
+			int32_t v14;
+			int32_t v16;
+			int32_t v17;
+			int32_t v18;
+			int32_t v19;
+			int32_t v20;
+			bool negative;
+
+			// the triangle is tested in the plane the normal points the most along
+			if (absX <= absY)
+			{
+				if (absY >= abs(normal->z))
+				{
+					if (y >= 0)
+					{
+						if (x2 * (z1 - z2) - z2 * (x1 - x2) >= 0 && z3 * x1 - x3 * z1 >= 0)
+						{
+							negative = (z2 - z3) * (x1 - x3) + (z1 - z3) * (x3 - x2) < 0;
+
+							return !negative;
+						}
+					}
+					else if (z2 * x1 - x2 * z1 >= 0 && x3 * (z1 - z3) - z3 * (x1 - x3) >= 0)
+					{
+						v13 = (x2 - x3) * (z1 - z2);
+						v14 = (z3 - z2) * (x1 - x2);
+
+						goto LABEL_23;
+					}
+
+					return 0;
+				}
+
+				if (absX < absY)
+					goto LABEL_18;
+			}
+
+			if (absX < abs(normal->z))
+			{
+			LABEL_18:
+				if (normal->z >= 0)
+					return y2 * (x1 - x2) - x2 * (y1 - y2) >= 0 && x3 * y1 - y3 * x1 >= 0 && (x2 - x3) * (y1 - y3) + (y3 - y2) * (x1 - x3) >= 0;
+
+				v17 = y1;
+				v16 = x1;
+				v19 = x2;
+				v18 = y2;
+
+				if (x2 * y1 - y2 * x1 < 0)
+					return 0;
+
+				v20 = x3;
+				negative = y3 * (x1 - x3) - x3 * (y1 - y3) < 0;
+			}
+			else
+			{
+				if (normal->x < 0)
+				{
+					if (y2 * (z1 - z2) - z2 * (y1 - y2) >= 0 && z3 * y1 - y3 * z1 >= 0)
+					{
+						negative = (z2 - z3) * (y1 - y3) + (z1 - z3) * (y3 - y2) < 0;
+
+						return !negative;
+					}
+
+					return 0;
+				}
+
+				v16 = z1;
+				v17 = y1;
+				v18 = y2;
+				v19 = z2;
+
+				if (z2 * y1 - y2 * z1 < 0)
+					return 0;
+
+				v20 = z3;
+				negative = y3 * (z1 - z3) - z3 * (y1 - y3) < 0;
+			}
+
+			if (!negative)
+			{
+				v13 = (v20 - v19) * (v17 - v18);
+				v14 = (v18 - y3) * (v16 - v19);
+
+			LABEL_23:
+				negative = v14 + v13 < 0;
+
+				return !negative;
+			}
+
 			return 0;
 		}
 

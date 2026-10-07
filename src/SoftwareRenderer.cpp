@@ -434,14 +434,32 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004B2B80
 	int32_t GetStrideFromFVF(int32_t fvf) { return 0; }
 
-	// STUB: TOY2 0x004B6140
-	void SubmitTriangleStripRaw(
-		int32_t renderFlags,
-		LPDIRECT3DVERTEXBUFFER vertexBuffer,
-		Renderer::RenderEntry* renderEntry,
-		uint16_t* indices,
-		int32_t vertexCount)
-	{}
+	// FUNCTION: TOY2 0x004B6140
+	void SubmitTriangleStripRaw(int32_t renderFlags, LPVOID vertexData, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount)
+	{
+		Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)vertexData;
+
+		int32_t index1 = indices[1];
+		int32_t index2 = indices[2];
+		int32_t remaining = vertexCount - 3;
+		uint16_t* nextIndex = indices + 3;
+
+		SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[indices[0]], &vertices[index1], &vertices[index2]);
+
+		while (remaining)
+		{
+			int32_t previous = index1;
+
+			index1 = index2;
+			index2 = *nextIndex++;
+
+			// strips alternate their winding order, so every second triangle is flipped
+			if ((--remaining & 1) != 0)
+				SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[previous], &vertices[index1], &vertices[index2]);
+			else
+				SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[index2], &vertices[index1], &vertices[previous]);
+		}
+	}
 
 	// STUB: TOY2 0x004B6220
 	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices) { return 0; }

@@ -154,12 +154,7 @@ namespace SoftwareRenderer
 	int32_t UnkRenderAPI34(int32_t* a1);
 	int32_t UnkFunc1();
 	void UnkFunc8();
-	void SubmitTriangleStripRaw(
-		int32_t renderFlags,
-		LPDIRECT3DVERTEXBUFFER vertexBuffer,
-		Renderer::RenderEntry* renderEntry,
-		uint16_t* indices,
-		int32_t vertexCount);
+	void SubmitTriangleStripRaw(int32_t renderFlags, LPVOID vertexData, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount);
 	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices);
 }
 

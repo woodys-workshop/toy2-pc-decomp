@@ -23,6 +23,7 @@ namespace Toy2
 		};
 
 		extern PlatformDescriptor g_platformDescriptors[32];
+		extern int32_t g_unk559E80;
 
 		int32_t SamplePoint(int32_t a1, int32_t a2, uint32_t* a3);
 		void InitPathPlatform(int32_t a1, int32_t a2, int32_t a3, int32_t linkId, int32_t linkId2, int32_t a6, int32_t a7, int32_t y);

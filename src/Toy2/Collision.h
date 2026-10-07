@@ -115,6 +115,8 @@ namespace Toy2
 			void* hitFace;
 			Vector3I16 hitNormal;
 			int16_t pad;
+			Vector3I direction;
+			int32_t directionDot;
 		};
 
 		struct ResolvedVelocity
@@ -133,11 +135,23 @@ namespace Toy2
 		extern CollisionTriangle* g_candidateTris[240];
 		extern int16_t g_candidateMeshIdx[241];
 		extern int16_t g_ceilingContactMeshIdx;
-		extern int32_t g_groundQueryResult;
+		extern int16_t g_groundQueryResult;
 		extern int16_t g_unk7284A0;
 		extern int16_t g_unk7284A2;
 		extern int32_t g_unk729120;
 		extern int32_t g_unk72912C;
+		extern int32_t g_unk729124;
+		extern int32_t g_unk729110;
+		extern int32_t g_unk728718;
+		extern int32_t g_unk7290E4;
+		extern int16_t g_unk7290A0[32];
+		extern int32_t g_unk72D2A8;
+		extern int32_t g_unk72D2AC;
+		extern int16_t g_unk7291D8;
+		extern int16_t g_unk72D298;
+		extern CollisionTriangle* g_unk7286A0[19];
+		extern int16_t g_unk729134[30];
+		extern int32_t g_unk728DA0[96];
 		extern int16_t g_groundContactMeshIdx;
 		extern Vector3I16 g_floorSlope;
 		extern Vector3I16 g_floorSlopePrev;
@@ -170,7 +184,7 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(CollisionMeshInstance) == 0x34);
 		STATIC_ASSERT(sizeof(CollisionCacheEntry) == 0x5C0);
 		STATIC_ASSERT(sizeof(BuzzCollisionState) == 0x30);
-		STATIC_ASSERT(sizeof(RaycastQuery) == 0x3C);
+		STATIC_ASSERT(sizeof(RaycastQuery) == 0x4C);
 		STATIC_ASSERT(sizeof(ResolvedVelocity) == 0xE);
 	}
 }

@@ -1543,8 +1543,8 @@ namespace Renderer
 
 		while (patch)
 		{
-			// a patch has the layout of a primitive here, unkVar11 is the header count and the header starts at indexData
-			Nu3D::InstanceData* instanceData = InstanceData::AllocFromNodeMatrices(nodeMatrices, (Nu3D::Primitive::Header*)patch->indexData, patch->unkVar11, flags, stage);
+			// a patch has the layout of a primitive here, unkVar11 is the header count, the headers are the node indices that start at indexData
+			Nu3D::InstanceData* instanceData = InstanceData::AllocFromNodeMatrices(nodeMatrices, (int32_t*)patch->indexData, patch->unkVar11, flags, stage);
 
 			if (instanceData)
 				ProcessPatch(instanceData, patch);

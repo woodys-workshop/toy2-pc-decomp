@@ -62,7 +62,7 @@ namespace Renderer
 		Nu3D::InstanceData* AllocFromMatrix(D3DMATRIX* matrix, int32_t renderFlags);
 		Nu3D::InstanceData* AllocFromNodeMatrices(
 			D3DMATRIX* nodeMatrices,
-			Nu3D::Primitive::Header* headers,
+			int32_t* nodeIndices,
 			int32_t headerCount,
 			int32_t** flags,
 			int32_t renderStage);

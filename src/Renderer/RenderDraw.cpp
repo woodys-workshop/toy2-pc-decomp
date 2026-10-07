@@ -9,6 +9,16 @@
 
 namespace Renderer
 {
+	// GLOBAL: TOY2 0x00508734
+	WORD g_patchQuadIndices[4] = { 0, 1, 2, 3 };
+
+	// GLOBAL: TOY2 0x0050873C
+	// NOTE: IDA names this p_lpwIndices, two rows of 32 vertices drawn as one triangle strip
+	WORD g_patchStripIndices[64] = { 0, 32, 1, 33, 2, 34, 3, 35, 4, 36, 5, 37, 6, 38, 7, 39, 8, 40, 9, 41, 10, 42, 11, 43, 12, 44, 13, 45, 14, 46, 15, 47, 16, 48, 17, 49, 18, 50, 19, 51, 20, 52, 21, 53, 22, 54, 23, 55, 24, 56, 25, 57, 26, 58, 27, 59, 28, 60, 29, 61, 30, 62, 31, 63 };
+
+	// GLOBAL: TOY2 0x005087E4
+	WORD g_lineIndices[2] = { 0, 1 };
+
 	// TODO: Fix
 	// the instance data's sprite is reused as scratch space for materials with metadata 0x100 (environment mapping)
 	struct Metadata100Params
@@ -482,12 +492,127 @@ namespace Renderer
 		}
 	}
 
-	// STUB: TOY2 0x004B6C10
-	void Sprite::RenderType8(Nu3D::Material* material, RenderEntry* entry) {}
+	// FUNCTION: TOY2 0x004B6C10
+	void Sprite::RenderType8(Nu3D::Material* material, RenderEntry* entry)
+	{
+		Nu3D::InstanceData* instanceData = entry->instanceData;
+		int32_t renderFlags = instanceData->renderFlags;
 
-	// TODO: Fix, wrong spot
-	// GLOBAL: TOY2 0x005087E4
-	static WORD g_lineIndices[2] = { 0, 1 };
+		SoftwareRenderer::g_unkE4D950 = instanceData->unkInt6;
+
+		int32_t metadata = material->metadata;
+
+		if ((metadata & 1) != 0)
+			renderFlags |= 0xC00;
+
+		if ((metadata & 0x10) != 0)
+			renderFlags |= 0x4800;
+
+		if ((metadata & 0x20) != 0)
+			renderFlags |= 0x20800;
+
+		if ((metadata & 0x200) != 0)
+			renderFlags |= 0x100800;
+
+		if ((metadata & 0x400) != 0)
+			renderFlags |= 0x200800;
+
+		if ((metadata & 0x800) != 0)
+			renderFlags |= 0x400800;
+
+		Nu3D::Primitive* primitive = entry->primitive;
+
+		int32_t drawFlags = primitive->renderFlags | renderFlags;
+		int32_t stateFlags = drawFlags;
+
+		if ((metadata & 8) != 0)
+		{
+			drawFlags = (drawFlags & ~0xFF) | (drawFlags & 0x8F) | 0x40;
+			stateFlags = drawFlags;
+		}
+
+		int32_t isTex14;
+
+		if (material == Nu3D::g_tex14Version1 || material == Nu3D::g_tex14Version2 || material == Nu3D::g_tex14Version3)
+		{
+			drawFlags &= 0xFFFFFE7F;
+			isTex14 = 1;
+			stateFlags = drawFlags;
+		}
+		else
+		{
+			isTex14 = 0;
+		}
+
+		InitRenderState(drawFlags);
+
+		LPDIRECT3DVERTEXBUFFER sourceBuffer = primitive->patchVerts.vertexBuffer;
+		LPDIRECT3DVERTEXBUFFER destBuffer = g_FVF_14C_Buffer_2.vertexBuffer;
+
+		if (sourceBuffer && destBuffer)
+		{
+			DWORD vertexOp = 1;
+			HRESULT result;
+			WORD* indices;
+
+			if ((instanceData->renderModeFlags & 1) != 0)
+				vertexOp = 1025;
+
+			if (primitive->headerCount == 4)
+			{
+				// a quad, each of its 4 vertices has a matrix of its own
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[0]);
+				result = DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 0, 1, sourceBuffer, 0, 0);
+
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[1]);
+				result |= DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 1, 1, sourceBuffer, 1, 0);
+
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[2]);
+				result |= DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 2, 1, sourceBuffer, 2, 0);
+
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[3]);
+				result |= DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 3, 1, sourceBuffer, 3, 0);
+
+				indices = g_patchQuadIndices;
+			}
+			else
+			{
+				// two rows of vertices, each row has a matrix
+				DWORD rowCount = primitive->patchVerts.vertexCount >> 1;
+
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[0]);
+				DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 0, rowCount, sourceBuffer, 0, 0);
+
+				DrawingDevice::SetWorldTransform(&instanceData->matrices[1]);
+				result = DrawingAPI::ProcessVerticesOnBuffer(destBuffer, vertexOp, 32, rowCount, sourceBuffer, rowCount, 0);
+
+				indices = g_patchStripIndices;
+			}
+
+			if (!result)
+			{
+				if (isTex14)
+					Vertices::ProjectToScreen(&primitive->patchVerts, instanceData->matrices, primitive->headerCount);
+
+				if (g_instanceHorzOffset != 0.0 || g_instanceVertOffset != 0.0)
+					Vertices::ApplyOffset(&primitive->patchVerts, g_instanceHorzOffset, g_instanceVertOffset);
+
+				SoftwareRenderer::g_viewportRect = &instanceData->clipRect;
+
+				LPVOID lockedData;
+
+				if (!DrawingAPI::LockVertexBuffer(destBuffer, 0x801, &lockedData, 0))
+				{
+					if (g_useSoftwareRasterizer)
+						SoftwareRenderer::SubmitTriangleStripRaw(stateFlags, lockedData, entry, indices, primitive->patchVerts.vertexCount);
+					else
+						DrawingAPI::DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, D3DFVF_0x1C4, lockedData, 64, indices, primitive->patchVerts.vertexCount, 8);
+
+					DrawingAPI::UnlockVertexBuffer(destBuffer);
+				}
+			}
+		}
+	}
 
 	// FUNCTION: TOY2 0x004B8330
 	HRESULT Sprite::RenderType10(Nu3D::Sprite* sprite)
