@@ -385,8 +385,8 @@ namespace Toy2
 			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x16
 		};
 
-		// GLOBAL: TOY2 0x004E05F0
 		// NOTE: indexed by creatureId - 1, the original indexes from 0x004E05EE
+		// GLOBAL: TOY2 0x004E05F0
 		int16_t g_unk4E05F0[62] = {
 			150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 0,   0,	70,	 150, 150, 150, 0,	 150, 150, 150, 150,
 			150, 0,	  150, 150, 150, 150, 50,  0,	0,	 150, 150, 150, 150, 150, 150, 150, 100, 150, 150, 150, 150,
@@ -1526,7 +1526,9 @@ namespace Toy2
 			char* textComplete,
 			int32_t camAngleValue,
 			int32_t camAngle)
-		{}
+		{
+			// not implemented
+		}
 
 		// STUB: TOY2 0x004A26F0
 		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx) {}

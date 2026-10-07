@@ -748,7 +748,9 @@ namespace Renderer
 			int32_t textureIndex,
 			RGBA color,
 			int32_t renderFlags)
-		{}
+		{
+			// not implemented
+		}
 
 		// STUB: TOY2 0x004B8A30
 		void QueueGroundAlignedSprite(
@@ -761,7 +763,9 @@ namespace Renderer
 			int32_t textureIndex,
 			RGBA color,
 			int32_t renderFlags)
-		{}
+		{
+			// not implemented
+		}
 
 		// FUNCTION: TOY2 0x004B8460
 		void DrawQueuedSprite()
@@ -818,7 +822,9 @@ namespace Renderer
 			int32_t textureIndex,
 			RGBA color,
 			int32_t renderFlags)
-		{}
+		{
+			// not implemented
+		}
 
 
 		// STUB: TOY2 0x004B9210

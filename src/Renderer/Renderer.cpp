@@ -1482,7 +1482,9 @@ namespace Renderer
 		int32_t verticalWrapOffset,
 		int32_t srcX,
 		int32_t srcY)
-	{}
+	{
+		// not implemented
+	}
 
 	// STUB: TOY2 0x0049B2A0
 	void DrawMenuText(int16_t yPos, char* text, int32_t shadow) {}
@@ -1517,7 +1519,9 @@ namespace Renderer
 		int32_t verticalWrapOffset,
 		LONG destX,
 		LONG destY)
-	{}
+	{
+		
+	}
 
 	// FUNCTION: TOY2 0x004B8940
 	void ProcessPatch(Nu3D::InstanceData* spriteStruct, Nu3D::Patch* patch)
@@ -1593,7 +1597,9 @@ namespace Renderer
 		int32_t verticalWrapOffset,
 		int32_t srcX,
 		int32_t srcY)
-	{}
+	{
+		// not implemented
+	}
 
 	// FUNCTION: TOY2 0x004B89B0
 	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct)

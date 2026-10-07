@@ -34,8 +34,8 @@ namespace Toy2
 		// GLOBAL: TOY2 0x007291DC
 		CollisionTriangle* g_candidateTris[240];
 
-		// GLOBAL: TOY2 0x007284B2
 		// NOTE: the triangle k of the candidate list is at index k + 1, IDA names the word in front of the list
+		// GLOBAL: TOY2 0x007284B2
 		int16_t g_candidateMeshIdx[241];
 
 		// GLOBAL: TOY2 0x0072D2A6
@@ -53,8 +53,8 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0072D2A8
 		int32_t g_unk72D2A8;
 
-		// GLOBAL: TOY2 0x0072D2AC
 		// NOTE: the number of points in g_unk728DA0
+		// GLOBAL: TOY2 0x0072D2AC
 		int32_t g_unk72D2AC;
 
 		// GLOBAL: TOY2 0x007291D8
@@ -69,8 +69,8 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00729134
 		int16_t g_unk729134[30];
 
-		// GLOBAL: TOY2 0x00728DA0
 		// NOTE: IDA sizes this as 12 bytes, up to 32 points of 3 ints are written
+		// GLOBAL: TOY2 0x00728DA0
 		int32_t g_unk728DA0[96];
 
 		// GLOBAL: TOY2 0x0072959C
@@ -97,8 +97,8 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00728718
 		int32_t g_unk728718;
 
-		// GLOBAL: TOY2 0x00728698
 		// NOTE: IDA only names the x (+0) and z (+4) members, the y (+2) member is read as the high word of g_floorSlopeX
+		// GLOBAL: TOY2 0x00728698
 		Vector3I16 g_floorSlope;
 
 		// GLOBAL: TOY2 0x00729118

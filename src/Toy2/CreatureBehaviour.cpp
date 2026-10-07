@@ -70,7 +70,6 @@ namespace Toy2
 		void TinMan(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// FUNCTION: TOY2 0x00416F30
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::RCCar::Level1, a namespace and a function can not share a name
 		void RCCar_Level1(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
 		{
 			int32_t state = 0;
@@ -213,7 +212,6 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00418720
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::RCCar::Level2, a namespace and a function can not share a name
 		void RCCar_Level2(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
 		{
 			int32_t state = 0;
@@ -344,21 +342,18 @@ namespace Toy2
 		void Mouse(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// STUB: TOY2 0x004282D0
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::GunsL::Level11, a namespace and a function can not share a name
 		void GunsL_Level11(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// STUB: TOY2 0x00428650
 		void Rabid(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// STUB: TOY2 0x0042BE60
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::ProsP::Level13, a namespace and a function can not share a name
 		void ProsP_Level13(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor) {}
 
 		// STUB: TOY2 0x0042C150
 		void Pilot(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// STUB: TOY2 0x0042D3E0
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::Smith::Level14, a namespace and a function can not share a name
 		void Smith_Level14(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context) {}
 
 		// STUB: TOY2 0x0042D620
@@ -374,7 +369,6 @@ namespace Toy2
 		void ProsP(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor) {}
 
 		// FUNCTION: TOY2 0x0043C070
-		// $TODO: the IDA name is Toy2::CreatureBehaviour::RCCar::Method1, a namespace and a function can not share a name
 		void RCCar_Method1(Toy2::Actor::Toy2Actor* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5)
 		{
 			int32_t boneIndex = *(int16_t*)(CharacterLoader::g_unk547CD4[a1->creatureId] + 4) + a2;

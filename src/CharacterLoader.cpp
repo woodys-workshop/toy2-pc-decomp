@@ -316,9 +316,9 @@ namespace CharacterLoader
 		return boneCount;
 	}
 
-	// FUNCTION: TOY2 0x0043C750
 	// $TODO: the quads of a bone are 48 bytes: a flag byte at +3, 4 vertices of 3 shorts at +4 with a stride of 8, and 4 dwords at +0 / +0x24 / +0x28 / +0x2C
 	// that belong to the vertices. The original has the 4 rotations of the quad written out as straight line code, they are loops here.
+	// FUNCTION: TOY2 0x0043C750
 	void LoadSecondSection(int16_t a1)
 	{
 		int32_t i;

@@ -12,8 +12,8 @@ namespace Renderer
 	// GLOBAL: TOY2 0x00508734
 	WORD g_patchQuadIndices[4] = { 0, 1, 2, 3 };
 
-	// GLOBAL: TOY2 0x0050873C
 	// NOTE: IDA names this p_lpwIndices, two rows of 32 vertices drawn as one triangle strip
+	// GLOBAL: TOY2 0x0050873C
 	WORD g_patchStripIndices[64] = { 0, 32, 1, 33, 2, 34, 3, 35, 4, 36, 5, 37, 6, 38, 7, 39, 8, 40, 9, 41, 10, 42, 11, 43, 12, 44, 13, 45, 14, 46, 15, 47, 16, 48, 17, 49, 18, 50, 19, 51, 20, 52, 21, 53, 22, 54, 23, 55, 24, 56, 25, 57, 26, 58, 27, 59, 28, 60, 29, 61, 30, 62, 31, 63 };
 
 	// GLOBAL: TOY2 0x005087E4

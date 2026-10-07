@@ -20,7 +20,9 @@ namespace Renderer
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR)
-		{}
+		{
+			// not implemented
+		}
 
 		// STUB: TOY2 0x0044E100
 		void QueueBeam(
@@ -32,7 +34,9 @@ namespace Renderer
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR)
-		{}
+		{
+			// not implemented
+		}
 	}
 
 	namespace Particles
