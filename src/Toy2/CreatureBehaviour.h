@@ -13,6 +13,9 @@ namespace Toy2
 		void Box(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void BPlane(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void RCCar(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
+		void RCCar_Level1(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
+		void RCCar_Level2(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
+		void RCCar_Method1(Toy2::Actor::Toy2Actor* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5);
 		void FatBloke(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void Buzzard(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);
 		void Sheep(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context);

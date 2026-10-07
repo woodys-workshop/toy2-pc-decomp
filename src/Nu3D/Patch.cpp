@@ -1,6 +1,7 @@
 #include "Nu3D/Patch.h"
 #include "Renderer/Renderer.h"
 #include "Logger.h"
+#include "Nu3D/Primitive.h"
 
 #include <STDLIB.H>
 
@@ -85,18 +86,82 @@ namespace Nu3D
 		return result == 0;
 	}
 
-	// STUB: TOY2 0x004B34F0
-	void Patch::PatchVertices::Destroy(Nu3D::Patch* patch) {}
+	// FUNCTION: TOY2 0x004B34F0
+	void Patch::PatchVertices::Destroy(Nu3D::Patch* patch)
+	{
+		if (patch->listNext)
+			Destroy(patch->listNext);
 
-	// STUB: TOY2 0x004B3530
-	void Patch::Remove(Nu3D::Patch* patch) {}
+		ReleaseBuffer(&patch->patchVertices);
+		FreeVertices(&patch->patchVertices);
 
-	// STUB: TOY2 0x004B3570
-	Nu3D::Patch* Patch::AllocAndResize(int32_t verticesSize, int32_t unknown) { return 0; }
+		Patch::Remove(patch);
+	}
 
-	// STUB: TOY2 0x004B35A0
-	Nu3D::Patch* Patch::Alloc() { return 0; }
+	// FUNCTION: TOY2 0x004B3530
+	void Patch::Remove(Nu3D::Patch* patch)
+	{
+		if (patch->next)
+			patch->next->prev = patch->prev;
 
-	// STUB: TOY2 0x004B3600
-	int32_t Patch::CreateAllVertexBuffers(Nu3D::Patch* patch) { return 0; }
+		Patch* prev = patch->prev;
+
+		if (prev)
+			prev->next = patch->next;
+		else
+			g_patchListHead = patch->next;
+
+		free(patch);
+	}
+
+	// FUNCTION: TOY2 0x004B35A0
+	Nu3D::Patch* Patch::Alloc()
+	{
+		Patch* patch = (Patch*)malloc(60);
+
+		if (patch)
+		{
+			memset(patch, 0, sizeof(Patch));
+
+			patch->next = g_patchListHead;
+			g_patchListHead = patch;
+
+			Patch* next = patch->next;
+			patch->prev = 0;
+
+			if (next)
+				next->prev = patch;
+		}
+
+		return patch;
+	}
+
+	// FUNCTION: TOY2 0x004B3570
+	Nu3D::Patch* Patch::AllocAndResize(int32_t verticesSize, int32_t unknown)
+	{
+		Patch* patch = Alloc();
+
+		if (patch)
+		{
+			Primitive::ResizePatchVerts(&patch->patchVertices, verticesSize);
+			patch->unkVar11 = unknown;
+		}
+
+		return patch;
+	}
+
+	// FUNCTION: TOY2 0x004B3600
+	int32_t Patch::CreateAllVertexBuffers(Nu3D::Patch* patch)
+	{
+		int32_t result = 1;
+
+		while (patch)
+		{
+			BOOL vbResult = PatchVertices::CreateVertexBuffer(&patch->patchVertices, 3);
+			patch = patch->listNext;
+			result &= vbResult;
+		}
+
+		return result;
+	}
 }

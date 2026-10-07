@@ -122,6 +122,7 @@ namespace Toy2
 	extern ToyCfg g_toyCfgData;
 	extern ViewportPreset g_viewportPresets[3];
 	extern SpawnLocation g_spawnLocations[17];
+	extern Actor::Toy2Actor g_levelActors[64];
 	extern int32_t g_levelFileIndex;
 	extern int32_t g_isElevatorHopLevel;
 	extern int32_t g_hasBackdrop;
@@ -143,6 +144,9 @@ namespace Toy2
 	extern int16_t g_soundSliderToAmplitude[16];
 	extern char g_emptyStr[8];
 	extern int32_t g_unk830CC4;
+	extern int32_t g_collectionCount;
+	extern int32_t g_unk52F2F8;
+	extern uint8_t g_tickState[12];
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);

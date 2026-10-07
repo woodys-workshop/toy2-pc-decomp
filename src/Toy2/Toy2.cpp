@@ -16,6 +16,7 @@
 #include "Toy2/Levels.h"
 #include "Toy2/MainMenu.h"
 #include "Toy2/Actor.h"
+#include "Toy2/CreatureBehaviour.h"
 #include "Toy2/Animation.h"
 #include "Toy2/Collision.h"
 #include "Toy2/KiteTail.h"
@@ -456,14 +457,416 @@ namespace Toy2
 		// STUB: TOY2 0x0049E330
 		void PauseLoop() {}
 
-		// STUB: TOY2 0x00406CD0
-		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn) {}
+		// FUNCTION: TOY2 0x00406CD0
+		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn)
+		{
+			RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
+			int16_t initActorFlags;
+
+			actor->creatureId = creatureRam->creatureId;
+			actor->pos.x = 32 * creatureRam->pos.x;
+			actor->pos.y = 32 * creatureRam->pos.y;
+			actor->pos.z = 32 * creatureRam->pos.z;
+			actor->movementData = Actor::g_movementData[creatureRam->movCtrl];
+			actor->actorPhase = creatureRam->entCtrl.actorPhase;
+
+			if (initialSpawn)
+			{
+				initActorFlags = creatureRam->entCtrl.actorFlags;
+			}
+			else
+			{
+				initActorFlags = creatureRam->entCtrl.actorFlags;
+
+				if ((actor->actorFlags & Actor::ACTOR_NO_DESPAWN) != 0)
+					initActorFlags += Actor::ACTOR_NO_DESPAWN;
+			}
+
+			int32_t actorPosX = actor->pos.x;
+			int32_t actorPosZ = actor->pos.z;
+			actor->actorFlags = initActorFlags;
+			actor->unkShort2 = creatureRam->entCtrl.unkByte;
+
+			int32_t actorPosY = actor->pos.y;
+
+			bool flag = actor->unkShort2 == 100;
+
+			actor->boundary.x = actorPosX;
+			actor->motionTargetPos.x = actorPosX;
+			actor->boundary.y = actorPosY;
+			actor->boundary.z = actorPosZ;
+			actor->motionTargetPos.y = actorPosY;
+			actor->motionTargetPos.z = actorPosZ;
+
+			if (flag)
+				actor->unkShort2 = 1800;
+
+			actor->pitchAngle = 0;
+
+			int16_t initialFacingAngle = 16 * creatureRam->initialFacingAngle;
+
+			actor->yawAngle = initialFacingAngle;
+			actor->rollAngle = 0;
+			actor->targetYaw = initialFacingAngle;
+			actor->velX = 0;
+			actor->gravityVel = 0;
+			actor->velForward = 0;
+			actor->unkVar7 = 0;
+			actor->primaryAnimIdx = 0;
+			actor->secondaryAnimIdx = -1;
+			actor->unkVar30 = (int32_t)Actor::g_unk4E0588[1];
+
+			actor->unkShort4 = 0;
+			actor->unkWord15 = 0;
+			actor->unkShort1 = 0;
+			actor->damageCooldownTimer = 0;
+			actor->unkVar9 = 0x80000000;
+			actor->lastValidYPosition = actorPosY;
+
+			if (initialSpawn)
+			{
+				actor->visibilityDistance = 1280;
+
+				switch (creatureRam->creatureId)
+				{
+				case Actor::CREATURE_WOODY:
+				case Actor::CREATURE_MRPOT:
+				case Actor::CREATURE_2_SLIME:
+				case Actor::CREATURE_2_SHINY:
+				case Actor::CREATURE_3_HOOLA:
+				case Actor::CREATURE_3_LOCK:
+				case Actor::CREATURE_3_MUM:
+				case Actor::CREATURE_3_ROOST:
+				case Actor::CREATURE_4_MOTHER:
+				case Actor::CREATURE_4_FSAUCE:
+				case Actor::CREATURE_4_JESSIE:
+				case Actor::CREATURE_4_BULLSEYE:
+				case Actor::CREATURE_4_ROCKY:
+				case Actor::CREATURE_5_ZPOD:
+				case Actor::CREATURE_5_BUB:
+				case Actor::CREATURE_5_ZEMP:
+				case Actor::CREATURE_6_REX:
+					actor->visibilityDistance = 1800;
+					break;
+				case Actor::CREATURE_ZURG3:
+					actor->actorBehaviour = CreatureBehaviour::Zurg3;
+					break;
+				case Actor::CREATURE_TINMAN:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::TinMan;
+					break;
+				case Actor::CREATURE_SHEEP:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::Sheep;
+					break;
+				case Actor::CREATURE_RC:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::RCCar;
+					break;
+				case Actor::CREATURE_2_LAWN:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::LawnMower;
+					break;
+				case Actor::CREATURE_ARMY:
+					actor->actorBehaviour = CreatureBehaviour::Army;
+					break;
+				case Actor::CREATURE_2_ZGCAR:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::ZgCar;
+					break;
+				case Actor::CREATURE_2_ZKITE:
+					actor->actorBehaviour = CreatureBehaviour::ZKite;
+					break;
+				case Actor::CREATURE_2_LTYKE:
+					actor->actorBehaviour = CreatureBehaviour::LTyke;
+					break;
+				case Actor::CREATURE_2_ZPOD:
+					actor->actorBehaviour = CreatureBehaviour::ZPod;
+					break;
+				case Actor::CREATURE_2_DRILL:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::Drill;
+					break;
+				case Actor::CREATURE_2_MOUSE:
+					actor->actorBehaviour = CreatureBehaviour::Mouse;
+					break;
+				case Actor::CREATURE_3_BPLANE:
+					actor->actorPhase = 0;
+					actor->actorBehaviour = CreatureBehaviour::BPlane;
+					actor->unkShort2 = 10000;
+					break;
+				case Actor::CREATURE_3_BOX:
+					actor->actorBehaviour = CreatureBehaviour::Box;
+					break;
+				case Actor::CREATURE_3_DINO:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::Dino;
+					break;
+				case Actor::CREATURE_2_ZBOAT:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::ZBoat;
+					break;
+				case Actor::CREATURE_3_CHICK:
+					actor->actorBehaviour = CreatureBehaviour::Chick;
+					break;
+				case Actor::CREATURE_3_GUNSP:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::GunsP;
+					break;
+				case Actor::CREATURE_3_CLOWN:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::Clown;
+					break;
+				case Actor::CREATURE_4_MARTIAN:
+					actor->actorBehaviour = CreatureBehaviour::Martian;
+					break;
+				case Actor::CREATURE_6_RABID:
+					actor->actorBehaviour = CreatureBehaviour::Rabid;
+					break;
+				case Actor::CREATURE_3_BUZZARD:
+					actor->actorBehaviour = CreatureBehaviour::Buzzard;
+					break;
+				case Actor::CREATURE_4_DUCKS:
+					actor->actorBehaviour = CreatureBehaviour::Ducks;
+					break;
+				case Actor::CREATURE_4_GUNSL:
+					if (g_levelFileIndex == 11)
+					{
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::GunsL_Level11;
+					}
+					else
+					{
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::GunsL;
+					}
+					break;
+				case Actor::CREATURE_4_FATBLOKE:
+					actor->actorBehaviour = CreatureBehaviour::FatBloke;
+					break;
+				case Actor::CREATURE_5_BBUGGY:
+					actor->visibilityDistance = 1800;
+					actor->actorBehaviour = CreatureBehaviour::BBuggy;
+					break;
+				case Actor::CREATURE_5_BI:
+					actor->visibilityDistance = 3800;
+					break;
+				case Actor::CREATURE_4_GEORGE:
+				case Actor::CREATURE_4_MILDRED:
+				case Actor::CREATURE_4_KAREN:
+				case Actor::CREATURE_4_PILOT:
+					actor->actorBehaviour = CreatureBehaviour::Pilot;
+					break;
+				case Actor::CREATURE_5_SMITH:
+					if (g_levelFileIndex == 14)
+						actor->actorBehaviour = CreatureBehaviour::Smith_Level14;
+					else
+						actor->actorBehaviour = CreatureBehaviour::Smith;
+					break;
+				case Actor::CREATURE_5_LUGGAGE:
+					actor->actorBehaviour = CreatureBehaviour::Luggage;
+					break;
+				case Actor::CREATURE_6_PROSP:
+					if (g_levelFileIndex == 13)
+					{
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::ProsP_Level13;
+					}
+					else
+					{
+						actor->actorBehaviour = CreatureBehaviour::ProsP;
+						actor->visibilityDistance = 1800;
+					}
+					break;
+				default:
+					return;
+				}
+			}
+		}
 
 		// STUB: TOY2 0x00407440
 		void ActorCollisionCheck() {}
 
-		// STUB: TOY2 0x004086F0
-		void UpdateActors() {}
+		// FUNCTION: TOY2 0x004086F0
+		void UpdateActors()
+		{
+			int32_t activeCount = 0;
+			int32_t distances[64];
+			int32_t i;
+
+			for (i = 0; i < 64; i++)
+			{
+				Actor::Toy2Actor* actor = &g_levelActors[i];
+
+				actor->actorFlags = (actor->actorFlags & 0xFF00)
+					| (actor->actorFlags
+						& (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_LOCKED_MOVE | Actor::ACTOR_GROUNDED | Actor::ACTOR_FLOOR_SNAP
+							| Actor::ACTOR_STUNNED | Actor::ACTOR_OOB_SPECIAL_MOVE | Actor::ACTOR_DEATH_DAMAGE));
+
+				if (actor->creatureId > 0)
+				{
+					if (actor->actorPhase <= 0)
+					{
+						int16_t unkShort2 = actor->unkShort2;
+
+						if (unkShort2)
+						{
+							if (unkShort2 < 5000 && Actor::g_unk50A54C != (int32_t)actor)
+							{
+								int16_t newValue = unkShort2 - Renderer::g_frameDelta;
+								actor->unkShort2 = newValue;
+
+								if (newValue < 0)
+									actor->unkShort2 = 0;
+							}
+						}
+						else if ((actor->actorFlags & Actor::ACTOR_OOB_SPECIAL_MOVE) != 0
+							|| !Nu3D::Camera::LineOfSightCheck(&Camera::g_activeCameraTransform, actor))
+						{
+							InitActor(actor, 0);
+						}
+					}
+					else
+					{
+						int32_t distSq;
+
+						if (g_levelFileIndex == 6 || actor->actorPhase == 202)
+						{
+							distSq = 10;
+						}
+						else
+						{
+							int32_t dz = (Camera::g_activeCameraTransform.pos.z - actor->boundingOffset.z - actor->pos.z) >> 8;
+							int32_t dx = (Camera::g_activeCameraTransform.pos.x - actor->boundingOffset.x - actor->pos.x) >> 8;
+							int32_t dy = (Camera::g_activeCameraTransform.pos.y - actor->boundingOffset.y - actor->pos.y) >> 8;
+
+							distSq = dx * dx + dy * dy + dz * dz;
+						}
+
+						int32_t radius = (actor->boundingSphereRadius >> 3) + ((362 * actor->visibilityDistance) >> 9);
+
+						if (distSq < radius * radius)
+						{
+							Actor::g_activeActors[activeCount] = actor;
+
+							distances[activeCount] = distSq;
+							++activeCount;
+						}
+					}
+				}
+			}
+
+			Actor::g_activeActors[activeCount] = 0;
+			distances[activeCount] = -1;
+			Camera::CullActors(&Camera::g_activeCameraTransform);
+
+			if (g_levelFileIndex == 10)
+				ElevatorHop::InitMouse();
+
+			Actor::Toy2Actor* curActor = Actor::g_activeActors[0];
+
+			if (Actor::g_activeActors[0])
+			{
+				int32_t index = 0;
+
+				do
+				{
+					int16_t actorFlags = curActor->actorFlags;
+					int32_t radius = (curActor->boundingSphereRadius >> 3) + 400;
+
+					if (((actorFlags & 1) == 0 && distances[index] >= radius * radius) || (actorFlags & Actor::ACTOR_FORCE_REMOVE) != 0)
+					{
+						Actor::g_activeActors[index] = (Actor::Toy2Actor*)-1;
+					}
+					else
+					{
+						curActor->actorFlags = actorFlags | Actor::ACTOR_VISIBLE_ACTIVE;
+					}
+
+					curActor = Actor::g_activeActors[++index];
+				} while (curActor);
+			}
+
+			int32_t lastActorIdx = 0;
+
+			if (Actor::g_activeActors[0])
+			{
+				Actor::Toy2Actor** testActor = Actor::g_activeActors;
+				Actor::Toy2Actor** leadingActor = Actor::g_activeActors;
+				Actor::Toy2Actor** destActor = Actor::g_activeActors;
+				Actor::Toy2Actor* nextActor;
+
+				do
+				{
+					if (*testActor != (Actor::Toy2Actor*)-1)
+					{
+						++lastActorIdx;
+						*destActor++ = *leadingActor;
+					}
+
+					nextActor = leadingActor[1];
+					testActor = ++leadingActor;
+				} while (nextActor);
+			}
+
+			Actor::g_activeActors[lastActorIdx] = 0;
+			curActor = Actor::g_activeActors[0];
+
+			if (Actor::g_activeActors[0])
+			{
+				Actor::Toy2Actor** nextActorPtr = Actor::g_activeActors;
+
+				do
+				{
+					Actor::UpdateAIMovement(curActor);
+
+					int16_t unkVar29 = curActor->unkVar29;
+
+					if (unkVar29 > 0)
+					{
+						int16_t newValue = unkVar29 - Renderer::g_frameDelta;
+						curActor->unkVar29 = newValue;
+
+						if (newValue <= 0)
+						{
+							curActor->unkVar29 = 0;
+							Actor::Kill(curActor, 1);
+						}
+					}
+
+					int16_t curUnkVar29 = curActor->unkVar29;
+
+					if (curUnkVar29 < 0)
+					{
+						if (g_tickState[4] && curUnkVar29 < -1)
+						{
+							int16_t* attachOffset = (int16_t*)curActor->unkVar34;
+							int32_t spawnX = curActor->pos.x + attachOffset[0] + 32 * (*g_randDatBufferPtr++ - 128);
+							int32_t spawnY = curActor->pos.y + attachOffset[1] + 32 * (*g_randDatBufferPtr++ - 128);
+							int32_t spawnZ = curActor->pos.z + attachOffset[2] + 32 * (*g_randDatBufferPtr++ - 128);
+
+							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 37, 1)->rotSpeed = *g_randDatBufferPtr - 128;
+							++g_randDatBufferPtr;
+						}
+
+						curActor->unkVar29 += Renderer::g_frameDelta;
+
+						if (curActor->unkVar29 >= 0)
+						{
+							curActor->unkVar29 = 0;
+							Actor::Kill(curActor, 2);
+							--nextActorPtr;
+						}
+					}
+
+					curActor = nextActorPtr[1];
+					++nextActorPtr;
+				} while (curActor);
+			}
+
+			if (g_levelFileIndex == 10)
+				ElevatorHop::InitMouse();
+		}
 
 		// STUB: TOY2 0x0049F4B0
 		void MenuLoop() {}

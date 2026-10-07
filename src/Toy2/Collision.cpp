@@ -42,6 +42,13 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00728718
 		int32_t g_unk728718;
 
+		// GLOBAL: TOY2 0x00728698
+		// NOTE: IDA only names the x (+0) and z (+4) members, the y (+2) member is read as the high word of g_floorSlopeX
+		Vector3I16 g_floorSlope;
+
+		// GLOBAL: TOY2 0x00729118
+		Vector3I16 g_floorSlopePrev;
+
 		// GLOBAL: TOY2 0x0072871C
 		uint8_t* g_unk72871C;
 

@@ -10,6 +10,7 @@
 #include "Nu3D/Creature.h"
 
 #include <FLOAT.H>
+#include <string.h>
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
 
@@ -181,10 +182,102 @@ namespace Nu3D
 			return Renderer::Set508718(5);
 		}
 
-		// STUB: TOY2 0x004CDC20
-		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList) {}
+		// FUNCTION: TOY2 0x004CAA60
+		void RenderActor(Nu3D::Creature* creature, D3DMATRIX* nodeMatrices, int32_t renderStage)
+		{
+			int32_t curNode = 0;
 
-		// STUB: TOY2 0x004CAA60
-		void RenderActor(Nu3D::Creature* creature, D3DMATRIX* nodeMatrices, int32_t renderStage) {}
+			if (creature->nodeCount > 0)
+			{
+				D3DMATRIX* matrix = nodeMatrices;
+
+				do
+				{
+					if (creature->primitives[curNode])
+					{
+						// the flags are stored in the pointer slots, bit 0 is hidden, bit 1 is ignore the node matrix, bit 2 is the vertex modulation
+						int32_t flags = (int32_t)creature->flagsList[curNode];
+
+						if ((flags & 1) == 0)
+						{
+							int32_t previousModulation;
+
+							if ((flags & 4) != 0)
+								previousModulation = Renderer::Set9F5FF8(1);
+
+							if (((int32_t)creature->flagsList[curNode] & 2) != 0)
+							{
+								D3DMATRIX localMatrix;
+
+								memcpy(&localMatrix, &Camera::g_secondaryCamera, sizeof(localMatrix));
+								Math::ScaleMatrix(&localMatrix);
+
+								localMatrix._41 = matrix->_41;
+								localMatrix._43 = matrix->_43;
+								localMatrix._42 = matrix->_42;
+
+								Renderer::RenderPrimitive(creature->primitives[curNode], &localMatrix, renderStage);
+							}
+							else
+							{
+								Renderer::RenderPrimitive(creature->primitives[curNode], matrix, renderStage);
+							}
+
+							if (((int32_t)creature->flagsList[curNode] & 4) != 0)
+								Renderer::Set9F5FF8(previousModulation);
+						}
+					}
+
+					++curNode;
+					++matrix;
+				} while (curNode < creature->nodeCount);
+			}
+
+			Renderer::RenderPatchList(creature->patch, nodeMatrices, creature->flagsList, renderStage);
+		}
+
+		// FUNCTION: TOY2 0x004CDC20
+		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList)
+		{
+			int32_t previousFlags = Renderer::Set508718(0);
+
+			if (NGNLoader::g_ngnImage->creatureCount)
+			{
+				Toy2::Actor::Toy2Actor** actor = activeActorList;
+
+				if (*activeActorList)
+				{
+					D3DMATRIX* nodeMatrices = (D3DMATRIX*)g_nodeMatrices;
+					Toy2::Actor::Toy2Actor* nextActor;
+
+					do
+					{
+						if (((*actor)->actorFlags & 1) != 0)
+						{
+							if ((*actor)->useTint == 1)
+							{
+								Renderer::SetVertexColorModulation((*actor)->actorTint.r, (*actor)->actorTint.g, (*actor)->actorTint.b);
+
+								Renderer::EnableVertexColorModulation(1);
+							}
+
+							Nu3D::Creature* creature = NGNLoader::g_ngnImage->creatureData[(*actor)->creatureId];
+
+							if (creature)
+								RenderActor(creature, nodeMatrices, 0);
+
+							if ((*actor)->useTint == 1)
+								Renderer::EnableVertexColorModulation(0);
+						}
+
+						nextActor = actor[1];
+						++actor;
+						nodeMatrices += 32;
+					} while (nextActor);
+				}
+			}
+
+			Renderer::Set508718(previousFlags);
+		}
 	}
 }

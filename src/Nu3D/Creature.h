@@ -9,6 +9,11 @@
 
 namespace Nu3D
 {
+	struct NodeMatricesInner
+	{
+		D3DMATRIX matrices[32];
+	};
+
 	struct Creature
 	{
 		int32_t dataFlags;
@@ -29,5 +34,8 @@ namespace Nu3D
 		static void SetNodeVisibleByIndex(int32_t creatureIndex, int32_t nodeIdx, int32_t visible);
 	};
 
+	extern NodeMatricesInner g_nodeMatrices[64];
+
+	STATIC_ASSERT(sizeof(NodeMatricesInner) == 0x800);
 	STATIC_ASSERT(sizeof(Creature) == 0x30);
 }

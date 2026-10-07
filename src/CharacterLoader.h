@@ -41,7 +41,37 @@ namespace CharacterLoader
 		int16_t boundingSphereRadius;
 	};
 
+	// an entry of the table in a .all file
+	struct CharacterAllEntry
+	{
+		int32_t dataSize;
+		int32_t x;
+		int32_t y;
+		int32_t z;
+		int32_t type;
+		uint8_t pad14[6];
+		int16_t trackKind;
+		uint8_t pad1C[16];
+		int16_t boundX;
+		int16_t boundY;
+		int16_t boundZ;
+		int16_t unk32;
+		uint8_t pad34[6];
+		int16_t unk3A;
+		uint8_t pad3C[6];
+		int16_t unk42;
+		uint8_t pad44[2];
+		uint8_t flags46;
+		uint8_t pad47[5];
+	};
+
 	extern BoneTransform g_boneTransforms[300];
+	extern int32_t g_unk53EECC;
+	extern int16_t g_unk53E4C0;
+	extern int16_t g_unk53EED8;
+	extern uint8_t* g_unk53EEC8;
+	extern uint8_t* g_unk53E4C4;
+	extern uint8_t* g_unk547CD4[128];
 	extern int16_t g_unk54717C;
 	extern int16_t g_unk546D78;
 	extern int16_t g_unk547CD0;
@@ -52,4 +82,5 @@ namespace CharacterLoader
 
 	STATIC_ASSERT(sizeof(BoneTransform) == 0x6C);
 	STATIC_ASSERT(sizeof(CharacterBoundData) == 0x8);
+	STATIC_ASSERT(sizeof(CharacterAllEntry) == 0x4C);
 }

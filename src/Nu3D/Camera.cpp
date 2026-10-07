@@ -8,6 +8,8 @@
 #include "Toy2/Collision.h"
 #include "Toy2/D3DApp.h"
 #include "Random.h"
+#include "CharacterLoader.h"
+#include "RawLoader.h"
 
 #include <MATH.H>
 #include <STDLIB.H>
@@ -1140,8 +1142,37 @@ namespace Nu3D
 			a2->z = (int16_t)viewZ;
 		}
 
-		// STUB: TOY2 0x00448F00
-		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor) { return 0; }
+		// FUNCTION: TOY2 0x00448F00
+		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor)
+		{
+			BOOL result = 0;
+
+			if (*(int16_t*)CharacterLoader::g_unk547CD4[actor->creatureId])
+			{
+				RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
+
+				int32_t y = actor->boundingOffset.y + 32 * creatureRam->pos.y - cam->pos.y;
+				int32_t z = 32 * creatureRam->pos.z - cam->pos.z;
+				int32_t x = 32 * creatureRam->pos.x - cam->pos.x;
+
+				int32_t boundingSphereRadius = actor->boundingSphereRadius;
+
+				int32_t depth = (x * g_cameraViewMatrix.m20 + y * g_cameraViewMatrix.m21 + z * g_cameraViewMatrix.m22) / 0x20000;
+
+				if (depth > -boundingSphereRadius)
+				{
+					int32_t scaledDepth = (depth << 8) / g_screenCenterX;
+
+					if (scaledDepth > (abs((x * g_cameraViewMatrix.m00 + y * g_cameraViewMatrix.m01 + z * g_cameraViewMatrix.m02) / 0x20000) - boundingSphereRadius)
+						&& scaledDepth > (abs((x * g_cameraViewMatrix.m10 + y * g_cameraViewMatrix.m11 + z * g_cameraViewMatrix.m12) / 0x20000) - boundingSphereRadius))
+					{
+						return 1;
+					}
+				}
+			}
+
+			return result;
+		}
 
 		// STUB: TOY2 0x0044F820
 		void EnableCameraSkew() {}

@@ -114,6 +114,8 @@ namespace Toy2
 		extern uint16_t g_collisionMeshList[2048];
 		extern int32_t g_candidateTriangleCount;
 		extern int16_t g_groundContactMeshIdx;
+		extern Vector3I16 g_floorSlope;
+		extern Vector3I16 g_floorSlopePrev;
 		extern uint8_t* g_unk72871C;
 		extern int32_t g_unk7290F0[8];
 

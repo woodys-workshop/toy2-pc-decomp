@@ -7,6 +7,9 @@ namespace AudioManager
 	// GLOBAL: TOY2 005282CC
 	int32_t g_curTrackIndex;
 
+	// GLOBAL: TOY2 0x00830E3C
+	int16_t g_pitchArray[14];
+
 	// STUB: TOY2 0x0047D840
 	void StopAndFlush() {}
 

@@ -9,6 +9,7 @@
 namespace AudioManager
 {
 	extern int32_t g_curTrackIndex;
+	extern int16_t g_pitchArray[14];
 
 	struct AudioConfig
 	{

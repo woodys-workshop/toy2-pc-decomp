@@ -82,6 +82,10 @@ namespace Toy2
 		void CancelGrapple();
 		void TickGadgets();
 
+		extern int32_t g_fireChargeTimer;
+		extern int32_t g_unk53C634;
+		extern int32_t g_unk50A098;
+
 		STATIC_ASSERT(sizeof(Toy2BuzzActor) == 0xA0);
 		STATIC_ASSERT(sizeof(MovementParams) == 0x1C);
 	}

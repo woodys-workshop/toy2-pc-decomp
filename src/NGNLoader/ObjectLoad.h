@@ -8,6 +8,9 @@ namespace NGNLoader
 {
 	namespace ObjectLoad
 	{
+		extern int32_t g_curVertexCount;
+		extern Nu3D::ShapeVertex g_shapeVertices[2000];
+
 		void PrepareGlobals();
 		int32_t ExtractShapeTextures(FILE* stream);
 		int32_t ExtractShapeMaterials(FILE* stream);

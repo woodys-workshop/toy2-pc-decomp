@@ -2,6 +2,8 @@
 #include "Nu3D/Portal.h"
 #include "Toy2/Toy2.h"
 #include "Nu3D/BmpDataNode.h"
+#include "Nu3D/Patch.h"
+#include "Nu3D/Creature.h"
 #include "Logger.h"
 #include "Renderer/Glue.h"
 #include "Renderer/Renderer.h"
@@ -394,11 +396,136 @@ namespace NGNLoader
 		}
 	}
 
-	// STUB: TOY2 0x004CA040
-	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize) { return 0; }
+	// FUNCTION: TOY2 0x004CA040
+	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize)
+	{
+		if (! creature->animData)
+		{
+			creature->animData = (void**)malloc(400);
+			creature->animCount = 0;
 
-	// STUB: TOY2 0x004CA1D0
-	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature) { return 0; }
+			if (! creature->animData)
+				return -1;
+		}
+
+		if (creature->animCount >= 100)
+			return -1;
+
+		creature->animData[creature->animCount] = malloc(chunkSize);
+
+		if (! creature->animData[creature->animCount])
+			return -1;
+
+		fread(creature->animData[creature->animCount], 1, chunkSize, stream);
+
+		return ++creature->animCount;
+	}
+
+	// FUNCTION: TOY2 0x004CA1D0
+	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature)
+	{
+		int16_t vertexCount;
+		int16_t materialIndex;
+		int32_t patchCount;
+		int16_t indices1[4];
+		int16_t indices2[4];
+
+		fread(&patchCount, 4, 1, stream);
+
+		int32_t patchIndex = 0;
+
+		if (patchCount > 0)
+		{
+			while (1)
+			{
+				Nu3D::Patch* patch;
+
+				fread(&vertexCount, 2, 1, stream);
+				fread(&materialIndex, 2, 1, stream);
+				fread(indices1, 2, 4, stream);
+				fread(indices2, 2, 4, stream);
+
+				if (vertexCount)
+				{
+					patch = Nu3D::Patch::AllocAndResize(2 * vertexCount, 2);
+
+					if (patch)
+					{
+						int32_t index = 0;
+
+						if (vertexCount > 0)
+						{
+							int32_t increment = 0;
+
+							do
+							{
+								Nu3D::CopyShapeVertex(index + indices2[0], &patch->patchVertices.data.vertices[increment]);
+								Nu3D::CopyNormalsFromNearestVertex(creature, indices1[0], &patch->patchVertices.data.vertices[increment]);
+
+								Nu3D::CopyShapeVertex(index + indices2[1], &patch->patchVertices.data.vertices[index + vertexCount]);
+								Nu3D::CopyNormalsFromNearestVertex(creature, indices1[1], &patch->patchVertices.data.vertices[index + vertexCount]);
+
+								++index;
+								++increment;
+							} while (index < vertexCount);
+						}
+					}
+				}
+				else
+				{
+					patch = Nu3D::Patch::AllocAndResize(4, 4);
+
+					if (patch)
+					{
+						Nu3D::CopyShapeVertex(indices2[0], patch->patchVertices.data.vertices);
+						Nu3D::CopyNormalsFromNearestVertex(creature, indices1[0], patch->patchVertices.data.vertices);
+
+						Nu3D::CopyShapeVertex(indices2[1], patch->patchVertices.data.vertices + 1);
+						Nu3D::CopyNormalsFromNearestVertex(creature, indices1[1], patch->patchVertices.data.vertices + 1);
+
+						Nu3D::CopyShapeVertex(indices2[2], patch->patchVertices.data.vertices + 2);
+						Nu3D::CopyNormalsFromNearestVertex(creature, indices1[2], patch->patchVertices.data.vertices + 2);
+
+						Nu3D::CopyShapeVertex(indices2[3], patch->patchVertices.data.vertices + 3);
+						Nu3D::CopyNormalsFromNearestVertex(creature, indices1[3], patch->patchVertices.data.vertices + 3);
+					}
+				}
+
+				if (patch)
+				{
+					// NOTE: the original writes every other short of indexData, the last two writes land in the fields that follow it
+					int16_t* sourceIndices = indices1;
+					int16_t* indexData = patch->indexData;
+					int32_t maxIndices = 4;
+
+					do
+					{
+						*indexData = *sourceIndices;
+						indexData += 2;
+						++sourceIndices;
+						--maxIndices;
+					} while (maxIndices);
+
+					patch->materialId = ObjectLoad::GetCurrentMatByIndex(materialIndex)->id;
+					patch->listNext = creature->patch;
+					creature->patch = patch;
+
+					Nu3D::Patch::CreateAllVertexBuffers(patch);
+				}
+				else
+				{
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\hobjload.c", 220)("unable to create patch");
+				}
+
+				++patchIndex;
+
+				if (patchIndex >= patchCount)
+					return patchIndex;
+			}
+		}
+
+		return 0;
+	}
 
 	// FUNCTION: TOY2 0x004CA420
 	Nu3D::Creature* ExtractCreatureData(FILE* stream)

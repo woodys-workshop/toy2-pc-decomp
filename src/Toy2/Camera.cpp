@@ -5,6 +5,9 @@
 #include "Nu3D/Link.h"
 #include "Renderer/Renderer.h"
 #include "Numerics.h"
+#include "Nu3D/Viewport.h"
+#include "Nu3D/Portal.h"
+#include "CharacterLoader.h"
 
 #include <string.h>
 
@@ -391,8 +394,58 @@ namespace Toy2
 		// STUB: TOY2 0x00435F30
 		int32_t HandleLedgeClimb(Toy2::Buzz::Toy2BuzzActor* buzzActor) { return 0; }
 
-		// STUB: TOY2 0x00447BD0
-		void CullActors(Nu3D::Camera::ActiveCameraTransform* cam) {}
+		// FUNCTION: TOY2 0x00447BD0
+		void CullActors(Nu3D::Camera::ActiveCameraTransform* cam)
+		{
+			if (Actor::g_activeActors[0])
+			{
+				Actor::Toy2Actor** activeActors = Actor::g_activeActors;
+
+				do
+				{
+					Actor::Toy2Actor* curActor = *activeActors;
+					int32_t visibilityDistance = curActor->visibilityDistance;
+					int16_t actorFlags = curActor->actorFlags;
+					int32_t creatureId = curActor->creatureId;
+					int32_t visibilitySquare = 16 * visibilityDistance * visibilityDistance;
+
+					curActor->actorFlags = actorFlags & 0xDFFE;
+
+					int32_t flagAdd = (actorFlags & Actor::ACTOR_CUTSCENE_MOVE) != 0 ? 250000 : 0;
+
+					if (*(int16_t*)CharacterLoader::g_unk547CD4[creatureId])
+					{
+						int32_t areaIndex = (int8_t)curActor->areaIndex;
+
+						if (areaIndex >= 0 && Nu3D::Portal::IsAreaVisible(areaIndex))
+						{
+							int32_t zDiff = cam->pos.z - curActor->pos.z;
+							int32_t yDiff = cam->pos.y - curActor->pos.y;
+							int32_t xDiff = cam->pos.x - curActor->pos.x;
+
+							if ((xDiff >> 5) * (xDiff >> 5) + (yDiff >> 5) * (yDiff >> 5) + (zDiff >> 5) * (zDiff >> 5) < visibilitySquare + flagAdd)
+							{
+								Vector3F point;
+
+								point.x = (float)(curActor->pos.x / 32);
+								point.y = (float)(curActor->pos.y / 32);
+								point.z = (float)(curActor->pos.z / 32);
+								float distance = (float)curActor->boundingSphereRadius;
+
+								if ((Nu3D::Frustum::TestSphereAllPlanes(&point, distance) & 0x55555555) == 0)
+									curActor->actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
+							}
+						}
+						else
+						{
+							curActor->actorFlags |= Actor::ACTOR_STUNNED << 8;
+						}
+					}
+
+					++activeActors;
+				} while (*activeActors);
+			}
+		}
 
 		// STUB: TOY2 0x0048A4C0
 		int32_t PrepareCameraCollisionCandidates(uint32_t* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5) { return 0; }

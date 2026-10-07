@@ -2,6 +2,10 @@
 #include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "Logger.h"
+#include "Nu3D/Creature.h"
+#include "Nu3D/Primitive.h"
+#include "NGNLoader/ObjectLoad.h"
+#include <string.h>
 
 namespace Nu3D
 {
@@ -893,11 +897,67 @@ namespace Nu3D
 	// STUB: TOY2 0x004BB270
 	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags) { return 0; }
 
-	// STUB: TOY2 0x004CA0C0
-	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex) {}
+	// FUNCTION: TOY2 0x004CA0C0
+	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex)
+	{
+		double minDistanceSquared = 3.4028235e38f;
 
-	// STUB: TOY2 0x004CBC40
-	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex) {}
+		Nu3D::Primitive* currentPrim = creature->primitives[vertexIndex];
+
+		if (currentPrim)
+		{
+			do
+			{
+				int32_t vertexId = 0;
+
+				if (currentPrim->patchVerts.vertexCount > 0)
+				{
+					int32_t vertOffset = 0;
+
+					do
+					{
+						Nu3D::Vertex* candidateVertex = &currentPrim->patchVerts.data.vertices[vertOffset];
+
+						double deltaY = candidateVertex->position.y - targetVertex->position.y;
+						double deltaX = candidateVertex->position.x - targetVertex->position.x;
+						double deltaZ = candidateVertex->position.z - targetVertex->position.z;
+
+						float distanceSquared = (float)(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+						if (distanceSquared < minDistanceSquared && distanceSquared < 1024.0)
+						{
+							minDistanceSquared = distanceSquared;
+
+							targetVertex->normals = candidateVertex->normals;
+
+							if (distanceSquared < 1.0)
+								return;
+						}
+
+						++vertexId;
+						++vertOffset;
+					} while (vertexId < currentPrim->patchVerts.vertexCount);
+				}
+
+				currentPrim = currentPrim->next;
+			} while (currentPrim);
+
+			if (minDistanceSquared != 3.4028235e38f)
+				return;
+		}
+
+		Logger::DebugLog("warning - unable to find similar vertex in limb\r\n");
+	}
+
+	// FUNCTION: TOY2 0x004CBC40
+	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex)
+	{
+		if (vertexIndex < NGNLoader::ObjectLoad::g_curVertexCount && vertexIndex >= 0)
+		{
+			if (vertex)
+				memcpy(vertex, &NGNLoader::ObjectLoad::g_shapeVertices[vertexIndex], sizeof(Nu3D::Vertex));
+		}
+	}
 
 	// STUB: TOY2 0x004AD130
 	LPDIRECT3DTEXTURE2 BmpDataNode::GetTexture(Nu3D::BmpDataNode* bmpDataNode) { return 0; }
