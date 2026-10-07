@@ -1,14 +1,24 @@
 #include "Toy2/Platform.h"
+#include "Toy2/Collision.h"
 
 namespace Toy2
 {
 	namespace Platform
 	{
+		// GLOBAL: TOY2 0x00728720
+		PlatformDescriptor g_platformDescriptors[32];
+
 		// STUB: TOY2 0x0042C2B0
 		void InitPathPlatform(int32_t a1, int32_t a2, int32_t a3, int32_t linkId, int32_t linkId2, int32_t a6, int32_t a7, int32_t y) {}
 
-		// STUB: TOY2 0x004878D0
-		void DisableCollision(int32_t platformIdx) {}
+		// FUNCTION: TOY2 0x004878D0
+		void DisableCollision(int32_t platformIdx)
+		{
+			int16_t meshInstanceId = g_platformDescriptors[platformIdx].meshInstanceId;
+
+			if (meshInstanceId)
+				Collision::g_collisionMeshInstances[meshInstanceId].typeFlags = 0;
+		}
 
 		// STUB: TOY2 0x00487900
 		void SetVelocity(int32_t platformIndex, int32_t velX, int32_t velY, int32_t velZ) {}
@@ -37,8 +47,15 @@ namespace Toy2
 		// STUB: TOY2 0x00488A80
 		void ClearFlags(int32_t platformIdx, int16_t flags) {}
 
-		// STUB: TOY2 0x00488AA0
-		void SetRotationAngles(int32_t platformIdx, int16_t x, int16_t y, int16_t z) {}
+		// FUNCTION: TOY2 0x00488AA0
+		void SetRotationAngles(int32_t platformIdx, int16_t x, int16_t y, int16_t z)
+		{
+			g_platformDescriptors[platformIdx].rotAngle.x = 4 * x;
+			g_platformDescriptors[platformIdx].rotAngle.y = 4 * y;
+			g_platformDescriptors[platformIdx].rotAngle.z = 4 * z;
+
+			g_platformDescriptors[platformIdx].flags |= 8;
+		}
 
 		// STUB: TOY2 0x00488AF0
 		void GetRotationAngles(int32_t platformIdx, Vector3I* vecOut) {}

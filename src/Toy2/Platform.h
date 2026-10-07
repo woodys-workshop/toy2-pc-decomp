@@ -8,6 +8,25 @@ namespace Toy2
 {
 	namespace Platform
 	{
+		struct PlatformDescriptor
+		{
+			int16_t unkVar1;
+			int16_t unkVar2;
+			int16_t unkVar3;
+			int16_t unkVar4;
+			int16_t unkVar5;
+			int16_t unkVar6;
+			Vector3I16 rotAngle;
+			int16_t unkVar10;
+			Vector3I16 linVel;
+			Vector3I16 prevLinVel;
+			Vector3I16 angVel;
+			Vector3I16 prevAngVel;
+			void* contactFace;
+			int16_t meshInstanceId;
+			int16_t flags;
+		};
+
 		int32_t SamplePoint(int32_t a1, int32_t a2, uint32_t* a3);
 		void InitPathPlatform(int32_t a1, int32_t a2, int32_t a3, int32_t linkId, int32_t linkId2, int32_t a6, int32_t a7, int32_t y);
 		void DisableCollision(int32_t platformIdx);
@@ -28,5 +47,7 @@ namespace Toy2
 		BOOL HadBuzzContactThisFrame(int32_t platformIdx);
 		void CopyVelocity(int32_t srcPlatform, int32_t dstPlatform);
 		int32_t StepTiltPhysics(int32_t platformId, int32_t linkId, int32_t angVel, int32_t mode, int32_t minAngle, int32_t maxAngle, int32_t divisor);
+
+		STATIC_ASSERT(sizeof(PlatformDescriptor) == 0x34);
 	}
 }

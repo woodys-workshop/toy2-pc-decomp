@@ -4,6 +4,7 @@
 #include "FileUtils.h"
 #include "Logger.h"
 #include "Toy2/Actor.h"
+#include "Renderer/SpriteSheets.h"
 
 #include <WINDOWS.H>
 
@@ -36,17 +37,11 @@ namespace RawLoader
 	// GLOBAL: TOY2 0x0055A13C
 	int16_t g_unused3;
 
-	// GLOBAL: TOY2 0x00557700
-	uint8_t* g_unused5;
-
 	// GLOBAL: TOY2 0x005D2BE4
 	uint16_t* g_unused4;
 
 	// GLOBAL: TOY2 0x00703BE8
 	uint16_t g_type36Data1[4];
-
-	// GLOBAL: TOY2 0x004F7408
-	uint8_t g_unusedBuffer5[12] = { 32, 0, 255, 32, 0, 0, 0, 0, 0, 164, 0, 201 };
 
 	// FUNCTION: TOY2 0x0047B170
 	void DecompressBuffer(uint8_t* inBuffer, uint8_t* outBuffer)
@@ -495,7 +490,7 @@ namespace RawLoader
 		Toy2::Levels::g_levelLoadArena = decompBuffer;
 
 		g_unused4 = g_type36Data1;
-		g_unused5 = g_unusedBuffer5;
+		Renderer::g_spriteSheets[128] = &Renderer::g_rawLoaderSpriteSheet;
 	}
 
 	// STUB: TOY2 0x00450010

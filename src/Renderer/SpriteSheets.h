@@ -19,8 +19,8 @@ namespace Renderer
 		Tile tiles[];
 	};
 
-	extern SpriteSheet* g_spriteSheets[128];
-	extern SpriteSheet* g_fallbackSpriteSheet;
+	extern SpriteSheet* g_spriteSheets[130];
+	extern SpriteSheet g_rawLoaderSpriteSheet;
 
 	void InitSpriteSheets();
 

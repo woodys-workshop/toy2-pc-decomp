@@ -8,3 +8,9 @@ void Nullsub3() {}
 
 // FUNCTION: TOY2 0x0049D790
 void Nullsub6() {}
+
+// FUNCTION: TOY2 0x00430940
+void Nullsub11() {}
+
+// FUNCTION: TOY2 0x00430960
+void Nullsub12() {}

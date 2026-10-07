@@ -563,7 +563,7 @@ namespace Renderer
 			if ((sheetIndex & 0x8000) == 0)
 				sheet = g_spriteSheets[(int16_t)sheetIndex];
 			else
-				sheet = g_fallbackSpriteSheet;
+				sheet = g_spriteSheets[129];
 
 			if (! sheet)
 				return 1;

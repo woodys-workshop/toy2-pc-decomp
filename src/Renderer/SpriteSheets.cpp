@@ -11,11 +11,21 @@ namespace Renderer
 	// this was way too big to put inside of Renderer/Sprite.h
 	// $TODO: Add the global addresses to these
 
+	// 0-127 are the sheets of the level, 128 is g_rawLoaderSpriteSheet (the loading / press jump text) and 129 is the fallback sheet
 	// GLOBAL: TOY2 0x00557500
-	SpriteSheet* g_spriteSheets[128];
+	SpriteSheet* g_spriteSheets[130];
 
-	// GLOBAL: TOY2 0x00557704
-	SpriteSheet* g_fallbackSpriteSheet;
+	// GLOBAL: TOY2 0x004F7408
+	SpriteSheet g_rawLoaderSpriteSheet = {
+		32,
+		255,
+		32,
+		0,
+		{
+			{ 0, 164 },
+			{ 0, 201 },
+		},
+	};
 
 	// GLOBAL: TOY2 0x004F7268
 	SpriteSheet g_fallbackSpriteSheetObj = {
@@ -1024,8 +1034,8 @@ namespace Renderer
 			} while (nextSheet != SPRITE_SHEET_END);
 		}
 
-		memset(g_spriteSheets, 0, sizeof(g_spriteSheets));
-		g_fallbackSpriteSheet = &g_fallbackSpriteSheetObj;
+		memset(g_spriteSheets, 0, 128 * sizeof(SpriteSheet*));
+		g_spriteSheets[129] = &g_fallbackSpriteSheetObj;
 
 		memcpy(g_spriteSheets, g_commonSpriteSheets, sizeof(SpriteSheet*) * 50);
 		memcpy(&g_spriteSheets[50], sheet, levelSheetBytes);

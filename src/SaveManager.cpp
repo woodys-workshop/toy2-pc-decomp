@@ -18,6 +18,9 @@ namespace SaveManager
 	// GLOBAL: TOY2 0x00830CA8
 	uint32_t g_curLevelTokenData;
 
+	// GLOBAL: TOY2 0x00830E24
+	uint32_t g_saveUnlocksCache;
+
 	// FUNCTION: TOY2 0x00415180 [MATCHED]
 	void AddInputEntry(ToyInputCodes inputCode, GameControlId controlId)
 	{

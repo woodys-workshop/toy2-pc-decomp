@@ -1,4 +1,5 @@
 #include "Nu3D/Particles.h"
+#include <string.h>
 
 namespace Nu3D
 {
@@ -7,8 +8,15 @@ namespace Nu3D
 		// GLOBAL: TOY2 0x00529E58;
 		ParticleInstance g_particleInstances[64];
 
-		// STUB: TOY2 0x0040FAC0
-		void Init() {}
+		// GLOBAL: TOY2 0x0052AD90
+		int32_t g_nextParticleSlotIndex;
+
+		// FUNCTION: TOY2 0x0040FAC0
+		void Init()
+		{
+			memset(g_particleInstances, 0, sizeof(g_particleInstances));
+			g_nextParticleSlotIndex = 0;
+		}
 
 		// STUB: TOY2 0x0040FAE0
 		Nu3D::Particles::ParticleInstance* SpawnInstance(

@@ -39,6 +39,47 @@ namespace Toy2
 		char name[256];
 	};
 
+	enum PauseMenuType
+	{
+		MENU_MAIN = 0,
+		MENU_CAMERA = 1,
+		MENU_VOLUME_CONTROL = 2,
+		MENU_AREYOUSURE = 3,
+		MENU_SHORTENEDPAUSE = 4,
+	};
+
+	struct TickAccumulators
+	{
+		uint8_t pad0;
+		uint8_t pad1;
+		uint8_t tick2Acc;
+		uint8_t tick3Acc;
+		uint8_t tick4Acc;
+		uint8_t tick5Acc;
+		uint8_t tick6Acc;
+		uint8_t tick7Acc;
+		uint8_t tick8Acc;
+		uint8_t tick16Acc;
+		uint8_t tick32Acc;
+		uint8_t tick64Acc;
+	};
+
+	struct SoundSequencePlayer
+	{
+		Vector3I pos;
+		int16_t* scriptCursor;
+		uint16_t countdown;
+		uint16_t pad;
+	};
+
+	struct SpawnLocation
+	{
+		int32_t x;
+		int32_t y;
+		int32_t z;
+		int32_t rotation;
+	};
+
 	struct BeamShot
 	{
 		Vector3I headPos;
@@ -56,6 +97,7 @@ namespace Toy2
 	void ProcessMiscEventsEx();
 	void RenderGame(int32_t fullRender);
 	uint32_t ComputeTokenProgress();
+	int32_t EnterLevel(int32_t levelIndex);
 	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec);
 	void ResetBuzzState();
 	void InitZoneData();
@@ -79,6 +121,7 @@ namespace Toy2
 
 	extern ToyCfg g_toyCfgData;
 	extern ViewportPreset g_viewportPresets[3];
+	extern SpawnLocation g_spawnLocations[17];
 	extern int32_t g_levelFileIndex;
 	extern int32_t g_isElevatorHopLevel;
 	extern int32_t g_hasBackdrop;
@@ -89,12 +132,6 @@ namespace Toy2
 	extern int32_t g_showBlackFrames;
 	extern int32_t g_demoMode;
 	extern int32_t g_hasStaticBackdrop;
-	extern int32_t g_renderGame;
-	extern int32_t g_curSector;
-	extern int32_t g_curSectorCopy1;
-	extern int32_t g_curSectorCopy2;
-	extern int16_t g_pickupAnimTimer;
-	extern uint8_t g_type59VisibleIndices[36];
 	extern int32_t g_nextBackdropId;
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[16];
@@ -103,14 +140,19 @@ namespace Toy2
 	extern int16_t g_musicSliderToAmplitude[16];
 	extern int16_t g_soundSliderToAmplitude[16];
 	extern char g_emptyStr[8];
+	extern int32_t g_unk830CC4;
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
+	STATIC_ASSERT(sizeof(TickAccumulators) == 0xC);
+	STATIC_ASSERT(sizeof(SoundSequencePlayer) == 0x14);
+	STATIC_ASSERT(sizeof(SpawnLocation) == 0x10);
 	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
 	STATIC_ASSERT(sizeof(SaveNameBuffer) == 0x100);
 
 	namespace Game
 	{
+		void MainLoop();
 		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn);
 	}
 }

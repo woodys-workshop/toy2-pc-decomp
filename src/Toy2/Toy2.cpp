@@ -10,6 +10,7 @@
 #include "SaveManager.h"
 #include "Random.h"
 #include "Numerics.h"
+
 #include "Toy2/LevelSelect.h"
 #include "Toy2/Buzz.h"
 #include "Toy2/Levels.h"
@@ -19,6 +20,32 @@
 #include "Toy2/Collision.h"
 #include "Toy2/KiteTail.h"
 #include "Toy2/Sector.h"
+#include "Toy2/Camera.h"
+#include "Toy2/Cutscene.h"
+#include "Toy2/Shadow.h"
+#include "Toy2/Lighting.h"
+#include "Toy2/Gadget.h"
+#include "Toy2/Level.h"
+#include "Toy2/Collectables.h"
+#include "Toy2/MoveableObject.h"
+#include "Toy2/Platform.h"
+
+// Level Includes
+#include "Toy2/Levels/AndysHouse.h"
+#include "Toy2/Levels/AndysNeighborhood.h"
+#include "Toy2/Levels/BombsAway.h"
+#include "Toy2/Levels/ConstructionYard.h"
+#include "Toy2/Levels/AlleysAndGullies.h"
+#include "Toy2/Levels/SlimeTime.h"
+#include "Toy2/Levels/AlsToyBarn.h"
+#include "Toy2/Levels/AlsSpaceLand.h"
+#include "Toy2/Levels/BarnEncounter.h"
+#include "Toy2/Levels/ElevatorHop.h"
+#include "Toy2/Levels/AlsPenthouse.h"
+#include "Toy2/Levels/EvilEmperorZurg.h"
+#include "Toy2/Levels/AirportInfiltration.h"
+#include "Toy2/Levels/TarmacTrouble.h"
+#include "Toy2/Levels/FinalShowdown.h"
 
 #include "Nu3D/Font.h"
 #include "Nu3D/Viewport.h"
@@ -27,6 +54,7 @@
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
 #include "Nu3D/Scene.h"
+#include "Nu3D/Particles.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Effects.h"
 #include "Renderer/Glue.h"
@@ -35,9 +63,11 @@
 #include "Renderer/SpriteSheets.h"
 #include "AudioManager/AudioManager.h"
 #include "NGNLoader/NGNLoader.h"
+#include "RawLoader.h"
 
 #include <WINDOWS.H>
 #include <STDIO.H>
+#include <STRING.H>
 #include <MATH.H>
 #include <DINPUT.H>
 
@@ -206,6 +236,192 @@ namespace Toy2
 		{ 5000.0, 6500.0, 40.0, 60.0, 10000.0, 0.0 },
 		{ 10000.0, 12000.0, 40.0, 60.0, 12000.0, 1000.0 },
 	};
+
+	// GLOBAL: TOY2 0x0052C840
+	Actor::Toy2Actor g_levelActors[64];
+
+	// GLOBAL: TOY2 0x004F59A4
+	SpawnLocation g_spawnLocations[17] = {
+		{ 0, 0, 0, 0 },
+		{ 194774, 60044, -361401, 0 },
+		{ -466652, 433, -32144, 1280 },
+		{ -47074, 97, -185901, 0 },
+		{ 411295, 11, 30702, 3154 },
+		{ 204615, 75, 114100, 2946 },
+		{ 264357, -1082, 2748, 3072 },
+		{ -128033, 76, -332419, 0 },
+		{ -4082, 40, 315274, 2047 },
+		{ 16532, 70, -141912, 4066 },
+		{ -291, -32978, -646, 1024 },
+		{ -262581, 174040, 253369, 1751 },
+		{ -121468, -76752, 63129, 1048 },
+		{ 27126, -94, 240599, 3068 },
+		{ -320338, 76, 983296, 1937 },
+		{ -36601, 69, -5416, 3066 },
+		{ 0, -561600, -844800, 0 },
+	};
+
+	// GLOBAL: TOY2 0x0052F1C0
+	uint8_t g_tickState[12];
+
+	// GLOBAL: TOY2 0x0052AD58
+	TickAccumulators g_tickAccumulators;
+
+	// GLOBAL: TOY2 0x0052F120
+	SoundSequencePlayer g_soundSequencePlayers[8];
+
+	// GLOBAL: TOY2 0x0052F2E0
+	int16_t g_hudWidgetPositions[12];
+
+	// GLOBAL: TOY2 0x0052C824
+	int16_t g_hudWidgetTimers[11];
+
+	// GLOBAL: TOY2 0x0052B7E4
+	int16_t g_gameMenuScrollIdx;
+
+	// GLOBAL: TOY2 0x0052ADB0
+	int16_t g_pauseMenuType;
+
+	// GLOBAL: TOY2 0x0052EF44
+	int16_t g_feedbackTimerA;
+
+	// GLOBAL: TOY2 0x0052EF46
+	int16_t g_feedbackTimerB;
+
+	// GLOBAL: TOY2 0x0052F2DA
+	int16_t g_feedbackTimerA_sub;
+
+	// GLOBAL: TOY2 0x0052B7E0
+	int32_t g_unk52B7E0;
+
+	// GLOBAL: TOY2 0x0052B7D8
+	int32_t g_collectionCount;
+
+	// GLOBAL: TOY2 0x00830E38
+	int32_t g_unk830E38;
+
+	// GLOBAL: TOY2 0x00830D4C
+	int32_t g_unk830D4C;
+
+	// GLOBAL: TOY2 0x0050A0BC
+	int32_t g_unk50A0BC;
+
+	// GLOBAL: TOY2 0x0050A0B0
+	int32_t g_unk50A0B0;
+
+	// GLOBAL: TOY2 0x00830D2D
+	uint8_t g_underwaterTintBlue;
+
+	// GLOBAL: TOY2 0x00830D20
+	uint8_t g_underwaterTintGreen;
+
+	// GLOBAL: TOY2 0x00830D2C
+	uint8_t g_underwaterTintRed;
+
+	// GLOBAL: TOY2 0x0052F2F8
+	int32_t g_unk52F2F8;
+
+	// GLOBAL: TOY2 0x0052AD64
+	int32_t g_unk52AD64;
+
+	// GLOBAL: TOY2 0x0052AD68
+	int16_t g_unused3;
+
+	// GLOBAL: TOY2 0x0052AD6A
+	int16_t g_unk52AD6A;
+
+	// GLOBAL: TOY2 0x0052AD6C
+	int16_t g_unk52AD6C;
+
+	// GLOBAL: TOY2 0x0052AD6E
+	int16_t g_unk52AD6E;
+
+	// GLOBAL: TOY2 0x0052AD70
+	int16_t g_unk52AD70;
+
+	// GLOBAL: TOY2 0x0052AD72
+	int16_t g_unk52AD72;
+
+	// GLOBAL: TOY2 0x0052AD74
+	int16_t g_unk52AD74;
+
+	// GLOBAL: TOY2 0x0052AD76
+	int16_t g_unk52AD76;
+
+	// GLOBAL: TOY2 0x0052AD78
+	int16_t g_unk52AD78;
+
+	// GLOBAL: TOY2 0x0052AD7A
+	int16_t g_unk52AD7A;
+
+	// GLOBAL: TOY2 0x00830D44
+	int32_t g_unk830D44;
+
+	// GLOBAL: TOY2 0x00830D38
+	int32_t g_unk830D38;
+
+	// GLOBAL: TOY2 0x00830C90
+	int32_t g_unk830C90;
+
+	// GLOBAL: TOY2 0x00830E2C
+	int32_t g_unk830E2C;
+
+	// GLOBAL: TOY2 0x0052B820
+	int16_t g_demoPathBuffer[2048];
+
+	// GLOBAL: TOY2 0x0052AD84
+	int32_t g_unk52AD84;
+
+	// GLOBAL: TOY2 0x00830CC4
+	int32_t g_unk830CC4;
+
+	// GLOBAL: TOY2 0x00830CB0
+	Nu3D::Camera::ActiveCameraTransform g_unk830CB0;
+
+	// GLOBAL: TOY2 0x00830CC8
+	int32_t g_devCamState;
+
+	// GLOBAL: TOY2 0x00882970
+	BeamShot g_beamShots[4];
+
+	// GLOBAL: TOY2 0x00882934
+	Levels::Type63* g_cosmicShieldPickup;
+
+	// GLOBAL: TOY2 0x00882958
+	int32_t g_cosmicShieldPickupYPos;
+
+	// GLOBAL: TOY2 0x0088295C
+	int32_t g_cosmicShieldRotYaw;
+
+	// GLOBAL: TOY2 0x00882960
+	int32_t g_cosmicShieldSpin;
+
+	// GLOBAL: TOY2 0x00882924
+	Levels::Type63* g_rocketBootsPickup;
+
+	// GLOBAL: TOY2 0x0053C5E0
+	int32_t g_rocketBootsDuration;
+
+	// GLOBAL: TOY2 0x00882938
+	int32_t g_grappleTimer;
+
+	// GLOBAL: TOY2 0x00882950
+	int32_t g_grappleState;
+
+	// GLOBAL: TOY2 0x0088292C
+	int32_t g_grappleDistance;
+
+	// GLOBAL: TOY2 0x00882930
+	int32_t g_grappleProgress;
+
+	// GLOBAL: TOY2 0x00882964
+	int32_t g_discLauncherTimer;
+
+	// GLOBAL: TOY2 0x00882968
+	int32_t g_discLauncherAmmo;
+
+	// GLOBAL: TOY2 0x00882920
+	int32_t g_gravityBootsDuration;
 }
 
 namespace Toy2
@@ -239,9 +455,6 @@ namespace Toy2
 	{
 		// STUB: TOY2 0x0049E330
 		void PauseLoop() {}
-
-		// STUB: TOY2 0x0049DFE0
-		void MainLoop() {}
 
 		// STUB: TOY2 0x00406CD0
 		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn) {}
@@ -710,9 +923,6 @@ namespace Toy2
 
 		return idx + (((times << 8) + g_tokenProgressTable[idx]) << 8);
 	}
-
-	// STUB: TOY2 0x00414720
-	int32_t EnterLevel(int32_t levelIndex) { return 0; }
 
 	// STUB: TOY2 0x004A3770
 	void LoadPathBin() {}
@@ -2112,8 +2322,110 @@ namespace Toy2
 	// STUB: TOY2 0x00414270
 	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag) {}
 
-	// STUB: TOY2 0x00414320
-	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo) { return 0; }
+	// FUNCTION: TOY2 0x00453CA0
+	void ResetBackdropState()
+	{
+		g_hasStaticBackdrop = 0;
+		Renderer::g_virtualScreenWidth = 512.0;
+		Renderer::g_virtualScreenHeight = 256.0;
+		g_nextBackdropId = 36;
+	}
+
+	// FUNCTION: TOY2 0x00414320
+	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo)
+	{
+		int32_t skippedByAttractMode = 0;
+
+		if (! demo || demo == 123)
+		{
+			int32_t attractTimer;
+
+			if (g_attractModeTimer < 0)
+				attractTimer = -1;
+			else
+				attractTimer = 2 * g_attractModeTimer;
+
+			int32_t fadingOut = 0;
+			int32_t titleSlidePos = 0;
+			int32_t blinkTimer = 0;
+
+			SoftwareRenderer::g_unk4F7400.x = 0;
+			SoftwareRenderer::g_unk4F7400.y = 0;
+
+			int32_t fadeFrames = 28;
+
+			do
+			{
+				if (fadingOut)
+				{
+					fadeFrames -= Renderer::g_frameDelta;
+
+					if (fadeFrames <= 0)
+						fadeFrames = 0;
+				}
+
+				if (attractTimer > 0)
+				{
+					attractTimer -= Renderer::g_frameDelta;
+
+					if (attractTimer <= 0)
+					{
+						InputManager::g_curButtonsPressed |= 1;
+						attractTimer = 0;
+					}
+				}
+
+				if ((InputManager::g_curButtonsPressed & INPUT_JUMP) && ! (InputManager::g_prevButtonsPressed & INPUT_JUMP) && ! fadingOut)
+				{
+					Nu3D::Camera::SetTint(0, 0, 0, 12);
+					fadingOut = 1;
+					AudioManager::PlaySoundEffect(7, 0);
+				}
+
+				if ((InputManager::g_curButtonsPressed & 1) && ! fadingOut && g_attractModeTimer >= 0)
+				{
+					Nu3D::Camera::SetTint(0, 0, 0, 12);
+					fadingOut = 1;
+					skippedByAttractMode = 1;
+				}
+
+				Nu3D::Camera::FadeToTargetTint();
+
+				uint32_t frameDelta = Renderer::g_frameDelta;
+				blinkTimer = (Renderer::g_frameDelta + blinkTimer) & 0x3F;
+
+				if (blinkTimer > 30)
+				{
+					Renderer::Sprite::DrawScaled(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
+					frameDelta = Renderer::g_frameDelta;
+				}
+
+				if (titleSlidePos < 1024 && demo != 123)
+				{
+					titleSlidePos += 32 * frameDelta;
+					Renderer::Sprite::DrawScaled(96, 264 - (Numerics::g_sinCosLUT[titleSlidePos + 1024] >> 8), 128, 1, 255, 255, 255, 255, 2048, 2048);
+				}
+
+				Nullsub3();
+				MainMenu::RenderMenu();
+			} while (fadeFrames);
+		}
+		else
+		{
+			Nu3D::Camera::SetTint(0, 0, 0, 12);
+			Nu3D::Camera::g_cameraTintBlue = Nu3D::Camera::g_targetTintBlue;
+			Nu3D::Camera::g_cameraTintGreen = Nu3D::Camera::g_targetTintGreen;
+			Nu3D::Camera::g_cameraTintRed = Nu3D::Camera::g_targetTintRed;
+			Nu3D::Camera::g_targetTintFadeSpeed = 0;
+		}
+
+		ResetBackdropState();
+
+		SoftwareRenderer::g_unk4F7400.x = 0xFFFF8000;
+		SoftwareRenderer::g_unk4F7400.y = 0xFFFF8000;
+
+		return skippedByAttractMode;
+	}
 
 	// STUB: TOY2 0x0041E020
 	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec) {}
@@ -2145,11 +2457,195 @@ namespace Toy2
 	// STUB: TOY2 0x0044F860
 	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
 
-	// STUB: TOY2 0x004500A0
-	void LoadLevelGraphics(int32_t level) {}
+	// FUNCTION: TOY2 0x004500A0
+	void LoadLevelGraphics(int32_t level)
+	{
+		char levelName[256];
+		char* fileName;
 
-	// STUB: TOY2 0x00453CA0
-	void ResetBackdropState() {}
+		Levels::FlushRenderer();
+		Levels::InitLevelDefaults();
+
+		Levels::g_levelLoadArena = Levels::g_levelDataHeapBase;
+
+		switch (level)
+		{
+			case -1:
+				RawLoader::LoadPacketData("gfx\\film.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\film.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 0:
+				RawLoader::LoadPacketData("gfx\\loading.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\loading.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 1:
+				RawLoader::LoadPacketData("gfx\\level1a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 2:
+				RawLoader::LoadPacketData("gfx\\level1b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 3:
+				RawLoader::LoadPacketData("gfx\\level1c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 4:
+				RawLoader::LoadPacketData("gfx\\level2a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 5:
+				RawLoader::LoadPacketData("gfx\\level2b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 6:
+				RawLoader::LoadPacketData("gfx\\level2c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 7:
+				RawLoader::LoadPacketData("gfx\\level3a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 8:
+				RawLoader::LoadPacketData("gfx\\level3b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 9:
+				RawLoader::LoadPacketData("gfx\\level3c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+				{
+				LBL_MAKENGN_IMAGE:
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+				}
+
+				break;
+
+			case 10:
+				RawLoader::LoadRawAndNGN("gfx\\level4a.raw");
+				break;
+
+			case 11:
+				RawLoader::LoadRawAndNGN("gfx\\level4b.raw");
+				break;
+
+			case 12:
+				RawLoader::LoadRawAndNGN("gfx\\level4c.raw");
+				break;
+
+			case 13:
+				RawLoader::LoadRawAndNGN("gfx\\level5a.raw");
+				break;
+
+			case 14:
+				RawLoader::LoadRawAndNGN("gfx\\level5b.raw");
+				break;
+
+			case 15:
+				RawLoader::LoadRawAndNGN("gfx\\level5c.raw");
+				break;
+
+			case 16:
+			case 17:
+				RawLoader::LoadRawAndNGN("gfx\\congrats.raw");
+				break;
+
+			case 30:
+				RawLoader::LoadRawAndNGN("gfx\\bonus.raw");
+				break;
+
+			case 31:
+				RawLoader::LoadRawAndNGN("gfx\\gamewin.raw");
+				break;
+
+			case 35:
+			case 38:
+			case 41:
+			case 44:
+			case 47:
+				RawLoader::LoadRawAndNGN("gfx\\boss.raw");
+				break;
+
+			default:
+				RawLoader::LoadRawAndNGN("gfx\\level1a.raw");
+				break;
+		}
+	}
 
 	// STUB: TOY2 0x0047D4E0
 	int32_t* BuildPerspectiveDivideTable(int32_t centerX) { return 0; }
@@ -2178,17 +2674,677 @@ namespace Toy2
 	// STUB: TOY2 0x0049FD40
 	void RenderHUD() {}
 
-	// STUB: TOY2 0x004A1A50
-	void InitialiseLevelVariables(int32_t levelIndex) {}
+	// FUNCTION: TOY2 0x004A1A50
+	void InitialiseLevelVariables(int32_t levelIndex)
+	{
+		// FUNCTION IS WIP: only the setup for level 1 (Andy's House) is ported, the other levels do nothing yet
+		switch (levelIndex)
+		{
+			case 1:
+				Collectables::Init(AndysHouse::g_unk4F0EDC, 72);
+				Collectables::LoadTokenTable((int32_t*)AndysHouse::g_unk4F0EE8);
+				Collectables::Activate(3, 1);
+				MoveableObject::InitTable(AndysHouse::g_unk4F0F90);
 
-	// STUB: TOY2 0x004A1B00
-	void HandleLevelInteractions(int32_t levelId) {}
+				AndysHouse::g_unk52F52C = 1;
+				AndysHouse::g_unk52F598 = 0;
+				AndysHouse::g_unk52F5B0 = 0;
+				AndysHouse::g_unk52F4F4 = 0;
+				AndysHouse::g_unk52F568 = 0;
+				AndysHouse::g_unk52F5CC = 0;
+				AndysHouse::g_unk52F504 = 0;
+				AndysHouse::g_unk52F58C = 0;
 
-	// STUB: TOY2 0x004A2960
-	void UpdateFrameTimers() {}
+				Platform::SetRotationAngles(15, 0, 0, 0);
 
-	// STUB: TOY2 0x004A48B0
-	void ResetGadgets() {}
+				AndysHouse::g_unk52F5A8 = g_levelActors[8].actorPhase;
+				AndysHouse::g_unk52F4FC = 0;
+				AndysHouse::g_unk52F5AC = 1024;
+				AndysHouse::g_inTinRobotFight = 0;
+				AndysHouse::g_unk52F528 = 0;
+				g_unk52F2F8 = 0;
+				AndysHouse::g_unk52F4F8 = 0;
+				g_unk52AD64 = 0;
+				AndysHouse::g_unk52F584 = 0;
+				AndysHouse::g_unk52F580 = 0;
+				AndysHouse::g_unk52F574 = 0;
+				AndysHouse::g_unk52F570 = 0;
+				AndysHouse::g_unk52F56C = 0;
+				AndysHouse::g_unk52F57C = 0;
+				AndysHouse::g_unk52F594 = 0;
+				AndysHouse::g_unk52F5D0 = 0;
+				AndysHouse::g_unk52F500 = 0;
+				AndysHouse::g_unk52F59C = Levels::g_recordData[58]->data[Level::g_unk830E28 + 1].y;
+
+				Levels::Method3(1, 1);
+
+				Nu3D::Link::GetCurrentPosFixed(6, &AndysHouse::g_unk52F5B8);
+
+				AndysHouse::g_unk52F5B4 = AndysHouse::g_unk52F5B8.y + 47104;
+				AndysHouse::g_unk52F530 = Levels::g_recordData[61]->data[16].y - AndysHouse::g_unk52F5B8.y;
+
+				Nu3D::Link::GetCurrentPosFixed(9, (Vector3I*)AndysHouse::g_unk52F538);
+				Nu3D::Link::GetCurrentPosFixed(17, (Vector3I*)AndysHouse::g_unk52F548);
+				Nu3D::Link::GetCurrentPosFixed(18, (Vector3I*)AndysHouse::g_unk52F558);
+				Nu3D::Link::GetCurrentPosFixed(10, (Vector3I*)AndysHouse::g_unk52F508);
+				Nu3D::Link::GetCurrentPosFixed(16, (Vector3I*)AndysHouse::g_unk52F518);
+				Nu3D::Link::SetScaleFromFixedOffsets(21, 0, 4096, 4096);
+				Nu3D::Link::SnapToOtherLinkUsingScale(22, 21);
+
+				Platform::DisableCollision(8);
+				Platform::DisableCollision(14);
+
+				AndysHouse::g_unk52F590 = 0;
+				AndysHouse::g_unk52F5C8 = 0;
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004A1B00
+	void HandleLevelInteractions(int32_t levelId)
+	{
+		switch (levelId)
+		{
+			case 1:
+				AndysHouse::Interactions();
+				break;
+
+			case 2:
+				AndysNeighborhood::Interactions();
+				break;
+
+			case 3:
+				BombsAway::Interactions();
+				break;
+
+			case 4:
+				ConstructionYard::Interactions();
+				break;
+
+			case 5:
+				AlleysAndGullies::Interactions();
+				break;
+
+			case 6:
+				SlimeTime::Interactions();
+				break;
+
+			case 7:
+				AlsToyBarn::Interactions();
+				break;
+
+			case 8:
+				AlsSpaceLand::Interactions();
+				break;
+
+			case 9:
+				BarnEncounter::Interactions();
+				break;
+
+			case 10:
+				ElevatorHop::Interactions();
+				break;
+
+			case 11:
+				AlsPenthouse::Interactions();
+				break;
+
+			case 12:
+				EvilEmperorZurg::Interactions();
+				break;
+
+			case 13:
+				AirportInfiltration::Interactions();
+				break;
+
+			case 14:
+				TarmacTrouble::Interactions();
+				break;
+
+			case 15:
+				FinalShowdown::Interactions();
+				break;
+
+			case 16:
+				Nullsub11();
+				break;
+
+			case 17:
+				Nullsub12();
+				break;
+
+			default:
+				return;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004A2960
+	void UpdateFrameTimers()
+	{
+		uint8_t tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick2Acc;
+		uint8_t tickCount = 0;
+		bool lessThanPeriod = (Renderer::g_frameDelta + g_tickAccumulators.tick2Acc) < 2u;
+
+		g_tickState[1] = Renderer::g_frameDelta;
+		g_tickState[2] = 0;
+
+		g_tickAccumulators.tick2Acc += Renderer::g_frameDelta;
+
+		if (! lessThanPeriod)
+		{
+			do
+			{
+				tickAcc -= 2;
+				++tickCount;
+			} while (tickAcc >= 2u);
+
+			g_tickState[2] = tickCount;
+			g_tickAccumulators.tick2Acc = tickAcc;
+		}
+
+		tickCount = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick3Acc;
+
+		g_tickState[3] = 0;
+		g_tickAccumulators.tick3Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick3Acc >= 3u)
+		{
+			do
+			{
+				tickAcc -= 3;
+				++tickCount;
+			} while (tickAcc >= 3u);
+
+			g_tickState[3] = tickCount;
+			g_tickAccumulators.tick3Acc = tickAcc;
+		}
+
+		g_tickState[4] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick4Acc;
+		g_tickAccumulators.tick4Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick4Acc >= 4u)
+		{
+			g_tickState[4] = 1;
+			g_tickAccumulators.tick4Acc = tickAcc - 4;
+		}
+
+		g_tickState[5] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick5Acc;
+		g_tickAccumulators.tick5Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick5Acc >= 5u)
+		{
+			g_tickState[5] = 1;
+			g_tickAccumulators.tick5Acc = tickAcc - 5;
+		}
+
+		g_tickState[6] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick6Acc;
+		g_tickAccumulators.tick6Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick6Acc >= 6u)
+		{
+			g_tickState[6] = 1;
+			g_tickAccumulators.tick6Acc = tickAcc - 6;
+		}
+
+		g_tickState[7] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick7Acc;
+		g_tickAccumulators.tick7Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick7Acc >= 7u)
+		{
+			g_tickState[7] = 1;
+			g_tickAccumulators.tick7Acc = tickAcc - 7;
+		}
+
+		g_tickState[8] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick8Acc;
+		g_tickAccumulators.tick8Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick8Acc >= 8u)
+		{
+			g_tickState[8] = 1;
+			g_tickAccumulators.tick8Acc = tickAcc - 8;
+		}
+
+		g_tickState[9] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick16Acc;
+		g_tickAccumulators.tick16Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick16Acc >= 0x10u)
+		{
+			g_tickState[9] = 1;
+			g_tickAccumulators.tick16Acc = tickAcc - 16;
+		}
+
+		g_tickState[10] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick32Acc;
+		g_tickAccumulators.tick32Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick32Acc >= 0x20u)
+		{
+			g_tickState[10] = 1;
+			g_tickAccumulators.tick32Acc = tickAcc - 32;
+		}
+
+		g_tickState[11] = 0;
+		tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick64Acc;
+		g_tickAccumulators.tick64Acc += Renderer::g_frameDelta;
+
+		if (g_tickAccumulators.tick64Acc >= 0x40u)
+		{
+			g_tickState[11] = 1;
+			g_tickAccumulators.tick64Acc = tickAcc - 64;
+		}
+
+		int32_t feedbackActive = 0;
+
+		if (g_feedbackTimerA > 0)
+		{
+			g_feedbackTimerA -= Renderer::g_frameDelta;
+			feedbackActive = 1;
+		}
+
+		if (g_feedbackTimerB <= 0)
+		{
+			g_feedbackTimerA_sub = 0;
+		}
+		else
+		{
+			g_feedbackTimerB -= Renderer::g_frameDelta;
+			feedbackActive |= g_feedbackTimerA_sub & 0xFE;
+		}
+
+		if (g_demoMode != 1 && (SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_PASSIVE))
+		{
+			if (feedbackActive)
+			{
+				g_unk830D38 += Renderer::g_frameDelta;
+
+				if (g_unk830D38 > 360)
+					g_unk830D38 = 300;
+			}
+			else
+			{
+				g_unk830D38 = 0;
+			}
+		}
+
+		AudioManager::UpdateSoundSequences();
+
+		if (g_randDatBufferPtr > &g_randDatBuffer[1500])
+			g_randDatBufferPtr -= 1500;
+
+		int16_t transitionTimer = g_levelTransitionTimer;
+
+		if (g_levelTransitionTimer <= 0 || (transitionTimer = g_levelTransitionTimer - Renderer::g_frameDelta, g_levelTransitionTimer = transitionTimer, transitionTimer >= 0))
+		{
+			if (transitionTimer >= 46)
+				goto LABEL_43;
+		}
+		else
+		{
+			transitionTimer = 0;
+			g_levelTransitionTimer = 0;
+		}
+
+		if (Renderer::g_frameDelta + transitionTimer >= 46 && g_levelTransition > 0)
+		{
+			Nu3D::Camera::g_targetTintBlue = 0;
+			Nu3D::Camera::g_targetTintGreen = 0;
+			Nu3D::Camera::g_targetTintRed = 0;
+			Nu3D::Camera::g_targetTintFadeSpeed = 6;
+			Nu3D::Camera::g_tintBlend = -1;
+		}
+
+	LABEL_43:
+		Nu3D::Camera::FadeToTargetTint();
+	}
+
+	// FUNCTION: TOY2 0x004A48B0
+	void ResetGadgets()
+	{
+		memset(g_beamShots, 0, sizeof(g_beamShots));
+
+		g_cosmicShieldPickup = 0;
+		g_cosmicShieldPickupYPos = 0;
+
+		g_cosmicShieldRotYaw = 0;
+		g_cosmicShieldSpin = 0;
+
+		g_rocketBootsPickup = 0;
+		g_rocketBootsDuration = 0;
+
+		g_grappleTimer = 0;
+		g_grappleState = 0;
+		g_grappleDistance = 0;
+		g_grappleProgress = 0;
+
+		g_discLauncherTimer = 0;
+		g_discLauncherAmmo = 6;
+
+		g_gravityBootsDuration = 0;
+	}
+
+	// FUNCTION: TOY2 0x00414720
+	int32_t EnterLevel(int32_t levelIndex)
+	{
+		Nu3D::Camera::g_cameraTintBlue = 0;
+		Nu3D::Camera::g_cameraTintGreen = 0;
+		Nu3D::Camera::g_cameraTintRed = 0;
+
+		Renderer::SetVirtualRatioTo54();
+
+		int32_t demoMode = g_demoMode;
+
+		if (! g_demoMode || g_demoMode == 123)
+			LoadLevelGraphics(g_levelFileIndex);
+		else
+			LoadLevelGraphics(0);
+
+		SoftwareRenderer::g_unk4F7400.x = 0;
+		SoftwareRenderer::g_unk4F7400.y = 0;
+
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+
+		// fade in on the loading screen
+		int32_t frameCount = 28;
+
+		do
+		{
+			frameCount -= Renderer::g_frameDelta;
+
+			if (frameCount <= 0)
+				frameCount = 0;
+
+			Nu3D::Camera::FadeToTargetTint();
+
+			if (! demoMode)
+				Renderer::Sprite::DrawScaled(96, 200, 128, 1, 255, 255, 255, 255, 2048, 2048);
+
+			Nullsub3();
+			MainMenu::RenderMenu();
+		} while (frameCount);
+
+		Levels::InitLevelPlay(levelIndex);
+
+		int32_t result = ShowLevelIntroScreen(g_levelFileIndex, g_demoMode);
+
+		Level::FixupRecordCoordinates();
+
+		memset(g_tickState, 0, sizeof(g_tickState));
+		memset(&g_tickAccumulators, 0, sizeof(g_tickAccumulators));
+		memset(g_soundSequencePlayers, 0, sizeof(g_soundSequencePlayers));
+
+		g_hudWidgetPositions[0] = 1024;
+		g_hudWidgetPositions[1] = 1024;
+		g_hudWidgetPositions[2] = 1024;
+		g_levelTransition = 0;
+		g_levelTransitionTimer = 0;
+		g_isPaused = 0;
+		g_pauseMenuBlinkTimer = 0;
+		g_gameMenuScrollIdx = 0;
+		g_pauseMenuType = MENU_MAIN;
+		g_feedbackTimerA = 0;
+		g_feedbackTimerB = 0;
+		g_feedbackTimerA_sub = 0;
+		Nu3D::Camera::g_targetTintBlue = 0;
+		Nu3D::Camera::g_targetTintGreen = 0;
+		Nu3D::Camera::g_targetTintRed = 0;
+		Nu3D::Camera::g_targetTintFadeSpeed = 0;
+		g_randDatBufferPtr = g_randDatBuffer;
+		g_unk52B7E0 = 54;
+		g_hudWidgetPositions[3] = 0;
+		g_hudWidgetPositions[4] = 0;
+		g_hudWidgetPositions[5] = 0;
+		g_hudWidgetPositions[6] = 0;
+		g_hudWidgetPositions[7] = 0;
+		g_hudWidgetPositions[8] = 0;
+		g_hudWidgetPositions[9] = 0;
+		g_hudWidgetPositions[10] = 0;
+		g_hudWidgetTimers[0] = 180;
+		g_hudWidgetTimers[1] = 180;
+		g_hudWidgetTimers[2] = 180;
+		g_hudWidgetTimers[3] = 0;
+		g_hudWidgetTimers[4] = 0;
+		g_hudWidgetTimers[5] = 0;
+		g_hudWidgetTimers[6] = 0;
+		g_hudWidgetTimers[7] = 0;
+		g_hudWidgetTimers[8] = 0;
+		g_hudWidgetTimers[9] = 0;
+		g_hudWidgetTimers[10] = 0;
+
+		Buzz::Init(&g_buzzActor, levelIndex);
+		Lighting::InitBuzzLight();
+		Camera::InitGameplayCamera(&Camera::g_gameplayCameraState, &g_buzzActor);
+		Nu3D::Particles::Init();
+		ResetGadgets();
+
+		Actor::g_activeActorArray[0] = 0;
+		g_collectionCount = 0;
+		g_unk830E38 = 0;
+		g_unk830D4C = -1;
+		g_unk50A0BC = 900;
+		g_unk50A0B0 = 206;
+		g_underwaterTintBlue = 128;
+		g_underwaterTintGreen = 128;
+		g_underwaterTintRed = 128;
+		g_unk52F2F8 = 0;
+		g_unk52AD64 = 0;
+
+		InitialiseLevelVariables(levelIndex);
+		Gadget::InitLevelUnlockGeometry();
+
+		uint32_t levelTokenData = SaveManager::g_save0Data.tokens[g_levelFileIndex];
+
+		g_unused3 = 0;
+		g_unk52AD6A = 0;
+		g_unk52AD6C = 0;
+		g_unk52AD6E = 0;
+		g_unk52AD70 = 0;
+		g_unk52AD72 = 0;
+		g_unk52AD74 = 0;
+		g_unk52AD76 = 0;
+		g_unk52AD78 = 0;
+		g_unk52AD7A = 0;
+		SaveManager::g_curLevelTokenData = levelTokenData;
+		SaveManager::g_saveUnlocksCache = (uint8_t)SaveManager::g_save0Data.unlocks;
+		g_unk830D44 = 0;
+		g_unk830D38 = 0;
+		g_unk830C90 = 0;
+		g_unk830E2C = -1;
+
+		// the level music, every third level is a boss and has its own
+		if (g_levelFileIndex > 0 && g_levelFileIndex < 16 && g_levelIndex < 15 && g_levelFileIndex % 3)
+			AudioManager::PlayMusicLooping(g_levelIndex);
+
+		return result;
+	}
+
+	namespace Game
+	{
+		// FUNCTION: TOY2 0x0049DFE0
+		void MainLoop()
+		{
+			int16_t curButtons = InputManager::g_curButtonsPressed;
+			int32_t demoMode = g_demoMode;
+			int32_t writeIdx;
+
+			// demo recording, the buttons are stored as run length pairs
+			if (g_demoMode == 2 && InputManager::g_curButtonsPressed != InputManager::g_prevButtonsPressed)
+			{
+				int32_t pathIdx = g_demoPathWriteIdx;
+
+				g_demoPathBuffer[pathIdx] = InputManager::g_prevButtonsPressed;
+				g_demoPathBuffer[pathIdx + 1] = (int16_t)g_demoInputRunLength;
+
+				writeIdx = pathIdx + 2;
+				g_demoInputRunLength = 0;
+				g_demoPathWriteIdx = writeIdx;
+
+				if (writeIdx >= 2048)
+				{
+					writeIdx = 2046;
+					g_demoPathWriteIdx = 2046;
+				}
+			}
+			else
+			{
+				if (g_demoMode == 2)
+					++g_demoInputRunLength;
+
+				writeIdx = g_demoPathWriteIdx;
+			}
+
+			if (g_attractModeTimer >= 0)
+			{
+				int32_t attractTimer = (g_returnedToTitle || ! curButtons) ? g_attractModeInputTimer : 2 * g_attractModeTimer;
+
+				g_attractModeInputTimer = attractTimer - Renderer::g_frameDelta;
+
+				if (attractTimer - (int32_t)Renderer::g_frameDelta <= 0)
+				{
+					curButtons |= 1;
+					InputManager::g_curButtonsPressed = curButtons;
+				}
+			}
+
+			// demo playback
+			if (demoMode == 1)
+			{
+				g_unk52AD84 = curButtons;
+
+				bool runLengthEnded = g_demoInputRunLength - 1 < 0;
+				--g_demoInputRunLength;
+
+				if (runLengthEnded)
+				{
+					int32_t runLength = g_demoPathBuffer[writeIdx + 3];
+
+					writeIdx += 2;
+					g_demoInputRunLength = runLength;
+					g_demoPathWriteIdx = writeIdx;
+				}
+
+				curButtons = g_demoPathBuffer[writeIdx];
+				InputManager::g_curButtonsPressed = curButtons;
+			}
+
+			InputManager::g_directionInputState3Frames = InputManager::g_directionInputState2Frames;
+			InputManager::g_directionInputState2Frames = InputManager::g_prevDirectionInputState;
+			InputManager::g_prevDirectionInputState = InputManager::g_directionInputState;
+
+			if (demoMode == 1)
+				InputManager::g_directionInputState = curButtons;
+			else
+				InputManager::UpdateDirectionInputState();
+
+			if ((g_buzzActor.actorFlags & Actor::ACTOR_LOCKED_MOVE) || (! g_levelTransition && g_levelTransitionTimer > 60))
+				InputManager::g_directionInputState &= DIR_SECRET_MENU | DIR_MENU | DIR_CAMERA_LEFT | DIR_CAMERA_RIGHT;
+
+			Shadow::ResetShadowCount();
+			Cutscene::Update();
+			Buzz::HandleGameplay(&g_buzzActor);
+
+			Camera::UpdateActiveTransform();
+			Nu3D::Camera::ApplyTransformToCamera(&Camera::g_activeCameraTransform);
+
+			UpdateActors();
+			Buzz::UpdateRespawnAnchor();
+			Collectables::Interactions();
+			Buzz::TickGadgets();
+			Buzz::CheckParticleCollisions();
+
+			if (g_buzzActor.health >= 0)
+				ActorCollisionCheck();
+
+			HandleLevelInteractions(g_levelFileIndex);
+			Lighting::UpdateBuzzLight();
+
+			g_buzzActor.unkVar23 = 0;
+
+			Buzz::UpdateAnimationState();
+			UnusedVarUpdate();
+			Buzz::UpdateContactEffects();
+			Level::UpdateAmbientEmitters();
+			Nu3D::Particles::Update();
+
+			demoMode = g_demoMode;
+
+			if (g_demoMode ||
+				(g_attractModeTimer >= 0 && (InputManager::g_curButtonsPressed & 1) && ! g_levelTransition &&
+				 (g_levelTransition = 4, g_levelTransitionTimer = 46, Nu3D::Camera::SetTint(0, 0, 0, 6), (demoMode = g_demoMode) != 0)))
+			{
+				if ((InputManager::g_curButtonsPressed & 8) && ! g_levelTransition)
+				{
+					g_levelTransition = 3;
+					g_levelTransitionTimer = 46;
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					demoMode = g_demoMode;
+				}
+
+				if (demoMode && g_unk52AD84 && ! g_levelTransition)
+				{
+					g_levelTransition = 4;
+					g_levelTransitionTimer = 46;
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					demoMode = g_demoMode;
+				}
+			}
+
+			if ((InputManager::g_curButtonsPressed & 8) == 0 || (InputManager::g_prevButtonsPressed & 8) != 0)
+			{
+				if (demoMode)
+					goto LABEL_49;
+
+				goto LABEL_45;
+			}
+
+			if (demoMode)
+				goto LABEL_49;
+
+			if (g_unk830CC4 == 9)
+				goto LABEL_45;
+
+			goto LABEL_46;
+
+		LABEL_45:
+			if (InputManager::g_directionalInputCount != 3)
+				goto LABEL_49;
+
+		LABEL_46:
+			// the menu button was pressed, pause the game as soon as the screen is not fading
+			if (! Nu3D::Camera::g_targetTintFadeSpeed && Nu3D::Camera::g_cameraTintRed)
+			{
+				AudioManager::StopAndWait();
+				AudioManager::FlushSoundVoices();
+
+				g_pauseMenuBlinkTimer = 0;
+				g_isPaused = 1;
+				g_gameMenuScrollIdx = 0;
+
+				g_pauseMenuType = MENU_MAIN;
+				g_quitToTitleFlag = 0;
+				AudioManager::PlaySoundEffect(61, 0);
+
+				memcpy(&g_unk830CB0, &Camera::g_activeCameraTransform, sizeof(g_unk830CB0));
+				g_devCamState = 3780;
+			}
+
+		LABEL_49:
+			UpdateFrameTimers();
+			RenderHUD();
+			Actor::PopulateActiveActors();
+			Nullsub3();
+			RenderGame(1);
+		}
+	}
 
 	// STUB: TOY2 0x004A4B70
 	void ActivateGravityBoots() {}

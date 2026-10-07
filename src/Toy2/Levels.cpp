@@ -12,6 +12,7 @@
 #include "Toy2/Toy2.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Actor.h"
+#include "Toy2/Level.h"
 #include "Toy2/Animation.h"
 #include "AudioManager/AudioManager.h"
 #include "Renderer/Renderer.h"
@@ -21,6 +22,7 @@
 #include "Nu3D/Particles.h"
 #include "Nu3D/Camera.h"
 #include "Nu3D/Light.h"
+#include "Nu3D/Math.h"
 #include "SaveManager.h"
 #include "Toy2/D3DApp.h"
 #include "Toy2/Weather.h"
@@ -119,6 +121,15 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00559C4C
 		ObjectDescCache* g_objectDescCache;
 
+		// GLOBAL: TOY2 0x0054F39C
+		PortalZone g_portalEntries[20];
+
+		// GLOBAL: TOY2 0x0054DD94
+		char g_activeZoneVisTable[260];
+
+		// GLOBAL: TOY2 0x00557A98
+		int32_t g_currentType64Region;
+
 		// STUB: TOY2 0x004CEA20
 		void FlushRenderer() {}
 
@@ -169,83 +180,6 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0043E6E0
 		int32_t LoadDAT(int32_t levelId, int32_t fileSize)
 		{
-			// FUNCTION IS WIP, very big and confusing
-			// the commented out bits are what we don't need for
-			// getting into level select thankfully
-
-			int32_t l_cullBandWidth; // eax
-			uint32_t l_scaleTableZeroCount; // esi
-			int16_t* l_scaleTableCursor; // edx
-			int16_t* l_scaleFillPtr; // edi
-			int32_t l_oddTailCount; // ecx
-			int16_t* l_region0600; // edi
-			int16_t* l_region0400; // edx
-			int16_t* l_region0512; // edx
-			int32_t l_type64Count; // ebp
-			int16_t l_type65Idx; // bx
-			int16_t l_recordType; // ax
-			int32_t l_type64Idx; // eax
-			int32_t l_zoneAnchorIdx; // ecx
-			int32_t* l_zoneAnchor; // eax
-			int32_t l_portalVertIdx; // ecx
-			int32_t l_portalVert; // eax
-			int32_t l_coordRaw; // edx
-			int32_t l_portalByteOffset; // eax
-			int16_t l_portalCounts_; // dx
-			int32_t l_termOffset; // ecx
-			int32_t l_secondIdx; // eax
-			InstanceSection* l_secondSection; // eax
-			ModelTypeData_B* l_sectionStorage; // esi
-			InstanceSection* l_secondSection_; // ebp
-			int8_t l_secondSection14Val; // cl
-			int8_t* l_secondSection14; // eax
-			int16_t l_modelId; // cx
-			ModelTypeData_B* l_typeData2; // edi
-			ModelTypeData_A* l_typeData; // edi
-			int32_t l_mat_21; // ecx
-			int32_t l_mat_12; // ecx
-			int32_t l_mat_22; // edx
-			int32_t l_secRotY; // ecx
-			int32_t l_mat_13; // edx
-			int32_t l_secRotZ; // edx
-			int32_t l_secRotZValue; // eax
-			int32_t l_secondSectionCount; // ecx
-			int32_t l_secondInstance; // ebp
-			int16_t l_modelIdRaw; // ax
-			ModelTypeData_B* l_modelB2; // edi
-			ModelTypeData_A* l_modelA2; // edi
-			int32_t l_secMat21; // ecx
-			int32_t l_secMat12; // ecx
-			int32_t l_secMat22; // edx
-			int32_t l_secRotY2; // ecx
-			int32_t l_secMat13; // edx
-			int32_t l_secRotZ2; // edx
-			int32_t l_secRotZ2Value; // eax
-			int8_t l_nextFlags; // al
-			int32_t l_lodTrailerSize; // ecx
-			Type64* l_record; // ebp
-			int32_t* l_unkVar0Y; // edi
-			int32_t* l_unkVar0Z; // esi
-			int32_t l_recordOffset; // edx
-			int32_t l_extentZ; // edx
-			int32_t l_extentY; // esi
-			int32_t l_extentX; // edi
-			ObjectDescCache* l_descCache; // eax
-			ObjectList* l_objectList; // ecx
-			int32_t l_objIdx; // edi
-			int32_t l_cacheByteOffset; // eax
-			int32_t l_objEntryOffset; // edx
-			uint32_t l_meshPtr; // esi
-			int32_t l_objDesc; // ecx
-			int32_t l_totalRecordCount; // [esp+10h] [ebp-30h]
-			int16_t* l_newLvlBase; // [esp+10h] [ebp-30h]
-			int32_t l_type64Count_; // [esp+14h] [ebp-2Ch]
-			int16_t l_portalCounts[20]; // [esp+18h] [ebp-28h] BYREF
-			int32_t l_bboxVert; // [esp+48h] [ebp+8h]
-			int32_t l_bboxVert2; // [esp+48h] [ebp+8h]
-			char* l_bboxVert3; // [esp+48h] [ebp+8h]
-			char* l_bboxVert4; // [esp+48h] [ebp+8h]
-
 			Levels::g_unused1 = 256;
 			Levels::g_unused2 = 256;
 
@@ -256,419 +190,428 @@ namespace Toy2
 			Levels::g_unused3 = 512;
 			Levels::g_unused4 = 512;
 
+			int32_t cullBandWidth;
+
 			if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE || D3DApp::g_renderMode == RENDERMODE_D3D)
 			{
-				l_cullBandWidth = 1664;
+				cullBandWidth = 1664;
 				g_type63CullDistance = 1664;
 			}
 			else
 			{
-				l_cullBandWidth = g_type63CullDistance;
+				cullBandWidth = g_type63CullDistance;
 			}
 
-			l_scaleTableZeroCount = l_cullBandWidth - 512;
+			uint32_t scaleTableZeroCount = cullBandWidth - 512;
 
-			Levels::g_unused5 = l_cullBandWidth;
-			Levels::g_unused6 = l_cullBandWidth - 512;
+			Levels::g_unused5 = cullBandWidth;
+			Levels::g_unused6 = cullBandWidth - 512;
 			Levels::g_unused7 = 3072;
 
-			l_scaleTableCursor = g_layerScaleTable;
+			int16_t* scaleTableCursor = g_layerScaleTable;
 			Levels::g_unused8 = 170;
 
-			if (l_cullBandWidth - 512 > 0)
+			if (cullBandWidth - 512 > 0)
 			{
-				l_scaleTableCursor = &g_layerScaleTable[l_scaleTableZeroCount];
+				scaleTableCursor = &g_layerScaleTable[scaleTableZeroCount];
 
-				memset(g_layerScaleTable, 0, 4 * (l_scaleTableZeroCount >> 1));
-				l_scaleFillPtr = &g_layerScaleTable[2 * (l_scaleTableZeroCount >> 1)];
+				memset(g_layerScaleTable, 0, 4 * (scaleTableZeroCount >> 1));
+				int16_t* scaleFillPtr = &g_layerScaleTable[2 * (scaleTableZeroCount >> 1)];
 
-				for (l_oddTailCount = l_cullBandWidth & 1; l_oddTailCount; --l_oddTailCount)
-					*l_scaleFillPtr++ = 0;
+				for (int32_t oddTailCount = cullBandWidth & 1; oddTailCount; --oddTailCount)
+					*scaleFillPtr++ = 0;
 			}
 
-			l_region0600 = l_scaleTableCursor;
-			l_region0400 = l_scaleTableCursor + 170;
+			int16_t* region0600 = scaleTableCursor;
+			int16_t* region0400 = scaleTableCursor + 170;
 
-			Nu3D::MemSet32Util(l_region0600, 85, 0x6000600);
-			Nu3D::MemSet32Util(l_region0400, 85, 0x4000400);
+			Nu3D::MemSet32Util(region0600, 85, 0x6000600);
+			Nu3D::MemSet32Util(region0400, 85, 0x4000400);
 
-			for (int16_t* p = l_region0400 + 170; p != g_layerScaleTable + (sizeof(g_layerScaleTable) / sizeof(g_layerScaleTable[0])); ++p)
+			for (int16_t* p = region0400 + 170; p != g_layerScaleTable + (sizeof(g_layerScaleTable) / sizeof(g_layerScaleTable[0])); ++p)
 				*p = 512;
 
-			uint8_t* l_base = reinterpret_cast<uint8_t*>(g_levelDataBase);
-			l_type64Count = 0;
+			uint8_t* base = reinterpret_cast<uint8_t*>(g_levelDataBase);
+			int32_t type64Count = 0;
 			Levels::g_unused9 = 0;
 
 			g_type64Count = 0;
 
 			Type64* end = g_type64Structs + (sizeof(g_type64Structs) / sizeof(g_type64Structs[0]));
-			Type64* l_type64Init = g_type64Structs;
+			Type64* type64Init = g_type64Structs;
 
 			do
 			{
-				(l_type64Init++)->recordPtr = 0;
-			} while (l_type64Init < end);
+				(type64Init++)->recordPtr = 0;
+			} while (type64Init < end);
 
-			uint8_t* l_recordPtr = (l_base + 4);
-			memset(l_portalCounts, 0, sizeof(l_portalCounts));
+			uint8_t* recordPtr = (base + 4);
+			int16_t portalCounts[20];
+			memset(portalCounts, 0, sizeof(portalCounts));
 
-			l_type65Idx = 65;
+			int16_t type65Idx = 65;
 
-			if (*reinterpret_cast<uint16_t*>(l_recordPtr - 4) > 0)
+			if (*reinterpret_cast<uint16_t*>(recordPtr - 4) > 0)
 			{
-				l_totalRecordCount = *reinterpret_cast<uint16_t*>(l_recordPtr - 4);
+				int32_t totalRecordCount = *reinterpret_cast<uint16_t*>(recordPtr - 4);
 
-				printf("Total Record Count -> %d\n", l_totalRecordCount);
+				DECOMP_PRINT(("Total Record Count -> %d\n", totalRecordCount));
 
 				do
 				{
-					l_recordType = *reinterpret_cast<uint16_t*>(l_recordPtr + 2);
+					int16_t recordType = *reinterpret_cast<uint16_t*>(recordPtr + 2);
 
-					if (l_recordType >= 0)
+					if (recordType >= 0)
 					{
-						if (l_recordType == 64)
+						if (recordType == 64)
 						{
-							l_type64Idx = l_type64Count++;
+							int32_t type64Idx = type64Count++;
 
-							g_type64Count = l_type64Count;
-							g_type64Structs[l_type64Idx].recordPtr = l_recordPtr;
+							g_type64Count = type64Count;
+							g_type64Structs[type64Idx].recordPtr = recordPtr;
 
-							l_recordPtr += 12 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
+							recordPtr += 12 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
 						}
 						else
 						{
-							if (l_recordType <= 64)
+							if (recordType <= 64)
 							{
-								g_recordData[l_recordType] = reinterpret_cast<RecordData*>(l_recordPtr);
+								g_recordData[recordType] = reinterpret_cast<RecordData*>(recordPtr);
 							}
 							else
 							{
-								// g_hasZoneData = 1;
-								// g_recordData[l_type65Idx] = reinterpret_cast<RecordData*>(l_recordPtr);
+								// Portal records, the last point of the record holds the zone it belongs to, and its category
+								g_hasZoneData = 1;
+								g_recordData[type65Idx] = reinterpret_cast<RecordData*>(recordPtr);
 
-								// l_zoneAnchorIdx = *(l_recordPtr + 12 * *l_recordPtr - 8);
-								// l_zoneAnchor = reinterpret_cast<int32_t*>(l_recordPtr + 12 * *l_recordPtr - 8);
+								Vector3I* zoneAnchor = reinterpret_cast<Vector3I*>(recordPtr + 12 * *reinterpret_cast<int16_t*>(recordPtr) - 8);
+								int32_t zone = zoneAnchor->x;
 
-								// *(&g_portalEntries[l_zoneAnchorIdx].entries[0].recordIdx + l_portalCounts[l_zoneAnchorIdx]) = l_type65Idx;
-								// *(&g_portalEntries[*l_zoneAnchor].entries[0].categoryIdx + l_portalCounts[*l_zoneAnchor]) = *(l_zoneAnchor + 4);
+								// the counts are in bytes, an entry is 2 bytes
+								g_portalEntries[zone].entries[portalCounts[zone] >> 1].recordIdx = (uint8_t)type65Idx;
 
-								// l_portalVertIdx = 0;
-								// l_portalCounts[*l_zoneAnchor] += 2;
+								zone = zoneAnchor->x;
+								g_portalEntries[zone].entries[portalCounts[zone] >> 1].categoryIdx = (uint8_t)zoneAnchor->y;
 
-								// l_portalVert = l_recordPtr + 4;
+								portalCounts[zoneAnchor->x] += 2;
 
-								// if (*l_recordPtr > 0)
-								// {
-								// 	do
-								// 	{
-								// 		l_coordRaw = *l_portalVert;
-								// 		l_portalVert += 12;
+								// the points are squashed down to 16 bit, in place
+								int32_t portalVertIdx = 0;
+								int32_t* portalVert = reinterpret_cast<int32_t*>(recordPtr + 4);
 
-								// 		*(l_portalVert - 12) = l_coordRaw >> 2;
-								// 		*(l_portalVert - 10) = *(l_portalVert - 8) >> 2;
-								// 		*(l_portalVert - 8) = *(l_portalVert - 4) >> 2;
+								if (*reinterpret_cast<int16_t*>(recordPtr) > 0)
+								{
+									do
+									{
+										int16_t* portalVert16 = reinterpret_cast<int16_t*>(portalVert);
 
-								// 		++l_portalVertIdx;
-								// 	} while (l_portalVertIdx < *l_recordPtr);
-								// }
+										int32_t coordRaw = portalVert[0];
+										portalVert16[0] = coordRaw >> 2;
 
-								// l_type64Count = g_type64Count;
-								// ++l_type65Idx;
+										coordRaw = portalVert[1];
+										portalVert16[1] = coordRaw >> 2;
+
+										coordRaw = portalVert[2];
+										portalVert16[2] = coordRaw >> 2;
+
+										portalVert += 3;
+										++portalVertIdx;
+									} while (portalVertIdx < *reinterpret_cast<int16_t*>(recordPtr));
+								}
+
+								type64Count = g_type64Count;
+								++type65Idx;
 							}
 
-							if (*reinterpret_cast<uint16_t*>(l_recordPtr + 2) == 63)
-								l_recordPtr += 16 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
+							if (*reinterpret_cast<uint16_t*>(recordPtr + 2) == 63)
+								recordPtr += 16 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
 							else
-								l_recordPtr += 12 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 4;
+								recordPtr += 12 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
 						}
 					}
 					else
 					{
-						g_recordData[-l_recordType] = reinterpret_cast<RecordData*>(l_recordPtr);
-						l_recordPtr += 4 * ((3 * *reinterpret_cast<uint16_t*>(l_recordPtr) + 1) / 2) + 16;
+						g_recordData[-recordType] = reinterpret_cast<RecordData*>(recordPtr);
+						recordPtr += 4 * ((3 * *reinterpret_cast<uint16_t*>(recordPtr) + 1) / 2) + 16;
 					}
 
-					--l_totalRecordCount;
-				} while (l_totalRecordCount);
+					--totalRecordCount;
+				} while (totalRecordCount);
 			}
 
-			/*
-			l_portalByteOffset = 0;
-			*&l_portalCounts_ = l_portalCounts;
+			// terminate the entry list of every zone
+			int32_t portalByteOffset = 0;
+			int16_t* portalCountsCursor = portalCounts;
+
 			do
 			{
-				l_termOffset = l_portalByteOffset + **&l_portalCounts_;
-				l_portalByteOffset += 32;
-				*&l_portalCounts_ += 2;
+				int32_t termOffset = portalByteOffset + *portalCountsCursor;
+				portalByteOffset += 32;
+				++portalCountsCursor;
 
-				*(&g_portalEntries[0].entries[0].recordIdx + l_termOffset) = -1;
-				*(&g_portalEntries[0].entries[0].categoryIdx + l_termOffset) = -1;
+				uint8_t* termEntry = reinterpret_cast<uint8_t*>(g_portalEntries) + termOffset;
+				termEntry[0] = 0xFF;
+				termEntry[1] = 0xFF;
+			} while (portalByteOffset < 640);
 
-			} while (l_portalByteOffset < 640);*/
-
-			l_secondIdx = *l_recordPtr << 7;
+			int32_t secondIdx = *reinterpret_cast<int32_t*>(recordPtr) << 7;
 			g_instanceRecordCount = 0;
 
-			l_secondSection = (InstanceSection*)(l_recordPtr + 4 * (l_secondIdx / 4) + 4);
-			l_sectionStorage = (ModelTypeData_B*)((uint8_t*)g_levelDataBase + fileSize);
+			InstanceSection* secondSection = reinterpret_cast<InstanceSection*>(recordPtr + 4 * (secondIdx / 4) + 4);
+			ModelTypeData_B* sectionStorage = reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize);
 
-			printf("Second Idx %d\n", l_secondIdx);
+			DECOMP_PRINT(("Second Idx %d\n", secondIdx));
 
-			g_instanceSection = l_secondSection;
+			g_instanceSection = secondSection;
 
-			l_secondSection_ = l_secondSection;
-			l_secondSection14Val = l_secondSection->flags;
-			l_secondSection14 = &l_secondSection->flags;
+			// The first batch of instances, each one is given a runtime copy in the storage that sits after the file
+			InstanceSection* secondSection_ = secondSection;
 
-			printf("l_secondSection14 %d\n", l_secondSection14Val);
+			DECOMP_PRINT(("secondSection14 %d\n", secondSection->flags));
 
-			/*
-			if (l_secondSection14Val)
+			if (secondSection_->flags)
 			{
 				do
 				{
 					++g_instanceRecordCount;
-					l_modelId = l_secondSection_->modelId;
 
-					if (l_modelId < 0)
-						l_secondSection_->modelId = -l_modelId;
+					if (secondSection_->modelId < 0)
+						secondSection_->modelId = -secondSection_->modelId;
 
-					if (*l_secondSection14 < 0)
-						*l_secondSection14 = (*l_secondSection14 | 0x50) - 16;
+					if (secondSection_->flags < 0)
+						secondSection_->flags = (secondSection_->flags | 0x50) - 16;
 
-					if ((*l_secondSection14 & 8) != 0)
+					if ((secondSection_->flags & 8) != 0)
 					{
-						l_typeData = (g_levelDataBase + l_secondSection_->unk6);
-						l_secondSection_->unk6 = l_typeData;
-						l_typeData->meshPtr += g_levelDataBase;
+						ModelTypeData_A* typeData =
+							reinterpret_cast<ModelTypeData_A*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondSection_->unk6));
 
-						if ((*l_secondSection14 & 0x20) != 0)
+						secondSection_->unk6 = reinterpret_cast<ModelTypeData_B*>(typeData);
+						typeData->meshPtr += reinterpret_cast<int32_t>(g_levelDataBase);
+
+						if ((secondSection_->flags & 0x20) != 0)
 						{
-							*l_secondSection14 |= 0x40u;
-							l_typeData->animPtr += g_levelDataBase;
+							secondSection_->flags |= 0x40;
+							typeData->animPtr += reinterpret_cast<int32_t>(g_levelDataBase);
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(&l_typeData->rotation, l_sectionStorage);
+						Nu3D::Math::EulerToRotationMatrix(
+							reinterpret_cast<AnglesWithRoll*>(&typeData->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
 
-						l_mat_21 = l_sectionStorage->mat_21;
-						l_sectionStorage->mat_11 = l_typeData->scaleX * l_sectionStorage->mat_11 / 4096;
-						l_sectionStorage->mat_21 = l_mat_21 * l_typeData->scaleX / 4096;
-						l_mat_12 = l_sectionStorage->mat_12;
-						l_sectionStorage->rotation.x = l_typeData->scaleX * l_sectionStorage->rotation.x / 4096;
-						l_mat_22 = l_sectionStorage->mat_22;
+						int32_t mat_21 = sectionStorage->mat_21;
+						sectionStorage->mat_11 = typeData->scaleX * sectionStorage->mat_11 / 4096;
+						sectionStorage->mat_21 = mat_21 * typeData->scaleX / 4096;
+						int32_t mat_12 = sectionStorage->mat_12;
+						sectionStorage->rotation.x = typeData->scaleX * sectionStorage->rotation.x / 4096;
+						int32_t mat_22 = sectionStorage->mat_22;
 
-						l_sectionStorage->mat_12 = l_mat_12 * l_typeData->scaleY / 4096;
-						l_secRotY = l_sectionStorage->rotation.y;
-						l_sectionStorage->mat_22 = l_mat_22 * l_typeData->scaleY / 4096;
-						l_mat_13 = l_sectionStorage->mat_13;
-						l_sectionStorage->rotation.y = l_secRotY * l_typeData->scaleY / 4096;
-						l_sectionStorage->mat_13 = l_mat_13 * l_typeData->scaleZ / 4096;
-						l_secRotZ = l_sectionStorage->rotation.z;
-						l_sectionStorage->mat_23 = l_typeData->scaleZ * l_sectionStorage->mat_23 / 4096;
-						l_secRotZValue = l_secRotZ * l_typeData->scaleZ;
+						sectionStorage->mat_12 = mat_12 * typeData->scaleY / 4096;
+						int32_t secRotY = sectionStorage->rotation.y;
+						sectionStorage->mat_22 = mat_22 * typeData->scaleY / 4096;
+						int32_t mat_13 = sectionStorage->mat_13;
+						sectionStorage->rotation.y = secRotY * typeData->scaleY / 4096;
+						sectionStorage->mat_13 = mat_13 * typeData->scaleZ / 4096;
+						int32_t secRotZ = sectionStorage->rotation.z;
+						sectionStorage->mat_23 = typeData->scaleZ * sectionStorage->mat_23 / 4096;
+						int32_t secRotZValue = secRotZ * typeData->scaleZ;
 
-						l_sectionStorage->modelPtr = l_typeData;
-						l_sectionStorage->unk11 = 0;
-						l_sectionStorage->rotation.z = l_secRotZValue / 4096;
+						sectionStorage->modelPtr = typeData;
+						sectionStorage->unk11 = 0;
+						sectionStorage->rotation.z = secRotZValue / 4096;
 
-						l_secondSection_->unk6 = l_sectionStorage;
-						l_sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(l_secondSection_);
-						l_typeData->flags &= 0xFu;
+						secondSection_->unk6 = sectionStorage;
+						sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(secondSection_);
+						typeData->flags &= 0xF;
 					}
 					else
 					{
-						l_typeData2 = (g_levelDataBase + l_secondSection_->unk6);
-						l_secondSection_->unk6 = l_typeData2;
-						l_typeData2->modelPtr = l_typeData2->modelPtr + g_levelDataBase;
+						ModelTypeData_B* typeData2 =
+							reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondSection_->unk6));
 
-						if ((*l_secondSection14 & 0x20) != 0)
+						secondSection_->unk6 = typeData2;
+						typeData2->modelPtr = reinterpret_cast<uint8_t*>(typeData2->modelPtr) + reinterpret_cast<uint32_t>(g_levelDataBase);
+
+						if ((secondSection_->flags & 0x20) != 0)
 						{
-							*l_secondSection14 |= 0x40u;
-							l_typeData2->unk11 += g_levelDataBase;
+							secondSection_->flags |= 0x40;
+							typeData2->unk11 += reinterpret_cast<int32_t>(g_levelDataBase);
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(&l_typeData2->rotation, l_sectionStorage);
+						Nu3D::Math::EulerToRotationMatrix(
+							reinterpret_cast<AnglesWithRoll*>(&typeData2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
 
-						l_sectionStorage->modelPtr = l_typeData2;
-						l_sectionStorage->unk11 = 0;
-						l_secondSection_->unk6 = l_sectionStorage;
+						sectionStorage->modelPtr = typeData2;
+						sectionStorage->unk11 = 0;
+						secondSection_->unk6 = sectionStorage;
 
-						l_sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(l_secondSection_);
-						l_typeData2->flags &= 0xFu;
+						sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(secondSection_);
+						typeData2->flags &= 0xF;
 					}
 
-					++l_secondSection_;
-					++l_sectionStorage;
+					++secondSection_;
+					++sectionStorage;
+				} while (secondSection_->flags);
+			}
 
-					l_secondSection14 = &l_secondSection_->flags;
-				} while (l_secondSection_->flags);
-			}*/
+			// The object list comes right after the last instance, and a second batch of instances after that
+			g_objectListBase = reinterpret_cast<ObjectList*>(reinterpret_cast<uint8_t*>(secondSection_) + sizeof(InstanceSection));
+			int32_t secondSectionCount = g_objectListBase->count;
 
-			g_objectListBase = (ObjectList*)((uint8_t*)l_secondSection_ + sizeof(InstanceSection));
-			l_secondSectionCount = *(int32_t*)((uint8_t*)l_secondSection_ + sizeof(InstanceSection));
+			g_secondInstanceSection = reinterpret_cast<InstanceSection*>(reinterpret_cast<uint8_t*>(g_objectListBase) + 4 * secondSectionCount + 8);
 
-			g_secondInstanceSection = (InstanceSection*)((uint8_t*)l_secondSection_ + 20 + 4 * l_secondSectionCount + 8);
+			DECOMP_PRINT(("Second section count -> %d\n", secondSectionCount));
+			DECOMP_PRINT(("Second Instance Flags -> %d\n", g_secondInstanceSection->flags));
 
-			printf("Second section count -> %d\n", l_secondSectionCount);
-			printf("Second Instance Flags -> %d\n", g_secondInstanceSection->flags);
+			InstanceSection* secondInstance = g_secondInstanceSection;
 
-			/*
-			l_secondInstance = ((uint8_t*)l_secondSection_ + 20 + 4 * l_secondSectionCount + 22);
-
-			if (*(g_secondInstanceSection + 14))
+			if (secondInstance->flags)
 			{
 				do
 				{
 					++g_instanceRecordCount;
-					l_modelIdRaw = *(l_secondInstance - 2);
 
-					if (l_modelIdRaw < 0)
-						*(l_secondInstance - 2) = -l_modelIdRaw;
+					if (secondInstance->modelId < 0)
+						secondInstance->modelId = -secondInstance->modelId;
 
-					if (*l_secondInstance < 0)
-						*l_secondInstance = (*l_secondInstance | 0x50) - 16;
+					if (secondInstance->flags < 0)
+						secondInstance->flags = (secondInstance->flags | 0x50) - 16;
 
-					if ((*l_secondInstance & 8) != 0)
+					if ((secondInstance->flags & 8) != 0)
 					{
-						l_modelA2 = (g_levelDataBase + *(l_secondInstance + 2));
-						*(l_secondInstance + 2) = l_modelA2;
-						l_modelA2->meshPtr += g_levelDataBase;
+						ModelTypeData_A* modelA2 =
+							reinterpret_cast<ModelTypeData_A*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondInstance->unk6));
+						secondInstance->unk6 = reinterpret_cast<ModelTypeData_B*>(modelA2);
+						modelA2->meshPtr += reinterpret_cast<int32_t>(g_levelDataBase);
 
-						if ((*l_secondInstance & 0x20) != 0)
+						if ((secondInstance->flags & 0x20) != 0)
 						{
-							*l_secondInstance |= 0x40u;
-							l_modelA2->animPtr += g_levelDataBase;
+							secondInstance->flags |= 0x40;
+							modelA2->animPtr += reinterpret_cast<int32_t>(g_levelDataBase);
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(&l_modelA2->rotation, l_sectionStorage);
-						l_secMat21 = l_sectionStorage->mat_21;
-						l_sectionStorage->mat_11 = l_modelA2->scaleX * l_sectionStorage->mat_11 / 4096;
-						l_sectionStorage->mat_21 = l_secMat21 * l_modelA2->scaleX / 4096;
-						l_secMat12 = l_sectionStorage->mat_12;
-						l_sectionStorage->rotation.x = l_modelA2->scaleX * l_sectionStorage->rotation.x / 4096;
-						l_secMat22 = l_sectionStorage->mat_22;
-						l_sectionStorage->mat_12 = l_secMat12 * l_modelA2->scaleY / 4096;
-						l_secRotY2 = l_sectionStorage->rotation.y;
-						l_sectionStorage->mat_22 = l_secMat22 * l_modelA2->scaleY / 4096;
-						l_secMat13 = l_sectionStorage->mat_13;
-						l_sectionStorage->rotation.y = l_secRotY2 * l_modelA2->scaleY / 4096;
-						l_sectionStorage->mat_13 = l_secMat13 * l_modelA2->scaleZ / 4096;
-						l_secRotZ2 = l_sectionStorage->rotation.z;
-						l_sectionStorage->mat_23 = l_modelA2->scaleZ * l_sectionStorage->mat_23 / 4096;
-						l_secRotZ2Value = l_secRotZ2 * l_modelA2->scaleZ;
-						l_sectionStorage->modelPtr = l_modelA2;
-						l_sectionStorage->unk11 = 0;
-						l_sectionStorage->rotation.z = l_secRotZ2Value / 4096;
+						Nu3D::Math::EulerToRotationMatrix(
+							reinterpret_cast<AnglesWithRoll*>(&modelA2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
 
-						*(l_secondInstance + 2) = l_sectionStorage;
-						l_sectionStorage->polyCount = Toy2::Level::CalculatePolyCount((l_secondInstance - 14));
-						l_modelA2->flags &= 0xFu;
+						int32_t secMat21 = sectionStorage->mat_21;
+						sectionStorage->mat_11 = modelA2->scaleX * sectionStorage->mat_11 / 4096;
+						sectionStorage->mat_21 = secMat21 * modelA2->scaleX / 4096;
+						int32_t secMat12 = sectionStorage->mat_12;
+						sectionStorage->rotation.x = modelA2->scaleX * sectionStorage->rotation.x / 4096;
+						int32_t secMat22 = sectionStorage->mat_22;
+						sectionStorage->mat_12 = secMat12 * modelA2->scaleY / 4096;
+						int32_t secRotY2 = sectionStorage->rotation.y;
+						sectionStorage->mat_22 = secMat22 * modelA2->scaleY / 4096;
+						int32_t secMat13 = sectionStorage->mat_13;
+						sectionStorage->rotation.y = secRotY2 * modelA2->scaleY / 4096;
+						sectionStorage->mat_13 = secMat13 * modelA2->scaleZ / 4096;
+						int32_t secRotZ2 = sectionStorage->rotation.z;
+						sectionStorage->mat_23 = modelA2->scaleZ * sectionStorage->mat_23 / 4096;
+						int32_t secRotZ2Value = secRotZ2 * modelA2->scaleZ;
+						sectionStorage->modelPtr = modelA2;
+						sectionStorage->unk11 = 0;
+						sectionStorage->rotation.z = secRotZ2Value / 4096;
+
+						secondInstance->unk6 = sectionStorage;
+						sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(secondInstance);
+						modelA2->flags &= 0xF;
 					}
 					else
 					{
-						l_modelB2 = (g_levelDataBase + *(l_secondInstance + 2));
-						*(l_secondInstance + 2) = l_modelB2;
-						l_modelB2->modelPtr = l_modelB2->modelPtr + g_levelDataBase;
+						ModelTypeData_B* modelB2 =
+							reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondInstance->unk6));
+						secondInstance->unk6 = modelB2;
+						modelB2->modelPtr = reinterpret_cast<uint8_t*>(modelB2->modelPtr) + reinterpret_cast<uint32_t>(g_levelDataBase);
 
-						if ((*l_secondInstance & 0x20) != 0)
+						if ((secondInstance->flags & 0x20) != 0)
 						{
-							*l_secondInstance |= 0x40u;
-							l_modelB2->unk11 += g_levelDataBase;
+							secondInstance->flags |= 0x40;
+							modelB2->unk11 += reinterpret_cast<int32_t>(g_levelDataBase);
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(&l_modelB2->rotation, l_sectionStorage);
-						l_sectionStorage->modelPtr = l_modelB2;
-						l_sectionStorage->unk11 = 0;
-						*(l_secondInstance + 2) = l_sectionStorage;
-						l_sectionStorage->polyCount = Toy2::Level::CalculatePolyCount((l_secondInstance - 14));
+						Nu3D::Math::EulerToRotationMatrix(
+							reinterpret_cast<AnglesWithRoll*>(&modelB2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
 
-						l_modelB2->flags &= 0xFu;
+						sectionStorage->modelPtr = modelB2;
+						sectionStorage->unk11 = 0;
+						secondInstance->unk6 = sectionStorage;
+						sectionStorage->polyCount = Toy2::Level::CalculatePolyCount(secondInstance);
+
+						modelB2->flags &= 0xF;
 					}
 
-					l_nextFlags = *(l_secondInstance + 20);
-					l_secondInstance += 20;
-					++l_sectionStorage;
-				} while (l_nextFlags);
-			}*/
+					++secondInstance;
+					++sectionStorage;
+				} while (secondInstance->flags);
+			}
 
-			l_lodTrailerSize = *(int32_t*)((uint8_t*)g_levelDataBase + fileSize - 4);
-			printf("Load trailer size -> %d\n", l_lodTrailerSize);
-			printf("Object List Base Count -> %d\n", g_objectListBase->count);
+			// The trailer of the file holds the size of the LOD data, -1 meaning there isn't any
+			int32_t lodTrailerSize = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize - 4);
 
-			/*
-			if (l_lodTrailerSize == -1)
+			DECOMP_PRINT(("Load trailer size -> %d\n", lodTrailerSize));
+			DECOMP_PRINT(("Object List Base Count -> %d\n", g_objectListBase->count));
+
+			if (lodTrailerSize == -1)
 			{
 				Levels::g_unused10 = -1;
-				memset(g_activeZoneVisTable, 255u, 256u);
+				memset(g_activeZoneVisTable, 255, 256);
 			}
 			else
 			{
-				l_newLvlBase = (g_levelDataBase + p_fileSize - l_lodTrailerSize);
+				uint8_t* newLvlBase = reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize - lodTrailerSize;
 
 				if (g_type64Count > 0)
 				{
-					l_type64Records = &g_type64Structs[0].recordPtr;
-					l_type64Count_ = g_type64Count;
+					Type64* record = g_type64Structs;
+					int32_t type64Count_ = g_type64Count;
 
 					do
 					{
-						l_record = ADJ(l_type64Records);
+						// the bounds of the record, which is a box made out of its first two points
+						record->unkVar0.x = 0x7FFFFFFF;
+						record->unkVar0.y = 0x7FFFFFFF;
+						record->unkVar0.z = 0x7FFFFFFF;
 
-						l_unkVar0Y = &ADJ(l_type64Records)->unkVar0.y;
-						l_unkVar0Z = &ADJ(l_type64Records)->unkVar0.z;
+						record->unkVar3.x = 0x80000000;
+						record->unkVar3.y = 0x80000000;
+						record->unkVar3.z = 0x80000000;
 
-						ADJ(l_type64Records)->unkVar0.x = 0x7FFFFFFF;
-						ADJ(l_type64Records)->unkVar0.y = 0x7FFFFFFF;
-						ADJ(l_type64Records)->unkVar0.z = 0x7FFFFFFF;
-
-						ADJ(l_type64Records)->unkVar3.x = 0x80000000;
-						ADJ(l_type64Records)->unkVar3.y = 0x80000000;
-						ADJ(l_type64Records)->unkVar3.z = 0x80000000;
-
-						for (l_recordOffset = 0; l_recordOffset < 24; l_recordOffset += 12)
+						for (int32_t recordOffset = 0; recordOffset < 24; recordOffset += 12)
 						{
-							l_bboxVert = ADJ(l_type64Records)->recordPtr + l_recordOffset;
+							Vector3I* bboxVert = reinterpret_cast<Vector3I*>(reinterpret_cast<uint8_t*>(record->recordPtr) + recordOffset + 4);
 
-							if (*(l_bboxVert + 4) < l_record->unkVar0.x)
-								l_record->unkVar0.x = *(l_bboxVert + 4);
+							if (bboxVert->x < record->unkVar0.x)
+								record->unkVar0.x = bboxVert->x;
 
-							l_bboxVert2 = ADJ(l_type64Records)->recordPtr + l_recordOffset;
+							if (bboxVert->y < record->unkVar0.y)
+								record->unkVar0.y = bboxVert->y;
 
-							if (*(l_bboxVert2 + 8) < *l_unkVar0Y)
-								*l_unkVar0Y = *(l_bboxVert2 + 8);
+							if (bboxVert->z < record->unkVar0.z)
+								record->unkVar0.z = bboxVert->z;
 
-							if (*(ADJ(l_type64Records)->recordPtr + l_recordOffset + 12) < *l_unkVar0Z)
-								*l_unkVar0Z = *(ADJ(l_type64Records)->recordPtr + l_recordOffset + 12);
+							if (bboxVert->x > record->unkVar3.x)
+								record->unkVar3.x = bboxVert->x;
 
-							l_bboxVert3 = ADJ(l_type64Records)->recordPtr + l_recordOffset;
+							if (bboxVert->y > record->unkVar3.y)
+								record->unkVar3.y = bboxVert->y;
 
-							if (*(l_bboxVert3 + 1) > ADJ(l_type64Records)->unkVar3.x)
-								ADJ(l_type64Records)->unkVar3.x = *(l_bboxVert3 + 1);
-
-							l_bboxVert4 = ADJ(l_type64Records)->recordPtr + l_recordOffset;
-
-							if (*(l_bboxVert4 + 2) > ADJ(l_type64Records)->unkVar3.y)
-								ADJ(l_type64Records)->unkVar3.y = *(l_bboxVert4 + 2);
-
-							if (*(ADJ(l_type64Records)->recordPtr + l_recordOffset + 12) > ADJ(l_type64Records)->unkVar3.z)
-								ADJ(l_type64Records)->unkVar3.z = *(ADJ(l_type64Records)->recordPtr + l_recordOffset + 12);
+							if (bboxVert->z > record->unkVar3.z)
+								record->unkVar3.z = bboxVert->z;
 						}
 
-						l_extentZ = ADJ(l_type64Records)->unkVar3.z - *l_unkVar0Z;
-						l_extentY = ADJ(l_type64Records)->unkVar3.y - *l_unkVar0Y;
-						l_extentX = ADJ(l_type64Records++)->unkVar3.x - l_record->unkVar0.x;
+						int32_t extentZ = record->unkVar3.z - record->unkVar0.z;
+						int32_t extentY = record->unkVar3.y - record->unkVar0.y;
+						int32_t extentX = record->unkVar3.x - record->unkVar0.x;
 
-						// Current unkVar6 (double check this)
-						l_type64Records[-2].unkVar8 =
-							((l_extentZ >> 5) * (l_extentZ >> 5) + (l_extentY >> 5) * (l_extentY >> 5) + (l_extentX >> 5) * (l_extentX >> 5));
+						record->unkVar6 = (extentX >> 5) * (extentX >> 5) + (extentY >> 5) * (extentY >> 5) + (extentZ >> 5) * (extentZ >> 5);
 
-						// Current unkVar8
-						l_type64Records[-1].unkVar0.y = l_newLvlBase;
+						// the LOD data of this record, each block starts with its own size
+						record->unkVar8 = newLvlBase;
 
-						l_newLvlBase = (l_newLvlBase + *l_newLvlBase);
+						newLvlBase = newLvlBase + *reinterpret_cast<int16_t*>(newLvlBase);
 
-						--l_type64Count_;
-					} while (l_type64Count_);
+						++record;
+						--type64Count_;
+					} while (type64Count_);
 				}
 
 				g_currentType64Region = -1;
@@ -682,48 +625,41 @@ namespace Toy2
 			if (g_objectDescCache)
 				free(g_objectDescCache);
 
-			l_descCache = malloc(28 * (g_objectListBase->count + 1));
-			l_objectList = g_objectListBase;
-			g_objectDescCache = l_descCache;
+			g_objectDescCache = reinterpret_cast<ObjectDescCache*>(malloc(28 * (g_objectListBase->count + 1)));
 
-			l_objIdx = 0;
+			int32_t objIdx = 0;
 
 			if (g_objectListBase->count >= 0)
 			{
-				l_cacheByteOffset = 0;
-				l_objEntryOffset = 4;
-
 				do
 				{
-					l_meshPtr = *(&l_objectList->count + l_objEntryOffset);
+					uint32_t meshPtr = reinterpret_cast<uint32_t>(g_objectListBase->entries[objIdx]);
 
-					if (l_meshPtr)
+					if (meshPtr)
 					{
-						*(&l_objectList->count + l_objEntryOffset) = g_levelDataBase + l_meshPtr;
+						g_objectListBase->entries[objIdx] = reinterpret_cast<Object*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + meshPtr);
 
-						g_objectDescCache[l_cacheByteOffset].unkInt7 = *(*(&g_objectListBase->count + l_objEntryOffset) + 14);
+						Object* object = g_objectListBase->entries[objIdx];
 
-						l_objDesc = *(*(*(&g_objectListBase->count + l_objEntryOffset) + 16) + 20);
+						g_objectDescCache[objIdx].unkInt7 = object->unk14;
 
-						g_objectDescCache[l_cacheByteOffset].unkInt8 = *(l_objDesc + 12);
-						g_objectDescCache[l_cacheByteOffset].unkInt9 = *(l_objDesc + 14);
-						g_objectDescCache[l_cacheByteOffset].unkInt10 = *(l_objDesc + 16);
-						g_objectDescCache[l_cacheByteOffset].unkInt4 = *(l_objDesc + 18);
-						g_objectDescCache[l_cacheByteOffset].unkInt5 = *(l_objDesc + 20);
-						g_objectDescCache[l_cacheByteOffset].unkInt6 = *(l_objDesc + 22);
+						// the desc has a pointer to the data the cache wants at 0x14, it is bigger than ObjectDesc, which isn't fully known
+						int16_t* objDesc = *reinterpret_cast<int16_t**>(reinterpret_cast<uint8_t*>(object->desc) + 0x14);
 
-						l_objectList = g_objectListBase;
+						g_objectDescCache[objIdx].unkInt8 = objDesc[6];
+						g_objectDescCache[objIdx].unkInt9 = objDesc[7];
+						g_objectDescCache[objIdx].unkInt10 = objDesc[8];
+						g_objectDescCache[objIdx].unkInt4 = objDesc[9];
+						g_objectDescCache[objIdx].unkInt5 = objDesc[10];
+						g_objectDescCache[objIdx].unkInt6 = objDesc[11];
 					}
 
-					++l_objIdx;
-					l_objEntryOffset += 4;
-					++l_cacheByteOffset;
-				} while (l_objIdx <= l_objectList->count);
+					++objIdx;
+				} while (objIdx <= g_objectListBase->count);
 			}
 
 			if (g_hasZoneData)
 				Toy2::InitZoneData();
-			*/
 
 			return 32 * g_instanceRecordCount;
 		}
@@ -1229,8 +1165,40 @@ namespace Toy2
 		// STUB: TOY2 0x0048B660
 		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4) {}
 
-		// STUB: TOY2 0x0049FAB0
-		void Method3(int32_t a1, int32_t a2) {}
+		// FUNCTION: TOY2 0x0049FAB0
+		void Method3(int32_t a1, int32_t a2)
+		{
+			int32_t index = a1;
+
+			if (a2)
+				index = Level::g_unk830E28 + a1;
+
+			Vector3I* entry = &g_recordData[58]->data[index];
+
+			if (entry->y != 0x80000000)
+			{
+				int32_t particleIdx = 0;
+
+				Nu3D::Particles::ParticleInstance* particle = &Nu3D::Particles::g_particleInstances[0];
+
+				// look for the particle that was spawned at the position of this record
+				while (particle->pos.y != entry->y || particle->lifetime <= 0 || particle->pos.x != entry->x || particle->pos.z != entry->z || particle->typeId != 2 * a2 + 113)
+				{
+					++particle;
+					++particleIdx;
+
+					if (particle >= &Nu3D::Particles::g_particleInstances[64])
+					{
+						entry->y = 0x80000000;
+						return;
+					}
+				}
+
+				Nu3D::Particles::g_particleInstances[particleIdx].lifetime = 1;
+
+				entry->y = 0x80000000;
+			}
+		}
 	}
 
 	namespace Terrain

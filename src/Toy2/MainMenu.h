@@ -7,6 +7,7 @@ namespace Toy2
 {
 	namespace MainMenu
 	{
+		void RenderMenu();
 		int32_t Tick();
 		void ShowSettings();
 

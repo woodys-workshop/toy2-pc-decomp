@@ -329,10 +329,70 @@ namespace Nu3D
 		// STUB: TOY2 0x004CCF70
 		void GetTargetPosFixed(int32_t linkId, Vector3I* out) {}
 
-		// STUB: TOY2 0x004CCFF0
-		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2) {}
+		// FUNCTION: TOY2 0x004CCFF0
+		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
 
-		// STUB: TOY2 0x004CD0C0
-		void CopyShapeId(int32_t linkIndex1, int32_t linkIndex2) {}
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			int32_t maxLinkId = NGNLoader::g_ngnImage->maxLinkId;
+
+			if (linkIndex1 < maxLinkId && linkIndex2 < maxLinkId)
+			{
+				Linker* link1 = &links[linkIndex1];
+				Linker* link2 = &links[linkIndex2];
+
+				if (link2->dynamicScaler)
+				{
+					DynamicScaler* scaler = link1->dynamicScaler;
+
+					if (scaler)
+					{
+						double y = (link1->currentPos.y - link2->currentPos.y) * link2->currentScale.y + link2->currentPos.y;
+						float z = (link1->currentPos.z - link2->currentPos.z) * link2->currentScale.z + link2->currentPos.z;
+						double x = (link1->currentPos.x - link2->currentPos.x) * link2->currentScale.x + link2->currentPos.x;
+
+						link1->currentPos.z = z;
+						link1->currentPos.x = x;
+						float rawX = link1->currentPos.x;
+						link1->currentPos.y = y;
+
+						scaler->transformMatrix._41 = rawX;
+						scaler->transformMatrix._42 = link1->currentPos.y;
+						scaler->transformMatrix._43 = link1->currentPos.z;
+
+						Vector3F* translation = &link1->dynamicScaler->translation;
+
+						translation->x = link1->currentPos.x;
+						translation->y = link1->currentPos.y;
+						translation->z = link1->currentPos.z;
+
+						UnlinkScalerThenReinsert(link1->dynamicScaler, NGNLoader::g_ngnImage);
+					}
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CD0C0
+		void CopyShapeId(int32_t linkIndex1, int32_t linkIndex2)
+		{
+			if (! NGNLoader::g_ngnImage)
+				return;
+
+			Linker* links = NGNLoader::g_ngnImage->links;
+
+			if (! links)
+				return;
+
+			int32_t maxLinkId = NGNLoader::g_ngnImage->maxLinkId;
+
+			if (linkIndex1 < maxLinkId && linkIndex2 < maxLinkId)
+				links[linkIndex1].dynamicScaler->shapeId = links[linkIndex2].dynamicScaler->shapeId;
+		}
 	}
 }

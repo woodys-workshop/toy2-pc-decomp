@@ -35,6 +35,10 @@ namespace Toy2
 			Angles angles;
 		};
 
+		extern Nu3D::Camera::ActiveCameraTransform g_activeCameraTransform;
+		extern GameplayCameraState g_gameplayCameraState;
+		extern int32_t g_cameraState;
+
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);
 		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius);
 		void BeginScriptedCutsceneOnBuzz(int32_t duration);

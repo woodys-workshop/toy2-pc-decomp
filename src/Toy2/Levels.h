@@ -137,12 +137,12 @@ namespace Toy2
 
 		extern RecordData* g_recordData[96];
 		extern int32_t g_type63CullDistance;
-		extern int32_t g_hasZoneData;
 		extern uint8_t g_levelDataHeapBase[1249280];
-		extern uint8_t* g_levelDataHeapBasePtr;
 		extern int32_t g_levelLoadConfig;
 		extern uint8_t* g_levelLoadArena;
 
+		void FlushRenderer();
+		int32_t InitLevelDefaults();
 		void InitLevelPlay(int32_t levelId);
 		int32_t GetSectorAtPosition(Vector3I* position);
 		int32_t Method2(int32_t a1, int16_t a2);
