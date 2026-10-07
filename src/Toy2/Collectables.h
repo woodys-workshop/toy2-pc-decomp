@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Toy2/Levels.h"
 
 namespace Toy2
 {
@@ -22,6 +23,13 @@ namespace Toy2
 			int32_t collectTimer;
 		};
 
+		struct PickupTable
+		{
+			uint16_t recordCount;
+			uint16_t recordType;
+			Toy2::Levels::Type63 data[112];
+		};
+
 		void BuildPickupTable();
 		int32_t* LoadTokenTable(int32_t* a1);
 		void Init(int16_t* linkTable, int32_t linkId);
@@ -31,5 +39,6 @@ namespace Toy2
 
 		STATIC_ASSERT(sizeof(TokenTableEntry) == 0x10);
 		STATIC_ASSERT(sizeof(PickupSlot) == 0x10);
+		STATIC_ASSERT(sizeof(PickupTable) == 0x704);
 	}
 }

@@ -38,6 +38,7 @@ namespace Toy2
 		extern Nu3D::Camera::ActiveCameraTransform g_activeCameraTransform;
 		extern GameplayCameraState g_gameplayCameraState;
 		extern int32_t g_cameraState;
+		extern int32_t g_cutsceneFrameTimer;
 
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);
 		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius);

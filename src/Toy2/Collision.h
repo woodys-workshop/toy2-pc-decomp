@@ -20,6 +20,55 @@ namespace Toy2
 			int32_t boundingSqRadius;
 		};
 
+		// every mesh has a collision tree, a list of nodes ended by a node with a negative flag, each is followed by its triangles
+		struct CollisionTreeNode
+		{
+			int16_t flag;
+			int16_t count;
+			int16_t minX;
+			int16_t extX;
+			int16_t minZ;
+			int16_t extZ;
+		};
+
+		struct CollisionTriangle
+		{
+			int16_t minX;
+			int16_t extX;
+			int8_t minYByte;
+			int8_t extYByte;
+			int8_t minZByte;
+			int8_t extZByte;
+			int16_t v0x;
+			int16_t v0y;
+			int16_t v0z;
+			int16_t e1x;
+			int16_t e1y;
+			int16_t e1z;
+			int16_t e2x;
+			int16_t e2y;
+			int16_t e2z;
+			int16_t e3x;
+			int16_t e3y;
+			int16_t e3z;
+			int16_t unk20;
+			int16_t unk22;
+			int16_t unk24;
+			int16_t unk26;
+			int16_t unk28;
+			int16_t unk2A;
+		};
+
+		struct CollisionGridCell
+		{
+			int16_t start;
+			int16_t count;
+			int32_t minX;
+			int32_t minZ;
+			int32_t extX;
+			int32_t extZ;
+		};
+
 		struct BuzzCollisionState
 		{
 			int32_t contactSurfaceIndex;
@@ -61,6 +110,12 @@ namespace Toy2
 
 		extern CollisionMeshInstance g_collisionMeshInstances[300];
 		extern uint8_t g_mathScratch[1024];
+		extern CollisionGridCell g_collisionGrid[256];
+		extern uint16_t g_collisionMeshList[2048];
+		extern int32_t g_candidateTriangleCount;
+		extern int16_t g_groundContactMeshIdx;
+		extern uint8_t* g_unk72871C;
+		extern int32_t g_unk7290F0[8];
 
 		void BuildCollisionWorld(int32_t level, uint8_t** buffer, int32_t terrainNum);
 		int32_t ResolveSubstep(
@@ -82,6 +137,9 @@ namespace Toy2
 		BOOL IsMeshMoving();
 		int32_t GetGroundContactIdx();
 
+		STATIC_ASSERT(sizeof(CollisionTreeNode) == 0xC);
+		STATIC_ASSERT(sizeof(CollisionTriangle) == 0x2C);
+		STATIC_ASSERT(sizeof(CollisionGridCell) == 0x14);
 		STATIC_ASSERT(sizeof(CollisionMeshInstance) == 0x34);
 		STATIC_ASSERT(sizeof(BuzzCollisionState) == 0x30);
 		STATIC_ASSERT(sizeof(RaycastQuery) == 0x3C);

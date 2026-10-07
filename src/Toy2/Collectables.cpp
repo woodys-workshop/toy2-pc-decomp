@@ -3,6 +3,7 @@
 #include "Toy2/Camera.h"
 #include "Toy2/Toy2.h"
 #include "Nu3D/Link.h"
+#include "Nu3D/Collision.h"
 #include "SaveManager.h"
 
 #include <string.h>
@@ -20,8 +21,188 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00830CAC
 		int32_t g_unk830CAC;
 
-		// STUB: TOY2 0x00447DB0
-		void BuildPickupTable() {}
+		// GLOBAL: TOY2 0x005546B8
+		PickupTable g_pickupTable;
+
+		// GLOBAL: TOY2 0x00556FAC
+		Levels::RecordData* g_unk556FAC;
+
+		// FUNCTION: TOY2 0x00447DB0
+		void BuildPickupTable()
+		{
+			int32_t levelIdx = g_levelFileIndex;
+			int32_t firstObject = 48;
+
+			switch (g_levelFileIndex)
+			{
+				case 4:
+					firstObject = 96;
+					break;
+
+				case 5:
+					firstObject = 80;
+					break;
+
+				case 10:
+					firstObject = 96;
+					break;
+
+				case 11:
+					firstObject = 96;
+					break;
+
+				case 14:
+					firstObject = 96;
+					break;
+
+				case 16:
+					firstObject = 400;
+					break;
+			}
+
+			Levels::RecordData* lightRecord = Levels::g_recordData[59];
+			Levels::RecordData* pickupRecord = Levels::g_recordData[63];
+
+			g_unk556FAC = Levels::g_recordData[63];
+
+			Levels::Type63* table = g_pickupTable.data;
+
+			// the light sprites sit on the ground
+			if (lightRecord)
+			{
+				int32_t i = 0;
+
+				if (Levels::g_recordData[59]->recordCount)
+				{
+					do
+					{
+						WorldPos position;
+
+						position.x = 32 * lightRecord->data[i].x;
+						position.z = 32 * lightRecord->data[i].z;
+						position.y = 32 * (lightRecord->data[i].y - 10);
+
+						Levels::g_recordData[59]->data[i].y = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
+						lightRecord = Levels::g_recordData[59];
+
+						++i;
+					} while (i < Levels::g_recordData[59]->recordCount);
+
+					levelIdx = g_levelFileIndex;
+					pickupRecord = Levels::g_recordData[63];
+				}
+			}
+
+			uint16_t recordCount = 0;
+
+			if (pickupRecord)
+			{
+				int32_t i = 0;
+				Levels::Type63* pickup = (Levels::Type63*)pickupRecord->data;
+
+				if (pickupRecord->recordCount)
+				{
+					do
+					{
+						WorldPos position;
+
+						position.x = 32 * pickup->pos.x;
+						position.z = 32 * pickup->pos.z;
+						position.y = 32 * (pickup->pos.y - 10);
+
+						int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
+
+						pickup->props.floorPos = floorPos;
+
+						if (floorPos == 0x7FFF)
+							pickup->props.floorPos = 32766;
+
+						if (pickup->props.floorPos - pickup->pos.y > 6144)
+							pickup->props.floorPos = 32767;
+
+						Levels::Type63* current = pickup;
+
+						pickup->props.flags = 17;
+						Levels::Type63* entry = table;
+
+						++pickup;
+						++table;
+
+						*entry = *current;
+						++i;
+					} while (i < Levels::g_recordData[63]->recordCount);
+
+					levelIdx = g_levelFileIndex;
+				}
+
+				g_pickupTable.recordType = g_unk556FAC->recordType;
+				recordCount = g_unk556FAC->recordCount;
+			}
+			else
+			{
+				g_pickupTable.recordType = 0;
+			}
+
+			g_pickupTable.recordCount = recordCount;
+			Levels::g_recordData[63] = (Levels::RecordData*)&g_pickupTable;
+
+			if (levelIdx == 5)
+			{
+				Vector3I position;
+
+				Levels::g_objectListBase->entries[89]->z_or_coord = -18000;
+				Nu3D::Link::GetCurrentPosFixed(89, &position);
+				Nu3D::Link::SetPositionRawAndCommit(89, position.x >> 5, position.y >> 5, -18000);
+			}
+
+			// the objects of the level are added as pickups after the ones of the record
+			Levels::ObjectList* objectList = Levels::g_objectListBase;
+
+			if (objectList->count > 47)
+			{
+				int32_t objectIdx = firstObject;
+
+				if (firstObject <= objectList->count)
+				{
+					do
+					{
+						// $TODO: the entries are read as a position and a type, which is not what Levels::Object has
+						int32_t* object = (int32_t*)objectList->entries[objectIdx];
+
+						if (object)
+						{
+							WorldPos position;
+
+							table->pos.x = object[0];
+							table->pos.y = object[1];
+							table->pos.z = object[2];
+							table->props.linkId = objectIdx;
+							table->props.flags = (uint8_t)(*(int16_t*)(object + 3) >> 3);
+
+							position.x = 32 * table->pos.x;
+							position.z = 32 * table->pos.z;
+							position.y = 32 * (table->pos.y - 10);
+
+							int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
+
+							table->props.floorPos = floorPos;
+
+							if (floorPos == 0x7FFF)
+								table->props.floorPos = 32766;
+
+							if (table->props.floorPos - table->pos.y > 6144)
+								table->props.floorPos = 0x7FFF;
+
+							objectList = Levels::g_objectListBase;
+							++table;
+							++g_pickupTable.recordCount;
+						}
+
+						++objectIdx;
+					} while (objectIdx <= objectList->count);
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x004025C0
 		int32_t* LoadTokenTable(int32_t* a1)

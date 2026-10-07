@@ -51,9 +51,25 @@ namespace SoftwareRenderer
 		uint32_t unkInt20;
 	};
 
+	struct BltCommand
+	{
+		int16_t destX;
+		int16_t destY;
+		RECT srcRect;
+		IDirectDrawSurface* lpSurface;
+		DDSURFACEDESC surfaceDesc;
+	};
+
+	STATIC_ASSERT(sizeof(BltCommand) == 0x84);
 	STATIC_ASSERT(sizeof(SortedTriangle) == 0x78);
 	STATIC_ASSERT(sizeof(UnkSoft2) == 0x4C);
 
+	extern uint8_t g_unk87E50C[16384];
+	extern BltCommand g_bltQueue[32];
+	extern int16_t g_bltQueueCount;
+	extern void* g_unk504D34;
+	extern int32_t g_unk839278;
+	extern uint32_t g_unk731CBC;
 	extern PointI g_unk4F7400;
 	extern int32_t g_unk500A1C;
 	extern int32_t g_unk830C60;
@@ -68,9 +84,7 @@ namespace SoftwareRenderer
 	extern int32_t g_bitsPerPixel;
 	extern D3DMATRIX* g_viewTransform;
 	extern D3DMATRIX* g_projectionTransform;
-	extern SortedTriangle g_sortedTriPool[3000];
 	extern SortedTriangle* g_depthBuckets[1024];
-	extern int32_t g_sortedTrianglesDisabled;
 	extern int32_t g_instanceCounter;
 
 	void SwapRenderBuffer();

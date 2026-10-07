@@ -130,6 +130,8 @@ namespace Toy2
 	extern int32_t g_returnedToTitle;
 	extern int32_t g_saveLoaded;
 	extern int32_t g_showBlackFrames;
+	extern int32_t g_curSectorCopy1;
+	extern int32_t g_curSectorCopy2;
 	extern int32_t g_demoMode;
 	extern int32_t g_hasStaticBackdrop;
 	extern int32_t g_nextBackdropId;

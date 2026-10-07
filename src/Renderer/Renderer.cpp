@@ -14,6 +14,7 @@
 #include "Renderer/RenderQueue.h"
 #include "Toy2/D3DApp.h"
 #include "Renderer/ApplyFixes.h"
+#include "Logger.h"
 
 #include <WINDOWS.H>
 #include <STDARG.H>
@@ -1518,23 +1519,68 @@ namespace Renderer
 		LONG destY)
 	{}
 
-	// STUB: TOY2 0x004B87F0
-	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage) {}
+	// FUNCTION: TOY2 0x004B8940
+	void ProcessPatch(Nu3D::InstanceData* spriteStruct, Nu3D::Patch* patch)
+	{
+		Nu3D::Material* material = Nu3D::Material::GetFreeByIndex(patch->materialId);
 
-	// STUB: TOY2 0x004B8940
-	void ProcessPatch(Nu3D::InstanceData* spriteStruct, Nu3D::Patch* patch) {}
+		RenderEntry::AllocPatch(material, (Nu3D::Primitive*)patch, spriteStruct);
 
-	// STUB: TOY2 0x004B92E0
-	void SetVertexColorModulation(int32_t red, int32_t green, int32_t blue) {}
+		if ((material->metadata & 4) != 0)
+			RenderEntry::AllocPatch(Nu3D::g_tex14Version1, (Nu3D::Primitive*)patch, spriteStruct);
 
-	// STUB: TOY2 0x004B9300
-	int32_t EnableVertexColorModulation(int32_t a1) { return 0; }
+		if ((material->metadata & 0x40) != 0)
+			RenderEntry::AllocPatch(Nu3D::g_tex14Version2, (Nu3D::Primitive*)patch, spriteStruct);
+
+		if ((int8_t)material->metadata < 0)
+			RenderEntry::AllocPatch(Nu3D::g_tex14Version3, (Nu3D::Primitive*)patch, spriteStruct);
+	}
+
+	// FUNCTION: TOY2 0x004B87F0
+	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage)
+	{
+		int32_t stage = g_additionalRenderFlags | renderStage;
+
+		while (patch)
+		{
+			// a patch has the layout of a primitive here, unkVar11 is the header count and the header starts at indexData
+			Nu3D::InstanceData* instanceData = InstanceData::AllocFromNodeMatrices(nodeMatrices, (Nu3D::Primitive::Header*)patch->indexData, patch->unkVar11, flags, stage);
+
+			if (instanceData)
+				ProcessPatch(instanceData, patch);
+
+			patch = patch->listNext;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004B92E0
+	void SetVertexColorModulation(int32_t red, int32_t green, int32_t blue)
+	{
+		g_vertexColorModRed = red;
+		g_vertexColorModGreen = green;
+		g_vertexColorModBlue = blue;
+	}
+
+	// FUNCTION: TOY2 0x004B9300
+	int32_t EnableVertexColorModulation(int32_t a1)
+	{
+		int32_t result = g_useVertexColorMod;
+		g_useVertexColorMod = a1;
+
+		return result;
+	}
 
 	// STUB: TOY2 0x004B9600
 	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState) {}
 
-	// STUB: TOY2 0x004B9A60
-	int32_t Set9F5FF8(int32_t value) { return 0; }
+	// FUNCTION: TOY2 0x004B9A60
+	int32_t Set9F5FF8(int32_t value)
+	{
+		int32_t result = g_unk9F5FF8;
+		g_unk9F5FF8 = value;
+
+		return result;
+	}
 
 	// STUB: TOY2 0x004CE510
 	void BlitTextureByIndex(
@@ -1549,8 +1595,43 @@ namespace Renderer
 		int32_t srcY)
 	{}
 
-	// STUB: TOY2 0x004B89B0
-	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct) { return 0; }
+	// FUNCTION: TOY2 0x004B89B0
+	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct)
+	{
+		int32_t count = g_renderEntryCount;
+
+		if (g_renderEntryCount)
+		{
+			--g_renderEntryCount;
+
+			RenderEntry* renderEntry = &g_renderEntries[count - 1];
+
+			renderEntry->primitive = prim;
+			renderEntry->instanceData = spriteStruct;
+			renderEntry->material = material;
+
+			if (*(uint32_t*)&spriteStruct->lodFactor != 0x3F800000 || (material->metadata & 0xE33) != 0)
+			{
+				renderEntry->type = RENDER_TYPE8;
+				InsertIntoBucket(renderEntry);
+
+				return renderEntry;
+			}
+			else
+			{
+				renderEntry->type = RENDER_TYPE6;
+				renderEntry->next = (RenderEntry*)material->renderEntryHead;
+				material->renderEntryHead = renderEntry;
+
+				return &g_renderEntries[count - 1];
+			}
+		}
+		else
+		{
+			Logger::DebugLog("rndrentryAllocPatch - out of rndrentries");
+			return 0;
+		}
+	}
 }
 
 namespace DevDraw

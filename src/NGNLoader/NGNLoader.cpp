@@ -9,6 +9,7 @@
 #include "NGNLoader/ObjectLoad.h"
 
 #include <windows.h>
+#include <string.h>
 
 namespace NGNLoader
 {
@@ -393,8 +394,211 @@ namespace NGNLoader
 		}
 	}
 
+	// STUB: TOY2 0x004CA040
+	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize) { return 0; }
+
+	// STUB: TOY2 0x004CA1D0
+	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature) { return 0; }
+
 	// FUNCTION: TOY2 0x004CA420
-	Nu3D::Creature* ExtractCreatureData(FILE* stream) { return 0; }
+	Nu3D::Creature* ExtractCreatureData(FILE* stream)
+	{
+		int32_t exitLoop = 0;
+		Nu3D::Creature* creature = 0;
+		int32_t chunkId;
+		int32_t chunkSize;
+
+		if (fread(&chunkId, 4, 1, stream))
+		{
+			do
+			{
+				fread(&chunkSize, 4, 1, stream);
+
+				int32_t nextChunkOffset = chunkSize + ftell(stream);
+
+				if (chunkId > 516)
+				{
+					switch (chunkId)
+					{
+						case 517:
+							ObjectLoad::PrepareGlobals();
+							ObjectLoad::ExtractShapeTextures(stream);
+							break;
+
+						case 518:
+							ObjectLoad::ExtractShapeMaterials(stream);
+							break;
+
+						case 519:
+							ObjectLoad::ExtractShapeVertices(stream);
+							break;
+
+						case 520:
+							ExtractShapePatch(stream, creature);
+							break;
+
+						default:
+							goto LABEL_51;
+					}
+
+					goto NEXT_CHUNK_LBL;
+				}
+
+				if (chunkId == 516)
+				{
+					ExtractAnimations(stream, creature, chunkSize);
+					goto NEXT_CHUNK_LBL;
+				}
+
+				if (chunkId > 513)
+				{
+					if (chunkId == 514)
+					{
+						// the names of the nodes
+						if (creature)
+						{
+							creature->dataFlags |= 2;
+
+							creature->nodeNames = (char**)malloc(4 * creature->nodeCount);
+
+							if (creature->nodeNames)
+							{
+								for (int32_t nodeNameIndex = 0; nodeNameIndex < creature->nodeCount; ++nodeNameIndex)
+								{
+									uint8_t nodeNameLen;
+
+									fread(&nodeNameLen, 1, 1, stream);
+
+									creature->nodeNames[nodeNameIndex] = (char*)malloc(nodeNameLen + 1);
+
+									if (creature->nodeNames[nodeNameIndex])
+									{
+										fread(creature->nodeNames[nodeNameIndex], nodeNameLen, 1, stream);
+										creature->nodeNames[nodeNameIndex][nodeNameLen] = 0;
+									}
+								}
+							}
+						}
+
+						goto NEXT_CHUNK_LBL;
+					}
+
+					// the shapes of the nodes
+					if (creature)
+					{
+						creature->dataFlags |= 4;
+
+						creature->primitives = (Nu3D::Primitive**)malloc(4 * creature->nodeCount);
+						creature->unkVar10 = (int32_t**)malloc(4 * creature->nodeCount);
+
+						if (creature->primitives)
+						{
+							int32_t nodeIndex = 0;
+
+							if (creature->nodeCount > 0)
+							{
+								do
+								{
+									uint16_t nodeFlags;
+
+									fread(&nodeFlags, 1, 2, stream);
+
+									creature->unkVar10[nodeIndex] = 0;
+
+									fread(&creature->unkVar10[nodeIndex], 1, 2, stream);
+
+									if (nodeFlags & 1)
+									{
+										if (nodeFlags & 2)
+											creature->flagsList[nodeIndex] = (int32_t*)((int32_t)creature->flagsList[nodeIndex] | 2);
+
+										if (nodeFlags & 4)
+											creature->flagsList[nodeIndex] = (int32_t*)((int32_t)creature->flagsList[nodeIndex] | 4);
+
+										creature->primitives[nodeIndex] = ObjectLoad::ExtractShapeData(stream);
+
+										Nu3D::Primitive::CreateAllVertexBuffers(creature->primitives[nodeIndex], 3);
+									}
+									else
+									{
+										creature->primitives[nodeIndex] = 0;
+									}
+
+									++nodeIndex;
+								} while (nodeIndex < creature->nodeCount);
+							}
+						}
+					}
+				}
+				else
+				{
+					if (chunkId != 513)
+					{
+						if (chunkId)
+						{
+							if (chunkId == 512)
+							{
+								// the start of a creature
+								creature = (Nu3D::Creature*)malloc(48);
+
+								if (creature)
+								{
+									memset(creature, 0, sizeof(Nu3D::Creature));
+									creature->dataFlags = 0;
+									fread(&creature->nodeCount, 1, 4, stream);
+
+									creature->flagsList = (int32_t**)malloc(4 * creature->nodeCount);
+
+									if (creature->flagsList)
+										memset(creature->flagsList, 0, 4 * creature->nodeCount);
+								}
+							}
+							else
+							{
+							LABEL_51:
+								Logger::GetErrorHandler("C:\\projects\\nu3d\\hobjload.c", 354)("err");
+								fseek(stream, chunkSize, 1);
+							}
+						}
+						else
+						{
+							exitLoop = 1;
+						}
+
+						goto NEXT_CHUNK_LBL;
+					}
+
+					// the matrices of the nodes
+					if (creature)
+					{
+						creature->dataFlags |= 1;
+
+						creature->matrixList1 = (D3DMATRIX*)malloc(creature->nodeCount << 6);
+						creature->matrixList2 = (D3DMATRIX*)malloc(creature->nodeCount << 6);
+						creature->matrixList3 = (D3DMATRIX*)malloc(creature->nodeCount << 6);
+
+						if (creature->matrixList1)
+						{
+							if (creature->matrixList3 && creature->matrixList2)
+							{
+								fread(creature->matrixList1, creature->nodeCount, 64, stream);
+								memcpy(creature->matrixList3, creature->matrixList1, creature->nodeCount << 6);
+
+								for (int32_t matrixIndex = 0; matrixIndex < creature->nodeCount; matrixIndex++)
+									Nu3D::Math::BuildIdentityMatrix(&creature->matrixList2[matrixIndex]);
+							}
+						}
+					}
+				}
+
+			NEXT_CHUNK_LBL:
+				if (ftell(stream) != nextChunkOffset)
+					fseek(stream, nextChunkOffset, 0);
+			} while (! exitLoop && fread(&chunkId, 4, 1, stream));
+		}
+
+		return creature;
+	}
 
 	// FUNCTION: TOY2 0x004C4220
 	uint32_t ParseCreatures(FILE* stream, NGNImage* ngnImage)
@@ -1193,9 +1397,4 @@ namespace NGNLoader
 	// STUB: TOY2 0x004BB810
 	void ReleaseTextureCache(NGNLoader::NGNTextureCache* textureCache) {}
 
-	// STUB: TOY2 0x004CA040
-	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize) { return 0; }
-
-	// STUB: TOY2 0x004CA1D0
-	int32_t ExtractShapePatch(FILE* stream, Nu3D::Creature* creature) { return 0; }
 }

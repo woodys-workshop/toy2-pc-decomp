@@ -98,6 +98,15 @@ namespace Nu3D
 		// GLOBAL: TOY2 0x005D2AE0
 		int32_t g_objectViewMatrix[12];
 
+		// GLOBAL: TOY2 0x005D2B10
+		int32_t g_unk5D2B10;
+
+		// GLOBAL: TOY2 0x005D2B14
+		int32_t g_unk5D2B14;
+
+		// GLOBAL: TOY2 0x005D2B18
+		int32_t g_unk5D2B18;
+
 		// GLOBAL: TOY2 0x009F6014
 		int32_t g_billboardYaw;
 
@@ -184,6 +193,48 @@ namespace Nu3D
 
 		// GLOBAL: TOY2 0x00882798
 		int32_t g_viewportWidth;
+
+		// GLOBAL: TOY2 0x00882768
+		int32_t g_screenWidth;
+
+		// GLOBAL: TOY2 0x00500A24
+		int32_t g_screenCenterX = 320;
+
+		// GLOBAL: TOY2 0x0053CA58
+		int32_t g_cachedScreenCenterX;
+
+		// GLOBAL: TOY2 0x008828A0
+		int32_t g_scaleFactorX;
+
+		// GLOBAL: TOY2 0x008828CC
+		int32_t g_viewportRight;
+
+		// GLOBAL: TOY2 0x008828C4
+		int32_t g_viewportBottom;
+
+		// GLOBAL: TOY2 0x008828E0
+		int32_t g_viewportLeft;
+
+		// GLOBAL: TOY2 0x008828E4
+		int32_t g_viewportTop;
+
+		// GLOBAL: TOY2 0x008828D8
+		int32_t g_viewportCenterX;
+
+		// GLOBAL: TOY2 0x008828DC
+		int32_t g_viewportCenterY;
+
+		// GLOBAL: TOY2 0x00882784
+		int32_t g_viewportRightFixed10;
+
+		// GLOBAL: TOY2 0x008828BC
+		int32_t g_viewportLeftFixed10;
+
+		// GLOBAL: TOY2 0x008828AC
+		int32_t g_screenHeight;
+
+		// GLOBAL: TOY2 0x0055A0F0
+		int32_t g_unk55A0F0;
 
 		// GLOBAL: TOY2 0x008828E8
 		int32_t g_viewportHeight;
@@ -1072,8 +1123,22 @@ namespace Nu3D
 			SoftwareRenderer::SetCameraNearFarZ(g_cameraNearZ, g_cameraFarZ);
 		}
 
-		// STUB: TOY2 0x0043D9E0
-		void WorldToView(Vector3I* a1, Vector3I* a2) {}
+		// FUNCTION: TOY2 0x0043D9E0
+		void WorldToView(Vector3I* a1, Vector3I* a2)
+		{
+			// the position is packed as 3 shorts
+			int32_t pointX = (int16_t)a1->x;
+			int32_t pointY = (int16_t)(a1->x >> 16);
+			int32_t pointZ = (int16_t)a1->y;
+
+			int32_t viewX = (pointX * g_objectViewMatrix[0] + pointY * g_objectViewMatrix[1] + pointZ * g_objectViewMatrix[2]) / 4096 + g_unk5D2B10;
+			int32_t viewY = (pointX * g_objectViewMatrix[4] + pointY * g_objectViewMatrix[5] + pointZ * g_objectViewMatrix[6]) / 4096 + g_unk5D2B14;
+			int32_t viewZ = (pointX * g_objectViewMatrix[8] + pointY * g_objectViewMatrix[9] + pointZ * g_objectViewMatrix[10]) / 4096 + g_unk5D2B18;
+
+			a2->x = (int16_t)viewX;
+			a2->y = (int16_t)viewY;
+			a2->z = (int16_t)viewZ;
+		}
 
 		// STUB: TOY2 0x00448F00
 		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor) { return 0; }
@@ -1081,11 +1146,61 @@ namespace Nu3D
 		// STUB: TOY2 0x0044F820
 		void EnableCameraSkew() {}
 
-		// STUB: TOY2 0x00450850
-		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1) { return 0; }
+		// FUNCTION: TOY2 0x00450850
+		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1)
+		{
+			g_unk5D2B10 = a1->unkInt1;
+			g_unk5D2B14 = a1->unkInt2;
+			g_unk5D2B18 = a1->unkInt3;
 
-		// STUB: TOY2 0x00451280
-		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8) { return 0; }
+			return g_unk5D2B18;
+		}
+
+		// FUNCTION: TOY2 0x00451280
+		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8)
+		{
+			Vector3I* vertices[4];
+			int16_t viewX[4];
+			int16_t viewY[4];
+			int16_t viewZ[4];
+			int16_t screenY[4];
+			int32_t i;
+
+			vertices[0] = a1;
+			vertices[1] = a2;
+			vertices[2] = a3;
+			vertices[3] = a4;
+
+			// the vertices are packed as 3 shorts, they are moved by the object view matrix and the position
+			for (i = 0; i < 4; i++)
+			{
+				int32_t pointX = (int16_t)vertices[i]->x;
+				int32_t pointY = (int16_t)(vertices[i]->x >> 16);
+				int32_t pointZ = (int16_t)vertices[i]->y;
+
+				viewX[i] = (pointX * g_objectViewMatrix[0] + pointY * g_objectViewMatrix[1] + pointZ * g_objectViewMatrix[2]) / 4096 + g_unk5D2B10;
+				viewY[i] = (pointX * g_objectViewMatrix[4] + pointY * g_objectViewMatrix[5] + pointZ * g_objectViewMatrix[6]) / 4096 + g_unk5D2B14;
+				viewZ[i] = (pointX * g_objectViewMatrix[8] + pointY * g_objectViewMatrix[9] + pointZ * g_objectViewMatrix[10]) / 4096 + g_unk5D2B18;
+			}
+
+			for (i = 0; i < 4; i++)
+			{
+				g_unk55A0F0 = viewZ[i];
+
+				if (! viewZ[i])
+					g_unk55A0F0 = 1;
+
+				screenY[i] = (int32_t)(((double)viewY[i] * g_projectionScaleY / g_unk55A0F0 + g_screenHeight) * 0.5);
+			}
+
+			// $TODO: the outputs are written at different offsets, the original does this as well
+			*(int32_t*)a5 = screenY[0];
+			*(int32_t*)(a6 + 4) = screenY[1];
+			*(int32_t*)(a7 + 8) = screenY[2];
+			*(int32_t*)(a8 + 12) = screenY[3];
+
+			return (viewZ[0] + viewZ[1] + viewZ[2] + viewZ[3]) / 16;
+		}
 	}
 
 	// STUB: TOY2 0x004B9B90

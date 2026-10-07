@@ -6,6 +6,24 @@ namespace SoftwareRenderer
 	// GLOBAL: TOY2 0x004F7400
 	PointI g_unk4F7400 = { -32768, -32768 };
 
+	// GLOBAL: TOY2 0x00731F28
+	BltCommand g_bltQueue[32];
+
+	// GLOBAL: TOY2 0x00731C00
+	int16_t g_bltQueueCount;
+
+	// GLOBAL: TOY2 0x0087E50C
+	uint8_t g_unk87E50C[16384];
+
+	// GLOBAL: TOY2 0x00504D34
+	void* g_unk504D34 = g_unk87E50C;
+
+	// GLOBAL: TOY2 0x00839278
+	int32_t g_unk839278;
+
+	// GLOBAL: TOY2 0x00731CBC
+	uint32_t g_unk731CBC;
+
 	// GLOBAL: TOY2 0x00500A1C
 	int32_t g_unk500A1C = 0xFFFFFFFF;
 

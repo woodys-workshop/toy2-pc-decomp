@@ -1,6 +1,9 @@
 #include "Toy2/Level.h"
 
+#include "Toy2/Collision.h"
+
 #include <stdlib.h>
+#include <string.h>
 
 namespace Toy2
 {
@@ -121,14 +124,232 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x0043E070
-		void LoaderHelper() {}
+		// FUNCTION: TOY2 0x0043E070
+		void LoaderHelper()
+		{
+			uint32_t* mathScratch = (uint32_t*)Collision::g_mathScratch;
 
-		// STUB: TOY2 0x0043E2D0
-		int32_t PolyCountHelper(int32_t* a1, Toy2::Levels::InstanceSection* a2) { return 0; }
+			int32_t foundIndex = Levels::g_currentType64Region;
+			int32_t index = 0;
+			int32_t previousRegion = Levels::g_currentType64Region;
+			int32_t bestVar6 = 0x7FFFFFFF;
 
-		// STUB: TOY2 0x0043E430
-		int32_t CalculatePolyCount(Toy2::Levels::InstanceSection* secondData) { return 0; }
+			// find the region that holds the camera position, the smallest one wins
+			if (Levels::g_type64Count > 0)
+			{
+				Levels::Type64* region = Levels::g_type64Structs;
+
+				do
+				{
+					if (region->unkVar6 < bestVar6 && (int32_t)mathScratch[225] >= region->unkVar0.x && (int32_t)mathScratch[226] >= region->unkVar0.y &&
+						(int32_t)mathScratch[227] >= region->unkVar0.z && (int32_t)mathScratch[225] <= region->unkVar3.x &&
+						(int32_t)mathScratch[226] <= region->unkVar3.y && (int32_t)mathScratch[227] <= region->unkVar3.z)
+					{
+						foundIndex = index;
+						bestVar6 = region->unkVar6;
+					}
+
+					++index;
+					++region;
+				} while (index < Levels::g_type64Count);
+
+				Levels::g_currentType64Region = foundIndex;
+			}
+
+			if (foundIndex == -1)
+			{
+				foundIndex = 0;
+				Levels::g_currentType64Region = 0;
+			}
+
+			if (foundIndex != previousRegion)
+			{
+				uint8_t* visData = (uint8_t*)Levels::g_type64Structs[foundIndex].unkVar8;
+
+				memcpy(Levels::g_activeZoneVisTable, visData + 4, 0x100);
+				Levels::g_unk54E054 = 2;
+				Levels::g_unk550C20 = visData + 260;
+			}
+		}
+
+		// FUNCTION: TOY2 0x0043E2D0
+		int32_t PolyCountHelper(int32_t* a1, Toy2::Levels::InstanceSection* a2)
+		{
+			a2->x = 0;
+
+			int16_t* cursor;
+
+			if (*a1 >= 0)
+			{
+				cursor = (int16_t*)((uint8_t*)a1 + 8 * *a1 + 4);
+			}
+			else
+			{
+				int32_t count = -*a1;
+
+				cursor = (int16_t*)((uint8_t*)a1 + 12 * count + 8);
+				*a1 = -count;
+			}
+
+			int32_t result = 0;
+			int32_t count;
+
+			while ((uint16_t)*cursor != 0xFFFF)
+			{
+				switch (*cursor & 0x1F)
+				{
+					case 0:
+					case 1:
+					case 2:
+					case 3:
+					case 4:
+					case 6:
+						count = cursor[1];
+						cursor += 2;
+
+						if (count > 0)
+						{
+							cursor += 6 * count;
+							result += count;
+						}
+
+						break;
+
+					case 8:
+					case 9:
+					case 10:
+					case 11:
+					case 12:
+					case 14:
+						count = cursor[1];
+						cursor += 2;
+
+						if (count > 0)
+						{
+							result += 2 * count;
+							cursor += 6 * count;
+						}
+
+						break;
+
+					case 16:
+					case 17:
+					case 18:
+					case 19:
+					case 20:
+					case 22:
+					case 24:
+					case 25:
+					case 26:
+					case 27:
+					case 28:
+					case 30:
+						count = cursor[1];
+						*(uint8_t*)cursor &= ~8;
+						cursor += 2;
+
+						if (count > 0)
+						{
+							cursor += 2 * count;
+							result += count;
+						}
+
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x0043E430
+		int32_t CalculatePolyCount(Toy2::Levels::InstanceSection* secondData)
+		{
+			uint8_t* modelData = (uint8_t*)secondData->unk6->modelPtr;
+			int32_t* meshData;
+			int32_t scratch;
+			int32_t result;
+			int32_t lod;
+
+			switch ((uint8_t)secondData->flags & 0x6F)
+			{
+				case 1:
+				case 4:
+				case 0x41:
+				case 0x44:
+					result = PolyCountHelper(*(int32_t**)(modelData + 0x14), (Toy2::Levels::InstanceSection*)&scratch);
+
+					lod = modelData[0x13] >> 3;
+
+					if (lod > 0x12)
+						lod = 0x12;
+
+					modelData[0x13] = (modelData[0x13] & 7) + 8 * lod;
+					break;
+
+				case 2:
+				case 3:
+				case 0x42:
+				case 0x43:
+					meshData = *(int32_t**)(modelData + 0x14);
+
+					goto COUNT_MESHES;
+
+				case 9:
+				case 0xC:
+				case 0x49:
+				case 0x4C:
+					result = PolyCountHelper(*(int32_t**)(modelData + 0x1C), (Toy2::Levels::InstanceSection*)&scratch);
+
+					lod = modelData[0x19] >> 3;
+
+					if (lod > 0x12)
+						lod = 0x12;
+
+					modelData[0x19] = (modelData[0x19] & 7) + 8 * lod;
+					break;
+
+				case 0xA:
+				case 0xB:
+				case 0x4A:
+				case 0x4B:
+					meshData = *(int32_t**)(modelData + 0x1C);
+
+				COUNT_MESHES:
+					result = 0;
+
+					if (*meshData > 0)
+					{
+						int32_t meshCount = *meshData;
+						int32_t* mesh = &meshData[3 * *meshData + 1];
+
+						do
+						{
+							int32_t* next = mesh + 1;
+							int32_t count = *mesh;
+
+							if (count > 0)
+							{
+								result += count;
+								next += 11 * count;
+							}
+
+							--meshCount;
+							mesh = next;
+						} while (meshCount);
+					}
+
+					break;
+
+				default:
+					result = 0;
+					break;
+			}
+
+			return result;
+		}
 
 		// STUB: TOY2 0x0049FB40
 		void UpdateAmbientEmitters() {}

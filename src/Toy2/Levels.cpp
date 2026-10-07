@@ -26,6 +26,7 @@
 #include "SaveManager.h"
 #include "Toy2/D3DApp.h"
 #include "Toy2/Weather.h"
+#include "Toy2/Platform.h"
 
 namespace Toy2
 {
@@ -130,20 +131,154 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00557A98
 		int32_t g_currentType64Region;
 
+		// GLOBAL: TOY2 0x0054D940
+		DatContents g_datContents[20];
+
+		// GLOBAL: TOY2 0x005574FC
+		int32_t g_unk5574FC;
+
+		// GLOBAL: TOY2 0x00547ED8
+		int32_t g_unk547ED8;
+
+		// GLOBAL: TOY2 0x0054E054
+		int32_t g_unk54E054;
+
+		// GLOBAL: TOY2 0x00550C20
+		uint8_t* g_unk550C20;
+
 		// STUB: TOY2 0x004CEA20
 		void FlushRenderer() {}
 
-		// STUB: TOY2 0x004885C0
+		// FUNCTION: TOY2 0x004885C0
 		int32_t GetSectorAtPosition(Vector3I* position)
 		{
-			// NOTE: only the path for levels without zone data is ported (level select is one of them).
-			// Levels with zone data walk the collision triangles to find the sector under the position, that part
-			// returns "no sector" (-1) for now, which makes the world render by scanning the cells around the camera.
+			int32_t lowestY = 0x7FFFFFFF;
 
 			if (! g_hasZoneData)
 				return 0;
 
-			return -1;
+			int32_t positionX = position->x / 4;
+			int32_t positionY = position->y / 4;
+			int32_t positionZ = position->z / 4;
+
+			Collision::g_candidateTriangleCount = 0;
+
+			// the meshes that hold the sectors are the flagged ones
+			uint16_t* meshList = &Collision::g_collisionMeshList[Collision::g_collisionGrid[255].start];
+			int32_t meshCount = Collision::g_collisionGrid[255].count;
+
+			if (meshCount <= 0)
+				return -1;
+
+			do
+			{
+				Collision::CollisionMeshInstance* mesh = &Collision::g_collisionMeshInstances[(int16_t)*meshList];
+
+				if (positionX + 0x1000 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && positionZ + 0x1000 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000 && mesh->typeFlags)
+				{
+					int32_t cellX = (positionX + 0x1000 - mesh->origin.x) / 32;
+					int32_t cellZ = (positionZ + 0x1000 - mesh->origin.z) / 32;
+					int32_t localX = (positionX - mesh->origin.x) >> 5;
+					int32_t localZ = (positionZ - mesh->origin.z) >> 5;
+
+					Collision::CollisionTreeNode* node = (Collision::CollisionTreeNode*)mesh->collisionTree;
+
+					while (node->flag >= 0)
+					{
+						Collision::CollisionTriangle* triangle = (Collision::CollisionTriangle*)(node + 1);
+						int32_t triangleCount = node->count;
+
+						if ((uint32_t)(cellX - node->minX) >= (uint32_t)(node->extX + 256) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(node->extZ + 256))
+						{
+							node = (Collision::CollisionTreeNode*)((uint8_t*)triangle + 44 * triangleCount);
+						}
+						else
+						{
+							if (triangleCount > 0)
+							{
+								for (int32_t i = triangleCount; i; --i, triangle++)
+								{
+									if ((uint32_t)(cellX - triangle->minX) >= (uint32_t)(triangle->extX + 256))
+										continue;
+
+									int32_t v0x = triangle->v0x;
+									int32_t v0z = triangle->v0z;
+
+									if ((uint32_t)(cellZ - (triangle->minZByte << 6) - v0z) >= (uint32_t)((triangle->extZByte + 4) << 6))
+										continue;
+
+									int32_t surfaceY;
+									int32_t height;
+
+									if (triangle->unk28 == 0x7FFF)
+									{
+										// a triangle
+										if ((localX - v0x) * triangle->e1z + (localZ - v0z) * -triangle->e1x < 0)
+											continue;
+
+										if ((localX - (v0x + triangle->e2x)) * -triangle->e2z + triangle->e2x * (localZ - (v0z + triangle->e2z)) < 0)
+											continue;
+
+										if ((localX - (v0x + triangle->e1x)) * (triangle->e2z - triangle->e1z) + (localZ - (v0z + triangle->e1z)) * (triangle->e1x - triangle->e2x) < 0)
+											continue;
+
+										surfaceY = 8 * (triangle->unk24 * (localZ - v0z) + triangle->unk20 * (localX - v0x)) / triangle->unk22;
+										height = triangle->v0y;
+									}
+									else
+									{
+										// a quad, it is split into two triangles
+										int32_t corner1Z = v0z + triangle->e1z;
+
+										if ((localX - v0x) * triangle->e1z + (localZ - v0z) * -triangle->e1x < 0)
+											continue;
+
+										int32_t corner2Z = v0z + triangle->e2z;
+
+										if ((localX - (v0x + triangle->e2x)) * -triangle->e2z + triangle->e2x * (localZ - corner2Z) < 0)
+											continue;
+
+										int32_t corner3Z = v0z + triangle->e3z;
+
+										if ((localX - (v0x + triangle->e1x)) * (corner3Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e3x) < 0 ||
+											(localX - (v0x + triangle->e3x)) * (corner2Z - corner3Z) + (localZ - corner3Z) * (triangle->e3x - triangle->e2x) < 0)
+											continue;
+
+										if ((localX - (v0x + triangle->e1x)) * (corner2Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e2x) < 0 && triangle->unk28 != 0)
+										{
+											surfaceY = 8 * (triangle->unk2A * (localZ - triangle->e3z - v0z) + triangle->unk26 * (localX - triangle->e3x - v0x)) / triangle->unk28;
+											height = triangle->v0y + triangle->e3y;
+										}
+										else
+										{
+											surfaceY = 8 * (triangle->unk24 * (localZ - v0z) + triangle->unk20 * (localX - v0x)) / triangle->unk22;
+											height = triangle->v0y;
+										}
+									}
+
+									int32_t worldY = mesh->origin.y + 4 * (8 * height - surfaceY);
+
+									if (worldY >= positionY && worldY < lowestY)
+									{
+										lowestY = worldY;
+										Collision::g_groundContactMeshIdx = *meshList;
+									}
+								}
+							}
+
+							node = (Collision::CollisionTreeNode*)triangle;
+						}
+					}
+				}
+
+				++meshList;
+				--meshCount;
+			} while (meshCount);
+
+			if (lowestY == 0x7FFFFFFF)
+				return -1;
+
+			return (uint8_t)Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].unk;
 		}
 
 		// FUNCTION: TOY2 0x004CE8B0
@@ -1203,7 +1338,127 @@ namespace Toy2
 
 	namespace Terrain
 	{
-		// STUB: TOY2 0x00489980
-		int32_t LoadAll(const char* fileName, int32_t index, void** buffer) { return 0; }
+		// FUNCTION: TOY2 0x00489980
+		int32_t LoadAll(const char* fileName, int32_t index, void** buffer)
+		{
+			char fullFileName[100];
+			uint16_t copyTable[100];
+			int32_t meshCount = 0;
+			int32_t entryIdx = 0;
+
+			if (Levels::g_cachedAllBuffer)
+			{
+				*buffer = Levels::g_cachedAllBuffer;
+			}
+			else
+			{
+				strcpy(fullFileName, fileName);
+				strcat(fullFileName, ".all");
+
+				FileUtils::LoadFile(fullFileName, *buffer);
+			}
+
+			// the file starts with the collision trees, the table of the instances comes after them
+			int32_t* table = (int32_t*)((uint8_t*)*buffer + 2 * *(int32_t*)*buffer);
+			*buffer = (uint8_t*)*buffer + 4;
+
+			memset(copyTable, 0xFF, sizeof(copyTable));
+			memset(Collision::g_unk7290F0, 0, sizeof(Collision::g_unk7290F0));
+
+			if (*table > 0)
+			{
+				int32_t meshIndex = index;
+				TerrainInstance* instance = (TerrainInstance*)(table + 1);
+				Collision::CollisionMeshInstance* mesh = &Collision::g_collisionMeshInstances[index];
+
+				do
+				{
+					if (instance->type >= 256)
+					{
+						// types above 255 are markers, the slot in the tree data is added to a list for that type
+						if (**(int32_t**)buffer == 0x12345678)
+						{
+							**(int32_t**)buffer = Collision::g_unk7290F0[instance->type - 256];
+							Collision::g_unk7290F0[instance->type - 256] = (int32_t)((uint8_t*)*buffer + 4);
+						}
+					}
+					else
+					{
+						++meshCount;
+
+						if (instance->isCopy == 1)
+						{
+							// a copy of a mesh that was added before, with its own position
+							int16_t source = copyTable[instance->copySlot];
+
+							if (source < 0)
+							{
+								mesh->typeFlags = 0;
+							}
+							else
+							{
+								memcpy(mesh, &Collision::g_collisionMeshInstances[source], sizeof(Collision::CollisionMeshInstance));
+
+								mesh->origin.x = instance->x;
+								mesh->origin.y = instance->y;
+								mesh->origin.z = instance->z;
+								mesh->platformIdx = instance->type;
+
+								mesh->origin.x *= 32;
+								mesh->origin.y *= 32;
+								mesh->origin.z *= 32;
+							}
+
+							++meshIndex;
+							++mesh;
+						}
+						else
+						{
+							mesh->typeFlags = (int16_t)instance->type;
+							mesh->unk = instance->unk40;
+							mesh->origin.x = 32 * instance->x;
+							mesh->origin.y = 32 * instance->y;
+							mesh->origin.z = 32 * instance->z;
+							mesh->collisionTree = (int32_t)*buffer;
+
+							// a mesh that is on a platform tells the platform where it is
+							if (instance->platformSlot)
+							{
+								Platform::PlatformDescriptor* platform = &Platform::g_platformDescriptors[instance->platformSlot - 1];
+
+								platform->meshInstanceId = (int16_t)meshIndex;
+								platform->origin.x = mesh->origin.x;
+								platform->origin.y = mesh->origin.y;
+								platform->origin.z = mesh->origin.z;
+
+								mesh->platformIdx = instance->platformSlot - 1;
+							}
+
+							if (instance->copySlot >= 0)
+								copyTable[instance->copySlot] = (uint16_t)meshIndex;
+
+							++meshIndex;
+							++mesh;
+						}
+					}
+
+					*buffer = (uint8_t*)*buffer + 2 * instance->dataSize;
+					instance++;
+					++entryIdx;
+				} while (entryIdx < *table);
+			}
+
+			Collision::g_unk72871C = (uint8_t*)*buffer;
+
+			*buffer = (uint8_t*)*buffer + 0x33C0;
+
+			for (int32_t i = 0; i < 0x33C0; i += 0x5C0)
+			{
+				*(int16_t*)(Collision::g_unk72871C + i + 0x18) = 0;
+				*(int32_t*)(Collision::g_unk72871C + i + 0x1C) = 0;
+			}
+
+			return meshCount;
+		}
 	}
 }

@@ -263,7 +263,7 @@ namespace Nu3D
 
 	namespace Portal
 	{
-		// STUB: TOY2 0x004BC160
-		int32_t IsAreaVisible(uint8_t index) { return 0; }
+		// FUNCTION: TOY2 0x004BC160
+		int32_t IsAreaVisible(uint8_t index) { return g_visibleAreaFlags[index & 63]; }
 	}
 }

@@ -392,7 +392,7 @@ namespace Renderer
 
 	namespace InstanceData
 	{
-		// STUB: TOY2 0x004B8840
+		// FUNCTION: TOY2 0x004B8840
 		Nu3D::InstanceData* AllocFromNodeMatrices(
 			D3DMATRIX* nodeMatrices,
 			Nu3D::Primitive::Header* headers,
@@ -400,7 +400,39 @@ namespace Renderer
 			int32_t** flags,
 			int32_t renderStage)
 		{
-			return 0;
+			if (! g_instanceDataCounter)
+				return 0;
+
+			int32_t index = --g_instanceDataCounter;
+
+			D3DMATRIX* destination = g_instanceData[index].matrices;
+
+			// every header names the node matrix to copy, a node that is hidden in the flags makes the whole instance be skipped
+			while (headerCount)
+			{
+				if (flags && ((uint32_t)flags[headers->drawType] & 1))
+				{
+					g_instanceDataCounter = index + 1;
+					return 0;
+				}
+
+				memcpy(destination, &nodeMatrices[headers->drawType], sizeof(D3DMATRIX));
+
+				destination++;
+				headers++;
+				--headerCount;
+			}
+
+			g_instanceData[index].renderFlags = renderStage;
+			g_instanceData[index].lodFactor = g_lodFactor;
+			g_instanceData[index].horzOffset = g_instanceHorzOffset;
+			g_instanceData[index].vertOffset = g_instanceVertOffset;
+			g_instanceData[index].renderModeFlags = g_unk9F5FF8 != 0;
+			Nu3D::Viewport::GetViewClipRect(&g_instanceData[index].clipRect);
+
+			g_instanceData[index].unkInt6 = g_unk508718;
+
+			return &g_instanceData[index];
 		}
 	}
 }

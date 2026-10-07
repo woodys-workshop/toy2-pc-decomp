@@ -10,12 +10,7 @@ namespace Toy2
 	{
 		struct PlatformDescriptor
 		{
-			int16_t unkVar1;
-			int16_t unkVar2;
-			int16_t unkVar3;
-			int16_t unkVar4;
-			int16_t unkVar5;
-			int16_t unkVar6;
+			Vector3I origin;
 			Vector3I16 rotAngle;
 			int16_t unkVar10;
 			Vector3I16 linVel;
@@ -26,6 +21,8 @@ namespace Toy2
 			int16_t meshInstanceId;
 			int16_t flags;
 		};
+
+		extern PlatformDescriptor g_platformDescriptors[32];
 
 		int32_t SamplePoint(int32_t a1, int32_t a2, uint32_t* a3);
 		void InitPathPlatform(int32_t a1, int32_t a2, int32_t a3, int32_t linkId, int32_t linkId2, int32_t a6, int32_t a7, int32_t y);

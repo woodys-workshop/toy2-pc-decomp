@@ -8,6 +8,10 @@ namespace NGNLoader
 {
 	namespace ObjectLoad
 	{
+		void PrepareGlobals();
+		int32_t ExtractShapeTextures(FILE* stream);
+		int32_t ExtractShapeMaterials(FILE* stream);
+		int32_t ExtractShapeVertices(FILE* stream);
 		Nu3D::Primitive* ExtractShapeData(FILE* stream);
 		Nu3D::Material* GetCurrentMatByIndex(uint32_t index);
 	}

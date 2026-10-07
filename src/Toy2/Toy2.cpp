@@ -623,6 +623,7 @@ namespace Toy2
 			Nu3D::Camera::SetObjectViewMatrix((Matrix3x3I16*)&mathScratch[229]);
 
 			Nu3D::Scene::RenderWorldGeometry(sectorIndex, layerFlags);
+
 			Nu3D::Scene::RenderActors(Actor::g_activeActorArray);
 
 			if (fullRender)
@@ -2202,8 +2203,42 @@ namespace Toy2
 	// STUB: TOY2 0x00412E80
 	int32_t CleanupManagers() { return 0; }
 
-	// STUB: TOY2 0x00490BF0
-	int16_t UpdateD3DState() { return 0; }
+	// GLOBAL: TOY2 0x0072E340
+	int32_t g_unused72E340;
+
+	// FUNCTION: TOY2 0x00490BF0
+	int16_t UpdateD3DState()
+	{
+		g_unused72E340 = 0;
+
+		RECT* destRect = DrawingDevice::GetDestRect();
+
+		Nu3D::Camera::g_screenWidth = destRect->right - destRect->left;
+		int32_t height = destRect->bottom - destRect->top;
+
+		Nu3D::Camera::g_viewportWidth = Nu3D::Camera::g_screenWidth;
+		Nu3D::Camera::g_viewportRight = height - 1;
+		Nu3D::Camera::g_viewportBottom = Nu3D::Camera::g_screenWidth - 1;
+		Nu3D::Camera::g_screenHeight = height;
+		Nu3D::Camera::g_scaleFactorX = (Nu3D::Camera::g_screenWidth << 8) / 320;
+		Nu3D::Camera::g_viewportLeft = 0;
+		Nu3D::Camera::g_viewportTop = 0;
+		Nu3D::Camera::g_screenCenterX = Nu3D::Camera::g_screenWidth / 2;
+		Nu3D::Camera::g_viewportRightFixed10 = (Nu3D::Camera::g_screenWidth << 10) - 1;
+		Nu3D::Camera::g_viewportCenterX = Nu3D::Camera::g_screenWidth / 2;
+		Nu3D::Camera::g_viewportCenterY = height / 2;
+		Nu3D::Camera::g_viewportHeight = height;
+		Nu3D::Camera::g_viewportLeftFixed10 = 0;
+
+		SoftwareRenderer::g_unk504D34 = SoftwareRenderer::g_unk87E50C;
+		SoftwareRenderer::g_unk839278 = 1023;
+
+		// omitted: clears a short in the draw buffer of DevDraw, which is not decompiled yet
+
+		SoftwareRenderer::g_unk731CBC = timeGetTime();
+
+		return 1;
+	}
 
 	// FUNCTION: TOY2 0x004909E0
 	void ProcessMiscEventsEx()
@@ -2313,10 +2348,48 @@ namespace Toy2
 		return;
 	}
 
-	// STUB: TOY2 0x00499950
+	// STUB: TOY2 0x0047D4E0
+	int32_t* BuildPerspectiveDivideTable(int32_t centerX) { return 0; }
+
+	// FUNCTION: TOY2 0x00499950
 	void InitDirect3DRenderer()
 	{
 		// Weird method, a good portion of these variables are never even used in the game
+		Logger::Log("INIT : Starting Direct3D renderer.\n");
+
+		RECT* destRect = DrawingDevice::GetDestRect();
+
+		int32_t screenWidth = destRect->right - destRect->left;
+		Nu3D::Camera::g_screenWidth = screenWidth;
+
+		int32_t screenHeight = destRect->bottom - destRect->top;
+		Nu3D::Camera::g_screenHeight = screenHeight;
+
+		if (Nu3D::Camera::g_screenCenterX != Nu3D::Camera::g_cachedScreenCenterX)
+		{
+			Nu3D::Camera::g_cachedScreenCenterX = Nu3D::Camera::g_screenCenterX;
+			BuildPerspectiveDivideTable(Nu3D::Camera::g_screenCenterX);
+
+			screenWidth = Nu3D::Camera::g_screenWidth;
+			screenHeight = Nu3D::Camera::g_screenHeight;
+		}
+
+		Nu3D::Camera::g_viewportWidth = screenWidth;
+		Nu3D::Camera::g_viewportRight = screenHeight - 1;
+		Nu3D::Camera::g_viewportBottom = screenWidth - 1;
+		Nu3D::Camera::g_scaleFactorX = (screenWidth << 8) / 320;
+		Nu3D::Camera::g_viewportHeight = screenHeight;
+		Nu3D::Camera::g_viewportLeft = 0;
+		Nu3D::Camera::g_screenCenterX = screenWidth / 2;
+		Nu3D::Camera::g_viewportCenterX = screenWidth / 2;
+		Nu3D::Camera::g_viewportCenterY = screenHeight / 2;
+		Nu3D::Camera::g_viewportRightFixed10 = (screenWidth << 10) - 1;
+
+		memset(SoftwareRenderer::g_bltQueue, 0, sizeof(SoftwareRenderer::g_bltQueue));
+
+		Nu3D::Camera::g_viewportTop = 0;
+		Nu3D::Camera::g_viewportLeftFixed10 = 0;
+		SoftwareRenderer::g_bltQueueCount = 0;
 	}
 
 	// STUB: TOY2 0x00414270
@@ -2448,8 +2521,107 @@ namespace Toy2
 	// STUB: TOY2 0x00433ED0
 	void ResetBuzzState() {}
 
-	// STUB: TOY2 0x0043E5A0
-	void InitZoneData() {}
+	// FUNCTION: TOY2 0x0043E5A0
+	void InitZoneData()
+	{
+		int32_t entryCount = 20;
+		int32_t i;
+
+		for (i = 0; i < 20; i++)
+		{
+			Levels::g_datContents[i].unkByte1 = 0;
+			Levels::g_datContents[i].unkByte2 = 0;
+			Levels::g_datContents[i].unkShort8 = 0;
+			Levels::g_datContents[i].unkShort7 = 0;
+		}
+
+		int32_t category = -1;
+		int32_t highestCategory;
+
+		// every category of the first instance list gets the size in bytes of its entries (unkShort7)
+		if (Levels::g_instanceSection->flags)
+		{
+			Levels::InstanceSection* section = Levels::g_instanceSection;
+			int8_t nextFlags;
+
+			do
+			{
+				if ((uint8_t)section->category != category)
+				{
+					if (category != -1)
+						Levels::g_datContents[category].unkShort7 = 20 * entryCount;
+
+					entryCount = 0;
+					category = (uint8_t)section->category;
+				}
+
+				nextFlags = section[1].flags;
+				section++;
+
+				++entryCount;
+			} while (nextFlags);
+
+			if (category == -1)
+			{
+				highestCategory = Levels::g_unk5574FC;
+			}
+			else
+			{
+				highestCategory = category;
+				Levels::g_unk5574FC = category;
+				Levels::g_datContents[category].unkShort7 = 20 * entryCount;
+			}
+		}
+		else
+		{
+			highestCategory = Levels::g_unk5574FC;
+		}
+
+		category = -1;
+
+		// and the second list the same way (unkShort8)
+		if (Levels::g_secondInstanceSection->flags)
+		{
+			Levels::InstanceSection* section = Levels::g_secondInstanceSection;
+			int8_t nextFlags;
+
+			do
+			{
+				if ((uint8_t)section->category != category)
+				{
+					if (category != -1)
+						Levels::g_datContents[category].unkShort8 = 20 * entryCount;
+
+					entryCount = 0;
+					category = (uint8_t)section->category;
+				}
+
+				nextFlags = section[1].flags;
+				section++;
+
+				++entryCount;
+			} while (nextFlags);
+
+			if (category != -1)
+				Levels::g_datContents[category].unkShort8 = 20 * entryCount;
+		}
+
+		if (highestCategory < category)
+			highestCategory = category;
+
+		int32_t totalEntries = 0;
+
+		for (i = 0; i < 20; i++)
+		{
+			uint32_t firstCount = (uint32_t)(int32_t)(int16_t)Levels::g_datContents[i].unkShort7 / 20;
+			uint32_t secondCount = (uint32_t)(int32_t)(int16_t)Levels::g_datContents[i].unkShort8 / 20;
+
+			totalEntries = totalEntries + secondCount + firstCount;
+		}
+
+		Levels::g_unk547ED8 = totalEntries;
+		Levels::g_unk5574FC = highestCategory + 1;
+	}
 
 	// STUB: TOY2 0x0044F840
 	void ShowModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
@@ -2646,9 +2818,6 @@ namespace Toy2
 				break;
 		}
 	}
-
-	// STUB: TOY2 0x0047D4E0
-	int32_t* BuildPerspectiveDivideTable(int32_t centerX) { return 0; }
 
 	// STUB: TOY2 0x0047EF80
 	void ProfileCPU() {}

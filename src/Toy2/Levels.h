@@ -130,17 +130,74 @@ namespace Toy2
 			uint8_t categoryIdx;
 		};
 
+		// the records of the portals, the corners and the normal are packed as 3 shorts
+		struct PortalQuad
+		{
+			uint16_t recordCount;
+			uint16_t recordType;
+			int16_t p0x;
+			int16_t p0y;
+			int16_t p0z;
+			int16_t nx;
+			int16_t ny;
+			int16_t nz;
+			int16_t p1x;
+			int16_t p1y;
+			int16_t p1z;
+			int16_t unk16[3];
+			int16_t p2x;
+			int16_t p2y;
+			int16_t p2z;
+			int16_t unk22[3];
+			int16_t p3x;
+			int16_t p3y;
+			int16_t p3z;
+		};
+
 		struct PortalZone
 		{
 			PortalEntry entries[16];
 		};
 
+		struct DatContents
+		{
+			uint8_t unkByte1;
+			uint8_t unkByte2;
+			uint8_t unkByte3;
+			uint8_t unkByte4;
+			uint16_t unkShort1;
+			uint16_t unkShort2;
+			uint16_t unkShort3;
+			uint16_t unkShort4;
+			uint16_t unkShort5;
+			uint16_t unkShort6;
+			uint16_t unkShort7;
+			uint16_t unkShort8;
+			Matrix3x3I16 unkVec;
+			uint8_t pad[14];
+		};
+
 		extern RecordData* g_recordData[96];
+		extern int32_t g_hasZoneData;
+		extern ObjectList* g_objectListBase;
+		extern PortalZone g_portalEntries[20];
+		extern int32_t g_type64Count;
+		extern Type64 g_type64Structs[24];
+		extern int32_t g_currentType64Region;
+		extern char g_activeZoneVisTable[260];
+		extern InstanceSection* g_instanceSection;
+		extern InstanceSection* g_secondInstanceSection;
+		extern DatContents g_datContents[20];
+		extern int32_t g_unk5574FC;
+		extern int32_t g_unk547ED8;
+		extern int32_t g_unk54E054;
+		extern uint8_t* g_unk550C20;
 		extern int32_t g_type63CullDistance;
 		extern uint8_t g_levelDataHeapBase[1249280];
 		extern int32_t g_levelLoadConfig;
 		extern uint8_t* g_levelLoadArena;
 
+		void BuildLevelPath(int32_t level, char* output, const char* suffix);
 		void FlushRenderer();
 		int32_t InitLevelDefaults();
 		void InitLevelPlay(int32_t levelId);
@@ -159,11 +216,33 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(ObjectDescCache) == 0x1C);
 		STATIC_ASSERT(sizeof(ObjectList) == 0x4);
 		STATIC_ASSERT(sizeof(PortalEntry) == 0x2);
+		STATIC_ASSERT(sizeof(PortalQuad) == 0x2E);
 		STATIC_ASSERT(sizeof(PortalZone) == 0x20);
+		STATIC_ASSERT(sizeof(DatContents) == 0x34);
 	}
 
 	namespace Terrain
 	{
+		// an entry of the table of the .all file
+		struct TerrainInstance
+		{
+			int32_t dataSize;
+			int32_t x;
+			int32_t y;
+			int32_t z;
+			int32_t type;
+			uint8_t pad20[6];
+			int16_t platformSlot;
+			uint8_t pad28[12];
+			int16_t unk40;
+			uint8_t pad42[26];
+			int16_t copySlot;
+			int16_t isCopy;
+			uint8_t pad72[4];
+		};
+
+		STATIC_ASSERT(sizeof(TerrainInstance) == 0x4C);
+
 		int32_t LoadAll(const char* fileName, int32_t index, void** buffer);
 	}
 }
