@@ -545,8 +545,8 @@ namespace Nu3D
 			}
 
 			// completely outside of the current clip rect
-			if (minX > Viewport::g_viewClipRect.right || maxX < Viewport::g_viewClipRect.left || minY > Viewport::g_viewClipRect.bottom
-				|| maxY < Viewport::g_viewClipRect.top)
+			if (minX > Viewport::g_viewClipRect.bottom || maxX < Viewport::g_viewClipRect.top || minY > Viewport::g_viewClipRect.right
+				|| maxY < Viewport::g_viewClipRect.left)
 			{
 				return 0;
 			}
@@ -560,17 +560,17 @@ namespace Nu3D
 			Math::VertexCrossProduct(&normal, &edge1, &edge2);
 
 			// clamp the portal bounds to the clip rect
-			if (minX <= Viewport::g_viewClipRect.left)
-				minX = Viewport::g_viewClipRect.left;
+			if (minX <= Viewport::g_viewClipRect.top)
+				minX = Viewport::g_viewClipRect.top;
 
-			if (maxX >= Viewport::g_viewClipRect.right)
-				maxX = Viewport::g_viewClipRect.right;
+			if (maxX >= Viewport::g_viewClipRect.bottom)
+				maxX = Viewport::g_viewClipRect.bottom;
 
-			if (minY <= Viewport::g_viewClipRect.top)
-				minY = Viewport::g_viewClipRect.top;
+			if (minY <= Viewport::g_viewClipRect.left)
+				minY = Viewport::g_viewClipRect.left;
 
-			if (maxY >= Viewport::g_viewClipRect.bottom)
-				maxY = Viewport::g_viewClipRect.bottom;
+			if (maxY >= Viewport::g_viewClipRect.right)
+				maxY = Viewport::g_viewClipRect.right;
 
 			// facing away from the camera, or nothing left after clamping
 			if (normal.z > 0.0 || minX >= maxX || minY >= maxY)
@@ -601,10 +601,10 @@ namespace Nu3D
 			Math::CalculatePlaneFromTriangle(&points[2], &points[1], &posVector, &Viewport::g_frustumData.topPlane);
 			Math::CalculatePlaneFromTriangle(&points[0], &points[3], &posVector, &Viewport::g_frustumData.bottomPlane);
 
-			Viewport::g_viewClipRect.left = minX;
-			Viewport::g_viewClipRect.bottom = maxY;
-			Viewport::g_viewClipRect.top = minY;
-			Viewport::g_viewClipRect.right = maxX;
+			Viewport::g_viewClipRect.top = minX;
+			Viewport::g_viewClipRect.right = maxY;
+			Viewport::g_viewClipRect.left = minY;
+			Viewport::g_viewClipRect.bottom = maxX;
 
 			if (Viewport::g_fustrumInfo.unkInt7)
 			{
@@ -1075,6 +1075,10 @@ namespace Nu3D
 
 				g_primaryCamera = Build();
 				g_primaryCamera->aspectHOverW = 0.75f;
+#ifdef APPLY_FIXES
+				// EXPERIMENT: use the real aspect ratio instead of the fixed 4:3, fixes the stretched 16:9 image
+				g_primaryCamera->aspectHOverW = (float)DrawingDevice::GetDestHeight() / (float)DrawingDevice::GetDestWidth();
+#endif
 				g_primaryCamera->fovRadians = 1.25f;
 				g_primaryCamera->farZ = 32768.0f;
 				g_primaryCamera->nearZ = 50.0f;
@@ -1163,8 +1167,10 @@ namespace Nu3D
 				{
 					int32_t scaledDepth = (depth << 8) / g_screenCenterX;
 
-					if (scaledDepth > (abs((x * g_cameraViewMatrix.m00 + y * g_cameraViewMatrix.m01 + z * g_cameraViewMatrix.m02) / 0x20000) - boundingSphereRadius)
-						&& scaledDepth > (abs((x * g_cameraViewMatrix.m10 + y * g_cameraViewMatrix.m11 + z * g_cameraViewMatrix.m12) / 0x20000) - boundingSphereRadius))
+					if (scaledDepth
+							> (abs((x * g_cameraViewMatrix.m00 + y * g_cameraViewMatrix.m01 + z * g_cameraViewMatrix.m02) / 0x20000) - boundingSphereRadius)
+						&& scaledDepth
+							> (abs((x * g_cameraViewMatrix.m10 + y * g_cameraViewMatrix.m11 + z * g_cameraViewMatrix.m12) / 0x20000) - boundingSphereRadius))
 					{
 						return 1;
 					}

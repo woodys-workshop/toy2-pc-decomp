@@ -300,7 +300,7 @@ namespace Nu3D
 			g_fustrumInfo.fustrumCount = viewportCache->frustumCount;
 
 			if (g_fustrumInfo.unkInt7)
-				SetClipRect(g_viewClipRect.left, g_viewClipRect.top, g_viewClipRect.right, g_viewClipRect.bottom);
+				SetClipRect(g_viewClipRect.top, g_viewClipRect.left, g_viewClipRect.bottom, g_viewClipRect.right);
 
 			Camera::RebuildTransformPipeline();
 		}

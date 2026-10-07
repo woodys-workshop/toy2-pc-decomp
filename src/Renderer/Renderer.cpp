@@ -1317,6 +1317,11 @@ namespace Renderer
 		Nu3D::Camera::g_cameraViewportTB = viewportTB;
 		Nu3D::Camera::g_cameraNearZ = nearZ;
 		Nu3D::Camera::g_farLayerNearZ = farLayerNearZ;
+
+#ifdef APPLY_FIXES
+		SetRenderDistance(1000000000.0f, 1000000000.0f);
+		Nu3D::Camera::g_cameraViewportTB = 3.402823466e+38f;
+#endif
 	}
 
 	// FUNCTION: TOY2 0x004CE5B0
