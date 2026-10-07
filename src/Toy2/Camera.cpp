@@ -12,6 +12,9 @@
 #include "Numerics.h"
 #include "Nu3D/Viewport.h"
 #include "Nu3D/Portal.h"
+#include "Toy2/Portal.h"
+#include "Toy2/Platform.h"
+#include "AudioManager/AudioManager.h"
 #include "CharacterLoader.h"
 
 #include <string.h>
@@ -1497,8 +1500,95 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x00435F30
-		int32_t HandleLedgeClimb(Toy2::Buzz::Toy2BuzzActor* buzzActor) { return 0; }
+		// FUNCTION: TOY2 0x00435F30
+		int32_t HandleLedgeClimb(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		{
+			int32_t y;
+			int32_t v4;
+			int32_t v5;
+			int32_t v7;
+			WorldPos displacement;
+			WorldPos startPos;
+			WorldPos probePos;
+
+			if (buzzActor->gravityVel > 0 && (Buzz::g_buzzActionState & 0xFFF7F) == 0)
+			{
+				y = buzzActor->posAngles.pos.y;
+
+				if (buzzActor->floorYPos - y > 0x2000 && buzzActor->floorYPos != (int32_t)0x80000000)
+				{
+					probePos.y = y - 13824;
+					v4 = Numerics::g_sinCosLUT[buzzActor->posAngles.angles.yaw & 0xFFF] / 3;
+					v5 = Numerics::g_sinCosLUT[(buzzActor->posAngles.angles.yaw + 1024) & 0xFFF] / 3;
+					probePos.x = v4 + buzzActor->posAngles.pos.x;
+					probePos.z = v5 + buzzActor->posAngles.pos.z;
+
+					v7 = Nu3D::Collision::GetGroundHeight(&probePos, 0) - 200;
+
+					if (Collision::g_floorSlope.y < -15000)
+					{
+						if (v7 < buzzActor->posAngles.pos.y - 13824 && v7 >= buzzActor->motionTargetPos.y - 13824)
+						{
+							startPos.y = buzzActor->posAngles.pos.y;
+							startPos.x = buzzActor->posAngles.pos.x - v4 / 4;
+							startPos.z = buzzActor->posAngles.pos.z - v5 / 4;
+
+							displacement.x = 0;
+							displacement.z = 0;
+							displacement.y = v7 - buzzActor->posAngles.pos.y;
+
+							if (!Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
+							{
+								startPos.y = v7 - 6000;
+								displacement.x = v4 + v4 / 3;
+								displacement.y = 0;
+								displacement.z = v5 + v5 / 3;
+
+								if (!Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
+								{
+									AudioManager::PlaySoundEffect(23, &buzzActor->posAngles.pos);
+									Toy2::Portal::UpdateActiveSectorAt(buzzActor->posAngles.pos.x, v7, buzzActor->posAngles.pos.z);
+
+									buzzActor->posAngles.pos.x += v4;
+									buzzActor->posAngles.pos.y = v7;
+									buzzActor->posAngles.pos.z += v5;
+
+									Buzz::g_unk53C660 = 82;
+									Platform::g_unk559E80 = Collision::GetGroundContactIdx();
+
+									startPos.y = v7;
+
+									if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
+										buzzActor->facingAngle = (Nu3D::Math::CartesianToFixedAngle(Collision::g_floorSlope.x, Collision::g_floorSlope.z) - 2048) & 0xFFF;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (Buzz::g_unk53C660)
+			{
+				int32_t turn = (buzzActor->posAngles.angles.yaw - buzzActor->facingAngle) & 0xFFF;
+
+				if (turn > 0x800)
+					turn -= 4096;
+
+				buzzActor->posAngles.angles.yaw = (buzzActor->posAngles.angles.yaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+				g_gameplayCameraState.orbitYaw = (g_gameplayCameraState.orbitYaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+
+				Buzz::g_unk53C660 -= Renderer::g_frameDelta;
+
+				if (Buzz::g_unk53C660 < 0)
+					Buzz::g_unk53C660 = 0;
+
+				return 7;
+			}
+
+			Platform::g_unk559E80 = -1;
+
+			return 0;
+		}
 
 		// FUNCTION: TOY2 0x00447BD0
 		void CullActors(Nu3D::Camera::ActiveCameraTransform* cam)

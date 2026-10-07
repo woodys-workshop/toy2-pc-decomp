@@ -105,6 +105,30 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0053C634
 		int32_t g_unk53C634;
 
+		// GLOBAL: TOY2 0x0053C5F0
+		int32_t g_unk53C5F0;
+
+		// GLOBAL: TOY2 0x0053C5F4
+		int32_t g_unk53C5F4;
+
+		// GLOBAL: TOY2 0x0053C5F8
+		int32_t g_unk53C5F8;
+
+		// GLOBAL: TOY2 0x0053C654
+		int32_t g_unk53C654;
+
+		// GLOBAL: TOY2 0x0053C604
+		int32_t g_unk53C604;
+
+		// GLOBAL: TOY2 0x0053C614
+		int32_t g_unk53C614;
+
+		// GLOBAL: TOY2 0x0053C5D8
+		int32_t g_unk53C5D8;
+
+		// GLOBAL: TOY2 0x0053C638
+		Vector3I g_ziplineDirection;
+
 		// GLOBAL: TOY2 0x0053C60C
 		int32_t g_unk53C60C;
 
@@ -1230,20 +1254,783 @@ namespace Toy2
 		// STUB: TOY2 0x00434990
 		void TickGunFire(PosAndAngles* muzzlePos) {}
 
-		// STUB: TOY2 0x00434D20
-		int32_t TickGroundSlam(Toy2::Actor::Toy2Actor* actor) { return 0; }
+		// FUNCTION: TOY2 0x00434D20
+		int32_t TickGroundSlam(Toy2::Actor::Toy2Actor* actor)
+		{
+			int32_t ticker;
 
-		// STUB: TOY2 0x00434EB0
-		void TickSpinHover(Toy2::Buzz::Toy2BuzzActor* buzz) {}
+			if ((InputManager::g_directionInputState & DIR_CAM_FLAG3) != 0
+				&& (InputManager::g_prevDirectionInputState & 0x2000) == 0
+				&& (g_buzzActionState & 0xFFF7F) == 0
+				&& !g_unk53C83C
+				&& !g_unk53C650)
+			{
+				if (actor->unkWord15 == 1 || actor->unkWord15 == 2 || (int16_t)actor->lastValidYPosition == 8)
+				{
+					g_groundSlamTicker = 1;
+					AudioManager::PlaySoundEffect(23, &actor->pos);
+				}
+			}
 
-		// STUB: TOY2 0x00435100
-		int32_t HandleSwing(Toy2::Buzz::Toy2BuzzActor* buzz) { return 0; }
+			if (!g_groundSlamTicker)
+				return 0;
 
-		// STUB: TOY2 0x004354E0
-		int32_t HandlePoleClimb(Toy2::Buzz::Toy2BuzzActor* buzz) { return 0; }
+			g_buzzActionState |= 0x40u;
 
-		// STUB: TOY2 0x004359D0
-		int32_t HandleZipline(Toy2::Buzz::Toy2BuzzActor* actor) { return 0; }
+			if (g_groundSlamTicker <= 0)
+			{
+				ticker = Renderer::g_frameDelta + g_groundSlamTicker;
+				g_groundSlamTicker = ticker;
+
+				if (ticker <= 0)
+				{
+					if (ticker >= -14)
+						return 0;
+
+					if (!actor->unkWord16)
+						actor->areaIndex += ((int32_t)Renderer::g_frameDelta << 8) / 4;
+
+					if (actor->areaIndex > 2048)
+						actor->areaIndex = 2048;
+
+					return 5;
+				}
+
+				g_groundSlamTicker = 0;
+
+				return 0;
+			}
+
+			if (actor->unkWord16)
+			{
+				g_groundSlamTicker = -40;
+				Camera::g_unk50A510 = 40;
+				Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y - 1024, actor->pos.z, 18, 11);
+				Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y - 1024, actor->pos.z, 19, 12);
+				AudioManager::PlaySoundEffect(15, &g_buzzActor.posAngles.pos);
+
+				return 0;
+			}
+
+			g_groundSlamTicker += Renderer::g_frameDelta;
+
+			if (g_groundSlamTicker <= 14)
+				return 7;
+
+			actor->areaIndex = 2048;
+			g_groundSlamTicker = 14;
+
+			return 5;
+		}
+
+		// FUNCTION: TOY2 0x00434EB0
+		void TickSpinHover(Toy2::Buzz::Toy2BuzzActor* buzz)
+		{
+			int32_t v1 = g_unk53C650;
+			int32_t v3;
+			int32_t v5;
+			int32_t v6;
+			int32_t v7;
+
+			if (g_unk53C650 > 0)
+			{
+				v1 = g_unk53C650 - Renderer::g_frameDelta;
+				g_unk53C650 = v1;
+
+				if (v1 < 0)
+				{
+					v1 = 0;
+					g_unk53C650 = 0;
+				}
+
+				if (g_tickState[2] && v1 > 20)
+				{
+					int32_t v2 = *g_randDatBufferPtr++ & 1;
+
+					Nu3D::Particles::SpawnFromPreset(
+						buzz->posAngles.pos.x,
+						buzz->posAngles.pos.y,
+						buzz->posAngles.pos.z,
+						v2 + 22,
+						2)->groundAlignRot = (-g_unk53C650 & 0xF) << 7;
+					v1 = g_unk53C650;
+				}
+			}
+
+			if ((InputManager::g_directionInputState & 0x2000) == 0 || (InputManager::g_prevDirectionInputState & 0x2000) != 0)
+			{
+				v3 = g_unk53C83C;
+			}
+			else
+			{
+				v3 = g_unk53C83C;
+
+				if ((g_buzzActionState & 0xFFF7F) == 1 && !g_unk53C83C && !v1 && !g_buzzSlipTimer)
+				{
+					g_unk53C650 = 48;
+
+					if (g_fireChargeTimer)
+					{
+						g_fireChargeTimer = 0;
+						g_buzzActionState &= 0xFF7Fu;
+					}
+
+					g_unk53C83C = 1;
+					AudioManager::PlaySoundEffect(17, &buzz->posAngles.pos);
+				}
+
+				v3 = g_unk53C83C;
+			}
+
+			if ((InputManager::g_directionInputState & 0x2000) != 0 && (g_buzzActionState & 0xFFFFE) == 0 && v3 > 0)
+			{
+				v5 = Renderer::g_frameDelta + v3;
+				g_unk53C83C = v5;
+
+				if (v5 <= 60)
+				{
+					if (v5 <= 12)
+						return;
+				}
+				else
+				{
+					v5 = 60;
+					g_unk53C83C = 60;
+				}
+
+				AudioManager::g_pitchArray[3] = 80 * v5 + 2048;
+				AudioManager::PlaySoundEffect(39, &buzz->posAngles.pos);
+
+				return;
+			}
+
+			if (v3 < 0)
+			{
+				g_unk53C83C = Renderer::g_frameDelta + v3;
+
+				if ((int32_t)(Renderer::g_frameDelta + v3) <= -120)
+				{
+					AudioManager::PlaySoundEffect(38, &buzz->posAngles.pos);
+
+					if (g_tickState[2])
+					{
+						v7 = (*g_randDatBufferPtr++ & 1) + 20;
+						Nu3D::Particles::SpawnFromPreset(
+							buzz->posAngles.pos.x,
+							buzz->posAngles.pos.y - 12288,
+							buzz->posAngles.pos.z,
+							v7,
+							2)->groundAlignRot = 192 * (-g_unk53C83C & 0xF);
+					}
+				}
+				else
+				{
+					if (v3 <= -120)
+						AudioManager::PlaySoundEffect(24, &buzz->posAngles.pos);
+
+					buzz->actorFlags |= 4;
+				}
+
+				if (g_unk53C608 || g_unk53C83C >= 0)
+				{
+					g_unk53C83C = 0;
+					buzz->actorFlags &= ~4;
+				}
+			}
+			else if (v3 < 60 || (v6 = g_buzzActionState, (g_buzzActionState & 0xFFF7E) != 0))
+			{
+				g_unk53C83C = 0;
+			}
+			else
+			{
+				g_buzzActionState = v6 | 2;
+				g_unk53C83C = -300;
+			}
+		}
+
+		// FUNCTION: TOY2 0x00435100
+		int32_t HandleSwing(Toy2::Buzz::Toy2BuzzActor* buzz)
+		{
+			int32_t result = 0;
+			int32_t v2;
+			int32_t v16;
+			Vector3I* data;
+			Vector3I dir;
+			int32_t v9;
+			int32_t v24;
+			int32_t v23;
+			int32_t records;
+			int32_t i;
+
+			dir.y = 0;
+
+			if (!Levels::g_recordData[60])
+				return result;
+
+			if ((g_buzzActionState & 0xFFB7E) != 0 || g_unk53C834)
+			{
+				g_unk53C66C = 0;
+				g_buzzActionState &= ~0x400;
+
+				return result;
+			}
+
+			v2 = g_unk53C66C;
+
+			if (!g_unk53C66C)
+			{
+				data = Levels::g_recordData[60]->data;
+				i = 0;
+				records = Levels::g_recordData[60]->recordCount;
+
+				if ((records & 0xFFFE) != 0)
+				{
+					do
+					{
+						int32_t heightDiff = buzz->posAngles.pos.y - data->y;
+
+						if (heightDiff > 0 && heightDiff < 0x4000)
+						{
+							v24 = (data[1].x - data->x) >> 5;
+							dir.x = v24;
+							v23 = (data[1].z - data->z) >> 5;
+							dir.z = v23;
+							Nu3D::Math::NormalizeToFixedPoint(&dir, &dir);
+
+							v9 = (dir.x * ((buzz->posAngles.pos.x - data->x) >> 5) + dir.z * ((buzz->posAngles.pos.z - data->z) >> 5)) >> 12;
+
+							if (v9 > 0 && v9 <= (v24 * dir.x + v23 * dir.z) >> 12)
+							{
+								int32_t offX = ((buzz->posAngles.pos.x - data->x) >> 5) - ((dir.x * v9) >> 12);
+								int32_t offZ = ((buzz->posAngles.pos.z - data->z) >> 5) - ((dir.z * v9) >> 12);
+
+								if (offX * offX + offZ * offZ < 4096)
+								{
+									AudioManager::PlaySoundEffect(27, &buzz->posAngles.pos);
+									g_unk53C66C = 69;
+									buzz->unkVar37 = 26;
+									buzz->unkVar38 = -1;
+									g_unk53C5F0 = data->x + ((dir.x * v9) >> 7);
+									g_unk53C5F4 = data->y + 0x4000;
+									g_unk53C5F8 = data->z + ((dir.z * v9) >> 7);
+									g_unk53C654 = (Nu3D::Math::CartesianToFixedAngle(dir.x, dir.z) + 1024) & 0xFFF;
+
+									if (((g_unk53C654 - buzz->posAngles.angles.yaw + 1024) & 0xFFFu) > 0x800)
+										g_unk53C654 = (g_unk53C654 - 2048) & 0xFFF;
+
+									g_buzzActionState |= 0x400;
+								}
+							}
+						}
+
+						data += 2;
+						++i;
+					}
+					while (i < (Levels::g_recordData[60]->recordCount >> 1));
+				}
+
+				v2 = g_unk53C66C;
+				result = 0;
+
+				if (!g_unk53C66C)
+					return result;
+			}
+
+			v16 = v2 - Renderer::g_frameDelta;
+			g_unk53C66C = v16;
+
+			if ((int32_t)Renderer::g_frameDelta + v16 > 15 && v16 <= 15)
+			{
+				g_unk53C61C = 0;
+				buzz->gravityVel = -1536;
+				buzz->velX = Numerics::g_sinCosLUT[buzz->posAngles.angles.yaw] >> 1;
+				buzz->velForward = Numerics::g_sinCosLUT[(buzz->posAngles.angles.yaw + 1024) & 0xFFF] >> 1;
+
+				if ((InputManager::g_directionInputState & 0x4000) == 0)
+					buzz->unkWord15 = 2;
+
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+				result = 1;
+			}
+
+			if (g_unk53C66C >= 0)
+			{
+				if (g_unk53C66C > 15)
+				{
+					buzz->posAngles.pos.x -= (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.x - g_unk53C5F0) / 16;
+					buzz->posAngles.pos.y -= (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.y - g_unk53C5F4) / 16;
+					v16 = (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.z - g_unk53C5F8);
+					buzz->velX = 0;
+					buzz->gravityVel = 0;
+					buzz->velForward = 0;
+					buzz->posAngles.pos.z -= v16 / 16;
+
+					int32_t turn = (buzz->posAngles.angles.yaw - g_unk53C654) & 0xFFF;
+
+					if (turn >= 0x800)
+						turn -= 4096;
+
+					buzz->posAngles.angles.yaw -= (turn * (int32_t)Renderer::g_frameDelta) / 16;
+					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+					buzz->posAngles.angles.yaw &= 0xFFFu;
+					buzz->facingAngle = buzz->posAngles.angles.yaw;
+
+					return 2;
+				}
+			}
+			else
+			{
+				if (buzz->unkVar37 == 26)
+					buzz->unkVar37 = 3;
+
+				g_unk53C66C = 0;
+			}
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x004354E0
+		int32_t HandlePoleClimb(Toy2::Buzz::Toy2BuzzActor* buzz)
+		{
+			int32_t* data;
+			int32_t v2 = 0;
+			int32_t v3;
+			int32_t v4;
+			int32_t v11;
+			int32_t v24;
+			int32_t* pole;
+
+			if (!Levels::g_recordData[61])
+				return 0;
+
+			if (g_unk53C834)
+				return 0;
+
+			data = (int32_t*)Levels::g_recordData[61]->data;
+
+			if ((g_buzzActionState & 0xFFF6E) != 0)
+				return 0;
+
+			if (!g_unk53C668)
+			{
+				v3 = 0;
+				v4 = Levels::g_recordData[61]->recordCount >> 1;
+
+				if (!v4)
+					return 0;
+
+				for (pole = data; ; pole += 6)
+				{
+					if (pole[3] != 3)
+					{
+						int32_t dz = (buzz->posAngles.pos.z - pole[2]) >> 8;
+						int32_t dx = (buzz->posAngles.pos.x - pole[0]) >> 8;
+
+						if (dx * dx + dz * dz < 512)
+						{
+							int32_t dy = pole[1] - buzz->posAngles.pos.y;
+
+							if (dy >= -7680 && dy <= pole[4] - 13824)
+								break;
+						}
+					}
+
+					if (++v3 >= v4)
+						return 0;
+				}
+
+				g_unk53C668 = 8;
+				g_unk53C658 = 10;
+				g_unk53C5E4 = 6 * v3;
+				buzz->posAngles.pos.x -= (buzz->posAngles.pos.x - data[g_unk53C5E4]) >> 2;
+				buzz->posAngles.pos.z -= (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 2;
+				buzz->gravityVel = 0;
+				v11 = g_unk53C5E4;
+				v2 = 0;
+			}
+			else if (g_unk53C668 <= 0)
+			{
+				v11 = g_unk53C5E4;
+
+				int32_t dz = (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 5;
+				int32_t dx = (buzz->posAngles.pos.x - data[g_unk53C5E4]) >> 5;
+
+				if (dx * dx + dz * dz > 33792)
+				{
+					g_unk53C668 = 0;
+					g_unk53C5E4 = 0;
+
+					return 0;
+				}
+			}
+			else
+			{
+				v11 = g_unk53C5E4;
+
+				int32_t dy = data[g_unk53C5E4 + 1] - buzz->posAngles.pos.y;
+
+				if (dy < -7680)
+				{
+					g_unk53C668 = -1;
+					buzz->unkWord15 = 5;
+					buzz->unkVar37 = 3;
+					g_unk53C61C = 0;
+
+					return 1;
+				}
+
+				if (dy >= data[g_unk53C5E4 + 4] - 13824)
+				{
+					buzz->gravityVel = 0;
+					v2 = 2;
+					buzz->posAngles.pos.y = (data[g_unk53C5E4 + 1] - data[g_unk53C5E4 + 4]) + 13824;
+					v11 = g_unk53C5E4;
+				}
+			}
+
+			if (g_unk53C668 <= 0)
+				return 0;
+
+			buzz->posAngles.pos.x -= (buzz->posAngles.pos.x - data[v11]) >> 2;
+			buzz->velX = 0;
+			buzz->velForward = 0;
+			buzz->posAngles.pos.z -= (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 2;
+
+			if (data[g_unk53C5E4 + 3] == 2)
+			{
+				g_unk53C668 = 1;
+
+				if (buzz->unkShort40)
+				{
+					g_unk53C668 = -1;
+
+					return 1;
+				}
+
+				buzz->gravityVel = (((int32_t)Renderer::g_frameDelta << 6) / 4) + buzz->gravityVel;
+
+				if (buzz->gravityVel > 2048)
+					buzz->gravityVel = 2048;
+
+				g_unk53C668 |= 4;
+			}
+			else if (g_unk53C668 != 8 || (InputManager::g_directionInputState & 0x40) == 0)
+			{
+				g_unk53C668 = 1;
+
+				if ((InputManager::g_directionInputState & 0x10) != 0)
+				{
+					buzz->collisionFlags = 0;
+					buzz->unkShort40 = 0;
+
+					if (v2 != 2)
+					{
+						buzz->gravityVel = -256;
+						g_unk53C668 |= 2u;
+					}
+				}
+				else if ((InputManager::g_directionInputState & 0x40) != 0)
+				{
+					if (buzz->unkShort40)
+					{
+						g_unk53C668 = -1;
+
+						return 1;
+					}
+
+					buzz->gravityVel = (((int32_t)Renderer::g_frameDelta << 7) / 4) + buzz->gravityVel;
+
+					if (buzz->gravityVel > 1024)
+						buzz->gravityVel = 1024;
+
+					buzz->posAngles.angles.yaw += (int32_t)Renderer::g_frameDelta * buzz->gravityVel / 16;
+					g_unk53C668 |= 4;
+				}
+				else
+				{
+					if (buzz->gravityVel > 0)
+						buzz->gravityVel = buzz->gravityVel - (((int32_t)Renderer::g_frameDelta << 8) / 4);
+
+					if (buzz->gravityVel < 0)
+						buzz->gravityVel = 0;
+				}
+			}
+
+			if ((InputManager::g_directionInputState & DIR_LEFT) != 0)
+				buzz->posAngles.angles.yaw += -64 * (int32_t)Renderer::g_frameDelta / 2;
+
+			if ((InputManager::g_directionInputState & DIR_RIGHT) != 0)
+				buzz->posAngles.angles.yaw += ((int32_t)Renderer::g_frameDelta << 6) / 2;
+
+			buzz->posAngles.angles.yaw &= 0xFFFu;
+			buzz->facingAngle = buzz->posAngles.angles.yaw;
+
+			if (v2 != 2 || (v24 = 1, data[g_unk53C5E4 + 3] != 1))
+				v24 = 0;
+
+			if ((InputManager::g_directionInputState & 0x4000) == 0 || (InputManager::g_prevDirectionInputState & 0x4000) != 0)
+			{
+				if (!v24)
+					return 2;
+			}
+			else if (!v24)
+			{
+				if (g_unk53C658)
+					return 2;
+
+				buzz->gravityVel = -1024;
+
+				if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
+				{
+					Camera::CalculateMaxTurnAngle((uint16_t)InputManager::g_directionInputState);
+					buzz->posAngles.angles.yaw = buzz->facingAngle;
+				}
+
+				buzz->velX = Numerics::g_sinCosLUT[buzz->posAngles.angles.yaw & 0xFFF] >> 1;
+				buzz->velForward = Numerics::g_sinCosLUT[(buzz->posAngles.angles.yaw + 1024) & 0xFFF] >> 1;
+				buzz->unkWord15 = 1;
+				g_unk53C61C = 0;
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+
+				g_unk53C668 = -1;
+				buzz->collisionFlags = 0;
+				buzz->unkShort40 = 0;
+				buzz->unkVar37 = 2;
+				buzz->facingAngle = buzz->posAngles.angles.yaw;
+
+				return 1;
+			}
+
+			buzz->actorFlags |= 0x200;
+			buzz->gravityVel = -1536;
+			buzz->velX = 0;
+			buzz->velForward = 0;
+			buzz->unkWord15 = 2;
+			AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+			g_unk53C61C = 0;
+
+			g_unk53C668 = -1;
+			buzz->collisionFlags = 0;
+			buzz->unkShort40 = 0;
+			buzz->unkVar37 = 2;
+			buzz->facingAngle = buzz->posAngles.angles.yaw;
+
+			return 1;
+		}
+
+		// FUNCTION: TOY2 0x004359D0
+		int32_t HandleZipline(Toy2::Buzz::Toy2BuzzActor* actor)
+		{
+			Vector3I* data;
+			int32_t v1;
+			int32_t i;
+			int32_t v4;
+			int32_t v6;
+			int32_t v9;
+			int32_t v10;
+			int32_t v11;
+			int32_t v12;
+			int32_t v13;
+			int32_t v14;
+			int32_t v21;
+			int32_t v26;
+			int32_t v29;
+			int32_t v31;
+			int32_t v32;
+			int32_t v34;
+			Vector3I* segment;
+
+			if (!Levels::g_recordData[62] || g_unk53C834)
+				return 0;
+
+			v1 = g_unk53C600;
+			data = Levels::g_recordData[62]->data;
+
+			if (g_unk53C600 > 0)
+			{
+				v1 = g_unk53C600 - Renderer::g_frameDelta;
+				g_unk53C600 = v1;
+
+				if (v1 < 0)
+				{
+					v1 = 0;
+					g_unk53C600 = 0;
+				}
+			}
+
+			if ((g_buzzActionState & 0xFFF7F) == 0 && !v1)
+			{
+				i = 0;
+
+				if ((Levels::g_recordData[62]->recordCount & 0xFFFE) != 0)
+				{
+					do
+					{
+						v4 = data[1].x - data->x;
+
+						if (v4 < 0)
+						{
+							if ((uint32_t)(actor->posAngles.pos.x - data[1].x + 2048) > (uint32_t)(4096 - v4))
+								goto next;
+						}
+						else
+						{
+							if ((uint32_t)(actor->posAngles.pos.x - data->x + 2048) > (uint32_t)(v4 + 4096))
+								goto next;
+						}
+
+						v6 = data[1].z - data->z;
+
+						if (v6 < 0)
+						{
+							if ((uint32_t)(actor->posAngles.pos.z - data[1].z + 2048) > (uint32_t)(4096 - v6))
+								goto next;
+						}
+						else
+						{
+							if ((uint32_t)(actor->posAngles.pos.z - data->z + 2048) > (uint32_t)(v6 + 4096))
+								goto next;
+						}
+
+						v9 = data[1].y - data->y;
+
+						if (v9 < 0)
+						{
+							if ((uint32_t)(actor->posAngles.pos.y - data[1].y + 4096) > (uint32_t)(19968 - v9))
+								goto next;
+						}
+						else
+						{
+							if ((uint32_t)(actor->posAngles.pos.y - data->y + 4096) > (uint32_t)(v9 + 19968))
+								goto next;
+						}
+
+						v26 = v4 >> 5;
+						v31 = (actor->posAngles.pos.z - data->z) >> 5;
+						v10 = (actor->posAngles.pos.x - data->x) >> 5;
+						v11 = v9 >> 5;
+						v12 = v6 >> 5;
+
+						if (abs(v10) >= abs(v31))
+						{
+							v13 = v4 >> 5;
+						}
+						else
+						{
+							v10 = v31;
+							v13 = v12;
+						}
+
+						v32 = v26 * v10 / v13;
+						v29 = v11 * v10 / v13;
+						v14 = v12 * v10 / v13;
+						v34 = v14;
+						v21 = v14 + ((data->z - actor->posAngles.pos.z) >> 5);
+
+						if (v21 * v21 + (v32 + ((data->x - actor->posAngles.pos.x) >> 5)) * (v32 + ((data->x - actor->posAngles.pos.x) >> 5)) < 0x2000)
+						{
+							int32_t v16 = data->y + 32 * (v29 + 496) - actor->posAngles.pos.y;
+
+							if (v16 > -4096 && v16 < 15872)
+							{
+								g_unk53C618 = 1;
+								g_unk53C610 = 2 * i;
+								g_unk53C604 = data->y + 32 * v29;
+								g_ziplineDirection.x = v4 >> 5;
+								g_ziplineDirection.y = v11;
+								g_ziplineDirection.z = v12;
+								Nu3D::Math::NormalizeToFixedPoint(&g_ziplineDirection, &g_ziplineDirection);
+								g_unk53C5D8 = (int32_t)sqrt((double)(v26 * v26 + v12 * v12 + v11 * v11));
+								g_unk53C614 = (int32_t)sqrt((double)(v32 * v32 + v29 * v29 + v34 * v34));
+
+								if (g_unk53C5D8 - g_unk53C614 >= 200)
+									break;
+
+								g_unk53C618 = 0;
+							}
+						}
+
+next:
+						data += 2;
+						++i;
+					}
+					while (i < (Levels::g_recordData[62]->recordCount >> 1));
+				}
+			}
+
+			if (g_unk53C618 != 1)
+			{
+				if (g_unk53C618 != 2)
+					return 0;
+			}
+			else
+			{
+				if (g_unk53C604 - actor->posAngles.pos.y + 15872 >= 0)
+				{
+					actor->velX = 0;
+					actor->velForward = 0;
+
+					if (g_unk53C618 != 2)
+						return 0;
+				}
+				else
+				{
+					g_unk53C618 = 2;
+					g_unk53C604 = 0;
+					g_unk53C658 = 10;
+				}
+			}
+
+			AudioManager::PlaySoundEffect(35, &actor->posAngles.pos);
+			segment = &Levels::g_recordData[62]->data[g_unk53C610];
+			g_unk53C604 += Renderer::g_frameDelta;
+
+			if (g_unk53C604 > 48)
+				g_unk53C604 = 48;
+
+			actor->posAngles.pos.x = segment->x + ((g_ziplineDirection.x * g_unk53C614) >> 7);
+			actor->posAngles.pos.y = ((g_ziplineDirection.y * g_unk53C614) >> 7) + segment->y + 15872;
+			v1 = g_ziplineDirection.z * g_unk53C614;
+			v21 = segment->z;
+			actor->velX = 0;
+			actor->gravityVel = 0;
+			actor->posAngles.pos.z = v21 + (v1 >> 7);
+			actor->velForward = 0;
+
+			v21 = (actor->posAngles.angles.yaw - Nu3D::Math::CartesianToFixedAngle(g_ziplineDirection.x, g_ziplineDirection.z)) & 0xFFF;
+
+			if (v21 >= 2048)
+				v21 -= 4096;
+
+			actor->posAngles.angles.yaw = (actor->posAngles.angles.yaw - (int32_t)Renderer::g_frameDelta * (v21 >> 3) / 2) & 0xFFF;
+			actor->facingAngle = actor->posAngles.angles.yaw;
+
+			g_unk53C614 += Renderer::g_frameDelta * g_unk53C604;
+
+			if (g_unk53C614 < g_unk53C5D8
+				&& ((InputManager::g_directionInputState & 0x4000) == 0
+					|| (InputManager::g_prevDirectionInputState & 0x4000) != 0
+					|| g_unk53C658))
+			{
+				return 2;
+			}
+
+			g_unk53C618 = 0;
+			g_unk53C600 = 30;
+			actor->velX = g_unk53C604 * (Numerics::g_sinCosLUT[actor->posAngles.angles.yaw & 0xFFF] >> 5);
+			actor->velForward = g_unk53C604 * (Numerics::g_sinCosLUT[(actor->posAngles.angles.yaw + 1024) & 0xFFF] >> 5);
+			actor->gravityVel = -1472;
+			actor->unkWord15 = 1;
+			g_unk53C61C = 0;
+			actor->collisionFlags = 0;
+			actor->unkShort40 = 0;
+			actor->unkVar37 = 3;
+
+			if ((InputManager::g_directionInputState & 0x4000) != 0)
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)actor);
+
+			return 1;
+		}
 
 		// FUNCTION: TOY2 0x004863A0
 		int32_t UpdateFloorHeight(Toy2::Buzz::Toy2BuzzActor* buzzActor)

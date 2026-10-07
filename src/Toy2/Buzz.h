@@ -101,6 +101,7 @@ namespace Toy2
 		extern int32_t g_unk53C66C;
 		extern int32_t g_unk53C608;
 		extern int32_t g_unk53C818;
+		extern int32_t g_buzzActionState;
 		extern MoveableObject::MoveableObject* g_curMoveableObject;
 		extern int32_t g_unk53C634;
 		extern int32_t g_unk50A098;

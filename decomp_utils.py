@@ -2,7 +2,10 @@ import sys
 sys.dont_write_bytecode = True
 
 import argparse
+import os
 import re
+import subprocess
+import tempfile
 from pathlib import Path
 from colorama import Fore, Style, init
 
@@ -275,6 +278,44 @@ def print_namespace_progress(namespace, ida_functions, source_functions):
     print(f"{Fore.RED}Not started:{Style.RESET_ALL}                {not_started_count}")
     print("=" * 60)
 
+def generate_progress_image(output_path):
+    icon_path = Path("resources/APPICON.ico")
+    reccmp_args = ["reccmp-reccmp", "--target", build_script.PROJECT_NAME.upper(), "--silent", "--svg", str(output_path)]
+
+    icon_png = None
+
+    if icon_path.exists():
+        try:
+            from PIL import Image
+
+            # reccmp only accepts PNG icons, so take the largest image of the .ico
+            with Image.open(icon_path) as ico:
+                sizes = ico.info.get("sizes") or {ico.size}
+                ico.size = max(sizes)
+                frame = ico.convert("RGBA")
+
+            handle, icon_png = tempfile.mkstemp(suffix=".png")
+            os.close(handle)
+            frame.save(icon_png)
+            reccmp_args += ["--svg-icon", icon_png]
+        except Exception as e:
+            print(f"Warning: could not convert {icon_path} to PNG ({e}), generating without icon.")
+    else:
+        print(f"Warning: {icon_path} not found, generating without icon.")
+
+    try:
+        result = subprocess.run(reccmp_args)
+    finally:
+        if icon_png:
+            os.remove(icon_png)
+
+    if result.returncode != 0:
+        print("Error: reccmp failed to generate the progress image (is toy2.exe built?).")
+        return
+
+    print(f"Progress image written to {output_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description=f"Decomp utils for {build_script.PROJECT_NAME}."
@@ -295,6 +336,14 @@ def main():
     )
 
     parser.add_argument(
+        "--image",
+        nargs="?",
+        const="progress.svg",
+        metavar="FILE",
+        help="Generate a progress image (SVG) with the game icon. Defaults to progress.svg.",
+    )
+
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Shows extra info",
@@ -309,8 +358,11 @@ def main():
         namespace_filter = None if args.progress is True else args.progress
         count_progress(namespace_filter, verbose=args.verbose)
 
-    if not args.progress and not args.count:
-        print("Enter an option, --count or --progress.")
+    if args.image:
+        generate_progress_image(args.image)
+
+    if not args.progress and not args.count and not args.image:
+        print("Enter an option, --count, --progress or --image.")
 
 
 if __name__ == "__main__":

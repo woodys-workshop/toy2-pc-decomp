@@ -47,7 +47,6 @@ namespace Nu3D
 	};
 
 	extern Patch* g_patchListHead;
-	;
 
 	STATIC_ASSERT(sizeof(Patch) == 0x3C);
 	STATIC_ASSERT(sizeof(Patch::PatchVertices) == 0x14);
