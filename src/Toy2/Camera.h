@@ -37,6 +37,7 @@ namespace Toy2
 
 		extern Nu3D::Camera::ActiveCameraTransform g_activeCameraTransform;
 		extern GameplayCameraState g_gameplayCameraState;
+		extern int16_t g_inCutscene;
 		extern int32_t g_cameraState;
 		extern int32_t g_cutsceneFrameTimer;
 

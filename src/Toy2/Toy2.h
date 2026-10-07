@@ -139,6 +139,13 @@ namespace Toy2
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[16];
 	extern Buzz::Toy2BuzzActor g_buzzActor;
+	extern int32_t g_levelTransition;
+	extern int32_t g_rocketBootsDuration;
+	extern int32_t g_gravityBootsDuration;
+	extern int32_t g_grappleState;
+	extern int32_t g_grappleProgress;
+	extern int32_t g_unk50A0BC;
+	extern int32_t g_unk50A0B0;
 	extern uint16_t g_playerUnlocks;
 	extern int16_t g_musicSliderToAmplitude[16];
 	extern int16_t g_soundSliderToAmplitude[16];

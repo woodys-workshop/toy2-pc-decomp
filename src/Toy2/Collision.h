@@ -69,6 +69,22 @@ namespace Toy2
 			int32_t extZ;
 		};
 
+		// one of the 8 cached ground queries of GatherTrianglesAtXZ (g_unk72871C), the triangles near an x / z position
+		struct CollisionCacheEntry
+		{
+			int32_t x;
+			int32_t y;
+			int32_t z;
+			int32_t unkC;
+			int32_t unk10;
+			int32_t unk14;
+			int16_t lifetime;
+			int16_t unk1A;
+			int32_t count;
+			int16_t meshIdx[240];
+			CollisionTriangle* triangles[240];
+		};
+
 		struct BuzzCollisionState
 		{
 			int32_t contactSurfaceIndex;
@@ -112,7 +128,16 @@ namespace Toy2
 		extern uint8_t g_mathScratch[1024];
 		extern CollisionGridCell g_collisionGrid[256];
 		extern uint16_t g_collisionMeshList[2048];
+		extern BuzzCollisionState g_buzzCollisionStates[2];
 		extern int32_t g_candidateTriangleCount;
+		extern CollisionTriangle* g_candidateTris[240];
+		extern int16_t g_candidateMeshIdx[241];
+		extern int16_t g_ceilingContactMeshIdx;
+		extern int32_t g_groundQueryResult;
+		extern int16_t g_unk7284A0;
+		extern int16_t g_unk7284A2;
+		extern int32_t g_unk729120;
+		extern int32_t g_unk72912C;
 		extern int16_t g_groundContactMeshIdx;
 		extern Vector3I16 g_floorSlope;
 		extern Vector3I16 g_floorSlopePrev;
@@ -143,6 +168,7 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(CollisionTriangle) == 0x2C);
 		STATIC_ASSERT(sizeof(CollisionGridCell) == 0x14);
 		STATIC_ASSERT(sizeof(CollisionMeshInstance) == 0x34);
+		STATIC_ASSERT(sizeof(CollisionCacheEntry) == 0x5C0);
 		STATIC_ASSERT(sizeof(BuzzCollisionState) == 0x30);
 		STATIC_ASSERT(sizeof(RaycastQuery) == 0x3C);
 		STATIC_ASSERT(sizeof(ResolvedVelocity) == 0xE);

@@ -9,6 +9,7 @@ namespace Toy2
 	{
 		extern Actor::Toy2Actor** g_animActorList;
 		extern Vector3I g_nodeAngles[2048];
+		extern int16_t g_unk546D70;
 
 		void ResetNodeAngles();
 		void AnimateActors(Actor::Toy2Actor** actorList);

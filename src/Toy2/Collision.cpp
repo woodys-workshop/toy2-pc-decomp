@@ -24,6 +24,19 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0072D2A0
 		int32_t g_candidateTriangleCount;
 
+		// GLOBAL: TOY2 0x007291DC
+		CollisionTriangle* g_candidateTris[240];
+
+		// GLOBAL: TOY2 0x007284B2
+		// NOTE: the triangle k of the candidate list is at index k + 1, IDA names the word in front of the list
+		int16_t g_candidateMeshIdx[241];
+
+		// GLOBAL: TOY2 0x0072D2A6
+		int16_t g_ceilingContactMeshIdx;
+
+		// GLOBAL: TOY2 0x007290E8
+		int32_t g_groundQueryResult;
+
 		// GLOBAL: TOY2 0x00729130
 		int16_t g_groundContactMeshIdx;
 
@@ -515,8 +528,17 @@ namespace Toy2
 		// STUB: TOY2 0x004878A0
 		void MarkPlatformAsMoving(int32_t platformIdx) {}
 
-		// STUB: TOY2 0x00487AD0
-		BOOL IsSafeFooting(int32_t a1, uint8_t* a2) { return 0; }
+		// FUNCTION: TOY2 0x00487AD0
+		BOOL IsSafeFooting(int32_t a1, uint8_t* a2)
+		{
+			if (*a2 != 1)
+				return 0;
+
+			if (g_buzzCollisionStates[a1].contactSurfaceIndex & 0x4000)
+				return *(int16_t*)(g_buzzCollisionStates[a1].contactSurfaceData + 40) < (int16_t)0xF0C4;
+
+			return *(int16_t*)(g_buzzCollisionStates[a1].contactSurfaceData + 34) < (int16_t)0xF0C4;
+		}
 
 		// STUB: TOY2 0x0048E1B0
 		BOOL IsMeshMoving() { return 0; }
