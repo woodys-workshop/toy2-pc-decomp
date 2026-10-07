@@ -6,6 +6,11 @@
 
 namespace Toy2
 {
+	namespace MoveableObject
+	{
+		struct MoveableObject;
+	}
+
 	namespace Buzz
 	{
 		struct Toy2BuzzActor
@@ -83,6 +88,19 @@ namespace Toy2
 		void TickGadgets();
 
 		extern int32_t g_fireChargeTimer;
+		extern int32_t g_unk53C660;
+		extern int32_t g_unk53C838;
+		extern int32_t g_unk53C668;
+		extern int32_t g_unk53C5E4;
+		extern int32_t g_unk53C618;
+		extern int32_t g_buzzSlipTimer;
+		extern int32_t g_unk53C83C;
+		extern int32_t g_unk53C650;
+		extern int32_t g_groundSlamTicker;
+		extern int32_t g_fireHoldTimer;
+		extern int32_t g_unk53C66C;
+		extern int32_t g_unk53C608;
+		extern MoveableObject::MoveableObject* g_curMoveableObject;
 		extern int32_t g_unk53C634;
 		extern int32_t g_unk50A098;
 

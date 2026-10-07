@@ -1,4 +1,6 @@
 #include "Toy2/Camera.h"
+#include "Nu3D/Math.h"
+#include "InputManager.h"
 #include "Toy2/Toy2.h"
 #include "Toy2/Actor.h"
 #include "Nu3D/Collision.h"
@@ -10,6 +12,8 @@
 #include "CharacterLoader.h"
 
 #include <string.h>
+#include <stdlib.h>
+#include <math.h>
 
 namespace Toy2
 {
@@ -107,6 +111,12 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0050A4BC
 		int32_t g_unk50A4BC;
+
+		// GLOBAL: TOY2 0x004F5AB4
+		int16_t g_cameraAngleOffsetTable[10] = { 0, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 0 };
+
+		// GLOBAL: TOY2 0x004F5AC8
+		int16_t g_autoRotationSequence[16] = { 0, 0, 1024, 512, 2048, 0, 1536, 0, 3072, 3584, 0, 0, 2560, 0, 0, 0 };
 
 		// STUB: TOY2 0x00402030
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos) {}
@@ -456,8 +466,54 @@ namespace Toy2
 		// STUB: TOY2 0x004A4F80
 		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement) { return 0; }
 
-		// STUB: TOY2 0x00433F40
-		int32_t CalculateMaxTurnAngle(int32_t directionButtonState) { return 0; }
+		// FUNCTION: TOY2 0x00433F40
+		int32_t CalculateMaxTurnAngle(int32_t directionButtonState)
+		{
+			int32_t cameraSpeed = 0;
+			int32_t analogX;
+			int32_t analogY;
+			int16_t analogStickAngle;
+			int16_t cameraAngleFromPos;
+
+			cameraAngleFromPos = Nu3D::Math::CartesianToFixedAngle((g_buzzActor.posAngles.pos.x - g_gameplayCameraState.targetPos.x) >> 5, (g_buzzActor.posAngles.pos.z - g_gameplayCameraState.targetPos.z) >> 5);
+
+			if ((InputManager::g_directionalInputCount == 1 || InputManager::g_directionalInputCount == 2) && !g_demoMode)
+			{
+				analogX = InputManager::g_analogInputX;
+
+				if (abs(InputManager::g_analogInputX) < 6144)
+				{
+					analogX = 0;
+					InputManager::g_analogInputX = 0;
+				}
+
+				analogY = InputManager::g_analogInputY;
+
+				if (abs(InputManager::g_analogInputY) < 6144)
+				{
+					analogY = 0;
+					InputManager::g_analogInputY = 0;
+				}
+
+				analogStickAngle = Nu3D::Math::CartesianToFixedAngle(analogX, analogY);
+
+				g_buzzActor.facingAngle = (cameraAngleFromPos + g_cameraAngleOffsetTable[(analogStickAngle & 0xFFF) >> 9]
+										   + (((analogStickAngle & 0x1FF) * (g_cameraAngleOffsetTable[((analogStickAngle & 0xFFF) >> 9) + 1] - g_cameraAngleOffsetTable[(analogStickAngle & 0xFFF) >> 9])) >> 9))
+										  & 0xFFF;
+
+				cameraSpeed = (int32_t)sqrt((double)(InputManager::g_analogInputY / 2 * (InputManager::g_analogInputY / 2) + InputManager::g_analogInputX / 2 * (InputManager::g_analogInputX / 2)));
+
+				if (cameraSpeed > 16384)
+					cameraSpeed = 16384;
+			}
+
+			if (InputManager::g_directionalInputCount && !g_demoMode)
+				return cameraSpeed;
+
+			g_buzzActor.facingAngle = (cameraAngleFromPos + g_autoRotationSequence[(directionButtonState >> 4) & 0xF]) & 0xFFF;
+
+			return 16384;
+		}
 
 		// STUB: TOY2 0x004037E0
 		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag) { return 0; }

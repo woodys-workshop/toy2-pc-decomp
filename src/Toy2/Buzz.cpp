@@ -8,6 +8,8 @@
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Toy2.h"
 #include "Toy2/Animation.h"
+#include "Toy2/Levels/EvilEmperorZurg.h"
+#include "Nu3D/Particles.h"
 #include "Toy2/Camera.h"
 #include "Renderer/Renderer.h"
 #include "AudioManager/AudioManager.h"
@@ -255,8 +257,53 @@ namespace Toy2
 			{&g_buzzAnimTracks[0x39C], 34, 34, 32768, 0}
 		};
 
-		// STUB: TOY2 0x00414110
-		void Respawn() {}
+		// FUNCTION: TOY2 0x00414110
+		void Respawn()
+		{
+			if (g_levelFileIndex == 12)
+				EvilEmperorZurg::BuzzRespawn();
+
+			g_buzzActor.posAngles.pos = g_buzzActor.respawnPos;
+			g_buzzActor.motionTargetPos = g_buzzActor.respawnPos;
+			g_buzzActor.floorYPos = g_buzzActor.respawnPos.y;
+
+			--g_buzzActor.lives;
+			g_buzzActor.posAngles.angles.pitch = 0;
+			g_buzzActor.posAngles.angles.yaw = g_buzzActor.respawnYawAngle;
+			g_buzzActor.rollAngle = 0;
+			g_buzzActor.facingAngle = g_buzzActor.respawnYawAngle;
+			g_buzzActor.velX = 0;
+			g_buzzActor.gravityVel = 0;
+			g_buzzActor.velForward = 0;
+			g_buzzActor.unkVar30 = 0;
+			g_buzzActor.unkVar31 = 0;
+			*(int32_t*)&g_buzzActor.unkWord13 = 0;
+			g_buzzActor.unkVar33 = 0;
+			g_buzzActor.surfaceClampY = 0x80000000;
+			g_buzzActor.inhibitMovementTimer = 0;
+			g_buzzActor.unkWord15 = 0;
+			g_buzzActor.collisionFlags = 0;
+			g_buzzActor.unkShort40 = 0;
+			g_buzzActor.unkVar37 = 0;
+			g_buzzActor.unkVar38 = 0;
+			g_buzzActor.actorFlags = 0x20;
+			g_buzzActor.stunTimer = (int16_t)65376;
+			g_buzzActor.health = 14;
+
+			g_unk52B81C = -1;
+			g_unk5281A4 = -1;
+			Camera::InitGameplayCamera(&Camera::g_gameplayCameraState, &g_buzzActor);
+			Nu3D::Particles::Init();
+			RespawnCosmicShield();
+			g_curSequencePlayer = 0;
+			memset(g_soundSequencePlayers, 0, 160);
+			g_feedbackTimerA = 0;
+			g_feedbackTimerB = 0;
+			g_feedbackTimerA_sub = 0;
+			g_hudWidgetTimers[0] = 180;
+			g_hudWidgetPositions[0] = 1024;
+			ResetBuzzState();
+		}
 
 		// FUNCTION: TOY2 0x004011D0
 		void UpdateAnimationState()
@@ -711,8 +758,126 @@ namespace Toy2
 				g_unk53C634 |= 8;
 		}
 
-		// STUB: TOY2 0x004071E0
-		void HandleDamage(int16_t hitAngle, uint8_t hitType) {}
+		// FUNCTION: TOY2 0x004071E0
+		void HandleDamage(int16_t hitAngle, uint8_t hitType)
+		{
+			int32_t cameraState;
+			uint8_t effectiveHitType;
+
+			if (g_buzzActor.health < 0 || (Camera::g_inCutscene & 1) != 0)
+				return;
+
+			cameraState = Camera::g_cameraState;
+
+			if (Camera::g_cameraState)
+			{
+				cameraState = 5;
+				Camera::g_cameraState = 5;
+			}
+
+			effectiveHitType = hitType;
+
+			if ((hitType & 1) != 0)
+			{
+				g_buzzActor.velX = Numerics::g_sinCosLUT[hitAngle & 0xFFF] / 16;
+				g_buzzActor.velForward = Numerics::g_sinCosLUT[(hitAngle + 1024) & 0xFFF] / 16;
+			}
+
+			if ((hitType & 2) == 0)
+				goto LABEL_19;
+
+			if (g_buzzActor.stunTimer > 0)
+				goto LABEL_18;
+
+			g_buzzActor.actorFlags |= 2;
+
+			if (g_buzzActor.inhibitMovementTimer)
+			{
+				if (g_buzzActor.inhibitMovementTimer >= 0)
+				{
+				LABEL_17:
+					g_buzzActor.stunTimer = -60;
+					goto LABEL_18;
+				}
+
+				if (!g_buzzActor.stunTimer)
+				{
+					++g_buzzActor.inhibitMovementTimer;
+					goto LABEL_17;
+				}
+
+			LABEL_18:
+				effectiveHitType = hitType & 0xFD;
+				goto LABEL_19;
+			}
+
+			if (g_levelTransition == 1 || g_levelTransition == 5 || g_unk53C660)
+				goto LABEL_17;
+
+		LABEL_19:
+			if ((effectiveHitType & 4) != 0)
+			{
+				if (g_levelTransition != 2)
+				{
+					if (cameraState)
+						Camera::g_cameraState = 5;
+
+					AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
+
+					if (g_feedbackTimerA < 14)
+						g_feedbackTimerA = 14;
+
+					g_buzzActor.actorFlags |= 0x14;
+					g_levelTransition = 2;
+					g_levelTransitionTimer = 46;
+					g_buzzActor.stunTimer = -90;
+					g_hudWidgetTimers[0] = 180;
+				}
+			}
+			else if ((effectiveHitType & 2) != 0)
+			{
+				--g_buzzActor.health;
+
+				g_unk53C61C = 0;
+				g_buzzActor.unkWord15 = 5;
+				g_buzzActor.gravityVel = -512;
+				g_buzzActor.collisionFlags = 0;
+				g_buzzActor.unkShort40 = 0;
+
+				ResetBuzzState();
+				g_unk53C834 = 1;
+				g_hudWidgetTimers[1] = 180;
+
+				if (g_buzzActor.health >= 0)
+				{
+					g_buzzActor.stunTimer = 90;
+
+					if (!AudioManager::IsActorSoundPlaying(&g_buzzActor))
+						AudioManager::Preset::PlayOneShotSound2(26, (Actor::Toy2Actor*)&g_buzzActor);
+
+					if (g_feedbackTimerA < 14)
+						g_feedbackTimerA = 14;
+				}
+				else if (g_levelTransition != 2)
+				{
+					if (Camera::g_cameraState)
+						Camera::g_cameraState = 5;
+
+					AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
+
+					if (g_feedbackTimerA < 14)
+						g_feedbackTimerA = 14;
+
+					g_buzzActor.actorFlags |= 4;
+
+					g_hudWidgetTimers[0] = 180;
+					g_levelTransition = 2;
+					g_levelTransitionTimer = 120;
+
+					g_buzzActor.stunTimer = -90;
+				}
+			}
+		}
 
 		// STUB: TOY2 0x004100F0
 		void CheckParticleCollisions() {}
@@ -850,11 +1015,217 @@ namespace Toy2
 				buzzActor->gravityVel = maxFallSpeed;
 		}
 
-		// STUB: TOY2 0x004343D0
-		int32_t UpdateHorizontalMovement(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams, int32_t flag) { return 0; }
+		// FUNCTION: TOY2 0x004343D0
+		int32_t UpdateHorizontalMovement(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams, int32_t flag)
+		{
+			uint16_t yaw = buzzActor->posAngles.angles.yaw;
+			int32_t velX = buzzActor->velX;
+			int16_t* cosEntry = &Numerics::g_sinCosLUT[(yaw + 1024) & 0xFFF];
+			int32_t sinValue = Numerics::g_sinCosLUT[(yaw - 2048) & 0xFFF] >> 2;
+			int32_t cosValue = *cosEntry >> 2;
+			int32_t sideways = (cosValue * velX + sinValue * buzzActor->velForward) / 4096;
+			int32_t forward = (cosValue * buzzActor->velForward - sinValue * velX) / 4096;
+			int32_t maxSpeed;
+			int32_t maxAirSpeed;
+			int32_t result;
 
-		// STUB: TOY2 0x004346C0
-		int32_t UpdateFacing(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams) { return 0; }
+			if ((buzzActor->actorFlags & 0x200) != 0)
+			{
+				if (buzzActor->collisionFlags)
+					buzzActor->actorFlags &= 0xFDFF;
+
+				goto LABEL_23;
+			}
+
+			// both speeds slow down to 0
+			if (sideways < 0)
+			{
+				sideways += movementParams->groundAccel;
+
+				if (sideways > 0)
+					sideways = 0;
+			}
+			else if (sideways > 0)
+			{
+				sideways -= movementParams->groundAccel;
+
+				if (sideways < 0)
+					sideways = 0;
+			}
+
+			if (forward < 0)
+			{
+				forward += movementParams->airAccel;
+
+				if (forward > 0)
+					forward = 0;
+			}
+			else if (forward > 0)
+			{
+				forward -= movementParams->airAccel;
+
+				if (forward < 0)
+					forward = 0;
+			}
+
+			// the stick speeds it up
+			if (flag > 0)
+			{
+				if (forward < movementParams->maxSpeed)
+					forward += movementParams->airAccel + movementParams->turnSpeed;
+			}
+
+			if (flag < 0 && forward > -movementParams->maxSpeed)
+				forward -= movementParams->airAccel + movementParams->turnSpeed;
+
+		LABEL_23:
+			maxSpeed = movementParams->maxSpeed;
+
+			if (sideways > maxSpeed)
+				sideways = movementParams->maxSpeed;
+
+			if (sideways < -maxSpeed)
+				sideways = -maxSpeed;
+
+			maxAirSpeed = movementParams->maxAirSpeed;
+
+			if (forward > maxAirSpeed)
+				forward = movementParams->maxAirSpeed;
+
+			if (forward < -maxAirSpeed)
+				forward = -maxAirSpeed;
+
+			buzzActor->unkVar30 = forward;
+			buzzActor->unkVar31 = sideways;
+
+			sinValue = Numerics::g_sinCosLUT[buzzActor->posAngles.angles.yaw] >> 2;
+			cosValue = *cosEntry >> 2;
+			buzzActor->velX = (sinValue * forward + cosValue * sideways) / 4096;
+			result = (cosValue * forward - sinValue * sideways) / 4096;
+			buzzActor->velForward = result;
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x004346C0
+		int32_t UpdateFacing(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams)
+		{
+			int32_t flag = 0;
+			int32_t turnDiff;
+			int32_t turnRate;
+			int16_t facingAngle;
+			uint16_t yawAngle;
+			uint32_t angleDiff;
+			bool slipping;
+
+			if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
+			{
+				if (g_unk53C678 != -1)
+				{
+					if (!g_unk53C678)
+					{
+						g_unk53C5D0 = buzzActor->posAngles.angles.yaw;
+						goto LABEL_6;
+					}
+
+					if (g_unk53C678 < 16)
+					{
+					LABEL_6:
+						g_unk53C678 += Renderer::g_frameDelta;
+
+						if (g_unk53C678 >= 16)
+							g_unk53C678 = 16;
+					}
+				}
+
+				if (!Camera::g_freezeBuzz)
+					flag = 1;
+
+				movementParams->maxSpeed = (movementParams->maxSpeed * Camera::CalculateMaxTurnAngle(InputManager::g_directionInputState)) >> 14;
+			}
+			else
+			{
+				if (g_unk53C678 > 0 && g_unk53C678 < 16 && buzzActor->unkShort40)
+				{
+					angleDiff = (g_unk53C5D0 - buzzActor->facingAngle) & 0xFFF;
+
+					if (angleDiff > 2048)
+						angleDiff -= 4095;
+
+					if ((Camera::g_inCutscene & 1) == 0)
+						buzzActor->facingAngle = (g_unk53C5D0 - (angleDiff * g_unk53C678) / 16) & 0xFFF;
+
+					g_unk53C678 = -1;
+				}
+
+				if (g_buzzActor.unkVar30 < 512 && abs(g_buzzActor.unkVar31) < 512 && buzzActor->unkShort40)
+					g_unk53C678 = 0;
+			}
+
+			facingAngle = buzzActor->facingAngle;
+			yawAngle = buzzActor->posAngles.angles.yaw;
+			turnDiff = (yawAngle - facingAngle) & 0xFFF;
+
+			if (turnDiff <= 0x800)
+			{
+				if (((buzzActor->posAngles.angles.yaw - facingAngle) & 0xFFFu) > 0x5DC && !g_unk53C818)
+				{
+					buzzActor->posAngles.angles.yaw = facingAngle;
+					g_unk53C5D0 = facingAngle;
+					slipping = (g_buzzActionState & 0xFF481) == 1;
+
+				LABEL_27:
+					if (slipping)
+					{
+						g_buzzSlipTimer = 26;
+						buzzActor->unkVar38 = -1;
+						AudioManager::PlaySoundEffect(18, &buzzActor->posAngles.pos);
+					}
+
+					goto LABEL_38;
+				}
+
+				if (turnDiff > movementParams->maxTurnRate)
+					turnDiff = movementParams->maxTurnRate;
+
+				buzzActor->posAngles.angles.yaw = yawAngle - turnDiff * (int32_t)Renderer::g_frameDelta / 8;
+			}
+			else
+			{
+				turnRate = 4096 - turnDiff;
+
+				if (4096 - turnDiff > 1500 && !g_unk53C818)
+				{
+					buzzActor->posAngles.angles.yaw = facingAngle;
+					g_unk53C5D0 = facingAngle;
+
+					slipping = (g_buzzActionState & 0xFF481) == 1;
+					goto LABEL_27;
+				}
+
+				if (turnRate > movementParams->maxTurnRate)
+					turnRate = movementParams->maxTurnRate;
+
+				buzzActor->posAngles.angles.yaw = yawAngle + turnRate * (int32_t)Renderer::g_frameDelta / 8;
+			}
+
+		LABEL_38:
+			buzzActor->posAngles.angles.yaw &= 0xFFF;
+
+			if (g_curMoveableObject)
+			{
+				if (((g_unk53C624 - buzzActor->facingAngle + 1024) & 0xFFFu) > 0x800)
+				{
+					g_curMoveableObject = 0;
+
+					return flag;
+				}
+
+				buzzActor->posAngles.angles.yaw = g_unk53C624;
+			}
+
+			return flag;
+		}
 
 		// STUB: TOY2 0x00434990
 		void TickGunFire(PosAndAngles* muzzlePos) {}
@@ -2350,8 +2721,18 @@ namespace Toy2
 			g_unk53C5DC = 0;
 		}
 
-		// STUB: TOY2 0x004A28F0
-		void UpdateRespawnAnchor() {}
+		// FUNCTION: TOY2 0x004A28F0
+		void UpdateRespawnAnchor()
+		{
+			g_buzzActor.actorFlags &= ~8;
+
+			if (g_buzzActor.collisionFlags && !g_levelTransitionTimer && Collision::IsSafeFooting(0, (uint8_t*)&g_buzzActor.collisionFlags) && (g_unk52B81C & 0xFFFFFFFC) != 0)
+			{
+				g_buzzActor.actorFlags |= 8;
+				g_buzzActor.respawnPos = g_buzzActor.posAngles.pos;
+				g_buzzActor.respawnYawAngle = g_buzzActor.posAngles.angles.yaw;
+			}
+		}
 
 		// STUB: TOY2 0x004A2D80
 		void UpdateContactEffects() {}

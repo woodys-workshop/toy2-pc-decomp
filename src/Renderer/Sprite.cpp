@@ -6,6 +6,8 @@
 #include "SoftwareRenderer.h"
 #include "NGNLoader/NGNLoader.h"
 #include "Nu3D/Camera.h"
+#include "Nu3D/Math.h"
+#include "Nu3D/Viewport.h"
 #include "DrawingDevice.h"
 #include "Logger.h"
 
@@ -652,6 +654,89 @@ namespace Renderer
 			g_spriteBuffer2DCount = 2000;
 		}
 
+		// FUNCTION: TOY2 0x004B8B10
+		void InsertIntoBucket(Nu3D::Sprite* sprite)
+		{
+			Vector3F position;
+
+			Nu3D::Math::GetPositionVector(&Nu3D::Camera::g_secondaryCamera.matrix, &position);
+			Nu3D::Math::VertexSubtract(&position, &position, &sprite->position);
+
+			position.x = position.x * position.x;
+			position.y = position.y * position.y;
+			position.z = position.z * position.z;
+
+			float distanceSquared = position.z + position.y + position.x;
+
+			if (distanceSquared < 1.0)
+				distanceSquared = 1.0;
+
+			Nu3D::Sprite* previous = 0;
+			int32_t depth = 0;
+
+			// the exponent of the float is the bucket, they get exponentially further apart
+			int32_t bucket = ((*(uint32_t*)&distanceSquared >> 20) + 8) & 0xFF;
+
+			sprite->distanceSquared = distanceSquared;
+
+			Nu3D::Sprite* current = g_spriteBuckets[bucket];
+
+			// sorted furthest first inside of a bucket
+			while (current)
+			{
+				if (current->distanceSquared <= distanceSquared)
+					break;
+
+				previous = current;
+				current = current->next;
+				depth++;
+			}
+
+			sprite->next = current;
+
+			if (previous)
+				previous->next = sprite;
+			else
+				g_spriteBuckets[bucket] = sprite;
+
+			if (g_maxBucketDepth <= depth)
+				g_maxBucketDepth = depth;
+		}
+
+		// FUNCTION: TOY2 0x004B9100
+		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags)
+		{
+			if (g_spriteBufferCount)
+			{
+				RGBA modulatedColor = ModulateColorByAlpha(color, renderFlags);
+
+				Nu3D::Sprite* sprite = &g_spriteBuffer[--g_spriteBufferCount];
+
+				sprite->type = RENDER_QUAD_SPRITE_FROM_VERTS;
+				sprite->position = verts[0];
+				sprite->triVerts[0] = verts[1];
+				sprite->triVerts[1] = verts[2];
+				sprite->triVerts[2] = verts[3];
+				sprite->uvBottomLeft.x = uvTopLeft->x;
+				sprite->uvBottomLeft.y = uvBottomRight->y;
+				sprite->uvTopLeft = *uvTopLeft;
+				sprite->uvBottomRight = *uvBottomRight;
+				sprite->uvTopRight.x = uvBottomRight->x;
+				sprite->uvTopRight.y = uvTopLeft->y;
+				sprite->textureIndex = textureIndex;
+				sprite->color = ApplyGammaCorrection(modulatedColor);
+				sprite->renderFlags = renderFlags;
+
+				Nu3D::Viewport::GetViewClipRect(&sprite->viewportRect);
+
+				InsertIntoBucket(sprite);
+			}
+			else
+			{
+				Logger::DebugLog("sprite buffer underrun");
+			}
+		}
+
 		// STUB: TOY2 0x004B8E60
 		void QueueQuadSprite(
 			Vector3F* position,
@@ -735,13 +820,9 @@ namespace Renderer
 			int32_t renderFlags)
 		{}
 
-		// STUB: TOY2 0x004B9100
-		void QueueQuadSpriteFromVerts(Vector3F* verts, Vector2F* uvTopLeft, Vector2F* uvBottomRight, int32_t textureIndex, RGBA color, int32_t renderFlags) {}
 
 		// STUB: TOY2 0x004B9210
 		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color) {}
 
-		// STUB: TOY2 0x004B8B10
-		void InsertIntoBucket(Nu3D::Sprite* sprite) {}
 	}
 }

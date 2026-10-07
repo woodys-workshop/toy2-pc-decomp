@@ -461,8 +461,25 @@ namespace SoftwareRenderer
 		}
 	}
 
-	// STUB: TOY2 0x004B6220
-	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices) { return 0; }
+	// FUNCTION: TOY2 0x004B6220
+	HRESULT SubmitQuad(int32_t renderFlags, int32_t texIndex, LPDIRECT3DVERTEXBUFFER buffer, uint16_t* indices)
+	{
+		LPVOID data;
+
+		HRESULT result = DrawingAPI::LockVertexBuffer(buffer, 0x801, &data, 0);
+
+		if (!result)
+		{
+			Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
+
+			SubmitSortedTriangle(renderFlags, 0, texIndex, &vertices[indices[0]], &vertices[indices[1]], &vertices[indices[2]]);
+			SubmitSortedTriangle(renderFlags, 0, texIndex, &vertices[2], &vertices[indices[1]], &vertices[indices[3]]);
+
+			return DrawingAPI::UnlockVertexBuffer(buffer);
+		}
+
+		return result;
+	}
 
 	// STUB: TOY2 0x004BC430
 	float* UnkFunc18(float* a1, float* a2) { return 0; }

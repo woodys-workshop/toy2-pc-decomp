@@ -19,6 +19,9 @@ namespace Renderer
 	// GLOBAL: TOY2 0x005087E4
 	WORD g_lineIndices[2] = { 0, 1 };
 
+	// GLOBAL: TOY2 0x005087DC
+	WORD g_quadStripIndices[4] = { 0, 1, 2, 3 };
+
 	// TODO: Fix
 	// the instance data's sprite is reused as scratch space for materials with metadata 0x100 (environment mapping)
 	struct Metadata100Params
@@ -656,8 +659,58 @@ namespace Renderer
 	// STUB: TOY2 0x004B7FC0
 	void Sprite::RenderTriangleSprite(Nu3D::Sprite* sprite) {}
 
-	// STUB: TOY2 0x004B8160
-	void Sprite::RenderQuadSpriteFromVerts(Nu3D::Sprite* sprite) {}
+	// FUNCTION: TOY2 0x004B8160
+	void Sprite::RenderQuadSpriteFromVerts(Nu3D::Sprite* sprite)
+	{
+		LPDIRECT3DVERTEXBUFFER destBuffer = g_FVF_14C_Buffer_1.vertexBuffer;
+		LPVOID lockedData;
+
+		if (!DrawingAPI::LockVertexBuffer(g_FVF_152_Buffer.vertexBuffer, 0x801, &lockedData, 0))
+		{
+			Nu3D::Vertex* vertices = (Nu3D::Vertex*)lockedData;
+
+			vertices[0].position = sprite->position;
+			vertices[0].coords.x = sprite->uvBottomLeft.x;
+			vertices[0].coords.y = sprite->uvBottomLeft.y;
+			vertices[0].diffuse = sprite->color;
+
+			vertices[1].position = sprite->triVerts[0];
+			vertices[1].coords.x = sprite->uvTopLeft.x;
+			vertices[1].coords.y = sprite->uvTopLeft.y;
+			vertices[1].diffuse = sprite->color;
+
+			vertices[2].position = sprite->triVerts[1];
+			vertices[2].coords.x = sprite->uvBottomRight.x;
+			vertices[2].coords.y = sprite->uvBottomRight.y;
+			vertices[2].diffuse = sprite->color;
+
+			vertices[3].position = sprite->triVerts[2];
+			vertices[3].coords.x = sprite->uvTopRight.x;
+			vertices[3].coords.y = sprite->uvTopRight.y;
+			vertices[3].diffuse = sprite->color;
+
+			DrawingAPI::UnlockVertexBuffer(g_FVF_152_Buffer.vertexBuffer);
+
+			D3DMATRIX identity;
+			Nu3D::Math::BuildIdentityMatrix(&identity);
+			DrawingDevice::SetWorldTransform(&identity);
+
+			SoftwareRenderer::g_unkE4D950 = 2;
+
+			if (g_useSoftwareRasterizer)
+			{
+				if (!DrawingAPI::ProcessVerticesOnBuffer(destBuffer, 1, 0, 4, g_FVF_152_Buffer.vertexBuffer, 0, 0))
+					SoftwareRenderer::SubmitQuad(sprite->renderFlags, sprite->textureIndex, destBuffer, g_quadStripIndices);
+			}
+			else if (!DrawingAPI::ProcessVerticesOnBuffer(destBuffer, 5, 0, 4, g_FVF_152_Buffer.vertexBuffer, 0, 0))
+			{
+				InitRenderState(sprite->renderFlags);
+				BindTexture(sprite->textureIndex);
+				SoftwareRenderer::g_viewportRect = &sprite->viewportRect;
+				DrawingAPI::DrawIndexedPrimitiveVB(D3DPT_TRIANGLESTRIP, destBuffer, g_quadStripIndices, 4, 8);
+			}
+		}
+	}
 
 	// FUNCTION: TOY2 0x004B6AD0
 	void Sprite::DispatchCommand(Nu3D::Sprite* command)

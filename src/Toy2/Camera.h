@@ -39,6 +39,7 @@ namespace Toy2
 		extern GameplayCameraState g_gameplayCameraState;
 		extern int16_t g_inCutscene;
 		extern int32_t g_cameraState;
+		extern int32_t g_freezeBuzz;
 		extern int32_t g_cutsceneFrameTimer;
 
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);

@@ -74,6 +74,18 @@
 
 namespace Toy2
 {
+	// GLOBAL: TOY2 0x0072E34C
+	int32_t g_mpegPlay;
+
+	// GLOBAL: TOY2 0x00534078
+	int32_t g_cheatsEnabled;
+
+	// GLOBAL: TOY2 0x00830C20
+	int32_t g_highQualityMpegEnabled;
+
+	// GLOBAL: TOY2 0x00534560
+	int32_t g_isDemo;
+
 	// GLOBAL: TOY2 0x00508D70
 	ToyCfg g_toyCfgData = {
 		7, /* flags */
@@ -270,6 +282,9 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x0052F120
 	SoundSequencePlayer g_soundSequencePlayers[8];
+
+	// GLOBAL: TOY2 0x0052AD80
+	SoundSequencePlayer* g_curSequencePlayer;
 
 	// GLOBAL: TOY2 0x0052F2E0
 	int16_t g_hudWidgetPositions[12];
@@ -2062,11 +2077,114 @@ namespace Toy2
 		return 1;
 	}
 
-	// STUB: TOY2 0x0048E730
+	// STUB: TOY2 0x00430E90
+	void ReadIniFile() {}
+
+	// STUB: TOY2 0x0047EF80
+	void ProfileCPU() {}
+
+	// FUNCTION: TOY2 0x0048E730
 	void OneInit()
 	{
-		g_randDatBufferPtr = g_randDatBuffer;
+		char* arg;
+		const char* version;
+		FILE* saveFile;
+		FILE* secondSaveFile;
+		size_t configStrLength;
+		char saveFilePath[256];
+		char secondSaveFileName[256];
+
+		Logger::g_logsEnabled = 0;
+		g_mpegPlay = 0;
+		g_cheatsEnabled = 0;
+		g_highQualityMpegEnabled = 0;
+
+		for (arg = strtok(D3DApp::g_windowData.lpCmdLine, " -"); arg; arg = strtok(0, " -"))
+		{
+			if (!lstrcmpA(arg, "cheat"))
+				g_cheatsEnabled = 1;
+
+			if (!lstrcmpA(arg, "log"))
+				Logger::g_logsEnabled = 1;
+
+			if (!lstrcmpA(arg, "mpeg"))
+			{
+				g_mpegPlay = 1;
+				Logger::Log("ONEINIT : Mpeg play OFF.\n");
+			}
+
+			if (!lstrcmpA(arg, "high"))
+			{
+				g_highQualityMpegEnabled = 1;
+				Logger::Log("ONEINIT : Hi quality mpeg playing ON.\n");
+			}
+
+			if (!lstrcmpA(arg, "demo"))
+			{
+				g_isDemo = g_isDemo == 0;
+				version = "demo";
+
+				if (g_isDemo != 1)
+					version = "full";
+
+				Logger::Log("ONEINIT : Switched to %s version.\n", version);
+			}
+		}
+
 		SaveManager::Init();
+		Nullsub1();
+
+		SaveManager::g_save0Data.musicVolume = 128;
+		SaveManager::g_save0Data.soundVolume = 255;
+
+		AudioManager::SetVolumesProcessed(128, 255);
+
+		// slot 0 is the settings of the game, slot 99 the controls
+		sprintf(saveFilePath, "Toy2%02d.sav", 0);
+		saveFile = fopen(saveFilePath, "rb");
+
+		if (saveFile)
+		{
+			fread(&configStrLength, 1, 4, saveFile);
+
+			if (configStrLength)
+			{
+				fread(secondSaveFileName, 1, configStrLength, saveFile);
+				secondSaveFileName[configStrLength] = 0;
+			}
+
+			fread(&SaveManager::g_save0Data, 1, 392, saveFile);
+			fclose(saveFile);
+		}
+
+		sprintf(secondSaveFileName, "Toy2%02d.sav", 99);
+		secondSaveFile = fopen(secondSaveFileName, "rb");
+
+		if (secondSaveFile)
+		{
+			fread(&configStrLength, 1, 4, secondSaveFile);
+
+			if (configStrLength)
+			{
+				fread(saveFilePath, 1, configStrLength, secondSaveFile);
+				saveFilePath[configStrLength] = 0;
+			}
+
+			fread(&SaveManager::g_save99Data, 1, 392, secondSaveFile);
+			fclose(secondSaveFile);
+		}
+
+		SaveManager::InitProgressData(&SaveManager::g_save0Data);
+		SaveManager::LoadProgressData(&SaveManager::g_save0Data);
+
+		g_levelIndex = 0;
+		g_randDatBufferPtr = g_randDatBuffer;
+
+		ProfileCPU();
+
+		Nullsub7();
+
+		ReadIniFile();
 	}
 
 	// STUB: TOY2 0x00490730
@@ -2918,11 +3036,31 @@ namespace Toy2
 	// STUB: TOY2 0x0042E600
 	int32_t InitialiseLevel14() { return 0; }
 
-	// STUB: TOY2 0x00430E90
-	void ReadIniFile() {}
+	// FUNCTION: TOY2 0x00433ED0
+	void ResetBuzzState()
+	{
+		Buzz::g_unk53C660 = 0;
 
-	// STUB: TOY2 0x00433ED0
-	void ResetBuzzState() {}
+		Buzz::g_unk53C838 = 0;
+		Buzz::g_unk53C668 = 0;
+		Buzz::g_unk53C5E4 = 0;
+		Buzz::g_unk53C618 = 0;
+		Buzz::g_buzzSlipTimer = 0;
+		Buzz::g_unk53C83C = 0;
+		Buzz::g_unk53C650 = 0;
+		Buzz::g_groundSlamTicker = 0;
+		Buzz::g_fireChargeTimer = 0;
+		Buzz::g_fireHoldTimer = 0;
+		Buzz::g_curMoveableObject = 0;
+		Buzz::g_unk53C66C = 0;
+		Buzz::g_unk53C608 = 0;
+
+		Buzz::DeactivateRocketBoots();
+		Buzz::CancelGrapple();
+		Buzz::ResetGravityBoots();
+
+		g_buzzActor.actorFlags &= 0xFFBB;
+	}
 
 	// FUNCTION: TOY2 0x0043E5A0
 	void InitZoneData()
@@ -3221,9 +3359,6 @@ namespace Toy2
 				break;
 		}
 	}
-
-	// STUB: TOY2 0x0047EF80
-	void ProfileCPU() {}
 
 	// STUB: TOY2 0x00498550
 	void ProcessMiscEvents() {}

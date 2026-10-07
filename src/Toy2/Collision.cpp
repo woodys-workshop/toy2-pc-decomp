@@ -287,20 +287,23 @@ namespace Toy2
 								if (radiusSq < value)
 									radiusSq = value;
 
-								value = (triangle->e1z + triangle->v0z) * (triangle->e1z + triangle->v0z) + (triangle->e1y + triangle->v0y) * (triangle->e1y + triangle->v0y) +
-										(triangle->e1x + triangle->v0x) * (triangle->e1x + triangle->v0x);
+								value = (triangle->e1z + triangle->v0z) * (triangle->e1z + triangle->v0z)
+									+ (triangle->e1y + triangle->v0y) * (triangle->e1y + triangle->v0y)
+									+ (triangle->e1x + triangle->v0x) * (triangle->e1x + triangle->v0x);
 
 								if (radiusSq < value)
 									radiusSq = value;
 
-								value = (triangle->e2z + triangle->v0z) * (triangle->e2z + triangle->v0z) + (triangle->e2y + triangle->v0y) * (triangle->e2y + triangle->v0y) +
-										(triangle->e2x + triangle->v0x) * (triangle->e2x + triangle->v0x);
+								value = (triangle->e2z + triangle->v0z) * (triangle->e2z + triangle->v0z)
+									+ (triangle->e2y + triangle->v0y) * (triangle->e2y + triangle->v0y)
+									+ (triangle->e2x + triangle->v0x) * (triangle->e2x + triangle->v0x);
 
 								if (radiusSq < value)
 									radiusSq = value;
 
-								value = (triangle->e3z + triangle->v0z) * (triangle->e3z + triangle->v0z) + (triangle->e3y + triangle->v0y) * (triangle->e3y + triangle->v0y) +
-										(triangle->e3x + triangle->v0x) * (triangle->e3x + triangle->v0x);
+								value = (triangle->e3z + triangle->v0z) * (triangle->e3z + triangle->v0z)
+									+ (triangle->e3y + triangle->v0y) * (triangle->e3y + triangle->v0y)
+									+ (triangle->e3x + triangle->v0x) * (triangle->e3x + triangle->v0x);
 
 								if (radiusSq < value)
 									radiusSq = value;
@@ -548,7 +551,7 @@ namespace Toy2
 
 			normal.y = 0;
 
-			if (!g_unk72D2AC)
+			if (! g_unk72D2AC)
 				return 0;
 
 			hit = 0;
@@ -629,7 +632,8 @@ namespace Toy2
 
 						if (projection >= 0)
 						{
-							sideZ = (32 * segment[2] - (startZ + ((projection * tangent.z) >> 12))) * (32 * segment[2] - (startZ + ((projection * tangent.z) >> 12)));
+							sideZ = (32 * segment[2] - (startZ + ((projection * tangent.z) >> 12)))
+								* (32 * segment[2] - (startZ + ((projection * tangent.z) >> 12)));
 							sideX = (planeX - (startX + ((projection * tangent.x) >> 12))) * (planeX - (startX + ((projection * tangent.x) >> 12)));
 
 							if ((radius + 32) * (radius + 32) >= sideX + sideZ)
@@ -852,7 +856,8 @@ namespace Toy2
 												if (faceAdjacency[1] != 0x7FFF)
 													facing0 = f * faceAdjacency[1] + e * faceAdjacency[0] + endDistance * faceAdjacency[2] > -524288;
 
-												if ((faceAdjacency[4] != 0x7FFF && f * faceAdjacency[4] + normal->z * faceAdjacency[5] + e * faceAdjacency[3] > -524288)
+												if ((faceAdjacency[4] != 0x7FFF
+													 && f * faceAdjacency[4] + normal->z * faceAdjacency[5] + e * faceAdjacency[3] > -524288)
 													|| facing0)
 												{
 													rayQuery->hitT0 = time;
@@ -948,7 +953,9 @@ namespace Toy2
 									if (faceAdjacency[1] != 0x7FFF)
 										facing1 = normal->y * faceAdjacency[1] + normal->x * faceAdjacency[0] + normal->z * faceAdjacency[2] > -524288;
 
-									if ((faceAdjacency[4] != 0x7FFF && normal->y * faceAdjacency[4] + normal->z * faceAdjacency[5] + normal->x * faceAdjacency[3] > -524288) || facing1)
+									if ((faceAdjacency[4] != 0x7FFF
+										 && normal->y * faceAdjacency[4] + normal->z * faceAdjacency[5] + normal->x * faceAdjacency[3] > -524288)
+										|| facing1)
 									{
 										rayQuery->hitT0 = distance;
 										rayQuery->hitT1 = endDistance;
@@ -1020,8 +1027,8 @@ namespace Toy2
 
 			squaredRadius = quarterRadius * quarterRadius;
 			squaredDist = (startZ + ((direction.z * distance) >> 12)) * (startZ + ((direction.z * distance) >> 12))
-						  + (((direction.y * distance) >> 12) + startY) * (((direction.y * distance) >> 12) + startY)
-						  + (startX + ((direction.x * distance) >> 12)) * (startX + ((direction.x * distance) >> 12));
+				+ (((direction.y * distance) >> 12) + startY) * (((direction.y * distance) >> 12) + startY)
+				+ (startX + ((direction.x * distance) >> 12)) * (startX + ((direction.x * distance) >> 12));
 
 			if (squaredDist > squaredRadius)
 				return 0;
@@ -1059,7 +1066,7 @@ namespace Toy2
 
 			if (faceAdjacency[4] == 0x7FFF || point.y * faceAdjacency[4] + normalX * faceAdjacency[3] + point.z * faceAdjacency[5] <= -524288)
 			{
-				if (!facing)
+				if (! facing)
 					return 0;
 			}
 
@@ -1102,14 +1109,17 @@ namespace Toy2
 			planeY = 32 * triangle->v0z;
 			planeZ = triangle->unk20;
 
-			distance = ((triangle->unk24 * (rayQuery->origin.z - planeY) + planeX * (rayQuery->origin.y - 32 * triangle->v0y)
-						 + planeZ * (rayQuery->origin.x - 32 * triangle->v0x))
-						>> 14)
-					   - a3;
-			endDistance = ((triangle->unk24 * (rayQuery->endpoint.z - planeY) + planeX * (rayQuery->endpoint.y - 32 * triangle->v0y)
-							+ planeZ * (rayQuery->endpoint.x - 32 * triangle->v0x))
-						   >> 14)
-						  - a3;
+			distance =
+				((triangle->unk24 * (rayQuery->origin.z - planeY) + planeX * (rayQuery->origin.y - 32 * triangle->v0y)
+				  + planeZ * (rayQuery->origin.x - 32 * triangle->v0x))
+				 >> 14)
+				- a3;
+				
+			endDistance =
+				((triangle->unk24 * (rayQuery->endpoint.z - planeY) + planeX * (rayQuery->endpoint.y - 32 * triangle->v0y)
+				  + planeZ * (rayQuery->endpoint.x - 32 * triangle->v0x))
+				 >> 14)
+				- a3;
 
 			if (endDistance < 0 && distance >= 0)
 			{
@@ -1154,20 +1164,25 @@ namespace Toy2
 			margin = 32 * triangle->e3x;
 			hitY = 32 * triangle->e3y;
 
-			startDistance2 = ((triangle->unk2A * (rayQuery->origin.z - planeY - planeZ) + triangle->unk28 * (rayQuery->origin.y - hitY - 32 * triangle->v0y)
-							   + triangle->unk26 * (rayQuery->origin.x - margin - planeX))
-							  >> 14)
-							 - a3;
-			endDistance2 = ((triangle->unk2A * (rayQuery->endpoint.z - planeY - planeZ) + triangle->unk28 * (rayQuery->endpoint.y - hitY - 32 * triangle->v0y)
-							 + triangle->unk26 * (rayQuery->endpoint.x - margin - planeX))
-							>> 14)
-						   - a3;
+			startDistance2 =
+				((triangle->unk2A * (rayQuery->origin.z - planeY - planeZ) + triangle->unk28 * (rayQuery->origin.y - hitY - 32 * triangle->v0y)
+				  + triangle->unk26 * (rayQuery->origin.x - margin - planeX))
+				 >> 14)
+				- a3;
+			endDistance2 =
+				((triangle->unk2A * (rayQuery->endpoint.z - planeY - planeZ) + triangle->unk28 * (rayQuery->endpoint.y - hitY - 32 * triangle->v0y)
+				  + triangle->unk26 * (rayQuery->endpoint.x - margin - planeX))
+				 >> 14)
+				- a3;
 
 			if (endDistance2 < 0 && startDistance2 >= 0)
 			{
-				hitX = rayQuery->origin.x + startDistance2 * (rayQuery->endpoint.x - rayQuery->origin.x) / (startDistance2 - endDistance2) - ((a3 * triangle->unk26) >> 14);
-				hitY = rayQuery->origin.y + startDistance2 * (rayQuery->endpoint.y - rayQuery->origin.y) / (startDistance2 - endDistance2) - ((a3 * triangle->unk28) >> 14);
-				hitZ = rayQuery->origin.z + startDistance2 * (rayQuery->endpoint.z - rayQuery->origin.z) / (startDistance2 - endDistance2) - ((a3 * triangle->unk2A) >> 14);
+				hitX = rayQuery->origin.x + startDistance2 * (rayQuery->endpoint.x - rayQuery->origin.x) / (startDistance2 - endDistance2)
+					- ((a3 * triangle->unk26) >> 14);
+				hitY = rayQuery->origin.y + startDistance2 * (rayQuery->endpoint.y - rayQuery->origin.y) / (startDistance2 - endDistance2)
+					- ((a3 * triangle->unk28) >> 14);
+				hitZ = rayQuery->origin.z + startDistance2 * (rayQuery->endpoint.z - rayQuery->origin.z) / (startDistance2 - endDistance2)
+					- ((a3 * triangle->unk2A) >> 14);
 
 				if (Nu3D::Collision::IsPointInTriangle(
 						(hitX >> 5) - triangle->e3x - triangle->v0x,
@@ -1340,7 +1355,15 @@ namespace Toy2
 				segEnd[1] = rayQuery->endpoint.y - 32 * (triangle->e1y + triangle->v0y);
 				segEnd[2] = rayQuery->endpoint.z - 32 * (triangle->e1z + triangle->v0z);
 
-				if (SweepEdge(segStart, segEnd, triangle->e2x - triangle->e1x, triangle->e2y - triangle->e1y, triangle->e2z - triangle->e1z, rayQuery, a3 + 32, faceAdjacency))
+				if (SweepEdge(
+						segStart,
+						segEnd,
+						triangle->e2x - triangle->e1x,
+						triangle->e2y - triangle->e1y,
+						triangle->e2z - triangle->e1z,
+						rayQuery,
+						a3 + 32,
+						faceAdjacency))
 				{
 					rayQuery->hitFace = triangle;
 					hit = 1;
@@ -1356,14 +1379,30 @@ namespace Toy2
 					segEnd[1] = rayQuery->endpoint.y - 32 * (triangle->e3y + triangle->v0y);
 					segEnd[2] = rayQuery->endpoint.z - 32 * (triangle->e3z + triangle->v0z);
 
-					if (SweepEdge(segStart, segEnd, triangle->e2x - triangle->e3x, triangle->e2y - triangle->e3y, triangle->e2z - triangle->e3z, rayQuery, a3 + 32, faceAdjacency))
+					if (SweepEdge(
+							segStart,
+							segEnd,
+							triangle->e2x - triangle->e3x,
+							triangle->e2y - triangle->e3y,
+							triangle->e2z - triangle->e3z,
+							rayQuery,
+							a3 + 32,
+							faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
 						hit = 1;
 						rayQuery->hitFlags = a4 | 0x2000;
 					}
 
-					if (SweepEdge(segStart, segEnd, triangle->e1x - triangle->e3x, triangle->e1y - triangle->e3y, triangle->e1z - triangle->e3z, rayQuery, a3 + 32, faceAdjacency))
+					if (SweepEdge(
+							segStart,
+							segEnd,
+							triangle->e1x - triangle->e3x,
+							triangle->e1y - triangle->e3y,
+							triangle->e1z - triangle->e3z,
+							rayQuery,
+							a3 + 32,
+							faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
 						rayQuery->hitFlags = a4 | 0x2000;
@@ -1534,10 +1573,11 @@ namespace Toy2
 					Nu3D::Math::NormalizeToFixedPoint(&direction, &direction);
 
 					rayQuery.direction = direction;
-					rayQuery.directionDot = ((direction.x * (rayQuery.endpoint.x - rayQuery.origin.x) + direction.y * (rayQuery.endpoint.y - rayQuery.origin.y)
-											  + direction.z * (rayQuery.endpoint.z - rayQuery.origin.z))
-											 >> 12)
-											+ 256;
+					rayQuery.directionDot =
+						((direction.x * (rayQuery.endpoint.x - rayQuery.origin.x) + direction.y * (rayQuery.endpoint.y - rayQuery.origin.y)
+						  + direction.z * (rayQuery.endpoint.z - rayQuery.origin.z))
+						 >> 12)
+						+ 256;
 				}
 
 				if (SweepTriangle(triangle, &rayQuery, a4->floorOffset, meshIdx))
@@ -1587,7 +1627,8 @@ namespace Toy2
 				}
 
 				if (rayQuery.hitFlags != -1 && g_collisionMeshInstances[rayQuery.hitFlags & 0x7FF].typeFlags == 8
-					&& (platformIdx = g_collisionMeshInstances[rayQuery.hitFlags & 0x7FF].platformIdx, a4->platformIdx = platformIdx,
+					&& (platformIdx = g_collisionMeshInstances[rayQuery.hitFlags & 0x7FF].platformIdx,
+						a4->platformIdx = platformIdx,
 						(Platform::g_platformDescriptors[platformIdx].flags & 8) != 0))
 				{
 					// the normal of a rotated platform
@@ -1597,8 +1638,10 @@ namespace Toy2
 
 					Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, rotation);
 
-					rayQuery.endpoint.x = (rayQuery.hitNormal.z * rotation->m02 + rayQuery.hitNormal.y * rotation->m01 + rayQuery.hitNormal.x * rotation->m00) / 4096;
-					rayQuery.endpoint.y = (rayQuery.hitNormal.z * rotation->m12 + rayQuery.hitNormal.y * rotation->m11 + rayQuery.hitNormal.x * rotation->m10) / 4096;
+					rayQuery.endpoint.x =
+						(rayQuery.hitNormal.z * rotation->m02 + rayQuery.hitNormal.y * rotation->m01 + rayQuery.hitNormal.x * rotation->m00) / 4096;
+					rayQuery.endpoint.y =
+						(rayQuery.hitNormal.z * rotation->m12 + rayQuery.hitNormal.y * rotation->m11 + rayQuery.hitNormal.x * rotation->m10) / 4096;
 					normalY = (int16_t)rayQuery.endpoint.y;
 					hitT0 = rayQuery.hitT0;
 					rotatedZ = rayQuery.hitNormal.z * rotation->m22 + rayQuery.hitNormal.y * rotation->m21 + rayQuery.hitNormal.x * rotation->m20;
@@ -1681,14 +1724,11 @@ namespace Toy2
 							platformVelY = a1->platformVel.y;
 
 							a1->platformVel.x += (uint16_t)mesh->origin.x
-												 + (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096
-												 - (uint16_t)a2->x;
+								+ (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096 - (uint16_t)a2->x;
 							a1->platformVel.y += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.y
-												 + (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096
-												 - (uint16_t)a2->y;
+								+ (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096 - (uint16_t)a2->y;
 							a1->platformVel.z += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.z
-												 + (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096
-												 - (uint16_t)a2->z;
+								+ (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096 - (uint16_t)a2->z;
 
 							if (platformVelY > a1->platformVel.y)
 								a1->platformVel.y = (a1->platformVel.y - platformVelY) / 8 + a1->platformVel.y + 32;
@@ -1909,7 +1949,8 @@ namespace Toy2
 			if ((uint8_t)unk != 0xFF)
 				collisionState->collisionQuality = (collisionState->collisionQuality & 0xFF00) | (uint8_t)unk;
 
-			if (g_collisionMeshInstances[meshIdx].typeFlags == 8 && (platformIdx = g_collisionMeshInstances[meshIdx].platformIdx, (Platform::g_platformDescriptors[platformIdx].flags & 8) != 0))
+			if (g_collisionMeshInstances[meshIdx].typeFlags == 8
+				&& (platformIdx = g_collisionMeshInstances[meshIdx].platformIdx, (Platform::g_platformDescriptors[platformIdx].flags & 8) != 0))
 			{
 				// the normals of a rotated platform
 				angles.x = Platform::g_platformDescriptors[platformIdx].rotAngle.x >> 2;

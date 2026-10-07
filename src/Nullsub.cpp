@@ -1,5 +1,11 @@
 #include "Nullsub.h"
 
+// FUNCTION: TOY2 0x004150F0
+void Nullsub1() {}
+
+// FUNCTION: TOY2 0x004A6380
+void Nullsub7() {}
+
 // FUNCTION: TOY2 0x00490D00
 void Nullsub5() {}
 

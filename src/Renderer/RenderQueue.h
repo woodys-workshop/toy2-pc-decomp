@@ -25,6 +25,7 @@ namespace Renderer
 	extern int32_t g_vertexColorModRed;
 	extern int32_t g_maxSimultaneousTextures;
 	extern Nu3D::Patch::PatchVertices g_FVF_14C_Buffer_1;
+	extern Nu3D::Patch::PatchVertices g_FVF_152_Buffer;
 	extern Nu3D::Patch::PatchVertices g_FVF_14C_Buffer_2;
 
 	extern int32_t g_instanceDataCounter;

@@ -571,9 +571,9 @@ namespace InputManager
 			g_directionInputState |= DIR_CAM_REVERSE;
 
 		if (g_curButtonsPressed & g_camMasks[cameraIndex + 1])
-			g_directionInputState |= DIR_DOWN;
+			g_directionInputState |= DIR_CAM_FLAG2;
 
 		if (g_curButtonsPressed & g_camMasks[cameraIndex + 2])
-			g_directionInputState |= DIR_RIGHT;
+			g_directionInputState |= DIR_CAM_FLAG3;
 	}
 }
