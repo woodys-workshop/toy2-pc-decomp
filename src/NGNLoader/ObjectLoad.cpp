@@ -398,7 +398,7 @@ namespace NGNLoader
 					if (scaled > 255)
 						scaled = 255;
 
-					shapeVertex->diffuse.b = (uint8_t)scaled;
+					shapeVertex->diffuse.r = (uint8_t)scaled;
 
 					scaled = color.g * Renderer::g_gammaCorrection;
 
@@ -412,7 +412,7 @@ namespace NGNLoader
 					if (scaled > 255)
 						scaled = 255;
 
-					shapeVertex->diffuse.r = (uint8_t)scaled;
+					shapeVertex->diffuse.b = (uint8_t)scaled;
 
 					if (vertexFlags & 8)
 					{
@@ -766,7 +766,7 @@ namespace NGNLoader
 										if (red >= 255.0)
 											red = 255.0;
 
-										primObject->patchVerts.data.vertices[vertexLoopIndex].diffuse.b = red;
+										primObject->patchVerts.data.vertices[vertexLoopIndex].diffuse.r = red;
 										float green = g_curMaterialList[materialIndex]->d3dMaterial.diffuse.g * 255.0;
 
 										if (green >= 255.0)
@@ -778,7 +778,7 @@ namespace NGNLoader
 										if (blue >= 255.0)
 											blue = 255.0;
 
-										primObject->patchVerts.data.vertices[vertexLoopIndex].diffuse.r = blue;
+										primObject->patchVerts.data.vertices[vertexLoopIndex].diffuse.b = blue;
 										float alpha = g_curMaterialList[materialIndex]->d3dMaterial.diffuse.a * 255.0;
 
 										if (alpha >= 255.0)

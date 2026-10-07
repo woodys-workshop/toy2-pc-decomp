@@ -6,6 +6,8 @@
 #include "Toy2/Shadow.h"
 
 #include <STDLIB.H>
+#include <MATH.H>
+#include <STRING.H>
 
 namespace Nu3D
 {
@@ -802,23 +804,1489 @@ namespace Nu3D
 			return (uint8_t)Toy2::Collision::g_buzzCollisionStates[collisionState].collisionQuality;
 		}
 
-		// STUB: TOY2 0x00487B20
-		int32_t SweepAgainstEdges(int32_t* a1, int32_t* a2, int32_t* a3, uint32_t* a4, int32_t* a5, int32_t* a6, int32_t a7) { return 0; }
+		// FUNCTION: TOY2 0x00487B20
+		int32_t SweepAgainstEdges(int32_t* bestDist, int32_t* hitT0, int32_t* hitT1, uint32_t* hitNormal, int32_t* position, int32_t* displacement, int32_t radius)
+		{
+			Vector3I16 normal;
+			Vector3I16 tangent;
+			int32_t* segment;
+			int32_t hit = 0;
+			int32_t count = 0;
+			int32_t distance;
+			int32_t endDistance;
+			int32_t scaledRadius;
+			int32_t endScaledRadius;
+			int32_t hitX;
+			int32_t hitZ;
+			int32_t time;
+			int32_t projection;
+			int32_t sideX;
+			int32_t sideZ;
+			int32_t length;
+			int32_t newBest;
+			int32_t distanceStart;
 
-		// STUB: TOY2 0x004882F0
-		int32_t RaycastAgainstEdges(int32_t* a1, int32_t* a2, int32_t* a3, uint32_t* a4, int16_t* a5, int32_t* a6, int32_t* a7) { return 0; }
+			normal.y = 0;
 
-		// STUB: TOY2 0x0048B750
-		int32_t SweepAgainstCandidates(int32_t* a1, int32_t* a2, int32_t a3) { return 0; }
+			if (!Toy2::Collision::g_unk72D2AC)
+				return 0;
 
-		// STUB: TOY2 0x0048C030
-		// $TODO: this is a __usercall in the original, see IDA for the register arguments
-		int32_t RaycastAgainstCandidates(int32_t a1, int32_t* a2, int32_t* a3) { return 0; }
+			if (Toy2::Collision::g_unk72D2AC > 0)
+			{
+				segment = Toy2::Collision::g_unk728DA0;
 
-		// STUB: TOY2 0x0048C860
-		int32_t SweepAndSlide(WorldPos* startPos, WorldPos* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius) { return 0; }
+				do
+				{
+					// the normal of the wall segment
+					normal.x = (int16_t)(segment[2] - segment[5]);
+					normal.z = (int16_t)(segment[3] - segment[0]);
 
-		// STUB: TOY2 0x0048D530
-		int32_t SweepQuery(int32_t* a1, int32_t* a2, int32_t a3, int32_t a4) { return 0; }
+					Math::NormalizeToFixedPoint16(&normal, &normal);
+
+					if (abs(displacement[0]) >= 0x2000 || abs(displacement[2]) >= 0x2000)
+					{
+						distanceStart = (normal.z * ((position[2] >> 5) - segment[2]) + normal.x * ((position[0] >> 5) - segment[0])) >> 12;
+						scaledRadius = radius / 32;
+					}
+					else
+					{
+						distanceStart = (normal.z * (position[2] - 32 * segment[2]) + normal.x * (position[0] - 32 * segment[0])) >> 12;
+						scaledRadius = radius;
+					}
+
+					distance = distanceStart - scaledRadius;
+
+					if (distance >= 0)
+					{
+						if (abs(displacement[0]) >= 0x2000 || abs(displacement[2]) >= 0x2000)
+						{
+							endDistance = (normal.x * (((displacement[0] + position[0]) >> 5) - segment[0]) + normal.z * (((displacement[2] + position[2]) >> 5) - segment[2])) >> 12;
+							endScaledRadius = radius / 32;
+						}
+						else
+						{
+							endScaledRadius = radius;
+							endDistance = (normal.x * (displacement[0] + position[0] - 32 * segment[0]) + normal.z * (displacement[2] + position[2] - 32 * segment[2])) >> 12;
+						}
+
+						endDistance = endDistance - endScaledRadius;
+
+						if (endDistance < 0)
+						{
+							tangent.x = (int16_t)(segment[3] - segment[0]);
+							tangent.z = (int16_t)(segment[5] - segment[2]);
+
+							hitX = position[0] + distance * displacement[0] / (distance - endDistance) - ((radius * normal.x) >> 12);
+							hitZ = position[2] + distance * displacement[2] / (distance - endDistance) - ((radius * normal.z) >> 12);
+
+							if (tangent.x * (hitX - 32 * segment[0]) + tangent.z * (hitZ - 32 * segment[2]) >= -8192
+								&& -(tangent.z * (hitZ - 32 * segment[5]) + tangent.x * (hitX - 32 * segment[3])) >= -8192)
+							{
+								newBest = (distance << 14) / (distance - endDistance);
+
+								if (newBest < *bestDist)
+								{
+									hit = 1;
+									normal.x *= 4;
+									normal.z *= 4;
+									*hitT0 = distance;
+									*hitT1 = endDistance;
+									hitNormal[0] = (uint16_t)normal.x | ((uint32_t)(uint16_t)normal.y << 16);
+									hitNormal[1] = (uint16_t)normal.z;
+									*bestDist = newBest;
+								}
+							}
+						}
+					}
+
+					// the end of the wall segment
+					distance = segment[2] - (position[2] >> 5);
+
+					if ((segment[0] - (position[0] >> 5)) * (segment[0] - (position[0] >> 5)) + distance * distance
+						< (displacement[0] >> 5) * (displacement[0] >> 5) + ((radius + 0x2000) >> 5) * ((radius + 0x2000) >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5))
+					{
+						tangent.z = (int16_t)(displacement[2] >> 5);
+						tangent.x = (int16_t)(displacement[0] >> 5);
+						tangent.y = 0;
+
+						Math::NormalizeToFixedPoint16(&tangent, &tangent);
+
+						projection = (tangent.x * (segment[0] - (position[0] >> 5)) + tangent.z * (segment[2] - (position[2] >> 5))) >> 12;
+
+						if (projection >= 0)
+						{
+							sideZ = segment[2] - ((position[2] + ((projection * tangent.z) >> 7)) >> 5);
+							sideX = segment[0] - ((position[0] + ((projection * tangent.x) >> 7)) >> 5);
+
+							if (((radius + 32) >> 5) * ((radius + 32) >> 5) >= sideX * sideX + sideZ * sideZ)
+							{
+								time = projection - (int32_t)sqrt((double)(((radius + 64) >> 5) * ((radius + 64) >> 5) - sideZ * sideZ - sideX * sideX));
+
+								if (time >= -2 && time * time <= (displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5))
+								{
+									if (time < 0)
+										time = 0;
+
+									length = (int32_t)sqrt((double)((displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5)));
+									newBest = (time << 14) / length;
+
+									if (newBest < *bestDist)
+									{
+										normal.z = (int16_t)(position[2] + ((time * tangent.z) >> 7) - (int16_t)(32 * segment[2]));
+										normal.x = (int16_t)(position[0] + ((time * tangent.x) >> 7) - 32 * segment[0]);
+
+										Math::NormalizeToFixedPoint16(&normal, &normal);
+
+										hit = 1;
+										normal.x *= 4;
+										normal.z *= 4;
+										*hitT0 = time;
+										*hitT1 = time - length;
+										hitNormal[0] = (uint16_t)normal.x | ((uint32_t)(uint16_t)normal.y << 16);
+										hitNormal[1] = (uint16_t)normal.z;
+										*bestDist = newBest;
+									}
+								}
+							}
+						}
+					}
+
+					segment += 6;
+					count += 2;
+				} while (count < Toy2::Collision::g_unk72D2AC);
+			}
+
+			return hit;
+		}
+
+		// FUNCTION: TOY2 0x004882F0
+		int32_t RaycastAgainstEdges(int32_t* bestDist, int32_t* hitT0, int32_t* hitT1, uint32_t* hitNormal, int16_t* flipped, int32_t* position, int32_t* direction)
+		{
+			Vector3I16 normal;
+			Vector3I16 tangent;
+			int32_t* segment;
+			int32_t hit = 0;
+			int32_t count = 0;
+			int32_t startDistance;
+			int32_t endDistance;
+			int32_t hitX;
+			int32_t hitZ;
+			int32_t newBest;
+			int16_t flip;
+
+			normal.y = 0;
+
+			if (!Toy2::Collision::g_unk72D2AC)
+				return 0;
+
+			if (Toy2::Collision::g_unk72D2AC > 0)
+			{
+				segment = Toy2::Collision::g_unk728DA0;
+
+				do
+				{
+					normal.x = (int16_t)(segment[2] - segment[5]);
+					normal.z = (int16_t)(segment[3] - segment[0]);
+
+					Math::NormalizeToFixedPoint16(&normal, &normal);
+
+					flip = 0;
+					startDistance = (normal.x * ((position[0] >> 5) - segment[0]) + normal.z * ((position[2] >> 5) - segment[2])) >> 12;
+					endDistance = (normal.x * (((position[0] + direction[0]) >> 5) - segment[0]) + normal.z * (((position[2] + direction[2]) >> 5) - segment[2])) >> 12;
+
+					if (startDistance < endDistance)
+					{
+						startDistance = -startDistance;
+						endDistance = -endDistance;
+						flip = 1;
+					}
+
+					if (startDistance >= 0 && endDistance < 0)
+					{
+						tangent.x = (int16_t)(segment[3] - segment[0]);
+						tangent.z = (int16_t)(segment[5] - segment[2]);
+
+						hitX = position[0] + startDistance * direction[0] / (startDistance - endDistance);
+						hitZ = position[2] + startDistance * direction[2] / (startDistance - endDistance);
+
+						if (tangent.x * (hitX - 32 * segment[0]) + tangent.z * (hitZ - 32 * segment[2]) >= 0
+							&& tangent.x * (hitX - 32 * segment[3]) + tangent.z * (hitZ - 32 * segment[5]) <= 0)
+						{
+							newBest = (startDistance << 14) / (startDistance - endDistance);
+
+							if (newBest < *bestDist)
+							{
+								hit = 1;
+								normal.x *= 4;
+								normal.z *= 4;
+								*hitT0 = startDistance;
+								*hitT1 = endDistance;
+								hitNormal[0] = (uint16_t)normal.x | ((uint32_t)(uint16_t)normal.y << 16);
+								hitNormal[1] = (uint16_t)normal.z;
+								*bestDist = newBest;
+								*flipped = flip;
+							}
+						}
+					}
+
+					segment += 6;
+					count += 2;
+				} while (count < Toy2::Collision::g_unk72D2AC);
+			}
+
+			return hit;
+		}
+
+		// FUNCTION: TOY2 0x0048B750
+		int32_t SweepAgainstCandidates(int32_t* displacement, int32_t* position, int32_t radius)
+		{
+			Toy2::Collision::CollisionTriangle* triangle;
+			Toy2::Collision::CollisionMeshInstance* mesh;
+			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
+			Vector3I16 angles;
+			int32_t hitCount = 0;
+			int32_t candidates = 0;
+			int32_t bestDist = 0x7FFFFFFF;
+			int32_t prevMesh = -1;
+			int32_t meshIdx;
+			int32_t i;
+			int32_t scaledRadius;
+			int32_t startX = 0;
+			int32_t startY = 0;
+			int32_t startZ = 0;
+			int32_t endX = 0;
+			int32_t endY = 0;
+			int32_t endZ = 0;
+			int32_t distance;
+			int32_t endDistance;
+			int32_t distanceDiff;
+			int32_t hitX;
+			int32_t hitY;
+			int32_t cellX;
+			int32_t cellY;
+			int32_t cellZ;
+			int32_t localX;
+			int32_t localY;
+			int32_t localZ;
+			int32_t hitT0 = 0;
+			int32_t hitT1 = 0;
+			int32_t normalData[2] = { 0, 0 };
+			int32_t packedNormal;
+			int32_t platformIdx;
+
+			if (Toy2::Collision::g_candidateTriangleCount - 1 >= 0)
+			{
+				scaledRadius = radius / 32;
+
+				for (i = Toy2::Collision::g_candidateTriangleCount - 1; i >= 0; i--)
+				{
+					meshIdx = Toy2::Collision::g_candidateMeshIdx[i + 1];
+					triangle = Toy2::Collision::g_candidateTris[i];
+
+					if (meshIdx != prevMesh)
+					{
+						prevMesh = meshIdx;
+						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+						// the sweep is moved into the space of the mesh, a rotated platform turns it
+						if (mesh->typeFlags == 8 && (Toy2::Platform::g_platformDescriptors[mesh->platformIdx].flags & 8) != 0)
+						{
+							platformIdx = mesh->platformIdx;
+
+							angles.x = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.x >> 2;
+							angles.y = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.y >> 2;
+							angles.z = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.z >> 2;
+
+							Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, rotation);
+
+							localX = position[0] - mesh->origin.x;
+							localY = position[1] - mesh->origin.y;
+							localZ = position[2] - mesh->origin.z;
+
+							startX = (localX * rotation->m00 + localY * rotation->m10 + localZ * rotation->m20) / 4096;
+							startY = (localZ * rotation->m21 + localX * rotation->m01 + localY * rotation->m11) / 4096;
+							startZ = (localX * rotation->m02 + localY * rotation->m12 + localZ * rotation->m22) / 4096;
+
+							localZ = displacement[2] - mesh->origin.z + position[2];
+							localY = position[1] + displacement[1] - mesh->origin.y;
+							localX = position[0] + displacement[0] - mesh->origin.x;
+
+							endX = (localX * rotation->m00 + localY * rotation->m10 + localZ * rotation->m20) / 4096;
+							endY = (localZ * rotation->m21 + localX * rotation->m01 + localY * rotation->m11) / 4096;
+							endZ = (localX * rotation->m02 + localY * rotation->m12 + localZ * rotation->m22) / 4096;
+						}
+						else
+						{
+							startX = position[0] - mesh->origin.x;
+							startY = position[1] - mesh->origin.y;
+							startZ = position[2] - mesh->origin.z;
+							endX = position[0] + displacement[0] - mesh->origin.x;
+							endY = position[1] + displacement[1] - mesh->origin.y;
+							endZ = position[2] + displacement[2] - mesh->origin.z;
+						}
+					}
+
+					cellX = endX >> 5;
+
+					distance = ((triangle->unk24 * ((endZ >> 5) - triangle->v0z) + triangle->unk22 * ((endY >> 5) - triangle->v0y) + triangle->unk20 * ((endX >> 5) - triangle->v0x))
+								>> 14)
+							   - scaledRadius;
+
+					if (distance >= 0
+						|| (endDistance = ((triangle->unk24 * ((startZ >> 5) - triangle->v0z) + triangle->unk22 * ((startY >> 5) - triangle->v0y)
+											+ triangle->unk20 * ((startX >> 5) - triangle->v0x))
+										   >> 14)
+										  - scaledRadius,
+							endDistance < 0))
+					{
+						cellY = endY >> 5;
+					}
+					else
+					{
+						distanceDiff = endDistance - distance;
+						hitX = startX + endDistance * (endX - startX) / (endDistance - distance) - ((radius * triangle->unk20) >> 14);
+						hitY = startY + endDistance * (endY - startY) / (endDistance - distance) - ((radius * triangle->unk22) >> 14);
+
+						if (Math::PointIntersectsTriangle(
+								(hitX >> 5) - triangle->v0x,
+								(hitY >> 5) - triangle->v0y,
+								((startZ + endDistance * (endZ - startZ) / (endDistance - distance) - ((radius * triangle->unk24) >> 14)) >> 5) - triangle->v0z,
+								triangle->e1x,
+								triangle->e1y,
+								triangle->e1z,
+								triangle->e2x,
+								triangle->e2y,
+								triangle->e2z,
+								(Vector3I16*)&triangle->unk20,
+								radius)
+							&& (endDistance << 14) / distanceDiff < bestDist)
+						{
+							hitT0 = endDistance;
+							hitT1 = distance;
+							bestDist = (endDistance << 14) / distanceDiff;
+							memcpy(&normalData[0], &triangle->unk20, 4);
+							memcpy(&normalData[1], &triangle->unk24, 4);
+							++hitCount;
+						}
+
+						cellY = endY >> 5;
+						cellX = endX >> 5;
+					}
+
+					if (triangle->unk28 != 0x7FFF)
+					{
+						distance = ((triangle->unk2A * ((endZ >> 5) - triangle->e1z - triangle->v0z) + triangle->unk28 * (cellY - triangle->e1y - triangle->v0y)
+									 + triangle->unk26 * (cellX - triangle->e1x - triangle->v0x))
+									>> 14)
+								   - scaledRadius;
+
+						if (distance < 0)
+						{
+							endDistance = ((triangle->unk2A * ((startZ >> 5) - triangle->e1z - triangle->v0z) + triangle->unk28 * ((startY >> 5) - triangle->e1y - triangle->v0y)
+											+ triangle->unk26 * ((startX >> 5) - triangle->e1x - triangle->v0x))
+										   >> 14)
+										  - scaledRadius;
+
+							if (endDistance >= 0)
+							{
+								distanceDiff = endDistance - distance;
+								hitX = startX + endDistance * (endX - startX) / (endDistance - distance) - ((radius * triangle->unk26) >> 14);
+								hitY = startY + endDistance * (endY - startY) / (endDistance - distance) - ((radius * triangle->unk28) >> 14);
+
+								if (Math::PointIntersectsTriangle(
+										(hitX >> 5) - triangle->e1x - triangle->v0x,
+										(hitY >> 5) - triangle->e1y - triangle->v0y,
+										((startZ + endDistance * (endZ - startZ) / (endDistance - distance) - ((radius * triangle->unk2A) >> 14)) >> 5) - triangle->e1z - triangle->v0z,
+										triangle->e3x - triangle->e1x,
+										triangle->e3y - triangle->e1y,
+										triangle->e3z - triangle->e1z,
+										triangle->e2x - triangle->e1x,
+										triangle->e2y - triangle->e1y,
+										triangle->e2z - triangle->e1z,
+										(Vector3I16*)&triangle->unk26,
+										radius))
+								{
+									if ((endDistance << 14) / distanceDiff < bestDist)
+									{
+										hitT0 = endDistance;
+										bestDist = (endDistance << 14) / distanceDiff;
+										hitT1 = distance;
+										memcpy(&normalData[0], &triangle->unk26, 4);
+										memcpy(&normalData[1], &triangle->unk2A, 4);
+										++hitCount;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if (SweepAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, position, displacement, radius) == 1)
+				++hitCount;
+
+			if (hitCount <= 0)
+			{
+				position[0] += displacement[0];
+				position[1] = displacement[1] + position[1];
+				position[2] = displacement[2] + position[2];
+
+				return 0;
+			}
+
+			distanceDiff = hitT0 - hitT1;
+			position[0] += hitT0 * displacement[0] / (hitT0 - hitT1);
+			position[1] += hitT0 * displacement[1] / distanceDiff;
+			position[2] += hitT0 * displacement[2] / distanceDiff;
+
+			Toy2::Collision::g_floorSlope.x = (int16_t)normalData[0];
+			Toy2::Collision::g_floorSlope.y = (int16_t)(normalData[0] >> 16);
+			Toy2::Collision::g_floorSlope.z = (int16_t)normalData[1];
+
+			return 1;
+		}
+
+		// FUNCTION: TOY2 0x0048C030
+		int32_t RaycastAgainstCandidates(int32_t a1, int32_t* direction, int32_t* position)
+		{
+			Toy2::Collision::CollisionTriangle* triangle;
+			Toy2::Collision::CollisionMeshInstance* mesh;
+			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
+			Vector3I16 angles;
+			int32_t hitCount = 0;
+			int32_t result = 0;
+			int32_t bestDist = 0x7FFFFFFF;
+			int32_t prevMesh = -1;
+			int32_t index = 0;
+			int32_t meshIdx;
+			int32_t startX = 0;
+			int32_t startY = 0;
+			int32_t startZ = 0;
+			int32_t endX = 0;
+			int32_t endY = 0;
+			int32_t endZ = 0;
+			int32_t flipped = 0;
+			int32_t startDistance;
+			int32_t endDistance;
+			int32_t distanceDiff;
+			int32_t hitX;
+			int32_t hitY;
+			int32_t localX;
+			int32_t localY;
+			int32_t localZ;
+			int32_t hitT0 = 0;
+			int32_t hitT1 = 0;
+			int32_t normalData[2] = { 0, 0 };
+			int32_t isFlipped;
+			int32_t platformIdx;
+
+			if (Toy2::Collision::g_candidateTriangleCount > 0)
+			{
+				while (1)
+				{
+					meshIdx = Toy2::Collision::g_candidateMeshIdx[index + 1];
+					triangle = Toy2::Collision::g_candidateTris[index];
+
+					if (meshIdx != prevMesh)
+					{
+						prevMesh = meshIdx;
+						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+						if (mesh->typeFlags == 8 && (Toy2::Platform::g_platformDescriptors[mesh->platformIdx].flags & 8) != 0)
+						{
+							platformIdx = mesh->platformIdx;
+
+							angles.x = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.x >> 2;
+							angles.y = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.y >> 2;
+							angles.z = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.z >> 2;
+
+							Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, rotation);
+
+							localX = position[0] - mesh->origin.x;
+							localY = position[1] - mesh->origin.y;
+							localZ = position[2] - mesh->origin.z;
+
+							startX = (localX * rotation->m00 + localY * rotation->m10 + localZ * rotation->m20) / 4096;
+							startY = (localX * rotation->m01 + localY * rotation->m11 + localZ * rotation->m21) / 4096;
+							startZ = (localX * rotation->m02 + localY * rotation->m12 + localZ * rotation->m22) / 4096;
+
+							localZ = position[2] + direction[2] - mesh->origin.z;
+							localY = position[1] + direction[1] - mesh->origin.y;
+							localX = position[0] + direction[0] - mesh->origin.x;
+
+							endX = (localX * rotation->m00 + localY * rotation->m10 + localZ * rotation->m20) / 4096;
+							endY = (localX * rotation->m01 + localY * rotation->m11 + localZ * rotation->m21) / 4096;
+							endZ = (localY * rotation->m12 + localZ * rotation->m22 + localX * rotation->m02) / 4096;
+						}
+						else
+						{
+							startX = position[0] - mesh->origin.x;
+							startY = position[1] - mesh->origin.y;
+							startZ = position[2] - mesh->origin.z;
+							endX = position[0] + direction[0] - mesh->origin.x;
+							endY = position[1] + direction[1] - mesh->origin.y;
+							endZ = position[2] + direction[2] - mesh->origin.z;
+						}
+					}
+
+					isFlipped = 0;
+
+					endDistance = ((triangle->unk24 * ((endZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((endY >> 5) - triangle->v0y - triangle->e1y)
+									+ triangle->unk20 * ((endX >> 5) - triangle->v0x - triangle->e1x))
+								   >> 14);
+					startDistance = ((triangle->unk24 * ((startZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((startY >> 5) - triangle->v0y - triangle->e1y)
+									  + triangle->unk20 * ((startX >> 5) - triangle->v0x - triangle->e1x))
+									 >> 14);
+
+					// NOTE: the names are swapped, the first of them is the distance of the end of the ray
+					if (startDistance < endDistance)
+					{
+						startDistance = -startDistance;
+						endDistance = -endDistance;
+						isFlipped = 1;
+					}
+
+					if (endDistance < 0 && startDistance >= 0)
+					{
+						distanceDiff = startDistance - endDistance;
+						hitX = startX + startDistance * (endX - startX) / (startDistance - endDistance);
+						hitY = startY + startDistance * (endY - startY) / (startDistance - endDistance);
+
+						if (IsPointInTriangle(
+								(hitX >> 5) - triangle->v0x,
+								(hitY >> 5) - triangle->v0y,
+								((startZ + startDistance * (endZ - startZ) / (startDistance - endDistance)) >> 5) - triangle->v0z,
+								triangle->e1x,
+								triangle->e1y,
+								triangle->e1z,
+								triangle->e2x,
+								triangle->e2y,
+								triangle->e2z,
+								(Vector3I16*)&triangle->unk20))
+						{
+							if ((startDistance << 14) / distanceDiff < bestDist)
+							{
+								hitT0 = startDistance;
+								hitT1 = endDistance;
+								bestDist = (startDistance << 14) / distanceDiff;
+								memcpy(&normalData[0], &triangle->unk20, 4);
+								memcpy(&normalData[1], &triangle->unk24, 4);
+								flipped = isFlipped;
+								++hitCount;
+							}
+						}
+					}
+
+					if (triangle->unk28 != 0x7FFF)
+					{
+						isFlipped = 0;
+
+						endDistance = (triangle->unk2A * (endZ - 32 * triangle->v0z - 32 * triangle->e3z) + triangle->unk28 * (endY - 32 * triangle->v0y - 32 * triangle->e3y)
+									   + triangle->unk26 * (endX - 32 * triangle->v0x - 32 * triangle->e3x))
+									  >> 14;
+						startDistance = (triangle->unk2A * (startZ - 32 * triangle->v0z - 32 * triangle->e3z) + triangle->unk28 * (startY - 32 * triangle->v0y - 32 * triangle->e3y)
+										 + triangle->unk26 * (startX - 32 * triangle->e3x - 32 * triangle->v0x))
+										>> 14;
+
+						if (startDistance < endDistance)
+						{
+							startDistance = -startDistance;
+							endDistance = -endDistance;
+							isFlipped = 1;
+						}
+
+						if (endDistance < 0 && startDistance >= 0)
+						{
+							distanceDiff = startDistance - endDistance;
+							hitX = startX + startDistance * (endX - startX) / (startDistance - endDistance);
+							hitY = startY + startDistance * (endY - startY) / (startDistance - endDistance);
+
+							if (IsPointInTriangle(
+									(hitX >> 5) - triangle->e3x - triangle->v0x,
+									(hitY >> 5) - triangle->e3y - triangle->v0y,
+									((startZ + startDistance * (endZ - startZ) / (startDistance - endDistance)) >> 5) - triangle->e3z - triangle->v0z,
+									triangle->e2x - triangle->e3x,
+									triangle->e2y - triangle->e3y,
+									triangle->e2z - triangle->e3z,
+									triangle->e1x - triangle->e3x,
+									triangle->e1y - triangle->e3y,
+									triangle->e1z - triangle->e3z,
+									(Vector3I16*)&triangle->unk26))
+							{
+								if ((startDistance << 14) / distanceDiff < bestDist)
+								{
+									bestDist = (startDistance << 14) / distanceDiff;
+									hitT0 = startDistance;
+									hitT1 = endDistance;
+									memcpy(&normalData[0], &triangle->unk26, 4);
+									memcpy(&normalData[1], &triangle->unk2A, 4);
+									flipped = isFlipped;
+									++hitCount;
+								}
+							}
+						}
+					}
+
+					if (++index >= Toy2::Collision::g_candidateTriangleCount)
+					{
+						result = hitCount;
+						break;
+					}
+				}
+			}
+
+			if (RaycastAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, (int16_t*)&flipped, position, direction) == 1)
+				++result;
+
+			if (result <= 0 || flipped != 1)
+				return 0;
+
+			distanceDiff = hitT0 - hitT1;
+			position[0] += hitT0 * direction[0] / (hitT0 - hitT1);
+			position[1] += hitT0 * direction[1] / distanceDiff;
+			position[2] += hitT0 * direction[2] / distanceDiff;
+
+			return 1;
+		}
+
+		// FUNCTION: TOY2 0x0048C860
+		int32_t SweepAndSlide(WorldPos* startPos, WorldPos* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius)
+		{
+			Toy2::Collision::CollisionCacheEntry* cameraEntry = (Toy2::Collision::CollisionCacheEntry*)Toy2::Collision::g_unk72871C + 8;
+			Toy2::Collision::CollisionMeshInstance* mesh;
+			Toy2::Collision::CollisionTreeNode* node;
+			Toy2::Collision::CollisionTriangle* triangle;
+			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
+			int16_t* meshList = (int16_t*)Toy2::Collision::g_mathScratch;
+			Vector3I16 angles;
+			WorldPos result;
+			int32_t movement[3];
+			int32_t minX;
+			int32_t minY;
+			int32_t minZ;
+			int32_t extX;
+			int32_t extY;
+			int32_t extZ;
+			int32_t padX;
+			int32_t padY;
+			int32_t padZ;
+			int32_t cellExtX;
+			int32_t cellExtY;
+			int32_t cellExtZ;
+			int32_t extXWide;
+			int32_t extYWide;
+			int32_t extZWide;
+			int32_t meshMask;
+			int32_t prevMesh = -1;
+			int32_t valid = 0;
+			int32_t cellX = 0;
+			int32_t cellY = 0;
+			int32_t cellZ = 0;
+			int32_t meshIdx;
+			int32_t meshCount;
+			int32_t platformCount;
+			int32_t i;
+			int32_t j;
+			int32_t count;
+			int32_t speedSq;
+			int32_t speed;
+			int32_t platformIdx;
+			int32_t platformReach;
+			int32_t platformX;
+			int32_t platformY;
+			int32_t platformZ;
+			int32_t localX;
+			int32_t localY;
+			int32_t localZ;
+			int32_t originX;
+			int32_t originY;
+			int32_t originZ;
+			int32_t doubleReach;
+			int32_t nodeMargin;
+			int32_t wallMinX;
+			int32_t wallMinZ;
+			int32_t wallMaxX;
+			int32_t wallMaxZ;
+			int32_t edgeCount;
+			int32_t blockStart;
+			int32_t blockEnd;
+			int32_t blockLimit;
+			int32_t steps;
+			uint8_t* edgeNode;
+			int32_t* edgeBlock;
+			int32_t* edgePoint;
+			uint16_t* platformMeshes;
+			int32_t hit;
+
+			Toy2::Collision::g_unk72D2AC = 0;
+			Toy2::Collision::g_unk7291D8 = 0;
+
+			movement[0] = displacement->x;
+			movement[1] = displacement->y;
+			movement[2] = displacement->z;
+
+			if (displacement->x < 0)
+			{
+				minX = startPos->x + 2048;
+				extX = 4096 - displacement->x;
+			}
+			else
+			{
+				minX = startPos->x + displacement->x + 2048;
+				extX = displacement->x + 4096;
+			}
+
+			if (displacement->y >= 0)
+			{
+				minY = startPos->y + displacement->y + 2048;
+				extY = displacement->y + 4096;
+			}
+			else
+			{
+				minY = startPos->y + 2048;
+				extY = 4096 - displacement->y;
+			}
+
+			if (displacement->z >= 0)
+			{
+				minZ = startPos->z + displacement->z + 2048;
+				extZ = displacement->z + 4096;
+			}
+			else
+			{
+				minZ = startPos->z + 2048;
+				extZ = 4096 - displacement->z;
+			}
+
+			Toy2::Collision::g_candidateTriangleCount = 0;
+
+			padX = 5700 * radius / 4096;
+			minZ = padX + minZ;
+			minY = padX + minY;
+			minX = padX + minX;
+			padY = 5700 * radius / 2048;
+			extXWide = padY + extX;
+			extZWide = padY + extZ;
+			cellExtX = ((uint32_t)extXWide + 31) >> 5;
+			cellExtY = ((uint32_t)(padY + extY) + 31) >> 5;
+			cellExtZ = ((uint32_t)extZWide + 31) >> 5;
+			extYWide = padY + extY;
+
+			meshMask = useTopSector != 0 ? 512 : 256;
+
+			if (useTopSector && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z && (uint32_t)(minX - extXWide) > (uint32_t)cameraEntry->unkC
+				&& (uint32_t)(minY - extYWide) > (uint32_t)cameraEntry->unk10 && (uint32_t)(minZ - extZWide) > (uint32_t)cameraEntry->unk14)
+			{
+				// everything is inside of the box that was gathered by PrepareCameraCollisionCandidates
+				for (i = cameraEntry->count - 1; i >= 0; i--)
+				{
+					meshIdx = cameraEntry->meshIdx[i];
+
+					if (meshIdx == prevMesh)
+					{
+						if (!valid)
+							continue;
+					}
+					else
+					{
+						prevMesh = meshIdx;
+						valid = 0;
+						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
+							&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZWide + mesh->boundsExt.z) && mesh->typeFlags && (mesh->unk & meshMask) == 0)
+						{
+							valid = 1;
+							cellX = (minX - mesh->origin.x) / 32;
+							cellY = (minY - mesh->origin.y) / 32;
+							cellZ = (minZ - mesh->origin.z) / 32;
+						}
+						else
+							continue;
+					}
+
+					triangle = cameraEntry->triangles[i];
+
+					if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
+						&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+						&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6)))
+					{
+						if (Toy2::Collision::g_candidateTriangleCount < 240)
+						{
+							Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+							Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount + 1] = (int16_t)meshIdx;
+							Toy2::Collision::g_candidateTriangleCount++;
+						}
+					}
+				}
+			}
+			else
+			{
+				meshCount = 0;
+
+				for (i = 0; i < Toy2::Collision::g_unk729120; i++)
+				{
+					Toy2::Collision::CollisionGridCell* cell = &Toy2::Collision::g_collisionGrid[i];
+
+					if ((uint32_t)(minX - cell->minX) < (uint32_t)(extXWide + cell->extX) && (uint32_t)(minZ - cell->minZ) < (uint32_t)(extZWide + cell->extZ))
+					{
+						for (j = 0; j < cell->count; j++)
+							meshList[meshCount + j] = Toy2::Collision::g_collisionMeshList[cell->start + j];
+
+						meshCount += cell->count;
+					}
+				}
+
+				for (i = 0; i < meshCount; i++)
+				{
+					meshIdx = meshList[i];
+					mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
+						&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZWide + mesh->boundsExt.z))
+					{
+						if (mesh->typeFlags)
+						{
+							if ((mesh->unk & meshMask) == 0)
+							{
+								cellY = (minY - mesh->origin.y) / 32;
+								node = (Toy2::Collision::CollisionTreeNode*)mesh->collisionTree;
+								cellX = (minX - mesh->origin.x) / 32;
+								cellZ = (minZ - mesh->origin.z) / 32;
+
+								while (node->flag >= 0)
+								{
+									count = node->count;
+									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
+
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
+									{
+										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
+									}
+									else
+									{
+										for (j = 0; j < count; j++)
+										{
+											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6))
+												&& triangle->unk22 < collisionMask && Toy2::Collision::g_candidateTriangleCount < 240)
+											{
+												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+												Toy2::Collision::g_candidateTriangleCount++;
+												Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount] = (int16_t)meshIdx;
+											}
+
+											triangle++;
+										}
+
+										node = (Toy2::Collision::CollisionTreeNode*)triangle;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// the platforms are always checked
+			platformMeshes = &Toy2::Collision::g_collisionMeshList[Toy2::Collision::g_unk7284A0];
+			speedSq = movement[2] / 16 * (movement[2] / 16) + movement[1] / 16 * (movement[1] / 16) + movement[0] / 16 * (movement[0] / 16);
+			speed = (int32_t)(16 * sqrt((double)speedSq));
+
+			for (platformCount = Toy2::Collision::g_unk7284A2; platformCount > 0; platformCount--, platformMeshes++)
+			{
+				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				originY = mesh->origin.y;
+				originX = mesh->origin.x;
+				originZ = mesh->origin.z;
+				localZ = startPos->z;
+				localY = startPos->y;
+				localX = startPos->x;
+
+				if (((originZ - localZ) >> 6) * ((originZ - localZ) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6)
+						+ ((originX - localX) >> 6) * ((originX - localX) >> 6)
+					<= speedSq + (mesh->boundingSqRadius >> 1))
+				{
+					platformIdx = mesh->platformIdx;
+					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z) + speed + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y)
+									+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x);
+					doubleReach = 2 * platformReach;
+					nodeMargin = (platformReach + 15) / 16;
+
+					if ((Toy2::Platform::g_platformDescriptors[platformIdx].flags & 8) != 0)
+					{
+						angles.x = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.x >> 2;
+						angles.y = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.y >> 2;
+						angles.z = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.z >> 2;
+
+						Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, rotation);
+
+						originZ = mesh->origin.z;
+						originY = mesh->origin.y;
+						originX = mesh->origin.x;
+
+						localY = startPos->y - originY;
+						localZ = startPos->z - originZ;
+						localX = startPos->x - mesh->origin.x;
+
+						platformX = platformReach + mesh->origin.x + (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 4096;
+						platformY = platformReach + originY + (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 4096;
+						platformZ = originZ + (localZ * rotation->m22 + localY * rotation->m12 + localX * rotation->m02) / 4096;
+					}
+					else
+					{
+						platformX = startPos->x + platformReach;
+						platformY = startPos->y + platformReach;
+						platformZ = startPos->z;
+					}
+
+					platformZ = platformReach + platformZ;
+
+					if (platformX - mesh->boundsMin.x < doubleReach + mesh->boundsExt.x && platformZ - mesh->boundsMin.z < doubleReach + mesh->boundsExt.z)
+					{
+						if (mesh->typeFlags)
+						{
+							if ((mesh->unk & meshMask) == 0)
+							{
+								node = (Toy2::Collision::CollisionTreeNode*)mesh->collisionTree;
+								cellX = (platformX - originX) / 32;
+								cellZ = (platformZ - originZ) / 32;
+
+								while (node->flag >= 0)
+								{
+									count = node->count;
+									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
+
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									{
+										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
+									}
+									else
+									{
+										for (j = 0; j < count; j++)
+										{
+											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)((platformY - originY) / 32 - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6))
+												&& Toy2::Collision::g_candidateTriangleCount < 240)
+											{
+												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+												Toy2::Collision::g_candidateTriangleCount++;
+												Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount] = *platformMeshes;
+											}
+
+											triangle++;
+										}
+
+										node = (Toy2::Collision::CollisionTreeNode*)triangle;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// the wall segments
+			wallMinX = (minX - extXWide) / 32;
+			wallMinZ = (minZ - extZWide) / 32;
+			wallMaxX = minX / 32;
+			wallMaxZ = minZ / 32;
+			edgeCount = Toy2::Collision::g_unk72D2AC;
+			edgeNode = (uint8_t*)Toy2::Collision::g_unk7290F0[1];
+
+			if (edgeNode)
+			{
+				do
+				{
+					blockStart = 0;
+					blockEnd = *(uint16_t*)edgeNode;
+
+					if (blockEnd)
+					{
+						edgeBlock = (int32_t*)(edgeNode + 8);
+
+						do
+						{
+							if (edgeBlock[0] == 0x80000000)
+							{
+								blockLimit = blockEnd;
+							}
+							else if ((uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3]) || (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
+							{
+								blockLimit = 0;
+							}
+							else
+							{
+								blockLimit = blockStart + 16;
+							}
+
+							if (blockStart < blockLimit)
+							{
+								edgePoint = edgeBlock + 1;
+
+								for (steps = blockLimit - blockStart; steps; steps--)
+								{
+									if (((edgePoint[-2] >= wallMinX && edgePoint[1] <= wallMaxX) || (edgePoint[1] >= wallMinX && edgePoint[-2] <= wallMaxX))
+										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ)) && edgeCount < 32)
+									{
+										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[-2];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[-1];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 2] = edgePoint[0];
+										edgeCount++;
+										Toy2::Collision::g_unk72D2AC = edgeCount;
+
+										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[1];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[2];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 2] = edgePoint[3];
+										edgeCount++;
+										Toy2::Collision::g_unk72D2AC = edgeCount;
+									}
+
+									edgePoint += 3;
+								}
+							}
+
+							blockStart += 16;
+							blockEnd = *(uint16_t*)edgeNode;
+							edgeBlock += 48;
+						} while (blockStart < blockEnd);
+					}
+
+					edgeNode = *(uint8_t**)(edgeNode - 4);
+				} while (edgeNode);
+			}
+
+			hit = 0;
+
+			if (Toy2::Collision::g_candidateTriangleCount > 0 || edgeCount > 0)
+			{
+				memcpy(&result, startPos, sizeof(result));
+
+				hit = SweepAgainstCandidates(movement, &result.x, radius);
+
+				displacement->x = result.x - startPos->x;
+				displacement->y = result.y - startPos->y;
+				displacement->z = result.z - startPos->z;
+			}
+
+			return hit;
+		}
+
+		// FUNCTION: TOY2 0x0048D530
+		int32_t SweepQuery(int32_t* a1, int32_t* a2, int32_t a3, int32_t a4)
+		{
+			Toy2::Collision::CollisionCacheEntry* cameraEntry = (Toy2::Collision::CollisionCacheEntry*)Toy2::Collision::g_unk72871C + 8;
+			Toy2::Collision::CollisionMeshInstance* mesh;
+			Toy2::Collision::CollisionTreeNode* node;
+			Toy2::Collision::CollisionTriangle* triangle;
+			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
+			int16_t* meshList = (int16_t*)Toy2::Collision::g_mathScratch;
+			Vector3I16 angles;
+			int32_t query[4];
+			int32_t movement[3];
+			int32_t minX;
+			int32_t minY;
+			int32_t minZ;
+			int32_t extX;
+			int32_t extY;
+			int32_t extZ;
+			int32_t cellExtX;
+			int32_t cellExtY;
+			int32_t cellExtZ;
+			int32_t meshMask;
+			int32_t prevMesh = -1;
+			int32_t valid = 0;
+			int32_t cellX = 0;
+			int32_t cellY = 0;
+			int32_t cellZ = 0;
+			int32_t meshIdx;
+			int32_t meshCount;
+			int32_t platformCount;
+			int32_t listCount;
+			int32_t i;
+			int32_t j;
+			int32_t count;
+			int32_t speedSq;
+			int32_t platformIdx;
+			int32_t platformReach;
+			int32_t platformX;
+			int32_t platformY;
+			int32_t platformZ;
+			int32_t localX;
+			int32_t localY;
+			int32_t localZ;
+			int32_t originX;
+			int32_t originY;
+			int32_t originZ;
+			int32_t doubleReach;
+			int32_t nodeMargin;
+			int32_t wallMinX;
+			int32_t wallMinZ;
+			int32_t wallMaxX;
+			int32_t wallMaxZ;
+			int32_t edgeCount;
+			int32_t blockStart;
+			int32_t blockEnd;
+			int32_t blockLimit;
+			int32_t steps;
+			uint8_t* edgeNode;
+			int32_t* edgeBlock;
+			int32_t* edgePoint;
+			uint16_t* platformMeshes;
+			int16_t* platformList;
+
+			Toy2::Collision::g_unk72D2AC = 0;
+			Toy2::Collision::g_candidateTriangleCount = 0;
+			Toy2::Collision::g_unk7291D8 = 0;
+
+			movement[0] = a2[0];
+			movement[1] = a2[1];
+			movement[2] = a2[2];
+
+			if (a2[0] < 0)
+			{
+				minX = a1[0] + 2048;
+				extX = 4096 - movement[0];
+			}
+			else
+			{
+				minX = a1[0] + movement[0] + 2048;
+				extX = movement[0] + 4096;
+			}
+
+			if (movement[1] >= 0)
+			{
+				extY = movement[1] + 4096;
+				minY = a1[1] + movement[1] + 2048;
+			}
+			else
+			{
+				extY = 4096 - movement[1];
+				minY = a1[1] + 2048;
+			}
+
+			if (movement[2] >= 0)
+			{
+				minZ = a1[2] + movement[2] + 2048;
+				extZ = movement[2] + 4096;
+			}
+			else
+			{
+				minZ = a1[2] + 2048;
+				extZ = 4096 - movement[2];
+			}
+
+			cellExtX = ((uint32_t)extX + 31) >> 5;
+			cellExtY = ((uint32_t)extY + 31) >> 5;
+			cellExtZ = ((uint32_t)extZ + 31) >> 5;
+
+			meshMask = a3 != 0 ? 512 : 256;
+
+			if (a3 && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z && (uint32_t)(minX - extX) > (uint32_t)cameraEntry->unkC
+				&& (uint32_t)(minY - extY) > (uint32_t)cameraEntry->unk10 && (uint32_t)(minZ - extZ) > (uint32_t)cameraEntry->unk14)
+			{
+				for (i = cameraEntry->count - 1; i >= 0; i--)
+				{
+					meshIdx = cameraEntry->meshIdx[i];
+
+					if (meshIdx == prevMesh)
+					{
+						if (!valid)
+							continue;
+					}
+					else
+					{
+						prevMesh = meshIdx;
+						valid = 0;
+						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
+							&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZ + mesh->boundsExt.z) && mesh->typeFlags && (mesh->unk & meshMask) == 0)
+						{
+							valid = 1;
+							cellX = (minX - mesh->origin.x) / 32;
+							cellY = (minY - mesh->origin.y) / 32;
+							cellZ = (minZ - mesh->origin.z) / 32;
+						}
+						else
+							continue;
+					}
+
+					triangle = cameraEntry->triangles[i];
+
+					if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
+						&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+						&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6)))
+					{
+						if (Toy2::Collision::g_candidateTriangleCount < 240)
+						{
+							Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+							Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount + 1] = (int16_t)meshIdx;
+							Toy2::Collision::g_candidateTriangleCount++;
+						}
+					}
+				}
+			}
+			else
+			{
+				listCount = 0;
+
+				for (i = 0; i < Toy2::Collision::g_unk729120; i++)
+				{
+					Toy2::Collision::CollisionGridCell* cell = &Toy2::Collision::g_collisionGrid[i];
+
+					if ((uint32_t)(minX - cell->minX) < (uint32_t)(extX + cell->extX) && (uint32_t)(minZ - cell->minZ) < (uint32_t)(extZ + cell->extZ))
+					{
+						for (j = 0; j < cell->count; j++)
+							meshList[listCount + j] = Toy2::Collision::g_collisionMeshList[cell->start + j];
+
+						listCount += cell->count;
+					}
+				}
+
+				// the platforms follow the meshes of the cells
+				platformList = meshList + listCount;
+
+				for (j = 0; j < Toy2::Collision::g_unk7284A2; j++)
+					platformList[j] = Toy2::Collision::g_collisionMeshList[Toy2::Collision::g_unk7284A0 + j];
+
+				meshCount = Toy2::Collision::g_unk7284A2 + listCount;
+
+				for (i = 0; i < meshCount; i++)
+				{
+					meshIdx = meshList[i];
+					mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
+
+					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
+						&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZ + mesh->boundsExt.z))
+					{
+						if (mesh->typeFlags)
+						{
+							if ((mesh->unk & meshMask) == 0)
+							{
+								cellY = (minY - mesh->origin.y) / 32;
+								node = (Toy2::Collision::CollisionTreeNode*)mesh->collisionTree;
+								cellX = (minX - mesh->origin.x) / 32;
+								cellZ = (minZ - mesh->origin.z) / 32;
+
+								while (node->flag >= 0)
+								{
+									count = node->count;
+									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
+
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
+									{
+										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
+									}
+									else
+									{
+										for (j = 0; j < count; j++)
+										{
+											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6))
+												&& Toy2::Collision::g_candidateTriangleCount < 240)
+											{
+												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+												Toy2::Collision::g_candidateTriangleCount++;
+												Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount] = (int16_t)meshIdx;
+											}
+
+											triangle++;
+										}
+
+										node = (Toy2::Collision::CollisionTreeNode*)triangle;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// the platforms again, with the area they move in
+			platformMeshes = &Toy2::Collision::g_collisionMeshList[Toy2::Collision::g_unk7284A0];
+			speedSq = movement[2] / 16 * (movement[2] / 16) + movement[1] / 16 * (movement[1] / 16) + movement[0] / 16 * (movement[0] / 16);
+
+			for (platformCount = Toy2::Collision::g_unk7284A2; platformCount > 0; platformCount--, platformMeshes++)
+			{
+				localY = a1[1];
+				localX = a1[0];
+				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				originX = mesh->origin.x;
+				originZ = mesh->origin.z;
+				originY = mesh->origin.y;
+
+				if (((originZ - a1[2]) >> 6) * ((originZ - a1[2]) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6) + ((originX - localX) >> 6) * ((originX - localX) >> 6)
+					<= speedSq + (mesh->boundingSqRadius >> 1))
+				{
+					platformIdx = mesh->platformIdx;
+					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y)
+									+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z) + (int32_t)(16 * sqrt((double)speedSq));
+					doubleReach = 2 * platformReach;
+					nodeMargin = (platformReach + 15) / 16;
+
+					if ((Toy2::Platform::g_platformDescriptors[platformIdx].flags & 8) != 0)
+					{
+						angles.x = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.x >> 2;
+						angles.y = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.y >> 2;
+						angles.z = Toy2::Platform::g_platformDescriptors[platformIdx].rotAngle.z >> 2;
+
+						Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, rotation);
+
+						originZ = mesh->origin.z;
+						originY = mesh->origin.y;
+						localY = a1[1] - originY;
+						originX = mesh->origin.x;
+						localZ = a1[2] - originZ;
+						localX = a1[0] - mesh->origin.x;
+
+						platformX = platformReach + mesh->origin.x + (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 4096;
+						platformY = platformReach + originY + (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 4096;
+						platformZ = originZ + (localZ * rotation->m22 + localY * rotation->m12 + localX * rotation->m02) / 4096;
+					}
+					else
+					{
+						platformY = platformReach + a1[1];
+						platformZ = a1[2];
+						platformX = a1[0] + platformReach;
+					}
+
+					platformZ = platformReach + platformZ;
+
+					if (platformX - mesh->boundsMin.x < doubleReach + mesh->boundsExt.x && platformZ - mesh->boundsMin.z < doubleReach + mesh->boundsExt.z)
+					{
+						if (mesh->typeFlags)
+						{
+							if ((mesh->unk & meshMask) == 0)
+							{
+								node = (Toy2::Collision::CollisionTreeNode*)mesh->collisionTree;
+								cellY = (platformY - originY) / 32;
+								cellX = (platformX - originX) / 32;
+								cellZ = (platformZ - originZ) / 32;
+
+								while (node->flag >= 0)
+								{
+									count = node->count;
+									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
+
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									{
+										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
+									}
+									else
+									{
+										for (j = 0; j < count; j++)
+										{
+											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6))
+												&& Toy2::Collision::g_candidateTriangleCount < 240)
+											{
+												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
+												Toy2::Collision::g_candidateTriangleCount++;
+												Toy2::Collision::g_candidateMeshIdx[Toy2::Collision::g_candidateTriangleCount] = *platformMeshes;
+											}
+
+											triangle++;
+										}
+
+										node = (Toy2::Collision::CollisionTreeNode*)triangle;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			// the wall segments
+			wallMinX = (minX - extX) / 32;
+			wallMinZ = (minZ - extZ) / 32;
+			wallMaxX = minX / 32;
+			wallMaxZ = minZ / 32;
+			edgeCount = Toy2::Collision::g_unk72D2AC;
+			edgeNode = (uint8_t*)Toy2::Collision::g_unk7290F0[1];
+
+			if (edgeNode)
+			{
+				do
+				{
+					blockStart = 0;
+					blockEnd = *(uint16_t*)edgeNode;
+
+					if (blockEnd)
+					{
+						edgeBlock = (int32_t*)(edgeNode + 8);
+
+						do
+						{
+							if (edgeBlock[0] == 0x80000000)
+							{
+								blockLimit = blockEnd;
+							}
+							else if ((uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3]) || (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
+							{
+								blockLimit = 0;
+							}
+							else
+							{
+								blockLimit = blockStart + 16;
+							}
+
+							if (blockStart < blockLimit)
+							{
+								edgePoint = edgeBlock + 1;
+
+								for (steps = blockLimit - blockStart; steps; steps--)
+								{
+									if (((edgePoint[-2] >= wallMinX && edgePoint[1] <= wallMaxX) || (edgePoint[1] >= wallMinX && edgePoint[-2] <= wallMaxX))
+										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ)) && edgeCount < 32)
+									{
+										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[-2];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[-1];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 2] = edgePoint[0];
+										edgeCount++;
+										Toy2::Collision::g_unk72D2AC = edgeCount;
+
+										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[1];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[2];
+										Toy2::Collision::g_unk728DA0[3 * edgeCount + 2] = edgePoint[3];
+										edgeCount++;
+										Toy2::Collision::g_unk72D2AC = edgeCount;
+									}
+
+									edgePoint += 3;
+								}
+							}
+
+							blockStart += 16;
+							blockEnd = *(uint16_t*)edgeNode;
+							edgeBlock += 48;
+						} while (blockStart < blockEnd);
+					}
+
+					edgeNode = *(uint8_t**)(edgeNode - 4);
+				} while (edgeNode);
+			}
+
+			if (Toy2::Collision::g_candidateTriangleCount <= 0 && edgeCount <= 0)
+				return 0;
+
+			query[0] = a1[0];
+			query[1] = a1[1];
+			query[2] = a1[2];
+			query[3] = a1[3];
+
+			i = RaycastAgainstCandidates(a4, movement, query);
+
+			a2[0] = query[0] - a1[0];
+			a2[1] = query[1] - a1[1];
+			a2[2] = query[2] - a1[2];
+
+			return i;
+		}
 	}
 }
