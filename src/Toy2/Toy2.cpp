@@ -53,6 +53,7 @@
 #include "Nu3D/Camera.h"
 #include "Nu3D/Light.h"
 #include "Nu3D/Link.h"
+#include "Nu3D/Collision.h"
 #include "Nu3D/Math.h"
 #include "Nu3D/Scene.h"
 #include "Nu3D/Particles.h"
@@ -69,6 +70,7 @@
 #include <WINDOWS.H>
 #include <STDIO.H>
 #include <STRING.H>
+#include <STDLIB.H>
 #include <MATH.H>
 #include <DINPUT.H>
 
@@ -438,6 +440,15 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00882920
 	int32_t g_gravityBootsDuration;
+
+	// GLOBAL: TOY2 0x00882928
+	int32_t g_gravityBootsHoverHeight;
+
+	// GLOBAL: TOY2 0x00882954
+	int32_t g_rocketBootsPickupY;
+
+	// GLOBAL: TOY2 0x00882940
+	WorldPos g_grappleTargetPos;
 }
 
 namespace Toy2
@@ -4053,13 +4064,34 @@ namespace Toy2
 		}
 	}
 
-	// STUB: TOY2 0x004A4B70
-	void ActivateGravityBoots() {}
+	// FUNCTION: TOY2 0x004A4B70
+	void ActivateGravityBoots()
+	{
+		ResetBuzzState();
 
-	// STUB: TOY2 0x004A5070
-	void RespawnCosmicShield() {}
+		g_gravityBootsDuration = 600;
+		g_gravityBootsHoverHeight = 0x2000;
+	}
 
-	// STUB: TOY2 0x004A5D30
+	// FUNCTION: TOY2 0x004A5070
+	void RespawnCosmicShield()
+	{
+		if (g_cosmicShieldPickup)
+		{
+			g_cosmicShieldPickup->pos.y = g_cosmicShieldPickupYPos;
+
+			Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, 0x2000, 0x2000, 0x2000);
+			Nu3D::Link::SetPositionRawAndCommit(
+				g_cosmicShieldPickup->props.linkId,
+				g_cosmicShieldPickup->pos.x,
+				g_cosmicShieldPickup->pos.y,
+				g_cosmicShieldPickup->pos.z);
+
+			g_cosmicShieldPickup = 0;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004A5D30
 	Toy2::BeamShot* SpawnBeamShot(
 		int32_t beamType,
 		int16_t aimYaw,
@@ -4069,7 +4101,244 @@ namespace Toy2
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor)
 	{
-		return 0;
+		int32_t oldestLife = 1000;
+		BeamShot* beamShot = 0;
+		int32_t index = 0;
+
+		// reuse the first free slot, otherwise the one that is closest to expiring
+		while (true)
+		{
+			int16_t lifeTimer = g_beamShots[index].lifeTimer;
+
+			if (!lifeTimer)
+			{
+				beamShot = &g_beamShots[index];
+
+				break;
+			}
+
+			if (lifeTimer < oldestLife)
+			{
+				oldestLife = lifeTimer;
+				beamShot = &g_beamShots[index];
+			}
+
+			++index;
+
+			if (index >= 4)
+				break;
+		}
+
+		WorldPos startPos;
+		WorldPos displacement;
+
+		if (autoAimActor)
+		{
+			Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+			int32_t bestAngleDiff = 0x7FFFFFFF;
+
+			if (actor)
+			{
+				Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+
+				do
+				{
+					if ((actor->actorFlags & 1) != 0 && (actor->creatureRam->defenseMode & 4) != 0 && actor->unkVar29 >= 0)
+					{
+						int32_t deltaZ = (actor->pos.z - origin->z) >> 5;
+						int32_t deltaY = (actor->pos.y - origin->y) >> 5;
+						int32_t deltaX = (actor->pos.x - origin->x) >> 5;
+
+						if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < 0x1000000 && abs(deltaY) < 768)
+						{
+							int32_t angleDiff = (Nu3D::Math::CartesianToFixedAngle(deltaX, deltaZ) - aimYaw) & 0xFFF;
+
+							// quirk: 4095, not 4096
+							if (angleDiff > 0x800)
+								angleDiff -= 4095;
+
+							if (abs(angleDiff) < abs(bestAngleDiff))
+							{
+								bestAngleDiff = angleDiff;
+								autoAimActor = actor;
+							}
+						}
+					}
+
+					actor = *++nextActor;
+				} while (*nextActor);
+
+				if (bestAngleDiff != 0x7FFFFFFF)
+				{
+					int16_t targetYaw = autoAimActor->yawAngle;
+					int32_t sinFacing = Numerics::g_sinCosLUT[(targetYaw - 2048) & 0xFFF] >> 2;
+					int16_t* attachOffset = (int16_t*)(autoAimActor->unkVar34 + 16 * autoAimActor->primaryAnimIdx);
+					int32_t cosFacing = Numerics::g_sinCosLUT[(targetYaw - 1024) & 0xFFF] >> 2;
+					int32_t attachZ = attachOffset[2];
+
+					int32_t aimDeltaX = (autoAimActor->pos.x + ((sinFacing * attachZ + cosFacing * attachOffset[0]) >> 12) - origin->x) >> 5;
+					int32_t aimDeltaY = (autoAimActor->pos.y + attachOffset[1] - origin->y) >> 5;
+					int32_t aimDeltaZ = (autoAimActor->pos.z + ((cosFacing * attachZ - sinFacing * attachOffset[0]) >> 12) - origin->z) >> 5;
+
+					int32_t targetAngle = Nu3D::Math::CartesianToFixedAngle(aimDeltaX, aimDeltaZ);
+
+					if (((targetAngle - aimYaw + 128) & 0xFFFu) < 0x100)
+					{
+						aimYaw = targetAngle;
+
+						int32_t pitch = (Nu3D::Math::CartesianToFixedAngle((int32_t)sqrt((double)(aimDeltaX * aimDeltaX + aimDeltaZ * aimDeltaZ)), aimDeltaY) - 1024) & 0xFFF;
+
+						if (pitch > 2048)
+							pitch -= 4096;
+
+						if (pitch <= 64)
+						{
+							if (pitch < -64)
+								pitch = -64;
+						}
+						else
+						{
+							pitch = 64;
+						}
+
+						aimPitch = (int16_t)pitch;
+					}
+					else
+					{
+						g_buzzActor.facingAngle = targetAngle;
+					}
+				}
+			}
+		}
+
+		int32_t rangeCos = range * Numerics::g_sinCosLUT[(aimPitch + 1024) & 0xFFF];
+		int32_t offsetX = rangeCos * Numerics::g_sinCosLUT[aimYaw & 0xFFF];
+		int32_t offsetZ = rangeCos * Numerics::g_sinCosLUT[(aimYaw + 1024) & 0xFFF];
+		int32_t offsetY = 2 * range * Numerics::g_sinCosLUT[(aimPitch - 2048) & 0xFFF];
+
+		beamShot->headPos.x = headOffset->x + origin->x;
+		beamShot->headPos.y = origin->y + headOffset->y;
+		beamShot->headPos.z = origin->z + headOffset->z;
+
+		beamShot->originPos.x = (offsetX >> 13) + origin->x;
+		beamShot->originPos.y = offsetY + origin->y;
+		beamShot->originPos.z = (offsetZ >> 13) + origin->z;
+		beamShot->lifeTimer = 32;
+
+		startPos.x = origin->x;
+		startPos.y = origin->y;
+		startPos.z = origin->z;
+
+		displacement.x = beamShot->originPos.x - startPos.x;
+		displacement.y = beamShot->originPos.y - startPos.y;
+		displacement.z = beamShot->originPos.z - startPos.z;
+
+		if (beamType == 0)
+		{
+			beamShot->tintB = 0x80;
+			beamShot->tintG = 0;
+			beamShot->tintR = 0;
+			beamShot->halfWidth = 32;
+		}
+		else if (beamType == 1)
+		{
+			beamShot->tintB = 0x80;
+			beamShot->tintG = 0x80;
+			beamShot->tintR = 0;
+			beamShot->halfWidth = 64;
+		}
+		else if (beamType == 2)
+		{
+			beamShot->tintB = 0;
+			beamShot->tintG = 0x80;
+			beamShot->tintR = 0;
+			beamShot->halfWidth = 32;
+		}
+
+		int32_t hitWall = Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 256);
+		int32_t hit = Camera::SweepSegmentVsActors(&startPos, &displacement, beamType + 1) | hitWall;
+
+		if (hit)
+		{
+			beamShot->originPos.x = startPos.x + displacement.x;
+			beamShot->originPos.y = startPos.y + displacement.y;
+			beamShot->originPos.z = startPos.z + displacement.z;
+
+			if (beamType)
+			{
+				if (beamType == 1)
+				{
+					Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 10, 5);
+				}
+				else if (beamType == 2)
+				{
+					if (Camera::g_cameraState == 4)
+						Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 74, 5);
+					else
+						Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 73, 2);
+				}
+			}
+			else if (Camera::g_cameraState == 4)
+			{
+				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 11, 5);
+			}
+			else
+			{
+				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 1, 2);
+			}
+
+			if (hit == 1)
+			{
+				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 5, 2);
+				AudioManager::PlaySoundEffect(8, &beamShot->originPos);
+			}
+
+			int32_t sparkCount = 5;
+
+			do
+			{
+				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 4, 4)->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+
+				--sparkCount;
+				++g_randDatBufferPtr;
+			} while (sparkCount);
+		}
+
+		startPos.x = (beamShot->originPos.x - beamShot->headPos.x) >> 2;
+		startPos.y = (beamShot->originPos.y - beamShot->headPos.y) >> 2;
+		startPos.z = (beamShot->originPos.z - beamShot->headPos.z) >> 2;
+
+		Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&startPos, (Vector3I*)&startPos);
+
+		beamShot->velocity.y = startPos.y >> 1;
+		beamShot->velocity.z = startPos.z >> 1;
+		beamShot->velocity.x = startPos.x >> 1;
+
+		int32_t dominantVel = beamShot->velocity.x;
+		int32_t dominantDist;
+
+		if (abs(dominantVel) <= abs(beamShot->velocity.y))
+		{
+			dominantVel = beamShot->velocity.y;
+			dominantDist = beamShot->originPos.y - beamShot->headPos.y;
+		}
+		else
+		{
+			dominantDist = beamShot->originPos.x - beamShot->headPos.x;
+		}
+
+		if (abs(dominantVel) <= abs(beamShot->velocity.z))
+		{
+			dominantVel = beamShot->velocity.z;
+			dominantDist = beamShot->originPos.z - beamShot->headPos.z;
+		}
+
+		if (!dominantVel)
+			dominantVel = 1;
+
+		beamShot->moveTimer = dominantDist / dominantVel;
+
+		return (hit & 4) != 0 ? beamShot : 0;
 	}
 
 	// STUB: TOY2 0x004CD110

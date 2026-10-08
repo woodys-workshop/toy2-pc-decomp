@@ -366,8 +366,30 @@ namespace Toy2
 		// STUB: TOY2 0x004A0E60
 		void Deactivate(int32_t slotIdx) {}
 
-		// STUB: TOY2 0x004A50D0
-		void CosmicShield(Toy2::Levels::Type63* object) {}
+		// FUNCTION: TOY2 0x004A50D0
+		void CosmicShield(Toy2::Levels::Type63* object)
+		{
+			if (g_cosmicShieldPickup)
+			{
+				g_cosmicShieldPickup->pos.y = g_cosmicShieldPickupYPos;
+
+				Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, 0x2000, 0x2000, 0x2000);
+				Nu3D::Link::SetPositionRawAndCommit(
+					g_cosmicShieldPickup->props.linkId,
+					g_cosmicShieldPickup->pos.x,
+					g_cosmicShieldPickup->pos.y,
+					g_cosmicShieldPickup->pos.z);
+
+				g_cosmicShieldPickup = 0;
+			}
+
+			g_cosmicShieldPickup = object;
+			g_cosmicShieldPickupYPos = object->pos.y;
+
+			g_buzzActor.inhibitMovementTimer = 900;
+
+			Nu3D::Link::SetScaleFromFixedOffsets(object->props.linkId, 12288, 12288, 12288);
+		}
 
 		// STUB: TOY2 0x004A0F80
 		void Interactions() {}

@@ -12,6 +12,7 @@
 #include "Nu3D/Particles.h"
 #include "Toy2/Camera.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Effects.h"
 #include "AudioManager/AudioManager.h"
 #include "Nu3D/Link.h"
 #include "CharacterLoader.h"
@@ -903,8 +904,170 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x004100F0
-		void CheckParticleCollisions() {}
+		// FUNCTION: TOY2 0x004100F0
+		void CheckParticleCollisions()
+		{
+			int32_t hitType = 0;
+			Nu3D::Particles::ParticleInstance* instance;
+			int32_t distZ;
+			int32_t soundId;
+			int16_t coinsCollected;
+			int16_t hitAngle;
+			int32_t knockbackIdx;
+			int32_t collisionFlags = 0;
+			Nu3D::Particles::ParticleInstance* hitInstance;
+			int32_t remaining = 64;
+			int32_t x = g_buzzActor.posAngles.pos.x;
+			int32_t y = g_buzzActor.posAngles.pos.y - 7360;
+			int32_t z = g_buzzActor.posAngles.pos.z;
+
+			instance = Nu3D::Particles::g_particleInstances;
+
+			do
+			{
+				if (instance->lifetime > 0 && (instance->renderFlags & 2) != 0)
+				{
+					distZ = (z - instance->pos.z) << 8 >> 13;
+
+					if (((x - instance->pos.x) << 8 >> 13) * ((x - instance->pos.x) << 8 >> 13)
+							+ ((y - instance->pos.y) << 7 >> 13) * ((y - instance->pos.y) << 7 >> 13)
+							+ distZ * distZ
+						< (instance->width + 100) * (instance->width + 100))
+					{
+						soundId = 0;
+
+						switch (instance->spriteSheet)
+						{
+						case 0:
+						case 1:
+						case 0x13:
+							goto LABEL_7;
+
+						case 4:
+						case 0x33:
+						case 0x34:
+							hitType = 2;
+							collisionFlags = instance->collisionFlags;
+							goto LABEL_21;
+
+						case 5:
+							hitType = 2;
+							collisionFlags = instance->collisionFlags;
+							goto LABEL_21;
+
+						case 7:
+							if (!g_buzzActor.unkShort40)
+								break;
+
+						LABEL_7:
+							hitType = 1;
+							goto LABEL_20;
+
+						case 0x10:
+							coinsCollected = g_buzzActor.coinsCollected;
+							soundId = -1;
+							collisionFlags = 5;
+							g_hudWidgetTimers[2] = 180;
+
+							if (g_buzzActor.coinsCollected < 99)
+								coinsCollected = ++g_buzzActor.coinsCollected;
+
+							if (coinsCollected == 50)
+								AudioManager::PlaySoundEffect(79, 0);
+
+							break;
+
+						case 0x15:
+							collisionFlags = 4;
+							soundId = 0;
+							hitType = 1;
+							goto LABEL_22;
+
+						case 0x16:
+							if (g_buzzActor.collisionFlags)
+								g_unk5281A4 = (instance->unkByte1 >> 1) - 90;
+
+							break;
+
+						case 0x35:
+							if (g_buzzActor.unkShort40)
+								goto LABEL_18;
+
+							break;
+
+						case 0x36:
+						LABEL_18:
+							hitType = 1;
+							collisionFlags = instance->collisionFlags;
+							goto LABEL_21;
+
+						case 0x37:
+							hitType = 2;
+
+						LABEL_20:
+							collisionFlags = 0;
+
+						LABEL_21:
+							soundId = 0;
+
+						LABEL_22:
+							hitInstance = instance;
+
+							break;
+
+						default:
+							break;
+						}
+
+						if ((g_unk53C650 > 20 || g_unk53C83C <= -120) && hitType == 2)
+						{
+							hitAngle = Nu3D::Math::CartesianToFixedAngle(
+								g_buzzActor.posAngles.pos.x - instance->pos.x,
+								g_buzzActor.posAngles.pos.z - instance->pos.z);
+
+							((uint8_t*)&instance->renderFlags)[0] &= 0xF5;
+							knockbackIdx = (hitAngle + 3072) & 0xFFF;
+							instance->velY = -1024;
+							instance->yawAngle = 48;
+							instance->lifetime = 50;
+							instance->velX = Numerics::g_sinCosLUT[(hitAngle + 2048) & 0xFFF] / 16;
+							hitType = 0;
+							instance->velZ = Numerics::g_sinCosLUT[knockbackIdx] / 16;
+							AudioManager::PlaySoundEffect(7, &instance->pos);
+						}
+						else
+						{
+							if (collisionFlags > 0)
+							{
+								instance->collisionFlags = collisionFlags;
+								instance->lifetime = 1;
+							}
+
+							if (collisionFlags < 0)
+								instance->lifetime = 1;
+
+							if (soundId)
+								AudioManager::PlaySoundEffect(soundId, &instance->pos);
+						}
+					}
+				}
+
+				++instance;
+				--remaining;
+			} while (remaining);
+
+			if (hitType)
+			{
+				hitAngle = Nu3D::Math::CartesianToFixedAngle(
+					g_buzzActor.posAngles.pos.x - hitInstance->pos.x,
+					g_buzzActor.posAngles.pos.z - hitInstance->pos.z);
+
+				HandleDamage(hitAngle, 3);
+			}
+
+			if (g_unk5281A4 != -1)
+				g_unk52B81C = g_unk5281A4;
+		}
 
 		// FUNCTION: TOY2 0x004340D0
 		void UpdateJumpAndGravity(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t initialJumpVelocity, int32_t forceJump)
@@ -1251,8 +1414,438 @@ namespace Toy2
 			return flag;
 		}
 
-		// STUB: TOY2 0x00434990
-		void TickGunFire(PosAndAngles* muzzlePos) {}
+		// FUNCTION: TOY2 0x004A4960
+		void FireDiscLauncher(int16_t pitch)
+		{
+			int32_t closestDist = 0x7FFFFFFF;
+			Toy2::Actor::Toy2Actor* closestActor;
+			Toy2::Actor::Toy2Actor* targetActor;
+			Toy2::Actor::Toy2Actor* actor;
+			Toy2::Actor::Toy2Actor** nextActor;
+			Nu3D::Particles::ParticleInstance* disc;
+			int32_t deltaX;
+			int32_t deltaYSq;
+			int32_t distance;
+			int32_t cosPitch;
+			int32_t sinPitch;
+			uint32_t velY;
+
+			if (g_discLauncherAmmo > 0)
+			{
+				if (Camera::g_cameraState < 3)
+				{
+					actor = Actor::g_activeActors[0];
+
+					if (actor)
+					{
+						nextActor = Actor::g_activeActors;
+
+						do
+						{
+							if ((uint8_t)actor->creatureRam->defenseMode)
+							{
+								if (actor->unkVar29 >= 0 && (actor->actorFlags & (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_VISIBLE_ACTIVE)) == 3)
+								{
+									deltaX = (actor->pos.x - g_buzzActor.posAngles.pos.x) >> 5;
+									deltaYSq = ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5) * ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5);
+									distance = deltaX * deltaX + deltaYSq + ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5);
+
+									if (closestDist > distance)
+									{
+										closestDist = distance;
+										closestActor = actor;
+									}
+								}
+							}
+
+							actor = *++nextActor;
+						} while (*nextActor);
+
+						if (closestDist < 0x1000000)
+						{
+							targetActor = closestActor;
+							goto LABEL_16;
+						}
+					}
+				}
+				else if (Camera::g_lockOnActorIdx != -1 && Camera::g_lockOnActorIdx < 1000)
+				{
+					targetActor = &g_levelActors[Camera::g_lockOnActorIdx];
+
+				LABEL_16:
+					disc = Nu3D::Particles::SpawnInstance(
+						g_unk50A0A0.x,
+						g_unk50A0A0.y,
+						g_unk50A0A0.z,
+						0,
+						-2,
+						0,
+						4 * g_buzzActor.posAngles.angles.yaw,
+						0,
+						0,
+						71);
+
+					// the target actor is stored in the velY field
+					disc->velY = (int32_t)targetActor;
+					disc->pitchAngle = pitch & 0xFFF;
+
+				LABEL_18:
+					AudioManager::PlaySoundEffect(84, &g_buzzActor.posAngles.pos);
+					--g_discLauncherAmmo;
+					--g_discLauncherTimer;
+
+					return;
+				}
+
+				cosPitch = Numerics::g_sinCosLUT[(pitch + 1024) & 0xFFF];
+				sinPitch = Numerics::g_sinCosLUT[pitch & 0xFFF];
+
+				// signed division by -3
+				velY = (((1431655765i64 * sinPitch) >> 32) - sinPitch) >> 1;
+
+				Nu3D::Particles::SpawnInstance(
+					g_unk50A0A0.x,
+					g_unk50A0A0.y,
+					g_unk50A0A0.z,
+					((cosPitch * Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF]) >> 14) / 3,
+					(velY >> 31) + velY,
+					((cosPitch * Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF]) >> 14) / 3,
+					0,
+					0,
+					0,
+					72);
+
+				goto LABEL_18;
+			}
+		}
+
+		// FUNCTION: TOY2 0x004A5370
+		uint32_t FireGrapple()
+		{
+			int32_t lockOnIdx;
+			int32_t targetX;
+			int32_t targetY;
+			int32_t targetZ;
+			int32_t dominantVel;
+			int32_t dominantDist;
+			uint32_t result;
+			WorldPos direction;
+
+			AudioManager::PlaySoundEffect(81, &g_buzzActor.posAngles.pos);
+
+			lockOnIdx = Camera::g_lockOnActorIdx - 1000;
+			targetX = Levels::g_recordData[59]->data[lockOnIdx].x;
+			targetZ = Levels::g_recordData[59]->data[lockOnIdx].z;
+			targetY = Levels::g_recordData[59]->data[lockOnIdx].y;
+
+			g_grappleTargetPos.x = g_buzzActor.posAngles.pos.x;
+			direction.y = 32 * (targetY - 192) - (g_buzzActor.posAngles.pos.y - 11264);
+			g_grappleTargetPos.y = g_buzzActor.posAngles.pos.y - 11264;
+			g_grappleTargetPos.z = g_buzzActor.posAngles.pos.z;
+
+			direction.x = 32 * targetX - g_buzzActor.posAngles.pos.x;
+			direction.z = 32 * targetZ - g_buzzActor.posAngles.pos.z;
+
+			g_grappleState = Nu3D::Collision::SweepAndSlide(&g_grappleTargetPos, &direction, 0x8000, 0, 256) != 0 ? 3 : 1;
+
+			g_grappleTargetPos.x += direction.x;
+			direction.x = (g_grappleTargetPos.x - g_unk50A0A0.x) >> 2;
+			g_grappleTargetPos.y += direction.y;
+			g_grappleTargetPos.z += direction.z;
+
+			direction.y = (g_grappleTargetPos.y - g_unk50A0A0.y) >> 2;
+			direction.z = (g_grappleTargetPos.z - g_unk50A0A0.z) >> 2;
+
+			Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
+
+			dominantVel = direction.x >> 1;
+
+			if (abs(direction.x >> 1) <= abs(direction.y >> 1))
+			{
+				dominantVel = direction.y >> 1;
+				dominantDist = g_grappleTargetPos.y - g_buzzActor.posAngles.pos.y + 5632;
+			}
+			else
+			{
+				dominantDist = g_grappleTargetPos.x - g_buzzActor.posAngles.pos.x;
+			}
+
+			if (abs(dominantVel) <= abs(direction.z >> 1))
+			{
+				dominantVel = direction.z >> 1;
+				dominantDist = g_grappleTargetPos.z - g_buzzActor.posAngles.pos.z;
+			}
+
+			if (!dominantVel)
+				dominantVel = 1;
+
+			g_buzzActor.actorFlags |= 4;
+			g_grappleProgress = 0;
+
+			result = abs(dominantDist / dominantVel);
+			InputManager::g_directionInputState &= 0x309;
+			g_grappleDistance = result;
+
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x00434990
+		void TickGunFire(PosAndAngles* muzzlePos)
+		{
+			int32_t chargeTimer;
+			int32_t holdTimer;
+			int32_t shotKind;
+			int32_t newChargeTimer;
+			int32_t newHoldTimer;
+			int16_t yaw;
+			PosAndAngles* shotPos;
+			int32_t pitch;
+			int32_t autoAim;
+			BeamShot* beamShot;
+			int16_t followUpYaw;
+			Vector3I* beamOrigin;
+			int16_t followUpPitch;
+			int32_t shotType;
+			WorldPos headOffset;
+			WorldPos origin;
+
+			if ((g_buzzActionState & 0xFBE3C) != 0)
+			{
+				chargeTimer = 0;
+				holdTimer = 0;
+				g_fireChargeTimer = 0;
+				g_fireHoldTimer = 0;
+			}
+			else
+			{
+				chargeTimer = g_fireChargeTimer;
+
+				if (g_fireChargeTimer)
+				{
+					holdTimer = g_fireHoldTimer;
+				}
+				else
+				{
+					holdTimer = 0;
+					g_fireHoldTimer = 0;
+				}
+			}
+
+			shotKind = 0;
+			shotType = 0;
+
+			if (InputManager::g_directionInputState < 0
+				&& (InputManager::g_prevDirectionInputState & 0x8000) == 0
+				&& (g_buzzActionState & 0xFBEFE) == 0)
+			{
+				g_fireHoldTimer = 0;
+				g_unk53C83C = 0;
+				g_unk53C650 = 0;
+				g_buzzActionState |= 0x80u;
+
+				goto LABEL_13;
+			}
+
+			if (!chargeTimer)
+				return;
+
+			if (chargeTimer < 12)
+			{
+				if (chargeTimer != -1)
+				{
+				LABEL_14:
+					g_fireChargeTimer = Renderer::g_frameDelta + chargeTimer;
+
+					if (Renderer::g_frameDelta + chargeTimer < 12)
+						return;
+
+					shotType = 1;
+
+					goto LABEL_49;
+				}
+
+			LABEL_13:
+				chargeTimer = 0;
+
+				goto LABEL_14;
+			}
+
+			newChargeTimer = Renderer::g_frameDelta + chargeTimer;
+			g_fireChargeTimer = newChargeTimer;
+
+			if (InputManager::g_directionInputState < 0)
+			{
+				newHoldTimer = Renderer::g_frameDelta + holdTimer;
+				g_fireHoldTimer = newHoldTimer;
+
+				if (g_discLauncherTimer)
+				{
+					if (newHoldTimer < 14)
+						goto LABEL_23;
+
+				LABEL_22:
+					shotKind = 1;
+					g_fireHoldTimer = 0;
+					shotType = 1;
+
+				LABEL_23:
+					if (newChargeTimer >= 52)
+					{
+						newChargeTimer -= 40;
+						g_fireChargeTimer = newChargeTimer;
+					}
+
+					goto LABEL_45;
+				}
+
+				if (g_greenGunCharge)
+				{
+					if (newHoldTimer < 6)
+						goto LABEL_23;
+
+					goto LABEL_22;
+				}
+
+				if (newHoldTimer >= 64)
+				{
+					newHoldTimer = 64;
+					g_fireHoldTimer = 64;
+				}
+
+				if (InputManager::g_prevDirectionInputState < 0 || (g_buzzActionState & 0xFBE7E) != 0)
+				{
+					if (newChargeTimer < 52)
+						goto LABEL_35;
+
+					newChargeTimer -= 40;
+				}
+				else
+				{
+					if (newChargeTimer <= 52)
+					{
+						shotKind = 1;
+						shotType = 1;
+
+						goto LABEL_35;
+					}
+
+					newChargeTimer = 64 - newChargeTimer;
+				}
+
+				g_fireChargeTimer = newChargeTimer;
+
+			LABEL_35:
+				if (newHoldTimer > 12)
+				{
+					AudioManager::g_pitchArray[3] = 80 * newHoldTimer + 2048;
+					AudioManager::PlaySoundEffect(39, &muzzlePos->pos);
+					newChargeTimer = g_fireChargeTimer;
+				}
+
+				goto LABEL_45;
+			}
+
+			if (holdTimer > 36)
+			{
+				newChargeTimer = 52;
+				g_fireChargeTimer = 52;
+			}
+
+			if (holdTimer == 64)
+			{
+				shotKind = 2;
+				shotType = 2;
+			}
+
+			g_fireHoldTimer = 0;
+
+			if (g_greenGunCharge)
+				g_fireHoldTimer = 6;
+
+			if (g_discLauncherTimer)
+				g_fireHoldTimer = 14;
+
+		LABEL_45:
+			if (newChargeTimer >= 64)
+				g_fireChargeTimer = 0;
+
+			if (shotKind)
+			{
+				if (shotKind != 1)
+				{
+				LABEL_52:
+					g_fireChargeTimer = 12;
+
+					if (Camera::g_cameraState == 4)
+					{
+						yaw = Camera::g_gameplayCameraState.angles.yaw;
+						shotPos = muzzlePos;
+						pitch = -Camera::g_gameplayCameraState.angles.pitch;
+						autoAim = 0;
+					}
+					else
+					{
+						shotPos = muzzlePos;
+						pitch = 0;
+						autoAim = 1;
+						yaw = muzzlePos->angles.yaw;
+					}
+
+					origin.x = shotPos->pos.x;
+					origin.y = shotPos->pos.y - 11264;
+					origin.z = shotPos->pos.z;
+					headOffset.x = g_unk50A0A0.x - shotPos->pos.x;
+					headOffset.z = g_unk50A0A0.z - shotPos->pos.z;
+					headOffset.y = g_unk50A0A0.y - (shotPos->pos.y - 11264);
+
+					if (g_grappleTimer && Camera::g_cameraState >= 3 && Camera::g_unk50A540 && Camera::g_lockOnActorIdx >= 1000)
+					{
+						FireGrapple();
+					}
+					else if (g_discLauncherTimer)
+					{
+						FireDiscLauncher(pitch);
+					}
+					else
+					{
+						if (shotType == 1)
+							AudioManager::PlaySoundEffect(2, &g_buzzActor.posAngles.pos);
+						else
+							AudioManager::PlaySoundEffect(6, &g_buzzActor.posAngles.pos);
+
+						// quirk: the auto aim parameter is a flag here (0 or 1), not an actor
+						beamShot = SpawnBeamShot(shotType - 1, yaw, pitch, &origin, &headOffset, 4, (Toy2::Actor::Toy2Actor*)autoAim);
+
+						if (beamShot)
+						{
+							memset(&headOffset, 0, 12);
+
+							followUpYaw = yaw + 4 * *g_randDatBufferPtr + 1536;
+							beamOrigin = &beamShot->originPos;
+							followUpPitch = (4 * *g_randDatBufferPtr - 512) & 0xFFF;
+							g_randDatBufferPtr += 2;
+
+							SpawnBeamShot(shotType - 1, followUpYaw & 0xFFF, followUpPitch, (WorldPos*)&beamShot->originPos, &headOffset, 4, 0);
+							AudioManager::PlaySoundEffect(7, beamOrigin);
+						}
+					}
+
+					return;
+				}
+
+			LABEL_49:
+				if (g_greenGunCharge)
+				{
+					shotType = 3;
+					g_greenGunCharge -= 10;
+
+					if (g_greenGunCharge < 0)
+						g_greenGunCharge = 0;
+				}
+
+				goto LABEL_52;
+			}
+		}
 
 		// FUNCTION: TOY2 0x00434D20
 		int32_t TickGroundSlam(Toy2::Actor::Toy2Actor* actor)
@@ -2842,8 +3435,25 @@ next:
 		// STUB: TOY2 0x004A4910
 		void RefreshDiscAmm() {}
 
-		// STUB: TOY2 0x004A4E60
-		void DeactivateRocketBoots() {}
+		// FUNCTION: TOY2 0x004A4E60
+		void DeactivateRocketBoots()
+		{
+			int32_t i;
+
+			if (g_rocketBootsDuration)
+			{
+				g_rocketBootsDuration = 0;
+
+				for (i = 0; i < 64; ++i)
+				{
+					if (Nu3D::Particles::g_particleInstances[i].typeId == 47)
+						Nu3D::Particles::g_particleInstances[i].lifetime = 1;
+				}
+
+				Nu3D::Link::SetScaleFromFixedOffsets(g_rocketBootsPickup->props.linkId, 4096, 4096, 4096);
+				g_rocketBootsPickup->pos.y = g_rocketBootsPickupY;
+			}
+		}
 
 		// FUNCTION: TOY2 0x00436220
 		void HandleGameplay(Toy2::Buzz::Toy2BuzzActor* buzzActor)
@@ -3524,31 +4134,330 @@ next:
 		// STUB: TOY2 0x004A2D80
 		void UpdateContactEffects() {}
 
-		// STUB: TOY2 0x004A4960
-		void FireDiscLauncher(int16_t pitch) {}
+		// FUNCTION: TOY2 0x004A4B90
+		void ResetGravityBoots()
+		{
+			if (g_gravityBootsDuration)
+				g_gravityBootsDuration = 0;
+		}
 
-		// STUB: TOY2 0x004A4B90
-		void ResetGravityBoots() {}
+		// FUNCTION: TOY2 0x004A4D60
+		void ActivateRocketBoots(Toy2::Levels::Type63* a1)
+		{
+			int32_t i;
+			Nu3D::Particles::ParticleInstance* particle1;
+			Nu3D::Particles::ParticleInstance* particle2;
 
-		// STUB: TOY2 0x004A4D60
-		void ActivateRocketBoots(Toy2::Levels::Type63* a1) {}
+			if (g_rocketBootsDuration)
+			{
+				g_rocketBootsDuration = 0;
 
-		// STUB: TOY2 0x004A5170
-		void TickCosmicShield() {}
+				for (i = 0; i < 64; ++i)
+				{
+					if (Nu3D::Particles::g_particleInstances[i].typeId == 47)
+						Nu3D::Particles::g_particleInstances[i].lifetime = 1;
+				}
 
-		// STUB: TOY2 0x004A5340
-		void CancelGrapple() {}
+				Nu3D::Link::SetScaleFromFixedOffsets(g_rocketBootsPickup->props.linkId, 4096, 4096, 4096);
+				g_rocketBootsPickup->pos.y = g_rocketBootsPickupY;
+			}
 
-		// STUB: TOY2 0x004A5370
-		uint32_t FireGrapple() { return 0; }
+			g_rocketBootsPickup = a1;
+			g_rocketBootsPickupY = a1->pos.y;
 
-		// STUB: TOY2 0x004A5540
-		void TickGrapple() {}
+			ResetBuzzState();
 
-		// STUB: TOY2 0x004A5C40
-		void TickBeamShots() {}
+			g_rocketBootsDuration = 250;
 
-		// STUB: TOY2 0x004A62A0
-		void TickGadgets() {}
+			particle1 = Nu3D::Particles::SpawnFromPreset(
+				g_buzzActor.posAngles.pos.x,
+				g_buzzActor.posAngles.pos.y,
+				g_buzzActor.posAngles.pos.z,
+				47,
+				2);
+
+			particle1->rotSpeed = -32;
+			particle1->groundAlignRot = 128;
+			particle1->lifetime = g_rocketBootsDuration;
+
+			particle2 = Nu3D::Particles::SpawnFromPreset(
+				g_buzzActor.posAngles.pos.x,
+				g_buzzActor.posAngles.pos.y,
+				g_buzzActor.posAngles.pos.z,
+				47,
+				2);
+
+			particle2->unkByte1 = 101;
+			particle2->rotSpeed = 32;
+			particle2->lifetime = g_rocketBootsDuration;
+
+			AudioManager::PlaySoundEffect(76, &g_buzzActor.posAngles.pos);
+		}
+
+		// FUNCTION: TOY2 0x004A5170
+		void TickCosmicShield()
+		{
+			int32_t scale;
+			BOOL playSound;
+			Vector3I pos;
+
+			if (g_cosmicShieldPickup)
+			{
+				pos.x = (g_buzzActor.posAngles.pos.x - Camera::g_activeCameraTransform.pos.x) >> 5;
+				pos.y = (g_buzzActor.posAngles.pos.y - Camera::g_activeCameraTransform.pos.y - 0x2000) >> 5;
+				pos.z = (g_buzzActor.posAngles.pos.z - Camera::g_activeCameraTransform.pos.z) >> 5;
+
+				Nu3D::Math::NormalizeToFixedPoint(&pos, &pos);
+
+				pos.y = (g_buzzActor.posAngles.pos.y - pos.y - 0x2000) >> 5;
+				pos.z = (g_buzzActor.posAngles.pos.z - pos.z) >> 5;
+				pos.x = (g_buzzActor.posAngles.pos.x - pos.x) >> 5;
+
+				Nu3D::Link::SetPositionRawAndCommit(g_cosmicShieldPickup->props.linkId, pos.x, pos.y, pos.z);
+				Nu3D::Link::SetRotationRelative8bit(g_cosmicShieldPickup->props.linkId, 0, g_cosmicShieldRotYaw, g_cosmicShieldSpin);
+
+				g_cosmicShieldRotYaw = -g_buzzActor.posAngles.angles.yaw & 0xFFF;
+				g_cosmicShieldSpin = (g_cosmicShieldSpin - Renderer::g_frameDelta * (g_buzzActor.unkVar30 >> 4)) & 0xFFF;
+
+				playSound = 1;
+
+				if (g_buzzActor.inhibitMovementTimer >= 128)
+				{
+					scale = (Numerics::g_sinCosLUT[64 * (g_buzzActor.inhibitMovementTimer & 0x3F)] >> 4) + 12288;
+				}
+				else
+				{
+					scale = 3 * (Numerics::g_sinCosLUT[8 * g_buzzActor.inhibitMovementTimer] >> 2);
+					playSound = g_tickAccumulators.tick16Acc >= 8u;
+				}
+
+				Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, scale, scale, scale);
+
+				if (playSound)
+				{
+					AudioManager::g_pitchArray[0] = 4 * (2048 - g_buzzActor.inhibitMovementTimer);
+					AudioManager::PlaySoundEffect(77, &g_buzzActor.posAngles.pos);
+				}
+
+				Renderer::BlitTextureByIndexOffset(
+					16,
+					128,
+					192,
+					64,
+					64,
+					4 * g_tickAccumulators.tick16Acc,
+					2 * g_tickAccumulators.tick32Acc,
+					0,
+					-64);
+			}
+		}
+
+		// FUNCTION: TOY2 0x004A5340
+		void CancelGrapple()
+		{
+			if (g_grappleState)
+			{
+				if (g_grappleTimer > 0)
+					--g_grappleTimer;
+
+				g_grappleState = 0;
+			}
+		}
+
+		// FUNCTION: TOY2 0x004A5540
+		void TickGrapple()
+		{
+			WorldPos direction;
+
+			if (!g_grappleState)
+				return;
+
+			g_unk53C838 = 0;
+
+			if ((g_grappleState & 1) == 0)
+				goto LABEL_14;
+
+			g_buzzActor.facingAngle = Nu3D::Math::CartesianToFixedAngle(
+				g_grappleTargetPos.x - g_unk50A0A0.x,
+				g_grappleTargetPos.z - g_unk50A0A0.z);
+
+			g_grappleProgress += 2 * Renderer::g_frameDelta;
+
+			if (g_grappleProgress <= g_grappleDistance)
+			{
+				direction.x = g_grappleProgress * (g_grappleTargetPos.x - g_unk50A0A0.x) / g_grappleDistance;
+				direction.y = g_grappleProgress * (g_grappleTargetPos.y - g_unk50A0A0.y) / g_grappleDistance;
+				direction.z = g_grappleProgress * (g_grappleTargetPos.z - g_unk50A0A0.z) / g_grappleDistance;
+
+				Renderer::Beam::QueueBeam(34, 30, 400, (WorldPos*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
+
+			LABEL_14:
+				if (g_grappleState == 2)
+				{
+					if (g_grappleProgress > 4 * g_grappleDistance / 3 + 10)
+					{
+						if (g_grappleTimer > 0)
+							--g_grappleTimer;
+
+						g_buzzActor.actorFlags &= ~4;
+						g_grappleState = 0;
+
+						g_buzzActor.posAngles.pos.x = g_grappleTargetPos.x;
+						g_buzzActor.posAngles.pos.y = g_grappleTargetPos.y + 5632;
+						g_buzzActor.posAngles.pos.z = g_grappleTargetPos.z;
+						g_buzzActor.velX = 0;
+						g_buzzActor.gravityVel = 0;
+						g_buzzActor.velForward = 0;
+					}
+					else
+					{
+						AudioManager::PlaySoundEffect(83, &g_buzzActor.posAngles.pos);
+
+						direction.x = g_grappleTargetPos.x - g_unk50A0A0.x;
+						direction.y = g_grappleTargetPos.y - g_unk50A0A0.y;
+						direction.z = g_grappleTargetPos.z - g_unk50A0A0.z;
+
+						Renderer::Beam::QueueBeam(34, 30, 400, (WorldPos*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
+
+						direction.y = (g_grappleTargetPos.y - g_buzzActor.posAngles.pos.y + 5632) >> 3;
+						direction.x = (g_grappleTargetPos.x - g_buzzActor.posAngles.pos.x) >> 3;
+						direction.z = (g_grappleTargetPos.z - g_buzzActor.posAngles.pos.z) >> 3;
+
+						Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
+
+						if (g_grappleProgress >= 10)
+						{
+							g_buzzActor.velX = direction.x / 3;
+							g_buzzActor.gravityVel = direction.y / 3;
+							g_buzzActor.velForward = direction.z / 3;
+						}
+
+						g_grappleProgress += Renderer::g_frameDelta;
+					}
+				}
+
+				return;
+			}
+
+			AudioManager::PlaySoundEffect(82, &g_buzzActor.posAngles.pos);
+
+			if (g_grappleState != 3)
+			{
+				g_grappleState = 2;
+				g_grappleProgress = 0;
+
+				if (Camera::g_cameraState)
+					Camera::SnapBehindBuzz(&Camera::g_gameplayCameraState);
+
+				if ((g_buzzActor.posAngles.angles.yaw & 0x200) != 0)
+					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw + 1024) & 0xFFF;
+				else
+					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw - 1024) & 0xFFF;
+
+				goto LABEL_14;
+			}
+
+			if (g_grappleTimer > 0)
+				--g_grappleTimer;
+
+			g_buzzActor.actorFlags &= ~4;
+			g_grappleState = 0;
+		}
+
+		// FUNCTION: TOY2 0x004A5C40
+		void TickBeamShots()
+		{
+			BeamShot* beamShot;
+			int32_t index;
+			int32_t lifeTimer;
+			int32_t frameDelta;
+			WorldPos direction;
+			WorldPos originPos;
+
+			beamShot = &g_beamShots[0];
+			index = 4;
+
+			do
+			{
+				if (beamShot->lifeTimer)
+				{
+					originPos.x = beamShot->originPos.x;
+					originPos.y = beamShot->originPos.y;
+					originPos.z = beamShot->originPos.z;
+
+					direction.y = beamShot->headPos.y - originPos.y;
+					direction.z = beamShot->headPos.z - originPos.z;
+					direction.x = beamShot->headPos.x - originPos.x;
+
+					lifeTimer = beamShot->lifeTimer * 4;
+
+					Renderer::Beam::QueueBeam(
+						9,
+						beamShot->halfWidth,
+						400,
+						&originPos,
+						&direction,
+						(lifeTimer * beamShot->tintB) >> 7,
+						(lifeTimer * beamShot->tintG) >> 7,
+						(lifeTimer * beamShot->tintR) >> 7);
+
+					frameDelta = Renderer::g_frameDelta;
+
+					beamShot->lifeTimer -= Renderer::g_frameDelta;
+
+					if (beamShot->lifeTimer <= 0)
+						beamShot->lifeTimer = 0;
+
+					beamShot->moveTimer -= frameDelta;
+
+					if (beamShot->moveTimer > 0)
+					{
+						beamShot->headPos.x += frameDelta * beamShot->velocity.x;
+						beamShot->headPos.y += frameDelta * beamShot->velocity.y;
+						beamShot->headPos.z += frameDelta * beamShot->velocity.z;
+					}
+					else
+					{
+						beamShot->lifeTimer = 0;
+					}
+				}
+
+				++beamShot;
+				--index;
+			} while (index);
+		}
+
+		// FUNCTION: TOY2 0x004A62A0
+		void TickGadgets()
+		{
+			int32_t i;
+
+			if (g_rocketBootsDuration)
+			{
+				if (g_underwaterYLevel && g_buzzActor.posAngles.pos.y > g_underwaterYLevel && g_buzzActor.gravityVel > -768)
+					g_buzzActor.gravityVel += -128 * Renderer::g_frameDelta;
+
+				AudioManager::PlaySoundEffect(64, &g_buzzActor.posAngles.pos);
+				g_rocketBootsDuration -= Renderer::g_frameDelta;
+
+				if (g_rocketBootsDuration <= 0)
+				{
+					g_rocketBootsDuration = 0;
+
+					for (i = 0; i < 64; ++i)
+					{
+						if (Nu3D::Particles::g_particleInstances[i].typeId == 47)
+							Nu3D::Particles::g_particleInstances[i].lifetime = 1;
+					}
+
+					Nu3D::Link::SetScaleFromFixedOffsets(g_rocketBootsPickup->props.linkId, 4096, 4096, 4096);
+					g_rocketBootsPickup->pos.y = g_rocketBootsPickupY;
+				}
+			}
+
+			TickCosmicShield();
+			TickBeamShots();
+			TickGrapple();
+		}
 	}
 }

@@ -8,6 +8,7 @@
 #include "Toy2/Actor.h"
 #include "Nu3D/Collision.h"
 #include "Nu3D/Link.h"
+#include "Nu3D/Particles.h"
 #include "Renderer/Renderer.h"
 #include "Numerics.h"
 #include "Nu3D/Viewport.h"
@@ -93,6 +94,12 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0050A510
 		int32_t g_unk50A510;
+
+		// GLOBAL: TOY2 0x0050A4FC
+		int32_t g_lockOnActorIdx;
+
+		// GLOBAL: TOY2 0x0050A540
+		int32_t g_unk50A540;
 
 		// GLOBAL: TOY2 0x0050A4E0
 		int32_t g_unk50A4E0;
@@ -1643,11 +1650,149 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x004A4BB0
-		void UpdateGravityBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor) {}
+		// FUNCTION: TOY2 0x004A4BB0
+		void UpdateGravityBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		{
+			int32_t effectOffset;
+			int32_t effectType;
 
-		// STUB: TOY2 0x004A4F80
-		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement) { return 0; }
+			Buzz::g_unk53C838 = 0;
+			buzzActor->collisionFlags = 0;
+
+			if (buzzActor->posAngles.pos.y >= buzzActor->floorYPos - g_gravityBootsHoverHeight)
+			{
+				buzzActor->gravityVel = -32 * Renderer::g_frameDelta + buzzActor->gravityVel;
+
+				if (buzzActor->gravityVel < -384)
+					buzzActor->gravityVel = -384;
+			}
+			else
+			{
+				buzzActor->gravityVel = 32 * Renderer::g_frameDelta + buzzActor->gravityVel;
+
+				if (buzzActor->gravityVel > 0x180)
+					buzzActor->gravityVel = 384;
+			}
+
+			if ((InputManager::g_directionInputState & DIR_CAM_FLAG2) != 0)
+			{
+				g_gravityBootsHoverHeight += Renderer::g_frameDelta << 10;
+
+				if (g_gravityBootsHoverHeight >= 49152)
+					g_gravityBootsHoverHeight = 49152;
+
+				effectOffset = 1;
+			}
+			else
+			{
+				effectOffset = 0;
+				g_gravityBootsHoverHeight += -1024 * Renderer::g_frameDelta;
+
+				if (g_gravityBootsHoverHeight <= 0x2000)
+					g_gravityBootsHoverHeight = 0x2000;
+			}
+
+			// g_tickState[4] and g_tickState[8] are the 4 and 8 tick pulses
+			if (g_tickState[4])
+			{
+				if (g_gravityBootsDuration >= 120)
+				{
+					if (g_tickState[8] && effectOffset)
+						effectOffset = 0;
+				}
+				else
+				{
+					effectOffset = 2;
+
+					if (g_tickState[8])
+						goto LABEL_20;
+				}
+
+				effectType = effectOffset + 81;
+
+				Nu3D::Particles::SpawnInstance(
+					buzzActor->posAngles.pos.x,
+					buzzActor->posAngles.pos.y,
+					buzzActor->posAngles.pos.z,
+					0,
+					0,
+					0,
+					0,
+					g_tickAccumulators.tick32Acc << 7,
+					128,
+					effectOffset + 81);
+
+				Nu3D::Particles::SpawnInstance(
+					buzzActor->posAngles.pos.x,
+					buzzActor->posAngles.pos.y,
+					buzzActor->posAngles.pos.z,
+					0,
+					0,
+					0,
+					0,
+					(-128 * g_tickAccumulators.tick32Acc) & 0xFFF,
+					-128,
+					effectType);
+			}
+
+		LABEL_20:
+			AudioManager::PlaySoundEffect(80, &g_buzzActor.posAngles.pos);
+			g_gravityBootsDuration -= Renderer::g_frameDelta;
+
+			if (g_gravityBootsDuration <= 0)
+				g_gravityBootsDuration = 0;
+		}
+
+		// FUNCTION: TOY2 0x004A4F80
+		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement)
+		{
+			int32_t airAccel;
+			uint16_t yawAngle;
+			uint32_t angularDiff;
+			int32_t yawAdd;
+			BOOL result;
+
+			movement->maxSpeed = 2048;
+			movement->maxAirSpeed = 2048;
+			movement->turnSpeed = 640 * Renderer::g_frameDelta / 4;
+			movement->groundAccel = (Renderer::g_frameDelta << 9) / 4;
+
+			airAccel = (Renderer::g_frameDelta << 7) / 4;
+			movement->airAccel = airAccel;
+
+			// decompiler artifact: only the low word of the register is overwritten, the argument of CalculateMaxTurnAngle keeps the upper half
+			airAccel = (airAccel & 0xFFFF0000) | (uint16_t)InputManager::g_directionInputState;
+
+			if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
+				CalculateMaxTurnAngle(airAccel);
+
+			yawAngle = buzzActor->posAngles.angles.yaw;
+			angularDiff = (yawAngle - buzzActor->facingAngle) & 0xFFF;
+
+			if (angularDiff < 2048)
+			{
+				if (angularDiff > movement->maxTurnRate)
+					angularDiff = movement->maxTurnRate;
+
+				result = 1;
+				buzzActor->posAngles.angles.yaw = yawAngle - (angularDiff * Renderer::g_frameDelta) / 8;
+				buzzActor->posAngles.angles.yaw &= 0xFFF;
+			}
+			else
+			{
+				yawAdd = 4096 - angularDiff;
+
+				if ((4096 - angularDiff) > movement->maxTurnRate)
+					yawAdd = movement->maxTurnRate;
+
+				buzzActor->posAngles.angles.yaw = yawAngle + yawAdd * Renderer::g_frameDelta / 8;
+				buzzActor->posAngles.angles.yaw &= 0xFFF;
+
+				return 1;
+			}
+
+			return result;
+		}
 
 		// FUNCTION: TOY2 0x00433F40
 		int32_t CalculateMaxTurnAngle(int32_t directionButtonState)

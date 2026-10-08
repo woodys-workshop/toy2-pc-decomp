@@ -42,6 +42,8 @@ namespace Toy2
 		extern int32_t g_freezeBuzz;
 		extern int32_t g_cutsceneFrameTimer;
 		extern int32_t g_unk50A510;
+		extern int32_t g_lockOnActorIdx;
+		extern int32_t g_unk50A540;
 
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);
 		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius);
