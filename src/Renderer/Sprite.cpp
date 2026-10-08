@@ -737,7 +737,7 @@ namespace Renderer
 			}
 		}
 
-		// STUB: TOY2 0x004B8E60
+		// FUNCTION: TOY2 0x004B8E60
 		void QueueQuadSprite(
 			Vector3F* position,
 			int32_t trigIndex,
@@ -749,10 +749,38 @@ namespace Renderer
 			RGBA color,
 			int32_t renderFlags)
 		{
-			// not implemented
+			if (g_spriteBufferCount)
+			{
+				RGBA modulatedColor = ModulateColorByAlpha(color, renderFlags);
+
+				Nu3D::Sprite* sprite = &g_spriteBuffer[--g_spriteBufferCount];
+
+				sprite->type = RENDER_QUADSPRITE;
+				sprite->position = *position;
+				sprite->trigIndex = trigIndex;
+				sprite->width = width;
+				sprite->height = height;
+				sprite->uvTopLeft = *uvTopLeft;
+				sprite->uvBottomLeft.x = uvTopLeft->x;
+				sprite->uvBottomLeft.y = uvBottomRight->y;
+				sprite->uvTopRight.x = uvBottomRight->x;
+				sprite->uvTopRight.y = uvTopLeft->y;
+				sprite->uvBottomRight = *uvBottomRight;
+				sprite->textureIndex = textureIndex;
+				sprite->color = ApplyGammaCorrection(modulatedColor);
+				sprite->renderFlags = renderFlags;
+
+				Nu3D::Viewport::GetViewClipRect(&sprite->viewportRect);
+
+				InsertIntoBucket(sprite);
+			}
+			else
+			{
+				Logger::DebugLog("sprite buffer underrun");
+			}
 		}
 
-		// STUB: TOY2 0x004B8A30
+		// FUNCTION: TOY2 0x004B8A30
 		void QueueGroundAlignedSprite(
 			Vector3F* position,
 			int32_t trigIndex,
@@ -764,7 +792,35 @@ namespace Renderer
 			RGBA color,
 			int32_t renderFlags)
 		{
-			// not implemented
+			if (g_spriteBufferCount)
+			{
+				RGBA modulatedColor = ModulateColorByAlpha(color, renderFlags);
+
+				Nu3D::Sprite* sprite = &g_spriteBuffer[--g_spriteBufferCount];
+
+				sprite->type = RENDER_GROUND_ALIGNED_SPRITE;
+				sprite->position = *position;
+				sprite->trigIndex = trigIndex;
+				sprite->width = width;
+				sprite->height = height;
+				sprite->uvTopLeft = *uvTopLeft;
+				sprite->uvBottomLeft.x = uvTopLeft->x;
+				sprite->uvBottomLeft.y = uvBottomRight->y;
+				sprite->uvTopRight.x = uvBottomRight->x;
+				sprite->uvTopRight.y = uvTopLeft->y;
+				sprite->uvBottomRight = *uvBottomRight;
+				sprite->textureIndex = textureIndex;
+				sprite->color = ApplyGammaCorrection(modulatedColor);
+				sprite->renderFlags = renderFlags;
+
+				Nu3D::Viewport::GetViewClipRect(&sprite->viewportRect);
+
+				InsertIntoBucket(sprite);
+			}
+			else
+			{
+				Logger::DebugLog("sprite buffer underrun");
+			}
 		}
 
 		// FUNCTION: TOY2 0x004B8460
@@ -811,7 +867,7 @@ namespace Renderer
 		// STUB: TOY2 0x0049D7A0
 		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration) {}
 
-		// STUB: TOY2 0x004B8F40
+		// FUNCTION: TOY2 0x004B8F40
 		void QueueBillboardSprite(
 			Vector3F* position,
 			int32_t trigIndex,
@@ -823,9 +879,36 @@ namespace Renderer
 			RGBA color,
 			int32_t renderFlags)
 		{
-			// not implemented
-		}
+			if (g_spriteBufferCount)
+			{
+				RGBA modulatedColor = ModulateColorByAlpha(color, renderFlags);
 
+				Nu3D::Sprite* sprite = &g_spriteBuffer[--g_spriteBufferCount];
+
+				sprite->type = RENDER_BILLBOARD_SPRITE;
+				sprite->position = *position;
+				sprite->trigIndex = trigIndex;
+				sprite->width = width;
+				sprite->height = height;
+				sprite->uvTopLeft = *uvTopLeft;
+				sprite->uvBottomLeft.x = uvTopLeft->x;
+				sprite->uvBottomLeft.y = uvBottomRight->y;
+				sprite->uvTopRight.x = uvBottomRight->x;
+				sprite->uvTopRight.y = uvTopLeft->y;
+				sprite->uvBottomRight = *uvBottomRight;
+				sprite->textureIndex = textureIndex;
+				sprite->color = ApplyGammaCorrection(modulatedColor);
+				sprite->renderFlags = renderFlags;
+
+				Nu3D::Viewport::GetViewClipRect(&sprite->viewportRect);
+
+				InsertIntoBucket(sprite);
+			}
+			else
+			{
+				Logger::DebugLog("sprite buffer underrun");
+			}
+		}
 
 		// STUB: TOY2 0x004B9210
 		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color) {}

@@ -555,163 +555,251 @@ namespace Toy2
 
 				switch (creatureRam->creatureId)
 				{
-				case Actor::CREATURE_WOODY:
-				case Actor::CREATURE_MRPOT:
-				case Actor::CREATURE_2_SLIME:
-				case Actor::CREATURE_2_SHINY:
-				case Actor::CREATURE_3_HOOLA:
-				case Actor::CREATURE_3_LOCK:
-				case Actor::CREATURE_3_MUM:
-				case Actor::CREATURE_3_ROOST:
-				case Actor::CREATURE_4_MOTHER:
-				case Actor::CREATURE_4_FSAUCE:
-				case Actor::CREATURE_4_JESSIE:
-				case Actor::CREATURE_4_BULLSEYE:
-				case Actor::CREATURE_4_ROCKY:
-				case Actor::CREATURE_5_ZPOD:
-				case Actor::CREATURE_5_BUB:
-				case Actor::CREATURE_5_ZEMP:
-				case Actor::CREATURE_6_REX:
-					actor->visibilityDistance = 1800;
-					break;
-				case Actor::CREATURE_ZURG3:
-					actor->actorBehaviour = CreatureBehaviour::Zurg3;
-					break;
-				case Actor::CREATURE_TINMAN:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::TinMan;
-					break;
-				case Actor::CREATURE_SHEEP:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::Sheep;
-					break;
-				case Actor::CREATURE_RC:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::RCCar;
-					break;
-				case Actor::CREATURE_2_LAWN:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::LawnMower;
-					break;
-				case Actor::CREATURE_ARMY:
-					actor->actorBehaviour = CreatureBehaviour::Army;
-					break;
-				case Actor::CREATURE_2_ZGCAR:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::ZgCar;
-					break;
-				case Actor::CREATURE_2_ZKITE:
-					actor->actorBehaviour = CreatureBehaviour::ZKite;
-					break;
-				case Actor::CREATURE_2_LTYKE:
-					actor->actorBehaviour = CreatureBehaviour::LTyke;
-					break;
-				case Actor::CREATURE_2_ZPOD:
-					actor->actorBehaviour = CreatureBehaviour::ZPod;
-					break;
-				case Actor::CREATURE_2_DRILL:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::Drill;
-					break;
-				case Actor::CREATURE_2_MOUSE:
-					actor->actorBehaviour = CreatureBehaviour::Mouse;
-					break;
-				case Actor::CREATURE_3_BPLANE:
-					actor->actorPhase = 0;
-					actor->actorBehaviour = CreatureBehaviour::BPlane;
-					actor->unkShort2 = 10000;
-					break;
-				case Actor::CREATURE_3_BOX:
-					actor->actorBehaviour = CreatureBehaviour::Box;
-					break;
-				case Actor::CREATURE_3_DINO:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::Dino;
-					break;
-				case Actor::CREATURE_2_ZBOAT:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::ZBoat;
-					break;
-				case Actor::CREATURE_3_CHICK:
-					actor->actorBehaviour = CreatureBehaviour::Chick;
-					break;
-				case Actor::CREATURE_3_GUNSP:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::GunsP;
-					break;
-				case Actor::CREATURE_3_CLOWN:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::Clown;
-					break;
-				case Actor::CREATURE_4_MARTIAN:
-					actor->actorBehaviour = CreatureBehaviour::Martian;
-					break;
-				case Actor::CREATURE_6_RABID:
-					actor->actorBehaviour = CreatureBehaviour::Rabid;
-					break;
-				case Actor::CREATURE_3_BUZZARD:
-					actor->actorBehaviour = CreatureBehaviour::Buzzard;
-					break;
-				case Actor::CREATURE_4_DUCKS:
-					actor->actorBehaviour = CreatureBehaviour::Ducks;
-					break;
-				case Actor::CREATURE_4_GUNSL:
-					if (g_levelFileIndex == 11)
-					{
+					case Actor::CREATURE_WOODY:
+					case Actor::CREATURE_MRPOT:
+					case Actor::CREATURE_2_SLIME:
+					case Actor::CREATURE_2_SHINY:
+					case Actor::CREATURE_3_HOOLA:
+					case Actor::CREATURE_3_LOCK:
+					case Actor::CREATURE_3_MUM:
+					case Actor::CREATURE_3_ROOST:
+					case Actor::CREATURE_4_MOTHER:
+					case Actor::CREATURE_4_FSAUCE:
+					case Actor::CREATURE_4_JESSIE:
+					case Actor::CREATURE_4_BULLSEYE:
+					case Actor::CREATURE_4_ROCKY:
+					case Actor::CREATURE_5_ZPOD:
+					case Actor::CREATURE_5_BUB:
+					case Actor::CREATURE_5_ZEMP:
+					case Actor::CREATURE_6_REX:
 						actor->visibilityDistance = 1800;
-						actor->actorBehaviour = CreatureBehaviour::GunsL_Level11;
-					}
-					else
-					{
+						break;
+					case Actor::CREATURE_ZURG3:
+						actor->actorBehaviour = CreatureBehaviour::Zurg3;
+						break;
+					case Actor::CREATURE_TINMAN:
 						actor->visibilityDistance = 1800;
-						actor->actorBehaviour = CreatureBehaviour::GunsL;
-					}
-					break;
-				case Actor::CREATURE_4_FATBLOKE:
-					actor->actorBehaviour = CreatureBehaviour::FatBloke;
-					break;
-				case Actor::CREATURE_5_BBUGGY:
-					actor->visibilityDistance = 1800;
-					actor->actorBehaviour = CreatureBehaviour::BBuggy;
-					break;
-				case Actor::CREATURE_5_BI:
-					actor->visibilityDistance = 3800;
-					break;
-				case Actor::CREATURE_4_GEORGE:
-				case Actor::CREATURE_4_MILDRED:
-				case Actor::CREATURE_4_KAREN:
-				case Actor::CREATURE_4_PILOT:
-					actor->actorBehaviour = CreatureBehaviour::Pilot;
-					break;
-				case Actor::CREATURE_5_SMITH:
-					if (g_levelFileIndex == 14)
-						actor->actorBehaviour = CreatureBehaviour::Smith_Level14;
-					else
-						actor->actorBehaviour = CreatureBehaviour::Smith;
-					break;
-				case Actor::CREATURE_5_LUGGAGE:
-					actor->actorBehaviour = CreatureBehaviour::Luggage;
-					break;
-				case Actor::CREATURE_6_PROSP:
-					if (g_levelFileIndex == 13)
-					{
+						actor->actorBehaviour = CreatureBehaviour::TinMan;
+						break;
+					case Actor::CREATURE_SHEEP:
 						actor->visibilityDistance = 1800;
-						actor->actorBehaviour = CreatureBehaviour::ProsP_Level13;
-					}
-					else
-					{
-						actor->actorBehaviour = CreatureBehaviour::ProsP;
+						actor->actorBehaviour = CreatureBehaviour::Sheep;
+						break;
+					case Actor::CREATURE_RC:
 						actor->visibilityDistance = 1800;
-					}
-					break;
-				default:
-					return;
+						actor->actorBehaviour = CreatureBehaviour::RCCar;
+						break;
+					case Actor::CREATURE_2_LAWN:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::LawnMower;
+						break;
+					case Actor::CREATURE_ARMY:
+						actor->actorBehaviour = CreatureBehaviour::Army;
+						break;
+					case Actor::CREATURE_2_ZGCAR:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::ZgCar;
+						break;
+					case Actor::CREATURE_2_ZKITE:
+						actor->actorBehaviour = CreatureBehaviour::ZKite;
+						break;
+					case Actor::CREATURE_2_LTYKE:
+						actor->actorBehaviour = CreatureBehaviour::LTyke;
+						break;
+					case Actor::CREATURE_2_ZPOD:
+						actor->actorBehaviour = CreatureBehaviour::ZPod;
+						break;
+					case Actor::CREATURE_2_DRILL:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::Drill;
+						break;
+					case Actor::CREATURE_2_MOUSE:
+						actor->actorBehaviour = CreatureBehaviour::Mouse;
+						break;
+					case Actor::CREATURE_3_BPLANE:
+						actor->actorPhase = 0;
+						actor->actorBehaviour = CreatureBehaviour::BPlane;
+						actor->unkShort2 = 10000;
+						break;
+					case Actor::CREATURE_3_BOX:
+						actor->actorBehaviour = CreatureBehaviour::Box;
+						break;
+					case Actor::CREATURE_3_DINO:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::Dino;
+						break;
+					case Actor::CREATURE_2_ZBOAT:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::ZBoat;
+						break;
+					case Actor::CREATURE_3_CHICK:
+						actor->actorBehaviour = CreatureBehaviour::Chick;
+						break;
+					case Actor::CREATURE_3_GUNSP:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::GunsP;
+						break;
+					case Actor::CREATURE_3_CLOWN:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::Clown;
+						break;
+					case Actor::CREATURE_4_MARTIAN:
+						actor->actorBehaviour = CreatureBehaviour::Martian;
+						break;
+					case Actor::CREATURE_6_RABID:
+						actor->actorBehaviour = CreatureBehaviour::Rabid;
+						break;
+					case Actor::CREATURE_3_BUZZARD:
+						actor->actorBehaviour = CreatureBehaviour::Buzzard;
+						break;
+					case Actor::CREATURE_4_DUCKS:
+						actor->actorBehaviour = CreatureBehaviour::Ducks;
+						break;
+					case Actor::CREATURE_4_GUNSL:
+						if (g_levelFileIndex == 11)
+						{
+							actor->visibilityDistance = 1800;
+							actor->actorBehaviour = CreatureBehaviour::GunsL_Level11;
+						}
+						else
+						{
+							actor->visibilityDistance = 1800;
+							actor->actorBehaviour = CreatureBehaviour::GunsL;
+						}
+						break;
+					case Actor::CREATURE_4_FATBLOKE:
+						actor->actorBehaviour = CreatureBehaviour::FatBloke;
+						break;
+					case Actor::CREATURE_5_BBUGGY:
+						actor->visibilityDistance = 1800;
+						actor->actorBehaviour = CreatureBehaviour::BBuggy;
+						break;
+					case Actor::CREATURE_5_BI:
+						actor->visibilityDistance = 3800;
+						break;
+					case Actor::CREATURE_4_GEORGE:
+					case Actor::CREATURE_4_MILDRED:
+					case Actor::CREATURE_4_KAREN:
+					case Actor::CREATURE_4_PILOT:
+						actor->actorBehaviour = CreatureBehaviour::Pilot;
+						break;
+					case Actor::CREATURE_5_SMITH:
+						if (g_levelFileIndex == 14)
+							actor->actorBehaviour = CreatureBehaviour::Smith_Level14;
+						else
+							actor->actorBehaviour = CreatureBehaviour::Smith;
+						break;
+					case Actor::CREATURE_5_LUGGAGE:
+						actor->actorBehaviour = CreatureBehaviour::Luggage;
+						break;
+					case Actor::CREATURE_6_PROSP:
+						if (g_levelFileIndex == 13)
+						{
+							actor->visibilityDistance = 1800;
+							actor->actorBehaviour = CreatureBehaviour::ProsP_Level13;
+						}
+						else
+						{
+							actor->actorBehaviour = CreatureBehaviour::ProsP;
+							actor->visibilityDistance = 1800;
+						}
+						break;
+					default:
+						return;
 				}
 			}
 		}
 
-		// STUB: TOY2 0x00407440
-		void ActorCollisionCheck() {}
+		// FUNCTION: TOY2 0x00407440
+		void ActorCollisionCheck()
+		{
+			int32_t sphereRadius = 150;
+			int32_t hitType = 0;
+			int32_t ellipsoidRadius = 150;
+
+			// spinning
+			if (Buzz::g_unk53C650 > 20 || Buzz::g_unk53C83C <= -120)
+			{
+				sphereRadius = 400;
+				hitType = 1;
+				ellipsoidRadius = 400;
+			}
+
+			// ground slam
+			if (Buzz::g_groundSlamTicker > 0)
+				hitType = 5;
+
+			if (Buzz::g_groundSlamTicker < -30)
+			{
+				sphereRadius = 400;
+				hitType = 5;
+				ellipsoidRadius = 400;
+			}
+
+			Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+
+			int32_t buzzX = g_buzzActor.posAngles.pos.x;
+			int32_t buzzY = g_buzzActor.posAngles.pos.y - 7360;
+			int32_t buzzZ = g_buzzActor.posAngles.pos.z;
+
+			if (Actor::g_activeActors[0])
+			{
+				Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+
+				do
+				{
+					int32_t deltaZ = (actor->pos.z + actor->boundingOffset.z - buzzZ) >> 5;
+					int32_t deltaY = (actor->pos.y + actor->boundingOffset.y - buzzY) >> 5;
+					int32_t deltaX = (actor->pos.x + actor->boundingOffset.x - buzzX) >> 5;
+
+					// rough test with the bounding sphere of the actor
+					if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ
+							< (sphereRadius + actor->boundingSphereRadius) * (sphereRadius + actor->boundingSphereRadius)
+						&& actor->damageCooldownTimer >= 0)
+					{
+						int16_t* attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
+						int32_t sinYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 2048) & 0xFFF] >> 2;
+						int32_t cosYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 1024) & 0xFFF] >> 2;
+
+						int32_t attachX = attach[0];
+						int32_t relX = actor->pos.x + ((sinYaw * attach[2] + cosYaw * attachX) >> 12) - buzzX;
+						int32_t relZ = actor->pos.z + ((cosYaw * attach[2] - sinYaw * attachX) >> 12) - buzzZ;
+
+						// the ellipsoid of the actor, Buzz must be inside of it
+						int32_t scaledX = attach[4] * ((relX * cosYaw + relZ * sinYaw) >> 12);
+						int32_t scaledZ = (attach[6] * ((relZ * cosYaw - relX * sinYaw) >> 12)) >> 13;
+						int32_t scaledY = (attach[5] * (actor->pos.y + attach[1] - buzzY)) >> 13;
+
+						if (scaledY * scaledY + (scaledX >> 13) * (scaledX >> 13) + scaledZ * scaledZ
+								< (ellipsoidRadius + attach[7]) * (ellipsoidRadius + attach[7])
+							&& (actor->actorFlags & Actor::ACTOR_DEATH_DAMAGE) != 0)
+						{
+							int32_t angle =
+								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - actor->pos.x, g_buzzActor.posAngles.pos.z - actor->pos.z);
+
+							actor->actorFlags |= 0x200;
+
+							int32_t actorHitType = hitType;
+
+							if (! hitType || (actor->creatureRam->defenseMode & 2) == 0 || (hitType == 5 && scaledY < 0))
+								actorHitType = 0;
+
+							uint8_t buzzHitType;
+
+							if ((actor->actorFlags & Actor::ACTOR_AIRBORNE_SPECIAL) == 0 || hitType)
+								buzzHitType = actor->actorPhase != 102 && ! actorHitType;
+							else
+								buzzHitType = 3;
+
+							Actor::HandleDamage(actor, angle + 2048, actorHitType);
+							Buzz::HandleDamage((int16_t)angle & 0xFFF, buzzHitType);
+						}
+					}
+
+					actor = *++nextActor;
+				} while (*nextActor);
+			}
+		}
 
 		// FUNCTION: TOY2 0x004086F0
 		void UpdateActors()
@@ -726,8 +814,8 @@ namespace Toy2
 
 				actor->actorFlags = (actor->actorFlags & 0xFF00)
 					| (actor->actorFlags
-						& (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_LOCKED_MOVE | Actor::ACTOR_GROUNDED | Actor::ACTOR_FLOOR_SNAP
-							| Actor::ACTOR_STUNNED | Actor::ACTOR_OOB_SPECIAL_MOVE | Actor::ACTOR_DEATH_DAMAGE));
+					   & (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_LOCKED_MOVE | Actor::ACTOR_GROUNDED | Actor::ACTOR_FLOOR_SNAP | Actor::ACTOR_STUNNED
+						  | Actor::ACTOR_OOB_SPECIAL_MOVE | Actor::ACTOR_DEATH_DAMAGE));
 
 				if (actor->creatureId > 0)
 				{
@@ -746,8 +834,9 @@ namespace Toy2
 									actor->unkShort2 = 0;
 							}
 						}
-						else if ((actor->actorFlags & Actor::ACTOR_OOB_SPECIAL_MOVE) != 0
-							|| !Nu3D::Camera::LineOfSightCheck(&Camera::g_activeCameraTransform, actor))
+						else if (
+							(actor->actorFlags & Actor::ACTOR_OOB_SPECIAL_MOVE) != 0
+							|| ! Nu3D::Camera::LineOfSightCheck(&Camera::g_activeCameraTransform, actor))
 						{
 							InitActor(actor, 0);
 						}
@@ -2112,25 +2201,25 @@ namespace Toy2
 
 		for (arg = strtok(D3DApp::g_windowData.lpCmdLine, " -"); arg; arg = strtok(0, " -"))
 		{
-			if (!lstrcmpA(arg, "cheat"))
+			if (! lstrcmpA(arg, "cheat"))
 				g_cheatsEnabled = 1;
 
-			if (!lstrcmpA(arg, "log"))
+			if (! lstrcmpA(arg, "log"))
 				Logger::g_logsEnabled = 1;
 
-			if (!lstrcmpA(arg, "mpeg"))
+			if (! lstrcmpA(arg, "mpeg"))
 			{
 				g_mpegPlay = 1;
 				Logger::Log("ONEINIT : Mpeg play OFF.\n");
 			}
 
-			if (!lstrcmpA(arg, "high"))
+			if (! lstrcmpA(arg, "high"))
 			{
 				g_highQualityMpegEnabled = 1;
 				Logger::Log("ONEINIT : Hi quality mpeg playing ON.\n");
 			}
 
-			if (!lstrcmpA(arg, "demo"))
+			if (! lstrcmpA(arg, "demo"))
 			{
 				g_isDemo = g_isDemo == 0;
 				version = "demo";
@@ -3701,7 +3790,8 @@ namespace Toy2
 
 		int16_t transitionTimer = g_levelTransitionTimer;
 
-		if (g_levelTransitionTimer <= 0 || (transitionTimer = g_levelTransitionTimer - Renderer::g_frameDelta, g_levelTransitionTimer = transitionTimer, transitionTimer >= 0))
+		if (g_levelTransitionTimer <= 0
+			|| (transitionTimer = g_levelTransitionTimer - Renderer::g_frameDelta, g_levelTransitionTimer = transitionTimer, transitionTimer >= 0))
 		{
 			if (transitionTimer >= 46)
 				goto LABEL_43;
@@ -3995,9 +4085,9 @@ namespace Toy2
 
 			demoMode = g_demoMode;
 
-			if (g_demoMode ||
-				(g_attractModeTimer >= 0 && (InputManager::g_curButtonsPressed & 1) && ! g_levelTransition &&
-				 (g_levelTransition = 4, g_levelTransitionTimer = 46, Nu3D::Camera::SetTint(0, 0, 0, 6), (demoMode = g_demoMode) != 0)))
+			if (g_demoMode
+				|| (g_attractModeTimer >= 0 && (InputManager::g_curButtonsPressed & 1) && ! g_levelTransition
+					&& (g_levelTransition = 4, g_levelTransitionTimer = 46, Nu3D::Camera::SetTint(0, 0, 0, 6), (demoMode = g_demoMode) != 0)))
 			{
 				if ((InputManager::g_curButtonsPressed & 8) && ! g_levelTransition)
 				{
@@ -4082,10 +4172,7 @@ namespace Toy2
 
 			Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, 0x2000, 0x2000, 0x2000);
 			Nu3D::Link::SetPositionRawAndCommit(
-				g_cosmicShieldPickup->props.linkId,
-				g_cosmicShieldPickup->pos.x,
-				g_cosmicShieldPickup->pos.y,
-				g_cosmicShieldPickup->pos.z);
+				g_cosmicShieldPickup->props.linkId, g_cosmicShieldPickup->pos.x, g_cosmicShieldPickup->pos.y, g_cosmicShieldPickup->pos.z);
 
 			g_cosmicShieldPickup = 0;
 		}
@@ -4110,7 +4197,7 @@ namespace Toy2
 		{
 			int16_t lifeTimer = g_beamShots[index].lifeTimer;
 
-			if (!lifeTimer)
+			if (! lifeTimer)
 			{
 				beamShot = &g_beamShots[index];
 
@@ -4182,11 +4269,13 @@ namespace Toy2
 
 					int32_t targetAngle = Nu3D::Math::CartesianToFixedAngle(aimDeltaX, aimDeltaZ);
 
-					if (((targetAngle - aimYaw + 128) & 0xFFFu) < 0x100)
+					if (((targetAngle - aimYaw + 128) & 0xFFF) < 0x100)
 					{
 						aimYaw = targetAngle;
 
-						int32_t pitch = (Nu3D::Math::CartesianToFixedAngle((int32_t)sqrt((double)(aimDeltaX * aimDeltaX + aimDeltaZ * aimDeltaZ)), aimDeltaY) - 1024) & 0xFFF;
+						int32_t pitch =
+							(Nu3D::Math::CartesianToFixedAngle((int32_t)sqrt((double)(aimDeltaX * aimDeltaX + aimDeltaZ * aimDeltaZ)), aimDeltaY) - 1024)
+							& 0xFFF;
 
 						if (pitch > 2048)
 							pitch -= 4096;
@@ -4297,7 +4386,8 @@ namespace Toy2
 
 			do
 			{
-				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 4, 4)->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 4, 4)->lifetime =
+					2 * (*g_randDatBufferPtr & 0xF) + 24;
 
 				--sparkCount;
 				++g_randDatBufferPtr;
@@ -4333,7 +4423,7 @@ namespace Toy2
 			dominantDist = beamShot->originPos.z - beamShot->headPos.z;
 		}
 
-		if (!dominantVel)
+		if (! dominantVel)
 			dominantVel = 1;
 
 		beamShot->moveTimer = dominantDist / dominantVel;

@@ -1114,7 +1114,7 @@ namespace Toy2
 				  + planeZ * (rayQuery->origin.x - 32 * triangle->v0x))
 				 >> 14)
 				- a3;
-				
+
 			endDistance =
 				((triangle->unk24 * (rayQuery->endpoint.z - planeY) + planeX * (rayQuery->endpoint.y - 32 * triangle->v0y)
 				  + planeZ * (rayQuery->endpoint.x - 32 * triangle->v0x))

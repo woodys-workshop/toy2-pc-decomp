@@ -7,7 +7,6 @@ namespace Numerics
 	// GLOBAL: TOY2 0x0088334C
 	float* g_trigLUT;
 
-
 	// clang-format off
 	// GLOBAL: TOY2 0x004FE788
 	int16_t g_sinCosLUT[4096] = {

@@ -539,7 +539,7 @@ namespace InputManager
 
 		return 0;
 	}
-	
+
 	// FUNCTION: TOY2 0x00415860 [MATCHED]
 	int32_t FindKeyReleased()
 	{

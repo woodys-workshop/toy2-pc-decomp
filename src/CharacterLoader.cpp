@@ -562,7 +562,7 @@ namespace CharacterLoader
 							quad += 0x30;
 							extra += 8;
 
-							if (!more)
+							if (! more)
 								break;
 						} while (1);
 					}
@@ -600,7 +600,7 @@ namespace CharacterLoader
 						if (*boneType == 10)
 							extra = boneExtra + (*(int16_t*)(boneExtra - 4) + j) * 8;
 
-						if (!quad[3])
+						if (! quad[3])
 						{
 							// the original spins here forever
 							while (1)
@@ -625,11 +625,11 @@ namespace CharacterLoader
 							quad += 0x30;
 							extra += 8;
 
-							if (!more)
+							if (! more)
 								break;
 						} while (1);
 
-						if (!found)
+						if (! found)
 						{
 							// the original spins here forever
 							while (1)
@@ -801,261 +801,260 @@ namespace CharacterLoader
 
 				switch (creatureId)
 				{
-				case 0:
-					Load("chars\\buzz", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 1:
-					Load("chars\\woody", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 2:
-					Load("chars\\buzzint", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 3:
-					Load("chars\\zurg1", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 4:
-					Load("chars\\zurg3", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 5:
-					Load("chars\\tinman", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 6:
-					Load("chars\\sheep", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 7:
-					Load("chars\\bopeep", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 8:
-					Load("chars\\rc", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 9:
-					Load("chars\\mrpot", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 10:
-					Load("chars\\hamm", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 11:
-					Load("chars\\cotbit", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 12:
-					Load("chars2\\lawn", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 13:
-					Load("chars\\army", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 14:
-					Load("chars2\\zgcar", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 15:
-					Load("chars2\\zkite", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 16:
-					Load("chars2\\slime", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 17:
-					Load("chars2\\paint", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 18:
-					Load("chars2\\ftyke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 19:
-					Load("chars2\\ltyke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 20:
-					Load("chars2\\zpod", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 21:
-					Load("chars2\\shiny", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 22:
-					Load("chars2\\drill", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 23:
-					Load("chars2\\mouse", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 24:
-					Load("chars3\\bplane", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 25:
-					Load("chars3\\box", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 26:
-					Load("chars3\\dino", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 27:
-					Load("chars2\\zboat", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 28:
-					Load("chars3\\chick", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 29:
-					Load("chars3\\hoola", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 30:
-					Load("chars3\\lock", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 31:
-					Load("chars3\\gunsp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 32:
-					Load("chars3\\clown", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 33:
-					Load("chars3\\rattle", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 34:
-					Load("chars3\\mum", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 35:
-					Load("chars3\\roost", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 36:
-					Load("chars4\\mother", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 37:
-					Load("chars4\\fsauce", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 38:
-					Load("chars4\\martian", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 39:
-					Load("chars4\\jessie", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 40:
-					Load("chars6\\rabid", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 41:
-					Load("chars3\\buzzard", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 42:
-					Load("chars4\\bullseye", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 43:
-					Load("chars4\\ducks", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 44:
-					Load("chars4\\slinky", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 45:
-					Load("chars4\\gunsl", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 46:
-					Load("chars4\\fatbloke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 47:
-					Load("chars5\\bbuggy", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 48:
-					Load("chars5\\bi", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 49:
-					Load("chars4\\rocky", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 50:
-					Load("chars4\\george", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 51:
-					Load("chars4\\mildred", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 52:
-					Load("chars4\\karen", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 53:
-					Load("chars4\\pilot", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 54:
-					Load("chars5\\zpod", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 55:
-					Load("chars5\\bub", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 56:
-					LoadBuzzLight("chars5\\buzl", result, (void**)levelData, creatureId, (int32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 57:
-					Load("chars5\\zemp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 58:
-					Load("chars5\\smith", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 59:
-					Load("chars5\\luggage", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 60:
-					Load("chars6\\lugman", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 61:
-					Load("chars6\\prosp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-				case 62:
-					Load("chars6\\rex", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
-					break;
-
-
-				default:
-					break;
+					case 0:
+						Load("chars\\buzz", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 1:
+						Load("chars\\woody", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 2:
+						Load("chars\\buzzint", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 3:
+						Load("chars\\zurg1", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 4:
+						Load("chars\\zurg3", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 5:
+						Load("chars\\tinman", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 6:
+						Load("chars\\sheep", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 7:
+						Load("chars\\bopeep", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 8:
+						Load("chars\\rc", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 9:
+						Load("chars\\mrpot", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 10:
+						Load("chars\\hamm", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 11:
+						Load("chars\\cotbit", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 12:
+						Load("chars2\\lawn", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 13:
+						Load("chars\\army", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 14:
+						Load("chars2\\zgcar", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 15:
+						Load("chars2\\zkite", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 16:
+						Load("chars2\\slime", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 17:
+						Load("chars2\\paint", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 18:
+						Load("chars2\\ftyke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 19:
+						Load("chars2\\ltyke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 20:
+						Load("chars2\\zpod", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 21:
+						Load("chars2\\shiny", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 22:
+						Load("chars2\\drill", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 23:
+						Load("chars2\\mouse", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 24:
+						Load("chars3\\bplane", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 25:
+						Load("chars3\\box", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 26:
+						Load("chars3\\dino", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 27:
+						Load("chars2\\zboat", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 28:
+						Load("chars3\\chick", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 29:
+						Load("chars3\\hoola", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 30:
+						Load("chars3\\lock", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 31:
+						Load("chars3\\gunsp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 32:
+						Load("chars3\\clown", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 33:
+						Load("chars3\\rattle", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 34:
+						Load("chars3\\mum", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 35:
+						Load("chars3\\roost", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 36:
+						Load("chars4\\mother", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 37:
+						Load("chars4\\fsauce", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 38:
+						Load("chars4\\martian", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 39:
+						Load("chars4\\jessie", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 40:
+						Load("chars6\\rabid", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 41:
+						Load("chars3\\buzzard", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 42:
+						Load("chars4\\bullseye", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 43:
+						Load("chars4\\ducks", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 44:
+						Load("chars4\\slinky", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 45:
+						Load("chars4\\gunsl", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 46:
+						Load("chars4\\fatbloke", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 47:
+						Load("chars5\\bbuggy", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 48:
+						Load("chars5\\bi", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 49:
+						Load("chars4\\rocky", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 50:
+						Load("chars4\\george", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 51:
+						Load("chars4\\mildred", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 52:
+						Load("chars4\\karen", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 53:
+						Load("chars4\\pilot", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 54:
+						Load("chars5\\zpod", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 55:
+						Load("chars5\\bub", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 56:
+						LoadBuzzLight("chars5\\buzl", result, (void**)levelData, creatureId, (int32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 57:
+						Load("chars5\\zemp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 58:
+						Load("chars5\\smith", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 59:
+						Load("chars5\\luggage", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 60:
+						Load("chars6\\lugman", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 61:
+						Load("chars6\\prosp", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					case 62:
+						Load("chars6\\rex", result, levelData, creatureId, (uint32_t*)&g_attachBone[creatureId], &g_boundingData[creatureId]);
+						break;
+
+					default:
+						break;
 				}
 
 				creatureCode = *++creatureListPtr;

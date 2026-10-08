@@ -393,12 +393,7 @@ namespace Renderer
 	namespace InstanceData
 	{
 		// FUNCTION: TOY2 0x004B8840
-		Nu3D::InstanceData* AllocFromNodeMatrices(
-			D3DMATRIX* nodeMatrices,
-			int32_t* nodeIndices,
-			int32_t headerCount,
-			int32_t** flags,
-			int32_t renderStage)
+		Nu3D::InstanceData* AllocFromNodeMatrices(D3DMATRIX* nodeMatrices, int32_t* nodeIndices, int32_t headerCount, int32_t** flags, int32_t renderStage)
 		{
 			if (! g_instanceDataCounter)
 				return 0;

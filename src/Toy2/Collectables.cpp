@@ -375,10 +375,7 @@ namespace Toy2
 
 				Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, 0x2000, 0x2000, 0x2000);
 				Nu3D::Link::SetPositionRawAndCommit(
-					g_cosmicShieldPickup->props.linkId,
-					g_cosmicShieldPickup->pos.x,
-					g_cosmicShieldPickup->pos.y,
-					g_cosmicShieldPickup->pos.z);
+					g_cosmicShieldPickup->props.linkId, g_cosmicShieldPickup->pos.x, g_cosmicShieldPickup->pos.y, g_cosmicShieldPickup->pos.z);
 
 				g_cosmicShieldPickup = 0;
 			}

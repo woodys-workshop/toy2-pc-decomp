@@ -61,12 +61,7 @@ namespace Renderer
 	namespace InstanceData
 	{
 		Nu3D::InstanceData* AllocFromMatrix(D3DMATRIX* matrix, int32_t renderFlags);
-		Nu3D::InstanceData* AllocFromNodeMatrices(
-			D3DMATRIX* nodeMatrices,
-			int32_t* nodeIndices,
-			int32_t headerCount,
-			int32_t** flags,
-			int32_t renderStage);
+		Nu3D::InstanceData* AllocFromNodeMatrices(D3DMATRIX* nodeMatrices, int32_t* nodeIndices, int32_t headerCount, int32_t** flags, int32_t renderStage);
 	}
 
 	namespace Vertices

@@ -132,42 +132,41 @@ namespace Toy2
 
 			goto LABEL_33;
 
-		LABEL_29:
+		LABEL_29: {
+			int32_t count = Levels::g_unk5574FC;
+
+			for (int32_t i = 0; i < count; i++)
 			{
-				int32_t count = Levels::g_unk5574FC;
-
-				for (int32_t i = 0; i < count; i++)
-				{
-					Levels::g_datContents[i].unkByte1 = 0;
-					Levels::g_datContents[i].unkByte2 = 0;
-				}
-
-				int32_t cameraX = (int32_t)mathScratch[225];
-				int32_t cameraY = (int32_t)mathScratch[226];
-				int32_t cameraZ = (int32_t)mathScratch[227];
-
-				Levels::g_datContents[sector].unkByte1 = 0xFF;
-				Levels::g_datContents[0].unkByte1 = 0xFF;
-				Levels::g_datContents[sector].unkShort1 = 0;
-				Levels::g_datContents[0].unkShort1 = 0;
-				Levels::g_datContents[sector].unkShort2 = 0;
-				Levels::g_datContents[0].unkShort2 = 0;
-				Levels::g_datContents[sector].unkShort3 = 512;
-				Levels::g_datContents[0].unkShort3 = 512;
-				Levels::g_datContents[sector].unkShort4 = 256;
-				Levels::g_datContents[0].unkShort4 = 256;
-
-				g_unk54DD74 = 0;
-
-				mathScratch[234] = -((viewMatrix[0] * cameraX + viewMatrix[1] * cameraY + viewMatrix[2] * cameraZ) / 16384);
-				mathScratch[235] = -((viewMatrix[3] * cameraX + viewMatrix[4] * cameraY + viewMatrix[5] * cameraZ) / 16384);
-				mathScratch[236] = -((viewMatrix[6] * cameraX + viewMatrix[7] * cameraY + viewMatrix[8] * cameraZ) / 16384);
-
-				Nu3D::Camera::SetObjectViewPosition((Nu3D::Camera::NineWords*)&mathScratch[229]);
-				Nu3D::Camera::SetObjectViewMatrix((Matrix3x3I16*)&mathScratch[229]);
-
-				Portal::FloodVisibility(Levels::g_portalEntries[g_curSectorCopy1].entries, 0, 512, 0, 256, 254);
+				Levels::g_datContents[i].unkByte1 = 0;
+				Levels::g_datContents[i].unkByte2 = 0;
 			}
+
+			int32_t cameraX = (int32_t)mathScratch[225];
+			int32_t cameraY = (int32_t)mathScratch[226];
+			int32_t cameraZ = (int32_t)mathScratch[227];
+
+			Levels::g_datContents[sector].unkByte1 = 0xFF;
+			Levels::g_datContents[0].unkByte1 = 0xFF;
+			Levels::g_datContents[sector].unkShort1 = 0;
+			Levels::g_datContents[0].unkShort1 = 0;
+			Levels::g_datContents[sector].unkShort2 = 0;
+			Levels::g_datContents[0].unkShort2 = 0;
+			Levels::g_datContents[sector].unkShort3 = 512;
+			Levels::g_datContents[0].unkShort3 = 512;
+			Levels::g_datContents[sector].unkShort4 = 256;
+			Levels::g_datContents[0].unkShort4 = 256;
+
+			g_unk54DD74 = 0;
+
+			mathScratch[234] = -((viewMatrix[0] * cameraX + viewMatrix[1] * cameraY + viewMatrix[2] * cameraZ) / 16384);
+			mathScratch[235] = -((viewMatrix[3] * cameraX + viewMatrix[4] * cameraY + viewMatrix[5] * cameraZ) / 16384);
+			mathScratch[236] = -((viewMatrix[6] * cameraX + viewMatrix[7] * cameraY + viewMatrix[8] * cameraZ) / 16384);
+
+			Nu3D::Camera::SetObjectViewPosition((Nu3D::Camera::NineWords*)&mathScratch[229]);
+			Nu3D::Camera::SetObjectViewMatrix((Matrix3x3I16*)&mathScratch[229]);
+
+			Portal::FloodVisibility(Levels::g_portalEntries[g_curSectorCopy1].entries, 0, 512, 0, 256, 254);
+		}
 
 		LABEL_33:
 			// the original passes the camera angles and the roll copy that follows them in memory
@@ -189,7 +188,8 @@ namespace Toy2
 				{
 					if (contents->unkByte1)
 					{
-						if ((int16_t)contents->unkShort1 >= 3 || (int16_t)contents->unkShort3 <= 509 || (int16_t)contents->unkShort2 >= 3 || (int16_t)contents->unkShort4 <= 253)
+						if ((int16_t)contents->unkShort1 >= 3 || (int16_t)contents->unkShort3 <= 509 || (int16_t)contents->unkShort2 >= 3
+							|| (int16_t)contents->unkShort4 <= 253)
 						{
 							int16_t* scratchShort = (int16_t*)mathScratch;
 

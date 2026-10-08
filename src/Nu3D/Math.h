@@ -41,7 +41,6 @@ namespace Nu3D
 		float GetSignedDistanceToPlane(Vector3F* point, Plane* plane);
 		int32_t IsWithinDistance(Vector3I* v1, Vector3I* v2, int32_t maxDistance);
 		void BuildMatrixFromDirection(D3DMATRIX* matrix, Vector3F* direction);
-		
 
 		void GetRightVector(D3DMATRIX* matrix, Vector3F* out);
 		void GetUpVector(D3DMATRIX* matrix, Vector3F* out);

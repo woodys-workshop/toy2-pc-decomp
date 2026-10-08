@@ -144,7 +144,8 @@ namespace Toy2
 						actor->pos.y - 2048,
 						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 1408) & 0xFFF] >> 1),
 						42,
-						10)->rotSpeed = *g_randDatBufferPtr - 128;
+						10)
+						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					Nu3D::Particles::SpawnFromPreset(
@@ -152,7 +153,8 @@ namespace Toy2
 						actor->pos.y - 2048,
 						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 640) & 0xFFF] >> 1),
 						42,
-						10)->rotSpeed = *g_randDatBufferPtr - 128;
+						10)
+						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					AudioManager::PlaySoundEffect(54, &actor->pos);
@@ -169,7 +171,7 @@ namespace Toy2
 			{
 				if (g_tickState[10])
 				{
-					if (!(*g_randDatBufferPtr++ & 3))
+					if (! (*g_randDatBufferPtr++ & 3))
 						AudioManager::PlaySoundEffect(72, &actor->pos);
 				}
 
@@ -194,16 +196,7 @@ namespace Toy2
 						g_randDatBufferPtr += 3;
 
 						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
-							actor->pos.x,
-							actor->pos.y - 4096,
-							actor->pos.z,
-							4 * velocity,
-							-3072,
-							velocity,
-							96,
-							0,
-							4 * velocity,
-							121);
+							actor->pos.x, actor->pos.y - 4096, actor->pos.z, 4 * velocity, -3072, velocity, 96, 0, 4 * velocity, 121);
 
 						AudioManager::PlaySoundEffect(96, &particle->pos);
 					}
@@ -286,7 +279,8 @@ namespace Toy2
 						actor->pos.y - 2048,
 						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 1408) & 0xFFF] >> 1),
 						42,
-						10)->rotSpeed = *g_randDatBufferPtr - 128;
+						10)
+						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					Nu3D::Particles::SpawnFromPreset(
@@ -294,7 +288,8 @@ namespace Toy2
 						actor->pos.y - 2048,
 						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 640) & 0xFFF] >> 1),
 						42,
-						10)->rotSpeed = *g_randDatBufferPtr - 128;
+						10)
+						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					AudioManager::PlaySoundEffect(54, &actor->pos);

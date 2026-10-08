@@ -275,9 +275,7 @@ namespace Toy2
 					{
 						Nu3D::Math::BuildIdentityMatrix(&localMatrix);
 
-						if (curNode == g_specialNodeValue
-							|| SampleNodeTransform(curNode, (uint16_t*)animData, unk, &localMatrix)
-							|| flag)
+						if (curNode == g_specialNodeValue || SampleNodeTransform(curNode, (uint16_t*)animData, unk, &localMatrix) || flag)
 						{
 							int32_t matrixIdx = curNode + 32 * index;
 
@@ -286,8 +284,7 @@ namespace Toy2
 						}
 
 						++curNode;
-					}
-					while (curNode < creature->nodeCount);
+					} while (curNode < creature->nodeCount);
 				}
 			}
 		}
@@ -375,21 +372,11 @@ namespace Toy2
 
 						if (selectedActor->secondaryAnimIdx != -1)
 							EvaluateClipToMatrices(
-								slot,
-								creature,
-								&matrix1,
-								(int16_t*)creature->animData[selectedActor->secondaryAnimIdx],
-								selectedActor->unkVar8,
-								1);
+								slot, creature, &matrix1, (int16_t*)creature->animData[selectedActor->secondaryAnimIdx], selectedActor->unkVar8, 1);
 
 						if (selectedActor->primaryAnimIdx != -1)
 							EvaluateClipToMatrices(
-								slot,
-								creature,
-								&matrix2,
-								(int16_t*)creature->animData[selectedActor->primaryAnimIdx],
-								selectedActor->unkVar7,
-								0);
+								slot, creature, &matrix2, (int16_t*)creature->animData[selectedActor->primaryAnimIdx], selectedActor->unkVar7, 0);
 
 						int32_t nodeIdx = 0;
 
@@ -421,8 +408,7 @@ namespace Toy2
 								++nodeIdx;
 								++curMatrix;
 								++curAngle;
-							}
-							while (nodeIdx < creature->nodeCount);
+							} while (nodeIdx < creature->nodeCount);
 						}
 					}
 
@@ -671,45 +657,45 @@ namespace Toy2
 				{
 					switch (result)
 					{
-					case 0x81:
-						if (g_buzzActor.unkShort40)
-							Buzz::g_unk53C634 |= 1;
-						break;
+						case 0x81:
+							if (g_buzzActor.unkShort40)
+								Buzz::g_unk53C634 |= 1;
+							break;
 
-					case 0x82:
-						if (g_buzzActor.unkShort40)
-							Buzz::g_unk53C634 |= 2;
-						break;
+						case 0x82:
+							if (g_buzzActor.unkShort40)
+								Buzz::g_unk53C634 |= 2;
+							break;
 
-					case 0x83:
-						AudioManager::PlaySoundEffect(48, &g_buzzActor.posAngles.pos);
-						break;
+						case 0x83:
+							AudioManager::PlaySoundEffect(48, &g_buzzActor.posAngles.pos);
+							break;
 
-					case 0x84:
-						AudioManager::PlaySoundEffect(16, &g_buzzActor.posAngles.pos);
-						break;
+						case 0x84:
+							AudioManager::PlaySoundEffect(16, &g_buzzActor.posAngles.pos);
+							break;
 
-					case 0x85:
-						AudioManager::PlaySoundEffect(23, &g_buzzActor.posAngles.pos);
-						break;
+						case 0x85:
+							AudioManager::PlaySoundEffect(23, &g_buzzActor.posAngles.pos);
+							break;
 
-					case 0x86:
-						AudioManager::PlaySoundEffect(67, &g_buzzActor.posAngles.pos);
-						break;
+						case 0x86:
+							AudioManager::PlaySoundEffect(67, &g_buzzActor.posAngles.pos);
+							break;
 
-					case 0xFE:
-						result = (uint32_t)-1;
-						g_buzzActor.unkVar37 = 0;
-						g_buzzActor.unkVar38 = -1;
-						Buzz::g_unk50A098 = 0;
-						return result;
+						case 0xFE:
+							result = (uint32_t)-1;
+							g_buzzActor.unkVar37 = 0;
+							g_buzzActor.unkVar38 = -1;
+							Buzz::g_unk50A098 = 0;
+							return result;
 
-					case 0xFF:
-						g_buzzActor.unkVar33 = -65536 - (cur[1] << 16) + unkVar33;
-						break;
+						case 0xFF:
+							g_buzzActor.unkVar33 = -65536 - (cur[1] << 16) + unkVar33;
+							break;
 
-					default:
-						break;
+						default:
+							break;
 					}
 
 					g_buzzActor.unkVar33 += 0x10000;

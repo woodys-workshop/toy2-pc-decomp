@@ -52,6 +52,7 @@ namespace Nu3D
 		void Update();
 
 		extern ParticleInstance g_particleInstances[64];
+		extern ParticleInstance g_emptyParticleStruct;
 
 		STATIC_ASSERT(sizeof(ParticleInstance) == 0x3C);
 	}

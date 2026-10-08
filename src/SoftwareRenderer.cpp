@@ -468,7 +468,7 @@ namespace SoftwareRenderer
 
 		HRESULT result = DrawingAPI::LockVertexBuffer(buffer, 0x801, &data, 0);
 
-		if (!result)
+		if (! result)
 		{
 			Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
 

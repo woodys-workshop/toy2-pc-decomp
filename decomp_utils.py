@@ -4,6 +4,7 @@ sys.dont_write_bytecode = True
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -278,6 +279,47 @@ def print_namespace_progress(namespace, ida_functions, source_functions):
     print(f"{Fore.RED}Not started:{Style.RESET_ALL}                {not_started_count}")
     print("=" * 60)
 
+def find_clang_format():
+    found = shutil.which("clang-format")
+
+    if found:
+        return found
+
+    # the LLVM installer does not always add itself to the PATH
+    fallback = Path("C:/Program Files/LLVM/bin/clang-format.exe")
+
+    return str(fallback) if fallback.exists() else None
+
+def format_sources():
+    clang_format = find_clang_format()
+
+    if not clang_format:
+        print("Error: clang-format was not found, install LLVM or add it to the PATH.")
+        return
+
+    files = sorted(str(f) for f in Path("src").rglob("*") if f.suffix in (".cpp", ".h"))
+
+    # the command line is limited in length, so do it in batches
+    for i in range(0, len(files), 40):
+        result = subprocess.run([clang_format, "-i", "-style=file"] + files[i:i + 40])
+
+        if result.returncode != 0:
+            print("Error: clang-format failed.")
+            return
+
+    print(f"Formatted {len(files)} files with the root .clang-format")
+
+    # reccmp can not parse an empty body that was put on the line after the signature,
+    # the function and the one after it are silently dropped from the report
+    pattern = re.compile(r"\)[ \t]*\r?\n[ \t]*\{\}")
+
+    for file in files:
+        text = Path(file).read_text(errors="ignore")
+
+        for match in pattern.finditer(text):
+            line = text.count("\n", 0, match.start()) + 1
+            print(f"{Fore.YELLOW}Warning:{Style.RESET_ALL} {file}:{line} has a '{{}}' body below its signature, reccmp will not see this function. Give the body a comment.")
+
 def generate_progress_image(output_path):
     icon_path = Path("resources/APPICON.ico")
     reccmp_args = ["reccmp-reccmp", "--target", build_script.PROJECT_NAME.upper(), "--silent", "--svg", str(output_path)]
@@ -344,6 +386,12 @@ def main():
     )
 
     parser.add_argument(
+        "--format",
+        action="store_true",
+        help="Run the root .clang-format on every .cpp and .h file in src.",
+    )
+
+    parser.add_argument(
         "--verbose",
         action="store_true",
         help="Shows extra info",
@@ -361,8 +409,11 @@ def main():
     if args.image:
         generate_progress_image(args.image)
 
-    if not args.progress and not args.count and not args.image:
-        print("Enter an option, --count, --progress or --image.")
+    if args.format:
+        format_sources()
+
+    if not args.progress and not args.count and not args.image and not args.format:
+        print("Enter an option, --count, --progress, --image or --format.")
 
 
 if __name__ == "__main__":

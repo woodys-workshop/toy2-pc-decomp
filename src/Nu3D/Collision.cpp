@@ -49,7 +49,7 @@ namespace Nu3D
 						{
 							negative = (z2 - z3) * (x1 - x3) + (z1 - z3) * (x3 - x2) < 0;
 
-							return !negative;
+							return ! negative;
 						}
 					}
 					else if (z2 * x1 - x2 * z1 >= 0 && x3 * (z1 - z3) - z3 * (x1 - x3) >= 0)
@@ -92,7 +92,7 @@ namespace Nu3D
 					{
 						negative = (z2 - z3) * (y1 - y3) + (z1 - z3) * (y3 - y2) < 0;
 
-						return !negative;
+						return ! negative;
 					}
 
 					return 0;
@@ -110,7 +110,7 @@ namespace Nu3D
 				negative = y3 * (z1 - z3) - z3 * (y1 - y3) < 0;
 			}
 
-			if (!negative)
+			if (! negative)
 			{
 				v13 = (v20 - v19) * (v17 - v18);
 				v14 = (v18 - y3) * (v16 - v19);
@@ -118,7 +118,7 @@ namespace Nu3D
 			LABEL_23:
 				negative = v14 + v13 < 0;
 
-				return !negative;
+				return ! negative;
 			}
 
 			return 0;
@@ -188,7 +188,7 @@ namespace Nu3D
 
 					if (meshIdx == prevMesh)
 					{
-						if (!valid)
+						if (! valid)
 							continue;
 					}
 					else
@@ -197,8 +197,8 @@ namespace Nu3D
 						valid = 0;
 						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-						if (x + 4096 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && z + 4096 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000 && mesh->typeFlags
-							&& (mesh->unk & 0x100) == 0)
+						if (x + 4096 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && z + 4096 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000
+							&& mesh->typeFlags && (mesh->unk & 0x100) == 0)
 						{
 							valid = 1;
 							cellX = (x + 4096 - mesh->origin.x) / 32;
@@ -231,7 +231,8 @@ namespace Nu3D
 				{
 					Toy2::Collision::CollisionGridCell* cell = &Toy2::Collision::g_collisionGrid[i];
 
-					if ((uint32_t)(x + 20480 - cell->minX) < (uint32_t)(cell->extX + 40960) && (uint32_t)(z + 20480 - cell->minZ) < (uint32_t)(cell->extZ + 40960))
+					if ((uint32_t)(x + 20480 - cell->minX) < (uint32_t)(cell->extX + 40960)
+						&& (uint32_t)(z + 20480 - cell->minZ) < (uint32_t)(cell->extZ + 40960))
 					{
 						for (j = 0; j < cell->count; j++)
 							meshList[meshCount + j] = Toy2::Collision::g_collisionMeshList[cell->start + j];
@@ -248,8 +249,8 @@ namespace Nu3D
 				{
 					mesh = &Toy2::Collision::g_collisionMeshInstances[meshList[i]];
 
-					if (x + 20480 - mesh->boundsMin.x < mesh->boundsExt.x + 40960 && z + 20480 - mesh->boundsMin.z < mesh->boundsExt.z + 40960 && mesh->typeFlags
-						&& (mesh->unk & 0x100) == 0)
+					if (x + 20480 - mesh->boundsMin.x < mesh->boundsExt.x + 40960 && z + 20480 - mesh->boundsMin.z < mesh->boundsExt.z + 40960
+						&& mesh->typeFlags && (mesh->unk & 0x100) == 0)
 					{
 						cellX = (x + 20480 - mesh->origin.x) / 32;
 						cellZ = (z + 20480 - mesh->origin.z) / 32;
@@ -261,12 +262,14 @@ namespace Nu3D
 
 							triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
 
-							if ((uint32_t)(cellX - node->minX) < (uint32_t)(node->extX + 1280) && (uint32_t)(cellZ - node->minZ) < (uint32_t)(node->extZ + 1280))
+							if ((uint32_t)(cellX - node->minX) < (uint32_t)(node->extX + 1280)
+								&& (uint32_t)(cellZ - node->minZ) < (uint32_t)(node->extZ + 1280))
 							{
 								for (j = 0; j < triangleCount; j++)
 								{
 									if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(triangle->extX + 1280)
-										&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)((triangle->extZByte + 20) << 6) && entry->count < 240)
+										&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)((triangle->extZByte + 20) << 6)
+										&& entry->count < 240)
 									{
 										entry->triangles[entry->count] = triangle;
 										entry->meshIdx[entry->count] = meshList[i];
@@ -297,7 +300,7 @@ namespace Nu3D
 
 					if (meshIdx == prevMesh)
 					{
-						if (!valid)
+						if (! valid)
 							continue;
 					}
 					else
@@ -306,8 +309,8 @@ namespace Nu3D
 						valid = 0;
 						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-						if (x + 4096 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && z + 4096 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000 && mesh->typeFlags
-							&& (mesh->unk & 0x100) == 0)
+						if (x + 4096 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && z + 4096 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000
+							&& mesh->typeFlags && (mesh->unk & 0x100) == 0)
 						{
 							valid = 1;
 							cellX = (x + 4096 - mesh->origin.x) / 32;
@@ -559,7 +562,7 @@ namespace Nu3D
 						surfaceNormal = rotatedNormal;
 
 						surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-								   + 4 * (8 * v0y - 8 * ((int16_t)n1x * (px - v0x) + n1z * (pz - v0z)) / (int16_t)n1y);
+							+ 4 * (8 * v0y - 8 * ((int16_t)n1x * (px - v0x) + n1z * (pz - v0z)) / (int16_t)n1y);
 					}
 					else
 					{
@@ -603,13 +606,14 @@ namespace Nu3D
 							edgeX = e1x + v0x;
 							edgeZ = v0z + e1z;
 
-							if ((pz - edgeZ) * (e1x - e3x) + (px - edgeX) * (e3z - e1z) < 0 || (px - (v0x + e3x)) * (e2z - e3z) + (pz - (e3z + v0z)) * (e3x - e2x) < 0)
+							if ((pz - edgeZ) * (e1x - e3x) + (px - edgeX) * (e3z - e1z) < 0
+								|| (px - (v0x + e3x)) * (e2z - e3z) + (pz - (e3z + v0z)) * (e3x - e2x) < 0)
 								continue;
 
 							side = 1;
 						}
 
-						if ((px - edgeX) * (v0z + e2z - edgeZ) + (pz - edgeZ) * (edgeX - e2x - v0x) >= 0 || !(int16_t)n2y)
+						if ((px - edgeX) * (v0z + e2z - edgeZ) + (pz - edgeZ) * (edgeX - e2x - v0x) >= 0 || ! (int16_t)n2y)
 						{
 							// the first triangle
 							rotatedNormal[0] = (int16_t)n1x;
@@ -618,7 +622,7 @@ namespace Nu3D
 							surfaceNormal = rotatedNormal;
 
 							surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-									   + 4 * (8 * v0y - 8 * ((int16_t)n1x * (px - v0x) + n1z * (pz - v0z)) / (int16_t)n1y);
+								+ 4 * (8 * v0y - 8 * ((int16_t)n1x * (px - v0x) + n1z * (pz - v0z)) / (int16_t)n1y);
 						}
 						else
 						{
@@ -629,7 +633,7 @@ namespace Nu3D
 							surfaceNormal = rotatedNormal;
 
 							surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-									   + 4 * (8 * (v0y + e3y) - 8 * ((int16_t)n2x * (px - e3x - v0x) + n2z * (pz - e3z - v0z)) / (int16_t)n2y);
+								+ 4 * (8 * (v0y + e3y) - 8 * ((int16_t)n2x * (px - e3x - v0x) + n2z * (pz - e3z - v0z)) / (int16_t)n2y);
 						}
 					}
 				}
@@ -644,7 +648,8 @@ namespace Nu3D
 						baseZ = triangle[6];
 						v0x = triangle[4];
 
-						if (triangle[7] * (pz - (triangle[9] + baseZ)) + -triangle[9] * (px - (v0x + triangle[7])) < 0 || triangle[12] * (px - v0x) + (pz - baseZ) * -triangle[10] < 0
+						if (triangle[7] * (pz - (triangle[9] + baseZ)) + -triangle[9] * (px - (v0x + triangle[7])) < 0
+							|| triangle[12] * (px - v0x) + (pz - baseZ) * -triangle[10] < 0
 							|| (triangle[9] - triangle[12]) * (px - (v0x + triangle[10])) + (pz - (baseZ + triangle[12])) * (triangle[10] - triangle[7]) < 0)
 							continue;
 
@@ -655,7 +660,8 @@ namespace Nu3D
 						v0x = triangle[4];
 						baseZ = triangle[6];
 
-						if (triangle[9] * (px - v0x) + (pz - baseZ) * -triangle[7] < 0 || triangle[10] * (pz - (baseZ + triangle[12])) + -triangle[12] * (px - (v0x + triangle[10])) < 0
+						if (triangle[9] * (px - v0x) + (pz - baseZ) * -triangle[7] < 0
+							|| triangle[10] * (pz - (baseZ + triangle[12])) + -triangle[12] * (px - (v0x + triangle[10])) < 0
 							|| (triangle[12] - triangle[9]) * (px - (v0x + triangle[7])) + (pz - (baseZ + triangle[9])) * (triangle[7] - triangle[10]) < 0)
 							continue;
 
@@ -665,7 +671,7 @@ namespace Nu3D
 					surfaceNormal = triangle + 16;
 
 					surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-							   + 4 * (8 * triangle[5] - 8 * (triangle[16] * (px - v0x) + triangle[18] * (pz - baseZ)) / triangle[17]);
+						+ 4 * (8 * triangle[5] - 8 * (triangle[16] * (px - v0x) + triangle[18] * (pz - baseZ)) / triangle[17]);
 				}
 				else
 				{
@@ -726,8 +732,9 @@ namespace Nu3D
 						surfaceNormal = triangle + 19;
 
 						surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-								   + 4 * (8 * (triangle[5] + triangle[14])
-										  - 8 * (triangle[19] * (px - triangle[13] - v0x) + triangle[21] * (pz - triangle[15] - baseZ)) / triangle[20]);
+							+ 4
+								* (8 * (triangle[5] + triangle[14])
+								   - 8 * (triangle[19] * (px - triangle[13] - v0x) + triangle[21] * (pz - triangle[15] - baseZ)) / triangle[20]);
 					}
 					else
 					{
@@ -735,7 +742,7 @@ namespace Nu3D
 						surfaceNormal = triangle + 16;
 
 						surfaceY = Toy2::Collision::g_collisionMeshInstances[meshIdx].origin.y
-								   + 4 * (8 * triangle[5] - 8 * (triangle[16] * (px - v0x) + triangle[18] * (pz - baseZ)) / triangle[17]);
+							+ 4 * (8 * triangle[5] - 8 * (triangle[16] * (px - v0x) + triangle[18] * (pz - baseZ)) / triangle[17]);
 					}
 				}
 
@@ -805,7 +812,14 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00487B20
-		int32_t SweepAgainstEdges(int32_t* bestDist, int32_t* hitT0, int32_t* hitT1, uint32_t* hitNormal, int32_t* position, int32_t* displacement, int32_t radius)
+		int32_t SweepAgainstEdges(
+			int32_t* bestDist,
+			int32_t* hitT0,
+			int32_t* hitT1,
+			uint32_t* hitNormal,
+			int32_t* position,
+			int32_t* displacement,
+			int32_t radius)
 		{
 			Vector3I16 normal;
 			Vector3I16 tangent;
@@ -828,7 +842,7 @@ namespace Nu3D
 
 			normal.y = 0;
 
-			if (!Toy2::Collision::g_unk72D2AC)
+			if (! Toy2::Collision::g_unk72D2AC)
 				return 0;
 
 			if (Toy2::Collision::g_unk72D2AC > 0)
@@ -860,13 +874,18 @@ namespace Nu3D
 					{
 						if (abs(displacement[0]) >= 0x2000 || abs(displacement[2]) >= 0x2000)
 						{
-							endDistance = (normal.x * (((displacement[0] + position[0]) >> 5) - segment[0]) + normal.z * (((displacement[2] + position[2]) >> 5) - segment[2])) >> 12;
+							endDistance =
+								(normal.x * (((displacement[0] + position[0]) >> 5) - segment[0])
+								 + normal.z * (((displacement[2] + position[2]) >> 5) - segment[2]))
+								>> 12;
 							endScaledRadius = radius / 32;
 						}
 						else
 						{
 							endScaledRadius = radius;
-							endDistance = (normal.x * (displacement[0] + position[0] - 32 * segment[0]) + normal.z * (displacement[2] + position[2] - 32 * segment[2])) >> 12;
+							endDistance =
+								(normal.x * (displacement[0] + position[0] - 32 * segment[0]) + normal.z * (displacement[2] + position[2] - 32 * segment[2]))
+								>> 12;
 						}
 
 						endDistance = endDistance - endScaledRadius;
@@ -903,7 +922,8 @@ namespace Nu3D
 					distance = segment[2] - (position[2] >> 5);
 
 					if ((segment[0] - (position[0] >> 5)) * (segment[0] - (position[0] >> 5)) + distance * distance
-						< (displacement[0] >> 5) * (displacement[0] >> 5) + ((radius + 0x2000) >> 5) * ((radius + 0x2000) >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5))
+						< (displacement[0] >> 5) * (displacement[0] >> 5) + ((radius + 0x2000) >> 5) * ((radius + 0x2000) >> 5)
+							+ (displacement[2] >> 5) * (displacement[2] >> 5))
 					{
 						tangent.z = (int16_t)(displacement[2] >> 5);
 						tangent.x = (int16_t)(displacement[0] >> 5);
@@ -922,12 +942,14 @@ namespace Nu3D
 							{
 								time = projection - (int32_t)sqrt((double)(((radius + 64) >> 5) * ((radius + 64) >> 5) - sideZ * sideZ - sideX * sideX));
 
-								if (time >= -2 && time * time <= (displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5))
+								if (time >= -2
+									&& time * time <= (displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5))
 								{
 									if (time < 0)
 										time = 0;
 
-									length = (int32_t)sqrt((double)((displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5)));
+									length = (int32_t)sqrt(
+										(double)((displacement[0] >> 5) * (displacement[0] >> 5) + (displacement[2] >> 5) * (displacement[2] >> 5)));
 									newBest = (time << 14) / length;
 
 									if (newBest < *bestDist)
@@ -960,7 +982,14 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x004882F0
-		int32_t RaycastAgainstEdges(int32_t* bestDist, int32_t* hitT0, int32_t* hitT1, uint32_t* hitNormal, int16_t* flipped, int32_t* position, int32_t* direction)
+		int32_t RaycastAgainstEdges(
+			int32_t* bestDist,
+			int32_t* hitT0,
+			int32_t* hitT1,
+			uint32_t* hitNormal,
+			int16_t* flipped,
+			int32_t* position,
+			int32_t* direction)
 		{
 			Vector3I16 normal;
 			Vector3I16 tangent;
@@ -976,7 +1005,7 @@ namespace Nu3D
 
 			normal.y = 0;
 
-			if (!Toy2::Collision::g_unk72D2AC)
+			if (! Toy2::Collision::g_unk72D2AC)
 				return 0;
 
 			if (Toy2::Collision::g_unk72D2AC > 0)
@@ -992,7 +1021,8 @@ namespace Nu3D
 
 					flip = 0;
 					startDistance = (normal.x * ((position[0] >> 5) - segment[0]) + normal.z * ((position[2] >> 5) - segment[2])) >> 12;
-					endDistance = (normal.x * (((position[0] + direction[0]) >> 5) - segment[0]) + normal.z * (((position[2] + direction[2]) >> 5) - segment[2])) >> 12;
+					endDistance =
+						(normal.x * (((position[0] + direction[0]) >> 5) - segment[0]) + normal.z * (((position[2] + direction[2]) >> 5) - segment[2])) >> 12;
 
 					if (startDistance < endDistance)
 					{
@@ -1128,15 +1158,18 @@ namespace Nu3D
 
 					cellX = endX >> 5;
 
-					distance = ((triangle->unk24 * ((endZ >> 5) - triangle->v0z) + triangle->unk22 * ((endY >> 5) - triangle->v0y) + triangle->unk20 * ((endX >> 5) - triangle->v0x))
-								>> 14)
-							   - scaledRadius;
+					distance =
+						((triangle->unk24 * ((endZ >> 5) - triangle->v0z) + triangle->unk22 * ((endY >> 5) - triangle->v0y)
+						  + triangle->unk20 * ((endX >> 5) - triangle->v0x))
+						 >> 14)
+						- scaledRadius;
 
 					if (distance >= 0
-						|| (endDistance = ((triangle->unk24 * ((startZ >> 5) - triangle->v0z) + triangle->unk22 * ((startY >> 5) - triangle->v0y)
-											+ triangle->unk20 * ((startX >> 5) - triangle->v0x))
-										   >> 14)
-										  - scaledRadius,
+						|| (endDistance =
+								((triangle->unk24 * ((startZ >> 5) - triangle->v0z) + triangle->unk22 * ((startY >> 5) - triangle->v0y)
+								  + triangle->unk20 * ((startX >> 5) - triangle->v0x))
+								 >> 14)
+								- scaledRadius,
 							endDistance < 0))
 					{
 						cellY = endY >> 5;
@@ -1175,17 +1208,20 @@ namespace Nu3D
 
 					if (triangle->unk28 != 0x7FFF)
 					{
-						distance = ((triangle->unk2A * ((endZ >> 5) - triangle->e1z - triangle->v0z) + triangle->unk28 * (cellY - triangle->e1y - triangle->v0y)
-									 + triangle->unk26 * (cellX - triangle->e1x - triangle->v0x))
-									>> 14)
-								   - scaledRadius;
+						distance =
+							((triangle->unk2A * ((endZ >> 5) - triangle->e1z - triangle->v0z) + triangle->unk28 * (cellY - triangle->e1y - triangle->v0y)
+							  + triangle->unk26 * (cellX - triangle->e1x - triangle->v0x))
+							 >> 14)
+							- scaledRadius;
 
 						if (distance < 0)
 						{
-							endDistance = ((triangle->unk2A * ((startZ >> 5) - triangle->e1z - triangle->v0z) + triangle->unk28 * ((startY >> 5) - triangle->e1y - triangle->v0y)
-											+ triangle->unk26 * ((startX >> 5) - triangle->e1x - triangle->v0x))
-										   >> 14)
-										  - scaledRadius;
+							endDistance =
+								((triangle->unk2A * ((startZ >> 5) - triangle->e1z - triangle->v0z)
+								  + triangle->unk28 * ((startY >> 5) - triangle->e1y - triangle->v0y)
+								  + triangle->unk26 * ((startX >> 5) - triangle->e1x - triangle->v0x))
+								 >> 14)
+								- scaledRadius;
 
 							if (endDistance >= 0)
 							{
@@ -1196,7 +1232,8 @@ namespace Nu3D
 								if (Math::PointIntersectsTriangle(
 										(hitX >> 5) - triangle->e1x - triangle->v0x,
 										(hitY >> 5) - triangle->e1y - triangle->v0y,
-										((startZ + endDistance * (endZ - startZ) / (endDistance - distance) - ((radius * triangle->unk2A) >> 14)) >> 5) - triangle->e1z - triangle->v0z,
+										((startZ + endDistance * (endZ - startZ) / (endDistance - distance) - ((radius * triangle->unk2A) >> 14)) >> 5)
+											- triangle->e1z - triangle->v0z,
 										triangle->e3x - triangle->e1x,
 										triangle->e3y - triangle->e1y,
 										triangle->e3z - triangle->e1z,
@@ -1331,12 +1368,14 @@ namespace Nu3D
 
 					isFlipped = 0;
 
-					endDistance = ((triangle->unk24 * ((endZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((endY >> 5) - triangle->v0y - triangle->e1y)
-									+ triangle->unk20 * ((endX >> 5) - triangle->v0x - triangle->e1x))
-								   >> 14);
-					startDistance = ((triangle->unk24 * ((startZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((startY >> 5) - triangle->v0y - triangle->e1y)
-									  + triangle->unk20 * ((startX >> 5) - triangle->v0x - triangle->e1x))
-									 >> 14);
+					endDistance =
+						((triangle->unk24 * ((endZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((endY >> 5) - triangle->v0y - triangle->e1y)
+						  + triangle->unk20 * ((endX >> 5) - triangle->v0x - triangle->e1x))
+						 >> 14);
+					startDistance =
+						((triangle->unk24 * ((startZ >> 5) - triangle->v0z - triangle->e1z) + triangle->unk22 * ((startY >> 5) - triangle->v0y - triangle->e1y)
+						  + triangle->unk20 * ((startX >> 5) - triangle->v0x - triangle->e1x))
+						 >> 14);
 
 					// NOTE: the names are swapped, the first of them is the distance of the end of the ray
 					if (startDistance < endDistance)
@@ -1381,12 +1420,16 @@ namespace Nu3D
 					{
 						isFlipped = 0;
 
-						endDistance = (triangle->unk2A * (endZ - 32 * triangle->v0z - 32 * triangle->e3z) + triangle->unk28 * (endY - 32 * triangle->v0y - 32 * triangle->e3y)
-									   + triangle->unk26 * (endX - 32 * triangle->v0x - 32 * triangle->e3x))
-									  >> 14;
-						startDistance = (triangle->unk2A * (startZ - 32 * triangle->v0z - 32 * triangle->e3z) + triangle->unk28 * (startY - 32 * triangle->v0y - 32 * triangle->e3y)
-										 + triangle->unk26 * (startX - 32 * triangle->e3x - 32 * triangle->v0x))
-										>> 14;
+						endDistance =
+							(triangle->unk2A * (endZ - 32 * triangle->v0z - 32 * triangle->e3z)
+							 + triangle->unk28 * (endY - 32 * triangle->v0y - 32 * triangle->e3y)
+							 + triangle->unk26 * (endX - 32 * triangle->v0x - 32 * triangle->e3x))
+							>> 14;
+						startDistance =
+							(triangle->unk2A * (startZ - 32 * triangle->v0z - 32 * triangle->e3z)
+							 + triangle->unk28 * (startY - 32 * triangle->v0y - 32 * triangle->e3y)
+							 + triangle->unk26 * (startX - 32 * triangle->e3x - 32 * triangle->v0x))
+							>> 14;
 
 						if (startDistance < endDistance)
 						{
@@ -1574,8 +1617,9 @@ namespace Nu3D
 
 			meshMask = useTopSector != 0 ? 512 : 256;
 
-			if (useTopSector && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z && (uint32_t)(minX - extXWide) > (uint32_t)cameraEntry->unkC
-				&& (uint32_t)(minY - extYWide) > (uint32_t)cameraEntry->unk10 && (uint32_t)(minZ - extZWide) > (uint32_t)cameraEntry->unk14)
+			if (useTopSector && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z
+				&& (uint32_t)(minX - extXWide) > (uint32_t)cameraEntry->unkC && (uint32_t)(minY - extYWide) > (uint32_t)cameraEntry->unk10
+				&& (uint32_t)(minZ - extZWide) > (uint32_t)cameraEntry->unk14)
 			{
 				// everything is inside of the box that was gathered by PrepareCameraCollisionCandidates
 				for (i = cameraEntry->count - 1; i >= 0; i--)
@@ -1584,7 +1628,7 @@ namespace Nu3D
 
 					if (meshIdx == prevMesh)
 					{
-						if (!valid)
+						if (! valid)
 							continue;
 					}
 					else
@@ -1593,8 +1637,10 @@ namespace Nu3D
 						valid = 0;
 						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
-							&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZWide + mesh->boundsExt.z) && mesh->typeFlags && (mesh->unk & meshMask) == 0)
+						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x)
+							&& (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
+							&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZWide + mesh->boundsExt.z) && mesh->typeFlags
+							&& (mesh->unk & meshMask) == 0)
 						{
 							valid = 1;
 							cellX = (minX - mesh->origin.x) / 32;
@@ -1642,7 +1688,8 @@ namespace Nu3D
 					meshIdx = meshList[i];
 					mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
+					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extXWide + mesh->boundsExt.x)
+						&& (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extYWide + mesh->boundsExt.y)
 						&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZWide + mesh->boundsExt.z))
 					{
 						if (mesh->typeFlags)
@@ -1659,7 +1706,8 @@ namespace Nu3D
 									count = node->count;
 									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
 									{
 										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -1668,8 +1716,10 @@ namespace Nu3D
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
-												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(cellExtY + (triangle->extYByte << 6))
 												&& triangle->unk22 < collisionMask && Toy2::Collision::g_candidateTriangleCount < 240)
 											{
 												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
@@ -1709,8 +1759,8 @@ namespace Nu3D
 					<= speedSq + (mesh->boundingSqRadius >> 1))
 				{
 					platformIdx = mesh->platformIdx;
-					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z) + speed + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y)
-									+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x);
+					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z) + speed
+						+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x);
 					doubleReach = 2 * platformReach;
 					nodeMargin = (platformReach + 15) / 16;
 
@@ -1758,7 +1808,8 @@ namespace Nu3D
 									count = node->count;
 									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
 									{
 										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -1767,8 +1818,10 @@ namespace Nu3D
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
-												&& (uint32_t)((platformY - originY) / 32 - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)((platformY - originY) / 32 - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(nodeMargin + (triangle->extYByte << 6))
 												&& Toy2::Collision::g_candidateTriangleCount < 240)
 											{
 												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
@@ -1813,7 +1866,9 @@ namespace Nu3D
 							{
 								blockLimit = blockEnd;
 							}
-							else if ((uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3]) || (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
+							else if (
+								(uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3])
+								|| (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
 							{
 								blockLimit = 0;
 							}
@@ -1829,7 +1884,8 @@ namespace Nu3D
 								for (steps = blockLimit - blockStart; steps; steps--)
 								{
 									if (((edgePoint[-2] >= wallMinX && edgePoint[1] <= wallMaxX) || (edgePoint[1] >= wallMinX && edgePoint[-2] <= wallMaxX))
-										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ)) && edgeCount < 32)
+										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ))
+										&& edgeCount < 32)
 									{
 										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[-2];
 										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[-1];
@@ -1993,7 +2049,7 @@ namespace Nu3D
 
 					if (meshIdx == prevMesh)
 					{
-						if (!valid)
+						if (! valid)
 							continue;
 					}
 					else
@@ -2002,7 +2058,8 @@ namespace Nu3D
 						valid = 0;
 						mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
+						if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x)
+							&& (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
 							&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZ + mesh->boundsExt.z) && mesh->typeFlags && (mesh->unk & meshMask) == 0)
 						{
 							valid = 1;
@@ -2059,7 +2116,8 @@ namespace Nu3D
 					meshIdx = meshList[i];
 					mesh = &Toy2::Collision::g_collisionMeshInstances[meshIdx];
 
-					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x) && (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
+					if ((uint32_t)(minX - mesh->boundsMin.x) < (uint32_t)(extX + mesh->boundsExt.x)
+						&& (uint32_t)(minY - mesh->boundsMin.y) < (uint32_t)(extY + mesh->boundsExt.y)
 						&& (uint32_t)(minZ - mesh->boundsMin.z) < (uint32_t)(extZ + mesh->boundsExt.z))
 					{
 						if (mesh->typeFlags)
@@ -2076,7 +2134,8 @@ namespace Nu3D
 									count = node->count;
 									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(cellExtX + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(cellExtZ + node->extZ))
 									{
 										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -2085,8 +2144,10 @@ namespace Nu3D
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(cellExtX + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(cellExtZ + (triangle->extZByte << 6))
-												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(cellExtY + (triangle->extYByte << 6))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(cellExtZ + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(cellExtY + (triangle->extYByte << 6))
 												&& Toy2::Collision::g_candidateTriangleCount < 240)
 											{
 												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
@@ -2119,12 +2180,14 @@ namespace Nu3D
 				originZ = mesh->origin.z;
 				originY = mesh->origin.y;
 
-				if (((originZ - a1[2]) >> 6) * ((originZ - a1[2]) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6) + ((originX - localX) >> 6) * ((originX - localX) >> 6)
+				if (((originZ - a1[2]) >> 6) * ((originZ - a1[2]) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6)
+						+ ((originX - localX) >> 6) * ((originX - localX) >> 6)
 					<= speedSq + (mesh->boundingSqRadius >> 1))
 				{
 					platformIdx = mesh->platformIdx;
-					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y)
-									+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z) + (int32_t)(16 * sqrt((double)speedSq));
+					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x)
+						+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z)
+						+ (int32_t)(16 * sqrt((double)speedSq));
 					doubleReach = 2 * platformReach;
 					nodeMargin = (platformReach + 15) / 16;
 
@@ -2172,7 +2235,8 @@ namespace Nu3D
 									count = node->count;
 									triangle = (Toy2::Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
 									{
 										node = (Toy2::Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -2181,8 +2245,10 @@ namespace Nu3D
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
-												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(nodeMargin + (triangle->extYByte << 6))
 												&& Toy2::Collision::g_candidateTriangleCount < 240)
 											{
 												Toy2::Collision::g_candidateTris[Toy2::Collision::g_candidateTriangleCount] = triangle;
@@ -2227,7 +2293,9 @@ namespace Nu3D
 							{
 								blockLimit = blockEnd;
 							}
-							else if ((uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3]) || (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
+							else if (
+								(uint32_t)(wallMaxX - edgeBlock[0]) >= (uint32_t)(cellExtX + edgeBlock[3])
+								|| (uint32_t)(wallMaxZ - edgeBlock[6]) >= (uint32_t)(cellExtZ + edgeBlock[9]))
 							{
 								blockLimit = 0;
 							}
@@ -2243,7 +2311,8 @@ namespace Nu3D
 								for (steps = blockLimit - blockStart; steps; steps--)
 								{
 									if (((edgePoint[-2] >= wallMinX && edgePoint[1] <= wallMaxX) || (edgePoint[1] >= wallMinX && edgePoint[-2] <= wallMaxX))
-										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ)) && edgeCount < 32)
+										&& ((edgePoint[0] >= wallMinZ && edgePoint[3] <= wallMaxZ) || (edgePoint[3] >= wallMinZ && edgePoint[0] <= wallMaxZ))
+										&& edgeCount < 32)
 									{
 										Toy2::Collision::g_unk728DA0[3 * edgeCount] = edgePoint[-2];
 										Toy2::Collision::g_unk728DA0[3 * edgeCount + 1] = edgePoint[-1];

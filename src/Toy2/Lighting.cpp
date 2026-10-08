@@ -56,9 +56,10 @@ namespace Toy2
 			if (g_dynamicLights[1].lifetime)
 			{
 				closestIdx = 1;
-				closestDistance = ((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8) * ((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8) +
-								  ((g_dynamicLights[1].pos.y - buzzLightY) >> 8) * ((g_dynamicLights[1].pos.y - buzzLightY) >> 8) +
-								  ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8);
+				closestDistance =
+					((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8) * ((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8)
+					+ ((g_dynamicLights[1].pos.y - buzzLightY) >> 8) * ((g_dynamicLights[1].pos.y - buzzLightY) >> 8)
+					+ ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8);
 			}
 			else
 			{
@@ -76,8 +77,8 @@ namespace Toy2
 
 					if (light->lifetime > 0)
 					{
-						int32_t distanceYZ = ((light->pos.y - buzzLightY) >> 8) * ((light->pos.y - buzzLightY) >> 8) +
-											 ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8);
+						int32_t distanceYZ = ((light->pos.y - buzzLightY) >> 8) * ((light->pos.y - buzzLightY) >> 8)
+							+ ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8);
 						int32_t distanceX = ((light->pos.x - g_buzzActor.posAngles.pos.x) >> 8) * ((light->pos.x - g_buzzActor.posAngles.pos.x) >> 8);
 
 						if (distanceX + distanceYZ <= 0x8000)
@@ -124,7 +125,8 @@ namespace Toy2
 			}
 
 			// a different light took over, blend towards it using slot 6 as the target
-			g_dynamicLights[6].pos.x = g_dynamicLights[g_activeLightIdx].pos.x + g_lightLerpProgress * (g_dynamicLights[6].pos.x - g_dynamicLights[g_activeLightIdx].pos.x) / 64;
+			g_dynamicLights[6].pos.x =
+				g_dynamicLights[g_activeLightIdx].pos.x + g_lightLerpProgress * (g_dynamicLights[6].pos.x - g_dynamicLights[g_activeLightIdx].pos.x) / 64;
 
 			y = g_dynamicLights[g_activeLightIdx].pos.y + g_lightLerpProgress * (g_dynamicLights[6].pos.y - g_dynamicLights[g_activeLightIdx].pos.y) / 64;
 			g_dynamicLights[6].pos.y = y;
@@ -132,9 +134,12 @@ namespace Toy2
 			z = g_dynamicLights[g_activeLightIdx].pos.z + g_lightLerpProgress * (g_dynamicLights[6].pos.z - g_dynamicLights[g_activeLightIdx].pos.z) / 64;
 			g_dynamicLights[6].pos.z = z;
 
-			g_dynamicLights[6].colorR = g_dynamicLights[g_activeLightIdx].colorR + g_lightLerpProgress * (g_dynamicLights[6].colorR - g_dynamicLights[g_activeLightIdx].colorR) / 64;
-			g_dynamicLights[6].colorG = g_dynamicLights[g_activeLightIdx].colorG + g_lightLerpProgress * (g_dynamicLights[6].colorG - g_dynamicLights[g_activeLightIdx].colorG) / 64;
-			g_dynamicLights[6].colorB = g_dynamicLights[g_activeLightIdx].colorB + g_lightLerpProgress * (g_dynamicLights[6].colorB - g_dynamicLights[g_activeLightIdx].colorB) / 64;
+			g_dynamicLights[6].colorR =
+				g_dynamicLights[g_activeLightIdx].colorR + g_lightLerpProgress * (g_dynamicLights[6].colorR - g_dynamicLights[g_activeLightIdx].colorR) / 64;
+			g_dynamicLights[6].colorG =
+				g_dynamicLights[g_activeLightIdx].colorG + g_lightLerpProgress * (g_dynamicLights[6].colorG - g_dynamicLights[g_activeLightIdx].colorG) / 64;
+			g_dynamicLights[6].colorB =
+				g_dynamicLights[g_activeLightIdx].colorB + g_lightLerpProgress * (g_dynamicLights[6].colorB - g_dynamicLights[g_activeLightIdx].colorB) / 64;
 
 			activeIdx = closestIdx;
 			g_activeLightIdx = closestIdx;
@@ -186,8 +191,8 @@ namespace Toy2
 			g_buzzActor.lightDirection.y = dirY;
 			g_buzzActor.lightDirection.z = dirZ;
 
-			g_buzzActor.color.value = ((colorR * (0x10000 - distanceSquared)) >> 16) +
-									  ((((colorG * (0x10000 - distanceSquared)) >> 16) + (((colorB * (0x10000 - distanceSquared)) >> 16) << 8)) << 8);
+			g_buzzActor.color.value = ((colorR * (0x10000 - distanceSquared)) >> 16)
+				+ ((((colorG * (0x10000 - distanceSquared)) >> 16) + (((colorB * (0x10000 - distanceSquared)) >> 16) << 8)) << 8);
 		}
 
 		// FUNCTION: TOY2 0x0049F350

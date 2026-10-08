@@ -174,7 +174,8 @@ namespace Toy2
 			{
 				Collision::CollisionMeshInstance* mesh = &Collision::g_collisionMeshInstances[(int16_t)*meshList];
 
-				if (positionX + 0x1000 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && positionZ + 0x1000 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000 && mesh->typeFlags)
+				if (positionX + 0x1000 - mesh->boundsMin.x < mesh->boundsExt.x + 0x2000 && positionZ + 0x1000 - mesh->boundsMin.z < mesh->boundsExt.z + 0x2000
+					&& mesh->typeFlags)
 				{
 					int32_t cellX = (positionX + 0x1000 - mesh->origin.x) / 32;
 					int32_t cellZ = (positionZ + 0x1000 - mesh->origin.z) / 32;
@@ -219,7 +220,9 @@ namespace Toy2
 										if ((localX - (v0x + triangle->e2x)) * -triangle->e2z + triangle->e2x * (localZ - (v0z + triangle->e2z)) < 0)
 											continue;
 
-										if ((localX - (v0x + triangle->e1x)) * (triangle->e2z - triangle->e1z) + (localZ - (v0z + triangle->e1z)) * (triangle->e1x - triangle->e2x) < 0)
+										if ((localX - (v0x + triangle->e1x)) * (triangle->e2z - triangle->e1z)
+												+ (localZ - (v0z + triangle->e1z)) * (triangle->e1x - triangle->e2x)
+											< 0)
 											continue;
 
 										surfaceY = 8 * (triangle->unk24 * (localZ - v0z) + triangle->unk20 * (localX - v0x)) / triangle->unk22;
@@ -240,13 +243,16 @@ namespace Toy2
 
 										int32_t corner3Z = v0z + triangle->e3z;
 
-										if ((localX - (v0x + triangle->e1x)) * (corner3Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e3x) < 0 ||
-											(localX - (v0x + triangle->e3x)) * (corner2Z - corner3Z) + (localZ - corner3Z) * (triangle->e3x - triangle->e2x) < 0)
+										if ((localX - (v0x + triangle->e1x)) * (corner3Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e3x) < 0
+											|| (localX - (v0x + triangle->e3x)) * (corner2Z - corner3Z) + (localZ - corner3Z) * (triangle->e3x - triangle->e2x)
+												< 0)
 											continue;
 
-										if ((localX - (v0x + triangle->e1x)) * (corner2Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e2x) < 0 && triangle->unk28 != 0)
+										if ((localX - (v0x + triangle->e1x)) * (corner2Z - corner1Z) + (localZ - corner1Z) * (triangle->e1x - triangle->e2x) < 0
+											&& triangle->unk28 != 0)
 										{
-											surfaceY = 8 * (triangle->unk2A * (localZ - triangle->e3z - v0z) + triangle->unk26 * (localX - triangle->e3x - v0x)) / triangle->unk28;
+											surfaceY = 8 * (triangle->unk2A * (localZ - triangle->e3z - v0z) + triangle->unk26 * (localX - triangle->e3x - v0x))
+												/ triangle->unk28;
 											height = triangle->v0y + triangle->e3y;
 										}
 										else
@@ -1317,7 +1323,8 @@ namespace Toy2
 				Nu3D::Particles::ParticleInstance* particle = &Nu3D::Particles::g_particleInstances[0];
 
 				// look for the particle that was spawned at the position of this record
-				while (particle->pos.y != entry->y || particle->lifetime <= 0 || particle->pos.x != entry->x || particle->pos.z != entry->z || particle->typeId != 2 * a2 + 113)
+				while (particle->pos.y != entry->y || particle->lifetime <= 0 || particle->pos.x != entry->x || particle->pos.z != entry->z
+					   || particle->typeId != 2 * a2 + 113)
 				{
 					++particle;
 					++particleIdx;

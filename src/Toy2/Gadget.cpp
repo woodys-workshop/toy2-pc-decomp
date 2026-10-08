@@ -9,7 +9,8 @@ namespace Toy2
 	{
 		// GLOBAL: TOY2 0x00503A1E
 		int16_t g_unk503A1E[19] = {
-			(int16_t)0xF4B0, 0x0000, (int16_t)0xF4B0, 0x0108, 0x0000, 0x0000, 0x0409, 0x0000, 0x0000, 0x0201, 0x0000, 0x0000, 0x1004, 0x0000, 0x0000, 0x0805, 0x0000, 0x0000, 0x0000,
+			(int16_t)0xF4B0, 0x0000, (int16_t)0xF4B0, 0x0108, 0x0000, 0x0000, 0x0409, 0x0000, 0x0000, 0x0201,
+			0x0000,			 0x0000, 0x1004,		  0x0000, 0x0000, 0x0805, 0x0000, 0x0000, 0x0000,
 		};
 
 		// each table is a list of 4 byte entries (level, unknown, link id, unknown) ended by 0xFF
@@ -104,7 +105,8 @@ namespace Toy2
 					default:
 						linkId = 63;
 
-						// $TODO: the original reads an uninitialised local for every other level, this can not happen as the unlock table is only set for levels 1, 4, 7, 10 and 13
+						// $TODO: the original reads an uninitialised local for every other level, this can not happen as the unlock table is only set for
+						// levels 1, 4, 7, 10 and 13
 						if (g_levelFileIndex != 13)
 							linkId = 0;
 

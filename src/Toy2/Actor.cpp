@@ -4,6 +4,8 @@
 #include "Random.h"
 #include "Numerics.h"
 #include "Nu3D/Math.h"
+#include "Nu3D/Camera.h"
+#include "Toy2/Collision.h"
 #include "Nu3D/Collision.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shadows.h"
@@ -43,12 +45,7 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x004E066C
 		HitStruct g_hitStructs[6] = {
-			{ 0, 0, 0 },
-			{ 1, 30, 2 },
-			{ 2, 4, 1 },
-			{ 2, 4, 4 },
-			{ 3, 4, 2 },
-			{ 1, 30, 2 },
+			{ 0, 0, 0 }, { 1, 30, 2 }, { 2, 4, 1 }, { 2, 4, 4 }, { 3, 4, 2 }, { 1, 30, 2 },
 		};
 
 		// GLOBAL: TOY2 0x0052EF48
@@ -1520,11 +1517,10 @@ namespace Toy2
 		void HitType1Particles(int32_t a1, int32_t a2, int32_t a3)
 		{
 			int32_t count = 3;
-			Nu3D::Particles::ParticleInstance* particle;
 
 			do
 			{
-				particle = Nu3D::Particles::SpawnFromPreset(a1, a2, a3, 94, 9);
+				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(a1, a2, a3, 94, 9);
 				particle->rotSpeed = *g_randDatBufferPtr++ - 128;
 				particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 
@@ -1547,7 +1543,7 @@ namespace Toy2
 					actor->actorFlags &= ~ACTOR_VEL_CLAMP_OVERRIDE;
 				}
 
-				if (!actor->damageCooldownTimer)
+				if (! actor->damageCooldownTimer)
 				{
 					actor->damageCooldownTimer = g_hitStructs[hitType].unkShort2;
 
@@ -1575,7 +1571,8 @@ namespace Toy2
 						if (actor->actorPhase <= 0)
 						{
 							actor->actorFlags &= ACTOR_CUTSCENE_MOVE | ACTOR_VISIBLE_ACTIVE | ACTOR_STUNNED | ACTOR_OOB_SPECIAL_MOVE | ACTOR_PLAYER_TRIGGER
-								| ACTOR_VEL_CLAMP_OVERRIDE | ACTOR_NO_DESPAWN | ACTOR_UNUSED_1000 | ACTOR_FORCE_REMOVE | ACTOR_CAMERA_HOVER | ACTOR_UNKNOWN_8000;
+								| ACTOR_VEL_CLAMP_OVERRIDE | ACTOR_NO_DESPAWN | ACTOR_UNUSED_1000 | ACTOR_FORCE_REMOVE | ACTOR_CAMERA_HOVER
+								| ACTOR_UNKNOWN_8000;
 							actor->actorPhase = 999;
 							actor->unkShort1 = 0;
 							actor->movementData = g_movementData[2];
@@ -1586,11 +1583,109 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x0043C1C0
-		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex) {}
+		// FUNCTION: TOY2 0x0043C1C0
+		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex)
+		{
+			uint8_t* creatureAnims;
 
-		// STUB: TOY2 0x0049F460
-		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ) { return 0; }
+			if (actor->primaryAnimIdx != -1)
+			{
+				CharacterLoader::g_unk53EECC = boneIndex;
+				creatureAnims = CharacterLoader::g_unk547CD4[actor->creatureId];
+				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->primaryAnimIdx + 8), actor->unkVar7, *(uint16_t*)(creatureAnims + 4), 0);
+			}
+
+			if (actor->secondaryAnimIdx != -1)
+			{
+				CharacterLoader::g_unk53EECC = boneIndex;
+				creatureAnims = CharacterLoader::g_unk547CD4[actor->creatureId];
+				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->secondaryAnimIdx + 8), actor->unkVar8, *(uint16_t*)(creatureAnims + 4), 1);
+			}
+
+			CharacterLoader::g_unk53EECC = -1;
+
+			CharacterLoader::BoneTransform* bone =
+				&CharacterLoader::g_boneTransforms[boneIndex + *(uint16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
+
+			// the scratch space holds the angles first and the rotation matrix built from them after that
+			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];
+			Matrix3x3I16* matrix = (Matrix3x3I16*)angles;
+
+			angles->angles.pitch = actor->pitchAngle;
+			angles->angles.yaw = actor->yawAngle + 2048;
+			angles->roll = actor->rollAngle;
+			Nu3D::Math::EulerToRotationMatrix(angles, matrix);
+
+			int32_t scaledM02;
+
+			if (actor->unkVar13_)
+			{
+				matrix->m00 = matrix->m00 * actor->unkVar12 / 4096;
+				matrix->m10 = matrix->m10 * actor->unkVar12 / 4096;
+				matrix->m20 = matrix->m20 * actor->unkVar12 / 4096;
+				matrix->m01 = matrix->m01 * actor->unkVar12_ / 4096;
+				matrix->m11 = matrix->m11 * actor->unkVar12_ / 4096;
+				matrix->m21 = matrix->m21 * actor->unkVar12_ / 4096;
+
+				scaledM02 = matrix->m02 * actor->unkVar13 / 4096;
+				matrix->m02 = scaledM02;
+
+				matrix->m12 = matrix->m12 * actor->unkVar13 / 4096;
+				matrix->m22 = matrix->m22 * actor->unkVar13 / 4096;
+			}
+			else
+			{
+				scaledM02 = matrix->m02;
+			}
+
+			int32_t boneY = bone->translation.y;
+			int32_t boneZ = bone->translation.z;
+
+			int32_t posX = actor->pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
+			int32_t posY = actor->pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
+			int32_t posZ = actor->pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
+
+			Nu3D::ViewMatrix::Helper1(matrix, &bone->rotation, matrix);
+
+			if (bone->unkByte1 == 1)
+			{
+				matrix->m00 = matrix->m00 * bone->unkInt7 / 4096;
+				matrix->m10 = matrix->m10 * bone->unkInt7 / 4096;
+				matrix->m20 = matrix->m20 * bone->unkInt7 / 4096;
+				matrix->m01 = matrix->m01 * bone->unkInt7_ / 4096;
+				matrix->m11 = matrix->m11 * bone->unkInt7_ / 4096;
+				matrix->m21 = matrix->m21 * bone->unkInt7_ / 4096;
+				matrix->m02 = matrix->m02 * bone->unkInt8 / 4096;
+				matrix->m12 = matrix->m12 * bone->unkInt8 / 4096;
+				matrix->m22 = matrix->m22 * bone->unkInt8 / 4096;
+			}
+
+			int32_t z = localOffset->z;
+
+			int32_t y = (z * matrix->m12 + localOffset->y * matrix->m11 + localOffset->x * matrix->m10) / 128 + posY;
+			int32_t zSum = localOffset->y * matrix->m21 + z * matrix->m22 + localOffset->x * matrix->m20;
+
+			localOffset->x = (z * matrix->m02 + localOffset->y * matrix->m01 + localOffset->x * matrix->m00) / 128 + posX;
+			localOffset->y = y;
+			localOffset->z = zSum / 128 + posZ;
+
+			if (actor->unkVar13_)
+				localOffset->y = y + ((actor->unkVar13_ * (4096 - actor->unkVar12_)) >> 7);
+		}
+
+		// FUNCTION: TOY2 0x0049F460
+		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ)
+		{
+			if (actor->pos.x > minX && actor->pos.x < maxX)
+			{
+				int32_t zPos = actor->pos.z;
+
+				if (zPos > minZ && zPos < maxZ)
+					return 1;
+			}
+
+			return 0;
+		}
 
 		// STUB: TOY2 0x004A1CE0
 		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx) {}

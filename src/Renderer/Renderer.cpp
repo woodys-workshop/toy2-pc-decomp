@@ -1525,7 +1525,7 @@ namespace Renderer
 		LONG destX,
 		LONG destY)
 	{
-		
+		// not implemented
 	}
 
 	// FUNCTION: TOY2 0x004B8940

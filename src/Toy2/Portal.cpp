@@ -36,7 +36,14 @@ namespace Toy2
 					int32_t flags;
 
 					Nu3D::Camera::ProjectQuad(
-						(Vector3I*)&quad->p0x, (Vector3I*)&quad->p1x, (Vector3I*)&quad->p3x, (Vector3I*)&quad->p2x, (int32_t)&scratch[0], (int32_t)&scratch[1], (int32_t)&scratch[2], (int32_t)&scratch[3]);
+						(Vector3I*)&quad->p0x,
+						(Vector3I*)&quad->p1x,
+						(Vector3I*)&quad->p3x,
+						(Vector3I*)&quad->p2x,
+						(int32_t)&scratch[0],
+						(int32_t)&scratch[1],
+						(int32_t)&scratch[2],
+						(int32_t)&scratch[3]);
 
 #ifdef APPLY_FIXES
 					// $TODO: the original tests an uninitialised stack slot here, read it out of the running original
@@ -44,10 +51,10 @@ namespace Toy2
 #endif
 
 					// is any corner of the quad inside of the rectangle that is visible through the portal
-					if ((scratchShort[0] <= a3 || scratchShort[2] <= a3 || scratchShort[4] <= a3 || scratchShort[6] <= a3) &&
-						(scratchShort[0] >= a2 || scratchShort[2] >= a2 || scratchShort[4] >= a2 || scratchShort[6] >= a2) &&
-						(scratchShort[1] <= a5 || scratchShort[3] <= a5 || scratchShort[5] <= a5 || scratchShort[7] <= a5) &&
-						(scratchShort[1] >= a4 || scratchShort[3] >= a4 || scratchShort[5] >= a4 || scratchShort[7] >= a4))
+					if ((scratchShort[0] <= a3 || scratchShort[2] <= a3 || scratchShort[4] <= a3 || scratchShort[6] <= a3)
+						&& (scratchShort[0] >= a2 || scratchShort[2] >= a2 || scratchShort[4] >= a2 || scratchShort[6] >= a2)
+						&& (scratchShort[1] <= a5 || scratchShort[3] <= a5 || scratchShort[5] <= a5 || scratchShort[7] <= a5)
+						&& (scratchShort[1] >= a4 || scratchShort[3] >= a4 || scratchShort[5] >= a4 || scratchShort[7] >= a4))
 					{
 						int32_t clipCount = 0;
 
@@ -222,8 +229,8 @@ namespace Toy2
 							portal = a1;
 						}
 
-						if (Nu3D::Math::Cross2D(((PointI16*)scratch)[0], ((PointI16*)scratch)[1], ((PointI16*)scratch)[2]) >= 0 ||
-							Nu3D::Math::Cross2D(((PointI16*)scratch)[1], ((PointI16*)scratch)[3], ((PointI16*)scratch)[2]) >= 0 || clipCount > 0)
+						if (Nu3D::Math::Cross2D(((PointI16*)scratch)[0], ((PointI16*)scratch)[1], ((PointI16*)scratch)[2]) >= 0
+							|| Nu3D::Math::Cross2D(((PointI16*)scratch)[1], ((PointI16*)scratch)[3], ((PointI16*)scratch)[2]) >= 0 || clipCount > 0)
 						{
 							if (clipCount >= 32)
 							{
@@ -410,13 +417,15 @@ namespace Toy2
 					int32_t quadX = quad->p0x;
 
 					// the side of the plane of the quad that Buzz is on now and was on before
-					int32_t sideNow = (z - quadZ) * (int32_t)mathScratch[146] + (y - quadY) * (int32_t)mathScratch[145] + (x - quadX) * (int32_t)mathScratch[144];
+					int32_t sideNow =
+						(z - quadZ) * (int32_t)mathScratch[146] + (y - quadY) * (int32_t)mathScratch[145] + (x - quadX) * (int32_t)mathScratch[144];
 
 					if (sideNow >= 0)
 						goto NEXT_PORTAL;
 
-					int32_t sidePrevious = ((Sector::g_unk54D920.z >> 7) - quadZ) * (int32_t)mathScratch[146] +
-										   ((Sector::g_unk54D920.y >> 7) - quadY) * (int32_t)mathScratch[145] + ((Sector::g_unk54D920.x >> 7) - quadX) * (int32_t)mathScratch[144];
+					int32_t sidePrevious = ((Sector::g_unk54D920.z >> 7) - quadZ) * (int32_t)mathScratch[146]
+						+ ((Sector::g_unk54D920.y >> 7) - quadY) * (int32_t)mathScratch[145]
+						+ ((Sector::g_unk54D920.x >> 7) - quadX) * (int32_t)mathScratch[144];
 
 					if (sidePrevious < 0)
 						goto NEXT_PORTAL;
@@ -427,14 +436,17 @@ namespace Toy2
 					((int16_t*)&mathScratch[132])[2] = (int16_t)mathScratch[146];
 
 					// where the path of Buzz crosses the plane
-					mathScratch[242] = ((Sector::g_unk54D920.x + sidePrevious * (g_buzzActor.posAngles.pos.x - Sector::g_unk54D920.x) / (sidePrevious - sideNow)) >> 7) -
-									   ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0x;
+					mathScratch[242] =
+						((Sector::g_unk54D920.x + sidePrevious * (g_buzzActor.posAngles.pos.x - Sector::g_unk54D920.x) / (sidePrevious - sideNow)) >> 7)
+						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0x;
 
-					mathScratch[243] = ((Sector::g_unk54D920.y + sidePrevious * (g_buzzActor.posAngles.pos.y - Sector::g_unk54D920.y) / (sidePrevious - sideNow)) >> 7) -
-									   ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0y;
+					mathScratch[243] =
+						((Sector::g_unk54D920.y + sidePrevious * (g_buzzActor.posAngles.pos.y - Sector::g_unk54D920.y) / (sidePrevious - sideNow)) >> 7)
+						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0y;
 
-					mathScratch[244] = ((Sector::g_unk54D920.z + sidePrevious * (g_buzzActor.posAngles.pos.z - Sector::g_unk54D920.z) / (sidePrevious - sideNow)) >> 7) -
-									   ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0z;
+					mathScratch[244] =
+						((Sector::g_unk54D920.z + sidePrevious * (g_buzzActor.posAngles.pos.z - Sector::g_unk54D920.z) / (sidePrevious - sideNow)) >> 7)
+						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0z;
 
 					quad = (Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx];
 
@@ -449,20 +461,20 @@ namespace Toy2
 							quad->p2y - quad->p0y,
 							quad->p2z - quad->p0z,
 							(Vector3I16*)&mathScratch[132],
-							400) ||
-						(quad = (Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx],
-						 Nu3D::Math::PointIntersectsTriangle(
-							 mathScratch[242],
-							 mathScratch[243],
-							 mathScratch[244],
-							 quad->p2x - quad->p0x,
-							 quad->p2y - quad->p0y,
-							 quad->p2z - quad->p0z,
-							 quad->p3x - quad->p0x,
-							 quad->p3y - quad->p0y,
-							 quad->p3z - quad->p0z,
-							 (Vector3I16*)&mathScratch[132],
-							 400)))
+							400)
+						|| (quad = (Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx],
+							Nu3D::Math::PointIntersectsTriangle(
+								mathScratch[242],
+								mathScratch[243],
+								mathScratch[244],
+								quad->p2x - quad->p0x,
+								quad->p2y - quad->p0y,
+								quad->p2z - quad->p0z,
+								quad->p3x - quad->p0x,
+								quad->p3y - quad->p0y,
+								quad->p3z - quad->p0z,
+								(Vector3I16*)&mathScratch[132],
+								400)))
 					{
 						g_curSectorCopy2 = portal->categoryIdx;
 					}

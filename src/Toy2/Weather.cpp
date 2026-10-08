@@ -10,6 +10,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0054F08C
 		int32_t g_weatherBasePointer;
 
+		// GLOBAL: TOY2 0x00557AA4
+		int32_t g_weatherSpriteSheet;
+
 		// STUB: TOY2 0x0044ED60
 		void Init() {}
 

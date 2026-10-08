@@ -11,5 +11,6 @@ namespace Toy2
 
 		extern int32_t g_spawnAccumulator;
 		extern int32_t g_weatherBasePointer;
+		extern int32_t g_weatherSpriteSheet;
 	}
 }

@@ -184,102 +184,61 @@ namespace Toy2
 		// the event tracks of Buzz's animations, read by StepEventTrack
 		// GLOBAL: TOY2 0x004DF040
 		uint8_t g_buzzAnimTracks[944] = {
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x82, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
-			0x0F, 0x10, 0x11, 0x12, 0x81, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x1A, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
-			0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0xFF, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0xFF, 0x01, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x01, 0x0C, 0x0D, 0x0E, 0x0F,
-			0xFE, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x0C, 0x0D, 0xFF, 0x01, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
-			0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0xFF, 0x01, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0x09, 0x0A, 0x0B, 0x86, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
-			0x17, 0x86, 0xFF, 0x1A, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
-			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0xFF, 0x01, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xFF, 0x08, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
-			0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0xFF, 0x1E, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x83, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0xFF, 0x0A, 0x00, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x83, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
-			0x0F, 0x10, 0x11, 0xFF, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
-			0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0xFE, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x0C, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D,
-			0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-			0x08, 0xFF, 0x01, 0x00, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0xFF, 0x1E,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
-			0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0xFF, 0x01, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x84, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
-			0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E,
-			0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E,
-			0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x85, 0x36, 0x37, 0x38, 0x39, 0xFE, 0x00, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
-			0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
-			0xFE, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
-			0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0xFF, 0x0B, 0x00, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
-			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x0A
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x82, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x81, 0x13, 0x14, 0x15,
+			0x16, 0x17, 0xFF, 0x1A, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
+			0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0xFF, 0x10, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0xFF, 0x01, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x01, 0x0C, 0x0D, 0x0E, 0x0F,
+			0xFE, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0xFF, 0x01, 0x00, 0x01, 0x02, 0x03,
+			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00,
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+			0x18, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
+			0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x86, 0x0C, 0x0D, 0x0E,
+			0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x86, 0xFF, 0x1A, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+			0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+			0x28, 0x29, 0xFF, 0x01, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01,
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xFF, 0x08, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+			0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
+			0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0xFF, 0x1E, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+			0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF, 0x0C, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
+			0x83, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0xFF, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x83,
+			0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+			0x20, 0x21, 0x22, 0x23, 0x24, 0xFE, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03,
+			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D,
+			0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0xFF, 0x01, 0x00, 0x09, 0x0A, 0x0B, 0x0C,
+			0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x01, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0xFF, 0x1E, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03,
+			0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B,
+			0x1C, 0x1D, 0x1E, 0x1F, 0xFF, 0x01, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x84, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E,
+			0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26,
+			0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x85, 0x36, 0x37, 0x38, 0x39, 0xFE, 0x00, 0x00, 0x00,
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+			0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+			0xFE, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13,
+			0x14, 0x15, 0x16, 0xFF, 0x0B, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+			0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0xFF, 0x18, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
+			0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0xFF, 0x0A
 		};
 
 		// GLOBAL: TOY2 0x004DF3F0
 		BuzzAnimEntry g_buzzAnimTable[33] = {
-			{&g_buzzAnimTracks[0x0], 0, 1, -48, 0},
-			{&g_buzzAnimTracks[0x38], 2, 3, 16384, 1},
-			{&g_buzzAnimTracks[0x4C], 4, 5, 16384, 0},
-			{&g_buzzAnimTracks[0x54], 4, 5, 16384, 0},
-			{&g_buzzAnimTracks[0x5C], 4, 5, 32768, 0},
-			{&g_buzzAnimTracks[0x64], 6, 6, 32768, 0},
-			{&g_buzzAnimTracks[0x1C], 24, 25, -48, 0},
-			{&g_buzzAnimTracks[0x90], 8, 8, 16384, 0},
-			{&g_buzzAnimTracks[0x230], 22, 27, 32768, 0},
-			{&g_buzzAnimTracks[0x140], 10, 10, 32768, 0},
-			{&g_buzzAnimTracks[0x1DC], 17, 17, 32768, 0},
-			{&g_buzzAnimTracks[0x1F0], 18, 18, 32768, 0},
-			{&g_buzzAnimTracks[0x1CC], 15, 15, 32768, 0},
-			{&g_buzzAnimTracks[0x208], 16, 16, 32768, 0},
-			{&g_buzzAnimTracks[0xF8], 19, 19, 32768, 0},
-			{&g_buzzAnimTracks[0x114], 20, 20, 32768, 0},
-			{&g_buzzAnimTracks[0x130], 21, 21, 32768, 0},
-			{&g_buzzAnimTracks[0x1BC], 14, 14, 32768, 0},
-			{&g_buzzAnimTracks[0x244], 23, 23, 32768, 0},
-			{&g_buzzAnimTracks[0x180], 11, 11, 32768, 0},
-			{&g_buzzAnimTracks[0x74], 7, 7, 32768, 0},
-			{&g_buzzAnimTracks[0xAC], 9, 9, 32768, 0},
-			{&g_buzzAnimTracks[0x254], 26, 26, 32768, 0},
-			{&g_buzzAnimTracks[0x278], 12, 12, 32768, 0},
-			{&g_buzzAnimTracks[0x284], 12, 12, 32768, 0},
-			{&g_buzzAnimTracks[0x290], 13, 13, -100, 0},
-			{&g_buzzAnimTracks[0x2B0], 28, 28, 21845, 0},
-			{&g_buzzAnimTracks[0x2CC], 31, 31, 16384, 0},
-			{&g_buzzAnimTracks[0x2F0], 29, 29, 32768, 0},
-			{&g_buzzAnimTracks[0x330], 30, 30, 16384, 0},
-			{&g_buzzAnimTracks[0x364], 32, 32, 24576, 0},
-			{&g_buzzAnimTracks[0x380], 33, 33, 32768, 0},
-			{&g_buzzAnimTracks[0x39C], 34, 34, 32768, 0}
+			{ &g_buzzAnimTracks[0x0], 0, 1, -48, 0 },		{ &g_buzzAnimTracks[0x38], 2, 3, 16384, 1 },	{ &g_buzzAnimTracks[0x4C], 4, 5, 16384, 0 },
+			{ &g_buzzAnimTracks[0x54], 4, 5, 16384, 0 },	{ &g_buzzAnimTracks[0x5C], 4, 5, 32768, 0 },	{ &g_buzzAnimTracks[0x64], 6, 6, 32768, 0 },
+			{ &g_buzzAnimTracks[0x1C], 24, 25, -48, 0 },	{ &g_buzzAnimTracks[0x90], 8, 8, 16384, 0 },	{ &g_buzzAnimTracks[0x230], 22, 27, 32768, 0 },
+			{ &g_buzzAnimTracks[0x140], 10, 10, 32768, 0 }, { &g_buzzAnimTracks[0x1DC], 17, 17, 32768, 0 }, { &g_buzzAnimTracks[0x1F0], 18, 18, 32768, 0 },
+			{ &g_buzzAnimTracks[0x1CC], 15, 15, 32768, 0 }, { &g_buzzAnimTracks[0x208], 16, 16, 32768, 0 }, { &g_buzzAnimTracks[0xF8], 19, 19, 32768, 0 },
+			{ &g_buzzAnimTracks[0x114], 20, 20, 32768, 0 }, { &g_buzzAnimTracks[0x130], 21, 21, 32768, 0 }, { &g_buzzAnimTracks[0x1BC], 14, 14, 32768, 0 },
+			{ &g_buzzAnimTracks[0x244], 23, 23, 32768, 0 }, { &g_buzzAnimTracks[0x180], 11, 11, 32768, 0 }, { &g_buzzAnimTracks[0x74], 7, 7, 32768, 0 },
+			{ &g_buzzAnimTracks[0xAC], 9, 9, 32768, 0 },	{ &g_buzzAnimTracks[0x254], 26, 26, 32768, 0 }, { &g_buzzAnimTracks[0x278], 12, 12, 32768, 0 },
+			{ &g_buzzAnimTracks[0x284], 12, 12, 32768, 0 }, { &g_buzzAnimTracks[0x290], 13, 13, -100, 0 },	{ &g_buzzAnimTracks[0x2B0], 28, 28, 21845, 0 },
+			{ &g_buzzAnimTracks[0x2CC], 31, 31, 16384, 0 }, { &g_buzzAnimTracks[0x2F0], 29, 29, 32768, 0 }, { &g_buzzAnimTracks[0x330], 30, 30, 16384, 0 },
+			{ &g_buzzAnimTracks[0x364], 32, 32, 24576, 0 }, { &g_buzzAnimTracks[0x380], 33, 33, 32768, 0 }, { &g_buzzAnimTracks[0x39C], 34, 34, 32768, 0 }
 		};
 
 		// FUNCTION: TOY2 0x00414110
@@ -360,7 +319,7 @@ namespace Toy2
 						g_unk50A0BC = 0;
 					}
 
-					if (!g_buzzActor.unkShort40)
+					if (! g_buzzActor.unkShort40)
 					{
 						v1 = g_buzzActor.unkVar37;
 						g_unk50A098 = 0;
@@ -433,17 +392,17 @@ namespace Toy2
 								uint8_t roll = *g_randDatBufferPtr & 3;
 								uint8_t* next = ++g_randDatBufferPtr;
 
-								if (!roll)
+								if (! roll)
 								{
 									v1 = (*next & 1) + 28;
 									g_unk50A098 = v1;
 									g_randDatBufferPtr = next + 1;
 
-									if (!v0)
+									if (! v0)
 									{
 										g_unk50A0BC = 1800;
 
-										if (g_fireChargeTimer <= 0 && !g_unk53C83C && !g_unk53C650 && (Camera::g_inCutscene & 1) == 0)
+										if (g_fireChargeTimer <= 0 && ! g_unk53C83C && ! g_unk53C650 && (Camera::g_inCutscene & 1) == 0)
 										{
 											g_unk50A0B0 = (g_unk50A0B0 != 207) + 206;
 											AudioManager::Preset::PlayOneShotSound(g_unk50A0B0, (Actor::Toy2Actor*)&g_buzzActor);
@@ -564,7 +523,7 @@ namespace Toy2
 						g_buzzActor.unkVar37 = 19;
 					}
 
-					if (g_unk53C818 && (g_buzzActor.unkShort40 || !v1))
+					if (g_unk53C818 && (g_buzzActor.unkShort40 || ! v1))
 					{
 						v1 = 32;
 						g_buzzActor.unkVar37 = 32;
@@ -775,11 +734,11 @@ namespace Toy2
 
 			int32_t absVelZ = abs(g_buzzActor.unkVar31);
 
-			if (((absVelZ > g_buzzActor.unkVar30 && absVelZ > 256) || g_buzzActor.unkVar30 < -256) && g_buzzActor.unkShort40 && (g_buzzActor.actorFlags & 4) == 0
-				&& !g_unk53C838)
+			if (((absVelZ > g_buzzActor.unkVar30 && absVelZ > 256) || g_buzzActor.unkVar30 < -256) && g_buzzActor.unkShort40
+				&& (g_buzzActor.actorFlags & 4) == 0 && ! g_unk53C838)
 				g_unk53C634 |= 4;
 
-			if (!g_buzzActor.unkVar30 && !g_buzzActor.unkVar31)
+			if (! g_buzzActor.unkVar30 && ! g_buzzActor.unkVar31)
 				g_unk53C634 |= 8;
 		}
 
@@ -825,7 +784,7 @@ namespace Toy2
 					goto LABEL_18;
 				}
 
-				if (!g_buzzActor.stunTimer)
+				if (! g_buzzActor.stunTimer)
 				{
 					++g_buzzActor.inhibitMovementTimer;
 					goto LABEL_17;
@@ -877,7 +836,7 @@ namespace Toy2
 				{
 					g_buzzActor.stunTimer = 90;
 
-					if (!AudioManager::IsActorSoundPlaying(&g_buzzActor))
+					if (! AudioManager::IsActorSoundPlaying(&g_buzzActor))
 						AudioManager::Preset::PlayOneShotSound2(26, (Actor::Toy2Actor*)&g_buzzActor);
 
 					if (g_feedbackTimerA < 14)
@@ -908,12 +867,8 @@ namespace Toy2
 		void CheckParticleCollisions()
 		{
 			int32_t hitType = 0;
-			Nu3D::Particles::ParticleInstance* instance;
-			int32_t distZ;
-			int32_t soundId;
 			int16_t coinsCollected;
 			int16_t hitAngle;
-			int32_t knockbackIdx;
 			int32_t collisionFlags = 0;
 			Nu3D::Particles::ParticleInstance* hitInstance;
 			int32_t remaining = 64;
@@ -921,112 +876,110 @@ namespace Toy2
 			int32_t y = g_buzzActor.posAngles.pos.y - 7360;
 			int32_t z = g_buzzActor.posAngles.pos.z;
 
-			instance = Nu3D::Particles::g_particleInstances;
+			Nu3D::Particles::ParticleInstance* instance = Nu3D::Particles::g_particleInstances;
 
 			do
 			{
 				if (instance->lifetime > 0 && (instance->renderFlags & 2) != 0)
 				{
-					distZ = (z - instance->pos.z) << 8 >> 13;
+					int32_t distZ = (z - instance->pos.z) << 8 >> 13;
 
 					if (((x - instance->pos.x) << 8 >> 13) * ((x - instance->pos.x) << 8 >> 13)
-							+ ((y - instance->pos.y) << 7 >> 13) * ((y - instance->pos.y) << 7 >> 13)
-							+ distZ * distZ
+							+ ((y - instance->pos.y) << 7 >> 13) * ((y - instance->pos.y) << 7 >> 13) + distZ * distZ
 						< (instance->width + 100) * (instance->width + 100))
 					{
-						soundId = 0;
+						int32_t soundId = 0;
 
 						switch (instance->spriteSheet)
 						{
-						case 0:
-						case 1:
-						case 0x13:
-							goto LABEL_7;
+							case 0:
+							case 1:
+							case 0x13:
+								goto LABEL_7;
 
-						case 4:
-						case 0x33:
-						case 0x34:
-							hitType = 2;
-							collisionFlags = instance->collisionFlags;
-							goto LABEL_21;
+							case 4:
+							case 0x33:
+							case 0x34:
+								hitType = 2;
+								collisionFlags = instance->collisionFlags;
+								goto LABEL_21;
 
-						case 5:
-							hitType = 2;
-							collisionFlags = instance->collisionFlags;
-							goto LABEL_21;
+							case 5:
+								hitType = 2;
+								collisionFlags = instance->collisionFlags;
+								goto LABEL_21;
 
-						case 7:
-							if (!g_buzzActor.unkShort40)
+							case 7:
+								if (! g_buzzActor.unkShort40)
+									break;
+
+							LABEL_7:
+								hitType = 1;
+								goto LABEL_20;
+
+							case 0x10:
+								coinsCollected = g_buzzActor.coinsCollected;
+								soundId = -1;
+								collisionFlags = 5;
+								g_hudWidgetTimers[2] = 180;
+
+								if (g_buzzActor.coinsCollected < 99)
+									coinsCollected = ++g_buzzActor.coinsCollected;
+
+								if (coinsCollected == 50)
+									AudioManager::PlaySoundEffect(79, 0);
+
 								break;
 
-						LABEL_7:
-							hitType = 1;
-							goto LABEL_20;
+							case 0x15:
+								collisionFlags = 4;
+								soundId = 0;
+								hitType = 1;
+								goto LABEL_22;
 
-						case 0x10:
-							coinsCollected = g_buzzActor.coinsCollected;
-							soundId = -1;
-							collisionFlags = 5;
-							g_hudWidgetTimers[2] = 180;
+							case 0x16:
+								if (g_buzzActor.collisionFlags)
+									g_unk5281A4 = (instance->unkByte1 >> 1) - 90;
 
-							if (g_buzzActor.coinsCollected < 99)
-								coinsCollected = ++g_buzzActor.coinsCollected;
+								break;
 
-							if (coinsCollected == 50)
-								AudioManager::PlaySoundEffect(79, 0);
+							case 0x35:
+								if (g_buzzActor.unkShort40)
+									goto LABEL_18;
 
-							break;
+								break;
 
-						case 0x15:
-							collisionFlags = 4;
-							soundId = 0;
-							hitType = 1;
-							goto LABEL_22;
+							case 0x36:
+							LABEL_18:
+								hitType = 1;
+								collisionFlags = instance->collisionFlags;
+								goto LABEL_21;
 
-						case 0x16:
-							if (g_buzzActor.collisionFlags)
-								g_unk5281A4 = (instance->unkByte1 >> 1) - 90;
+							case 0x37:
+								hitType = 2;
 
-							break;
+							LABEL_20:
+								collisionFlags = 0;
 
-						case 0x35:
-							if (g_buzzActor.unkShort40)
-								goto LABEL_18;
+							LABEL_21:
+								soundId = 0;
 
-							break;
+							LABEL_22:
+								hitInstance = instance;
 
-						case 0x36:
-						LABEL_18:
-							hitType = 1;
-							collisionFlags = instance->collisionFlags;
-							goto LABEL_21;
+								break;
 
-						case 0x37:
-							hitType = 2;
-
-						LABEL_20:
-							collisionFlags = 0;
-
-						LABEL_21:
-							soundId = 0;
-
-						LABEL_22:
-							hitInstance = instance;
-
-							break;
-
-						default:
-							break;
+							default:
+								break;
 						}
 
 						if ((g_unk53C650 > 20 || g_unk53C83C <= -120) && hitType == 2)
 						{
-							hitAngle = Nu3D::Math::CartesianToFixedAngle(
-								g_buzzActor.posAngles.pos.x - instance->pos.x,
-								g_buzzActor.posAngles.pos.z - instance->pos.z);
+							hitAngle =
+								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - instance->pos.x, g_buzzActor.posAngles.pos.z - instance->pos.z);
 
 							((uint8_t*)&instance->renderFlags)[0] &= 0xF5;
-							knockbackIdx = (hitAngle + 3072) & 0xFFF;
+							int32_t knockbackIdx = (hitAngle + 3072) & 0xFFF;
 							instance->velY = -1024;
 							instance->yawAngle = 48;
 							instance->lifetime = 50;
@@ -1058,9 +1011,8 @@ namespace Toy2
 
 			if (hitType)
 			{
-				hitAngle = Nu3D::Math::CartesianToFixedAngle(
-					g_buzzActor.posAngles.pos.x - hitInstance->pos.x,
-					g_buzzActor.posAngles.pos.z - hitInstance->pos.z);
+				hitAngle =
+					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - hitInstance->pos.x, g_buzzActor.posAngles.pos.z - hitInstance->pos.z);
 
 				HandleDamage(hitAngle, 3);
 			}
@@ -1129,9 +1081,9 @@ namespace Toy2
 				jumpState = buzzActor->unkWord15;
 				groundSlamTimer = g_unk53C838;
 
-				if ((jumpState == 2 && buzzActor->gravityVel > -1024 && g_unk53C83C >= 0 && !buzzActor->unkShort40 && buzzActor->inhibitMovementTimer <= 0
+				if ((jumpState == 2 && buzzActor->gravityVel > -1024 && g_unk53C83C >= 0 && ! buzzActor->unkShort40 && buzzActor->inhibitMovementTimer <= 0
 					 && g_unk53C838 >= 0)
-					|| (!jumpState && g_unk53C838 == 80))
+					|| (! jumpState && g_unk53C838 == 80))
 				{
 					g_unk53C838 = 0;
 					fallenHeight = g_unk53C674 - buzzActor->posAngles.pos.y;
@@ -1171,14 +1123,14 @@ namespace Toy2
 						buzzActor->unkWord15 = 3;
 					}
 				}
-				else if (!buzzActor->unkShort40 || g_groundSlamTicker || groundSlamTimer == 80)
+				else if (! buzzActor->unkShort40 || g_groundSlamTicker || groundSlamTimer == 80)
 				{
 					if (jumpState == 2)
 						buzzActor->unkWord15 = 3;
 				}
 				else
 				{
-					if (!AudioManager::IsActorSoundPlaying(buzzActor))
+					if (! AudioManager::IsActorSoundPlaying(buzzActor))
 						AudioManager::Preset::PlayOneShotSound2(25, (Actor::Toy2Actor*)buzzActor);
 
 					g_buzzActor.unkWord15 = 1;
@@ -1195,7 +1147,7 @@ namespace Toy2
 				}
 			}
 
-			if (!buzzActor->collisionFlags)
+			if (! buzzActor->collisionFlags)
 				buzzActor->gravityVel += ((int32_t)Renderer::g_frameDelta << 8) / (gravityScale * gravityScale);
 
 			if (buzzActor->gravityVel > maxFallSpeed)
@@ -1309,7 +1261,7 @@ namespace Toy2
 			{
 				if (g_unk53C678 != -1)
 				{
-					if (!g_unk53C678)
+					if (! g_unk53C678)
 					{
 						g_unk53C5D0 = buzzActor->posAngles.angles.yaw;
 						goto LABEL_6;
@@ -1325,7 +1277,7 @@ namespace Toy2
 					}
 				}
 
-				if (!Camera::g_freezeBuzz)
+				if (! Camera::g_freezeBuzz)
 					flag = 1;
 
 				movementParams->maxSpeed = (movementParams->maxSpeed * Camera::CalculateMaxTurnAngle(InputManager::g_directionInputState)) >> 14;
@@ -1355,7 +1307,7 @@ namespace Toy2
 
 			if (turnDiff <= 0x800)
 			{
-				if (((buzzActor->posAngles.angles.yaw - facingAngle) & 0xFFFu) > 0x5DC && !g_unk53C818)
+				if (((buzzActor->posAngles.angles.yaw - facingAngle) & 0xFFFu) > 0x5DC && ! g_unk53C818)
 				{
 					buzzActor->posAngles.angles.yaw = facingAngle;
 					g_unk53C5D0 = facingAngle;
@@ -1381,7 +1333,7 @@ namespace Toy2
 			{
 				turnRate = 4096 - turnDiff;
 
-				if (4096 - turnDiff > 1500 && !g_unk53C818)
+				if (4096 - turnDiff > 1500 && ! g_unk53C818)
 				{
 					buzzActor->posAngles.angles.yaw = facingAngle;
 					g_unk53C5D0 = facingAngle;
@@ -1420,25 +1372,18 @@ namespace Toy2
 			int32_t closestDist = 0x7FFFFFFF;
 			Toy2::Actor::Toy2Actor* closestActor;
 			Toy2::Actor::Toy2Actor* targetActor;
-			Toy2::Actor::Toy2Actor* actor;
-			Toy2::Actor::Toy2Actor** nextActor;
 			Nu3D::Particles::ParticleInstance* disc;
-			int32_t deltaX;
-			int32_t deltaYSq;
-			int32_t distance;
-			int32_t cosPitch;
-			int32_t sinPitch;
 			uint32_t velY;
 
 			if (g_discLauncherAmmo > 0)
 			{
 				if (Camera::g_cameraState < 3)
 				{
-					actor = Actor::g_activeActors[0];
+					Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
 
 					if (actor)
 					{
-						nextActor = Actor::g_activeActors;
+						Toy2::Actor::Toy2Actor** nextActor = Actor::g_activeActors;
 
 						do
 						{
@@ -1446,9 +1391,11 @@ namespace Toy2
 							{
 								if (actor->unkVar29 >= 0 && (actor->actorFlags & (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_VISIBLE_ACTIVE)) == 3)
 								{
-									deltaX = (actor->pos.x - g_buzzActor.posAngles.pos.x) >> 5;
-									deltaYSq = ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5) * ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5);
-									distance = deltaX * deltaX + deltaYSq + ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5);
+									int32_t deltaX = (actor->pos.x - g_buzzActor.posAngles.pos.x) >> 5;
+									int32_t deltaYSq =
+										((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5) * ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5);
+									int32_t distance = deltaX * deltaX + deltaYSq
+										+ ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5);
 
 									if (closestDist > distance)
 									{
@@ -1473,17 +1420,8 @@ namespace Toy2
 					targetActor = &g_levelActors[Camera::g_lockOnActorIdx];
 
 				LABEL_16:
-					disc = Nu3D::Particles::SpawnInstance(
-						g_unk50A0A0.x,
-						g_unk50A0A0.y,
-						g_unk50A0A0.z,
-						0,
-						-2,
-						0,
-						4 * g_buzzActor.posAngles.angles.yaw,
-						0,
-						0,
-						71);
+					disc =
+						Nu3D::Particles::SpawnInstance(g_unk50A0A0.x, g_unk50A0A0.y, g_unk50A0A0.z, 0, -2, 0, 4 * g_buzzActor.posAngles.angles.yaw, 0, 0, 71);
 
 					// the target actor is stored in the velY field
 					disc->velY = (int32_t)targetActor;
@@ -1497,8 +1435,8 @@ namespace Toy2
 					return;
 				}
 
-				cosPitch = Numerics::g_sinCosLUT[(pitch + 1024) & 0xFFF];
-				sinPitch = Numerics::g_sinCosLUT[pitch & 0xFFF];
+				int32_t cosPitch = Numerics::g_sinCosLUT[(pitch + 1024) & 0xFFF];
+				int32_t sinPitch = Numerics::g_sinCosLUT[pitch & 0xFFF];
 
 				// signed division by -3
 				velY = (((1431655765i64 * sinPitch) >> 32) - sinPitch) >> 1;
@@ -1522,21 +1460,15 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004A5370
 		uint32_t FireGrapple()
 		{
-			int32_t lockOnIdx;
-			int32_t targetX;
-			int32_t targetY;
-			int32_t targetZ;
-			int32_t dominantVel;
 			int32_t dominantDist;
-			uint32_t result;
 			WorldPos direction;
 
 			AudioManager::PlaySoundEffect(81, &g_buzzActor.posAngles.pos);
 
-			lockOnIdx = Camera::g_lockOnActorIdx - 1000;
-			targetX = Levels::g_recordData[59]->data[lockOnIdx].x;
-			targetZ = Levels::g_recordData[59]->data[lockOnIdx].z;
-			targetY = Levels::g_recordData[59]->data[lockOnIdx].y;
+			int32_t lockOnIdx = Camera::g_lockOnActorIdx - 1000;
+			int32_t targetX = Levels::g_recordData[59]->data[lockOnIdx].x;
+			int32_t targetZ = Levels::g_recordData[59]->data[lockOnIdx].z;
+			int32_t targetY = Levels::g_recordData[59]->data[lockOnIdx].y;
 
 			g_grappleTargetPos.x = g_buzzActor.posAngles.pos.x;
 			direction.y = 32 * (targetY - 192) - (g_buzzActor.posAngles.pos.y - 11264);
@@ -1558,7 +1490,7 @@ namespace Toy2
 
 			Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
 
-			dominantVel = direction.x >> 1;
+			int32_t dominantVel = direction.x >> 1;
 
 			if (abs(direction.x >> 1) <= abs(direction.y >> 1))
 			{
@@ -1576,13 +1508,13 @@ namespace Toy2
 				dominantDist = g_grappleTargetPos.z - g_buzzActor.posAngles.pos.z;
 			}
 
-			if (!dominantVel)
+			if (! dominantVel)
 				dominantVel = 1;
 
 			g_buzzActor.actorFlags |= 4;
 			g_grappleProgress = 0;
 
-			result = abs(dominantDist / dominantVel);
+			uint32_t result = abs(dominantDist / dominantVel);
 			InputManager::g_directionInputState &= 0x309;
 			g_grappleDistance = result;
 
@@ -1594,18 +1526,11 @@ namespace Toy2
 		{
 			int32_t chargeTimer;
 			int32_t holdTimer;
-			int32_t shotKind;
 			int32_t newChargeTimer;
-			int32_t newHoldTimer;
 			int16_t yaw;
 			PosAndAngles* shotPos;
 			int32_t pitch;
 			int32_t autoAim;
-			BeamShot* beamShot;
-			int16_t followUpYaw;
-			Vector3I* beamOrigin;
-			int16_t followUpPitch;
-			int32_t shotType;
 			WorldPos headOffset;
 			WorldPos origin;
 
@@ -1631,12 +1556,10 @@ namespace Toy2
 				}
 			}
 
-			shotKind = 0;
-			shotType = 0;
+			int32_t shotKind = 0;
+			int32_t shotType = 0;
 
-			if (InputManager::g_directionInputState < 0
-				&& (InputManager::g_prevDirectionInputState & 0x8000) == 0
-				&& (g_buzzActionState & 0xFBEFE) == 0)
+			if (InputManager::g_directionInputState < 0 && (InputManager::g_prevDirectionInputState & 0x8000) == 0 && (g_buzzActionState & 0xFBEFE) == 0)
 			{
 				g_fireHoldTimer = 0;
 				g_unk53C83C = 0;
@@ -1646,7 +1569,7 @@ namespace Toy2
 				goto LABEL_13;
 			}
 
-			if (!chargeTimer)
+			if (! chargeTimer)
 				return;
 
 			if (chargeTimer < 12)
@@ -1675,7 +1598,7 @@ namespace Toy2
 
 			if (InputManager::g_directionInputState < 0)
 			{
-				newHoldTimer = Renderer::g_frameDelta + holdTimer;
+				int32_t newHoldTimer = Renderer::g_frameDelta + holdTimer;
 				g_fireHoldTimer = newHoldTimer;
 
 				if (g_discLauncherTimer)
@@ -1814,15 +1737,15 @@ namespace Toy2
 							AudioManager::PlaySoundEffect(6, &g_buzzActor.posAngles.pos);
 
 						// quirk: the auto aim parameter is a flag here (0 or 1), not an actor
-						beamShot = SpawnBeamShot(shotType - 1, yaw, pitch, &origin, &headOffset, 4, (Toy2::Actor::Toy2Actor*)autoAim);
+						BeamShot* beamShot = SpawnBeamShot(shotType - 1, yaw, pitch, &origin, &headOffset, 4, (Toy2::Actor::Toy2Actor*)autoAim);
 
 						if (beamShot)
 						{
 							memset(&headOffset, 0, 12);
 
-							followUpYaw = yaw + 4 * *g_randDatBufferPtr + 1536;
-							beamOrigin = &beamShot->originPos;
-							followUpPitch = (4 * *g_randDatBufferPtr - 512) & 0xFFF;
+							int16_t followUpYaw = yaw + 4 * *g_randDatBufferPtr + 1536;
+							Vector3I* beamOrigin = &beamShot->originPos;
+							int16_t followUpPitch = (4 * *g_randDatBufferPtr - 512) & 0xFFF;
 							g_randDatBufferPtr += 2;
 
 							SpawnBeamShot(shotType - 1, followUpYaw & 0xFFF, followUpPitch, (WorldPos*)&beamShot->originPos, &headOffset, 4, 0);
@@ -1852,11 +1775,8 @@ namespace Toy2
 		{
 			int32_t ticker;
 
-			if ((InputManager::g_directionInputState & DIR_CAM_FLAG3) != 0
-				&& (InputManager::g_prevDirectionInputState & 0x2000) == 0
-				&& (g_buzzActionState & 0xFFF7F) == 0
-				&& !g_unk53C83C
-				&& !g_unk53C650)
+			if ((InputManager::g_directionInputState & DIR_CAM_FLAG3) != 0 && (InputManager::g_prevDirectionInputState & 0x2000) == 0
+				&& (g_buzzActionState & 0xFFF7F) == 0 && ! g_unk53C83C && ! g_unk53C650)
 			{
 				if (actor->unkWord15 == 1 || actor->unkWord15 == 2 || (int16_t)actor->lastValidYPosition == 8)
 				{
@@ -1865,7 +1785,7 @@ namespace Toy2
 				}
 			}
 
-			if (!g_groundSlamTicker)
+			if (! g_groundSlamTicker)
 				return 0;
 
 			g_buzzActionState |= 0x40u;
@@ -1880,7 +1800,7 @@ namespace Toy2
 					if (ticker >= -14)
 						return 0;
 
-					if (!actor->unkWord16)
+					if (! actor->unkWord16)
 						actor->areaIndex += ((int32_t)Renderer::g_frameDelta << 8) / 4;
 
 					if (actor->areaIndex > 2048)
@@ -1940,12 +1860,8 @@ namespace Toy2
 				{
 					int32_t v2 = *g_randDatBufferPtr++ & 1;
 
-					Nu3D::Particles::SpawnFromPreset(
-						buzz->posAngles.pos.x,
-						buzz->posAngles.pos.y,
-						buzz->posAngles.pos.z,
-						v2 + 22,
-						2)->groundAlignRot = (-g_unk53C650 & 0xF) << 7;
+					Nu3D::Particles::SpawnFromPreset(buzz->posAngles.pos.x, buzz->posAngles.pos.y, buzz->posAngles.pos.z, v2 + 22, 2)->groundAlignRot =
+						(-g_unk53C650 & 0xF) << 7;
 					v1 = g_unk53C650;
 				}
 			}
@@ -1958,7 +1874,7 @@ namespace Toy2
 			{
 				v3 = g_unk53C83C;
 
-				if ((g_buzzActionState & 0xFFF7F) == 1 && !g_unk53C83C && !v1 && !g_buzzSlipTimer)
+				if ((g_buzzActionState & 0xFFF7F) == 1 && ! g_unk53C83C && ! v1 && ! g_buzzSlipTimer)
 				{
 					g_unk53C650 = 48;
 
@@ -2008,12 +1924,8 @@ namespace Toy2
 					if (g_tickState[2])
 					{
 						v7 = (*g_randDatBufferPtr++ & 1) + 20;
-						Nu3D::Particles::SpawnFromPreset(
-							buzz->posAngles.pos.x,
-							buzz->posAngles.pos.y - 12288,
-							buzz->posAngles.pos.z,
-							v7,
-							2)->groundAlignRot = 192 * (-g_unk53C83C & 0xF);
+						Nu3D::Particles::SpawnFromPreset(buzz->posAngles.pos.x, buzz->posAngles.pos.y - 12288, buzz->posAngles.pos.z, v7, 2)->groundAlignRot =
+							192 * (-g_unk53C83C & 0xF);
 					}
 				}
 				else
@@ -2057,7 +1969,7 @@ namespace Toy2
 
 			dir.y = 0;
 
-			if (!Levels::g_recordData[60])
+			if (! Levels::g_recordData[60])
 				return result;
 
 			if ((g_buzzActionState & 0xFFB7E) != 0 || g_unk53C834)
@@ -2070,7 +1982,7 @@ namespace Toy2
 
 			v2 = g_unk53C66C;
 
-			if (!g_unk53C66C)
+			if (! g_unk53C66C)
 			{
 				data = Levels::g_recordData[60]->data;
 				i = 0;
@@ -2118,14 +2030,13 @@ namespace Toy2
 
 						data += 2;
 						++i;
-					}
-					while (i < (Levels::g_recordData[60]->recordCount >> 1));
+					} while (i < (Levels::g_recordData[60]->recordCount >> 1));
 				}
 
 				v2 = g_unk53C66C;
 				result = 0;
 
-				if (!g_unk53C66C)
+				if (! g_unk53C66C)
 					return result;
 			}
 
@@ -2193,7 +2104,7 @@ namespace Toy2
 			int32_t v24;
 			int32_t* pole;
 
-			if (!Levels::g_recordData[61])
+			if (! Levels::g_recordData[61])
 				return 0;
 
 			if (g_unk53C834)
@@ -2204,15 +2115,15 @@ namespace Toy2
 			if ((g_buzzActionState & 0xFFF6E) != 0)
 				return 0;
 
-			if (!g_unk53C668)
+			if (! g_unk53C668)
 			{
 				v3 = 0;
 				v4 = Levels::g_recordData[61]->recordCount >> 1;
 
-				if (!v4)
+				if (! v4)
 					return 0;
 
-				for (pole = data; ; pole += 6)
+				for (pole = data;; pole += 6)
 				{
 					if (pole[3] != 3)
 					{
@@ -2363,10 +2274,10 @@ namespace Toy2
 
 			if ((InputManager::g_directionInputState & 0x4000) == 0 || (InputManager::g_prevDirectionInputState & 0x4000) != 0)
 			{
-				if (!v24)
+				if (! v24)
 					return 2;
 			}
-			else if (!v24)
+			else if (! v24)
 			{
 				if (g_unk53C658)
 					return 2;
@@ -2433,7 +2344,7 @@ namespace Toy2
 			int32_t v34;
 			Vector3I* segment;
 
-			if (!Levels::g_recordData[62] || g_unk53C834)
+			if (! Levels::g_recordData[62] || g_unk53C834)
 				return 0;
 
 			v1 = g_unk53C600;
@@ -2451,7 +2362,7 @@ namespace Toy2
 				}
 			}
 
-			if ((g_buzzActionState & 0xFFF7F) == 0 && !v1)
+			if ((g_buzzActionState & 0xFFF7F) == 0 && ! v1)
 			{
 				i = 0;
 
@@ -2543,11 +2454,10 @@ namespace Toy2
 							}
 						}
 
-next:
+					next:
 						data += 2;
 						++i;
-					}
-					while (i < (Levels::g_recordData[62]->recordCount >> 1));
+					} while (i < (Levels::g_recordData[62]->recordCount >> 1));
 				}
 			}
 
@@ -2601,9 +2511,7 @@ next:
 			g_unk53C614 += Renderer::g_frameDelta * g_unk53C604;
 
 			if (g_unk53C614 < g_unk53C5D8
-				&& ((InputManager::g_directionInputState & 0x4000) == 0
-					|| (InputManager::g_prevDirectionInputState & 0x4000) != 0
-					|| g_unk53C658))
+				&& ((InputManager::g_directionInputState & 0x4000) == 0 || (InputManager::g_prevDirectionInputState & 0x4000) != 0 || g_unk53C658))
 			{
 				return 2;
 			}
@@ -2906,7 +2814,7 @@ next:
 		LABEL_28:
 			radius = speed + 8000 * Collision::g_buzzCollisionStates[index].floorOffset / 4096 + 6272;
 
-			if (!index)
+			if (! index)
 				Platform::UpdateBuzzPlatformMotion(0, halfStep);
 
 			meshCount = 0;
@@ -2923,7 +2831,8 @@ next:
 			{
 				Collision::CollisionGridCell* cell = &Collision::g_collisionGrid[i];
 
-				if ((uint32_t)(posX - cell->minX) < (uint32_t)(cell->extX + doubleRadius) && (uint32_t)(posZ - cell->minZ) < (uint32_t)(doubleRadius + cell->extZ))
+				if ((uint32_t)(posX - cell->minX) < (uint32_t)(cell->extX + doubleRadius)
+					&& (uint32_t)(posZ - cell->minZ) < (uint32_t)(doubleRadius + cell->extZ))
 				{
 					for (j = 0; j < cell->count; j++)
 						meshList[meshCount + j] = Collision::g_collisionMeshList[cell->start + j];
@@ -2962,7 +2871,8 @@ next:
 									count = node->count;
 									triangle = (Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
 									{
 										node = (Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -2971,8 +2881,10 @@ next:
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
-												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6)))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(nodeMargin + (triangle->extYByte << 6)))
 											{
 												if (Collision::g_candidateTriangleCount < 240)
 												{
@@ -2995,7 +2907,7 @@ next:
 			}
 
 			// the platforms, only for Buzz himself
-			if (!index)
+			if (! index)
 			{
 				platformRadius = radius + 1024;
 				platformMeshCount = Collision::g_unk7284A2;
@@ -3079,7 +2991,8 @@ next:
 									count = node->count;
 									triangle = (Collision::CollisionTriangle*)(node + 1);
 
-									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX) || (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
+									if ((uint32_t)(cellX - node->minX) >= (uint32_t)(nodeMargin + node->extX)
+										|| (uint32_t)(cellZ - node->minZ) >= (uint32_t)(nodeMargin + node->extZ))
 									{
 										node = (Collision::CollisionTreeNode*)(triangle + count);
 									}
@@ -3088,8 +3001,10 @@ next:
 										for (j = 0; j < count; j++)
 										{
 											if ((uint32_t)(cellX - triangle->minX) < (uint32_t)(nodeMargin + triangle->extX)
-												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z) < (uint32_t)(nodeMargin + (triangle->extZByte << 6))
-												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y) < (uint32_t)(nodeMargin + (triangle->extYByte << 6)))
+												&& (uint32_t)(cellZ - (triangle->minZByte << 6) - triangle->v0z)
+													< (uint32_t)(nodeMargin + (triangle->extZByte << 6))
+												&& (uint32_t)(cellY - (triangle->minYByte << 6) - triangle->v0y)
+													< (uint32_t)(nodeMargin + (triangle->extYByte << 6)))
 											{
 												if (Collision::g_candidateTriangleCount < 240)
 												{
@@ -3148,8 +3063,9 @@ next:
 							{
 								mask = blockEnd;
 							}
-							else if ((uint32_t)(maxCellX - edgeBlock[0]) >= (uint32_t)(nodeMargin + edgeBlock[3])
-									 || (uint32_t)(maxCellZ - edgeBlock[6]) >= (uint32_t)(nodeMargin + edgeBlock[9]))
+							else if (
+								(uint32_t)(maxCellX - edgeBlock[0]) >= (uint32_t)(nodeMargin + edgeBlock[3])
+								|| (uint32_t)(maxCellZ - edgeBlock[6]) >= (uint32_t)(nodeMargin + edgeBlock[9]))
 							{
 								mask = 0;
 							}
@@ -3165,7 +3081,8 @@ next:
 								for (steps = mask - blockStart; steps; steps--)
 								{
 									if (((edgePoint[-2] >= minCellX && edgePoint[1] <= maxCellX) || (edgePoint[1] >= minCellX && edgePoint[-2] <= maxCellX))
-										&& ((edgePoint[0] >= minCellZ && edgePoint[3] <= maxCellZ) || (edgePoint[3] >= minCellZ && edgePoint[0] <= maxCellZ)) && count < 32)
+										&& ((edgePoint[0] >= minCellZ && edgePoint[3] <= maxCellZ) || (edgePoint[3] >= minCellZ && edgePoint[0] <= maxCellZ))
+										&& count < 32)
 									{
 										Collision::g_unk728DA0[3 * count] = edgePoint[-2];
 										Collision::g_unk728DA0[3 * count + 1] = edgePoint[-1];
@@ -3241,7 +3158,8 @@ next:
 
 					if (flags[1] == 1)
 					{
-						platformResult = Collision::ResolvePlatformFooting(&resolvedVelocity, &vectorAngles, velocity, &Collision::g_buzzCollisionStates[savedIndex]);
+						platformResult =
+							Collision::ResolvePlatformFooting(&resolvedVelocity, &vectorAngles, velocity, &Collision::g_buzzCollisionStates[savedIndex]);
 
 						if (platformResult == 1)
 							*flags = 1;
@@ -3281,7 +3199,7 @@ next:
 
 				memcpy(&buzzActor->posAngles, &vectorAngles, sizeof(vectorAngles));
 
-				if (!index)
+				if (! index)
 				{
 					Collision::g_buzzCollisionStates[0].pushbackVel.x = 3 * resolvedVelocity.platformVel.x / 4;
 					Collision::g_buzzCollisionStates[0].pushbackVel.y = 3 * resolvedVelocity.platformVel.y / 4;
@@ -3317,8 +3235,8 @@ next:
 			posX = buzzActor->posAngles.pos.x;
 			buzzActor->posAngles.pos.y = posY;
 
-			if (posX == Toy2::g_buzzActor.motionTargetPos.x && posY == Toy2::g_buzzActor.motionTargetPos.y && buzzActor->posAngles.pos.z == Toy2::g_buzzActor.motionTargetPos.z
-				&& stuck > 0)
+			if (posX == Toy2::g_buzzActor.motionTargetPos.x && posY == Toy2::g_buzzActor.motionTargetPos.y
+				&& buzzActor->posAngles.pos.z == Toy2::g_buzzActor.motionTargetPos.z && stuck > 0)
 				Collision::g_buzzCollisionStates[index].stuckTimer += Renderer::g_frameDelta;
 			else
 				Collision::g_buzzCollisionStates[index].stuckTimer = 0;
@@ -3375,7 +3293,7 @@ next:
 				surfaceQuality = Nu3D::Collision::GetSurfaceQuality(0);
 				g_unk52B81C = surfaceQuality;
 
-				if (!buzzActor->collisionFlags && buzzActor->unkShort40)
+				if (! buzzActor->collisionFlags && buzzActor->unkShort40)
 				{
 					surfaceQuality = previousQuality;
 					g_unk52B81C = surfaceQuality;
@@ -3388,7 +3306,7 @@ next:
 
 			g_unk5281A4 = -1;
 
-			if (surfaceQuality >= 0 && !g_levelTransition)
+			if (surfaceQuality >= 0 && ! g_levelTransition)
 			{
 				if (surfaceQuality >> 2)
 				{
@@ -3408,7 +3326,7 @@ next:
 						surfaceQuality = g_unk52B81C;
 					}
 				}
-				else if (!buzzActor->inhibitMovementTimer && !buzzActor->stunTimer)
+				else if (! buzzActor->inhibitMovementTimer && ! buzzActor->stunTimer)
 				{
 					HandleDamage(0, 2);
 
@@ -3820,7 +3738,7 @@ next:
 
 			ziplineResult = HandleZipline(buzzActor) - 1;
 
-			if (!ziplineResult)
+			if (! ziplineResult)
 				goto LABEL_136;
 
 			if (ziplineResult == 1)
@@ -3828,7 +3746,7 @@ next:
 
 			swingResult = HandleSwing(buzzActor) - 1;
 
-			if (!swingResult)
+			if (! swingResult)
 				goto LABEL_136;
 
 			if (swingResult == 1)
@@ -3836,7 +3754,7 @@ next:
 
 			poleResult = HandlePoleClimb(buzzActor) - 1;
 
-			if (!poleResult)
+			if (! poleResult)
 				goto LABEL_136;
 
 			if (poleResult == 1)
@@ -3862,7 +3780,7 @@ next:
 				goto LABEL_123;
 			}
 
-			if (!moveFlags)
+			if (! moveFlags)
 			{
 				if (g_unk53C5DC > 0)
 				{
@@ -4024,7 +3942,7 @@ next:
 			if (buzzActor->collisionFlags)
 				g_unk53C62C = 0;
 
-			if (buzzActor->posAngles.pos.y > Collision::g_unk729124 + 0x2000 && !g_levelTransition)
+			if (buzzActor->posAngles.pos.y > Collision::g_unk729124 + 0x2000 && ! g_levelTransition)
 			{
 				if (g_unk53C62C < 1)
 				{
@@ -4123,7 +4041,8 @@ next:
 		{
 			g_buzzActor.actorFlags &= ~8;
 
-			if (g_buzzActor.collisionFlags && !g_levelTransitionTimer && Collision::IsSafeFooting(0, (uint8_t*)&g_buzzActor.collisionFlags) && (g_unk52B81C & 0xFFFFFFFC) != 0)
+			if (g_buzzActor.collisionFlags && ! g_levelTransitionTimer && Collision::IsSafeFooting(0, (uint8_t*)&g_buzzActor.collisionFlags)
+				&& (g_unk52B81C & 0xFFFFFFFC) != 0)
 			{
 				g_buzzActor.actorFlags |= 8;
 				g_buzzActor.respawnPos = g_buzzActor.posAngles.pos;
@@ -4145,8 +4064,6 @@ next:
 		void ActivateRocketBoots(Toy2::Levels::Type63* a1)
 		{
 			int32_t i;
-			Nu3D::Particles::ParticleInstance* particle1;
-			Nu3D::Particles::ParticleInstance* particle2;
 
 			if (g_rocketBootsDuration)
 			{
@@ -4169,23 +4086,15 @@ next:
 
 			g_rocketBootsDuration = 250;
 
-			particle1 = Nu3D::Particles::SpawnFromPreset(
-				g_buzzActor.posAngles.pos.x,
-				g_buzzActor.posAngles.pos.y,
-				g_buzzActor.posAngles.pos.z,
-				47,
-				2);
+			Nu3D::Particles::ParticleInstance* particle1 =
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 47, 2);
 
 			particle1->rotSpeed = -32;
 			particle1->groundAlignRot = 128;
 			particle1->lifetime = g_rocketBootsDuration;
 
-			particle2 = Nu3D::Particles::SpawnFromPreset(
-				g_buzzActor.posAngles.pos.x,
-				g_buzzActor.posAngles.pos.y,
-				g_buzzActor.posAngles.pos.z,
-				47,
-				2);
+			Nu3D::Particles::ParticleInstance* particle2 =
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 47, 2);
 
 			particle2->unkByte1 = 101;
 			particle2->rotSpeed = 32;
@@ -4198,7 +4107,6 @@ next:
 		void TickCosmicShield()
 		{
 			int32_t scale;
-			BOOL playSound;
 			Vector3I pos;
 
 			if (g_cosmicShieldPickup)
@@ -4219,7 +4127,7 @@ next:
 				g_cosmicShieldRotYaw = -g_buzzActor.posAngles.angles.yaw & 0xFFF;
 				g_cosmicShieldSpin = (g_cosmicShieldSpin - Renderer::g_frameDelta * (g_buzzActor.unkVar30 >> 4)) & 0xFFF;
 
-				playSound = 1;
+				BOOL playSound = 1;
 
 				if (g_buzzActor.inhibitMovementTimer >= 128)
 				{
@@ -4239,16 +4147,7 @@ next:
 					AudioManager::PlaySoundEffect(77, &g_buzzActor.posAngles.pos);
 				}
 
-				Renderer::BlitTextureByIndexOffset(
-					16,
-					128,
-					192,
-					64,
-					64,
-					4 * g_tickAccumulators.tick16Acc,
-					2 * g_tickAccumulators.tick32Acc,
-					0,
-					-64);
+				Renderer::BlitTextureByIndexOffset(16, 128, 192, 64, 64, 4 * g_tickAccumulators.tick16Acc, 2 * g_tickAccumulators.tick32Acc, 0, -64);
 			}
 		}
 
@@ -4269,7 +4168,7 @@ next:
 		{
 			WorldPos direction;
 
-			if (!g_grappleState)
+			if (! g_grappleState)
 				return;
 
 			g_unk53C838 = 0;
@@ -4277,9 +4176,7 @@ next:
 			if ((g_grappleState & 1) == 0)
 				goto LABEL_14;
 
-			g_buzzActor.facingAngle = Nu3D::Math::CartesianToFixedAngle(
-				g_grappleTargetPos.x - g_unk50A0A0.x,
-				g_grappleTargetPos.z - g_unk50A0A0.z);
+			g_buzzActor.facingAngle = Nu3D::Math::CartesianToFixedAngle(g_grappleTargetPos.x - g_unk50A0A0.x, g_grappleTargetPos.z - g_unk50A0A0.z);
 
 			g_grappleProgress += 2 * Renderer::g_frameDelta;
 
@@ -4367,15 +4264,12 @@ next:
 		// FUNCTION: TOY2 0x004A5C40
 		void TickBeamShots()
 		{
-			BeamShot* beamShot;
-			int32_t index;
 			int32_t lifeTimer;
-			int32_t frameDelta;
 			WorldPos direction;
 			WorldPos originPos;
 
-			beamShot = &g_beamShots[0];
-			index = 4;
+			BeamShot* beamShot = &g_beamShots[0];
+			int32_t index = 4;
 
 			do
 			{
@@ -4401,7 +4295,7 @@ next:
 						(lifeTimer * beamShot->tintG) >> 7,
 						(lifeTimer * beamShot->tintR) >> 7);
 
-					frameDelta = Renderer::g_frameDelta;
+					int32_t frameDelta = Renderer::g_frameDelta;
 
 					beamShot->lifeTimer -= Renderer::g_frameDelta;
 

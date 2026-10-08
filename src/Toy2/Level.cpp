@@ -1,6 +1,9 @@
 #include "Toy2/Level.h"
 
 #include "Toy2/Collision.h"
+#include "Toy2/Camera.h"
+#include "Toy2/Toy2.h"
+#include "Nu3D/Particles.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -141,9 +144,9 @@ namespace Toy2
 
 				do
 				{
-					if (region->unkVar6 < bestVar6 && (int32_t)mathScratch[225] >= region->unkVar0.x && (int32_t)mathScratch[226] >= region->unkVar0.y &&
-						(int32_t)mathScratch[227] >= region->unkVar0.z && (int32_t)mathScratch[225] <= region->unkVar3.x &&
-						(int32_t)mathScratch[226] <= region->unkVar3.y && (int32_t)mathScratch[227] <= region->unkVar3.z)
+					if (region->unkVar6 < bestVar6 && (int32_t)mathScratch[225] >= region->unkVar0.x && (int32_t)mathScratch[226] >= region->unkVar0.y
+						&& (int32_t)mathScratch[227] >= region->unkVar0.z && (int32_t)mathScratch[225] <= region->unkVar3.x
+						&& (int32_t)mathScratch[226] <= region->unkVar3.y && (int32_t)mathScratch[227] <= region->unkVar3.z)
 					{
 						foundIndex = index;
 						bestVar6 = region->unkVar6;
@@ -351,7 +354,71 @@ namespace Toy2
 			return result;
 		}
 
-		// STUB: TOY2 0x0049FB40
-		void UpdateAmbientEmitters() {}
+		// FUNCTION: TOY2 0x0049FB40
+		void UpdateAmbientEmitters()
+		{
+			int32_t y;
+			int32_t x;
+			int32_t z;
+
+			if (g_tickState[9])
+			{
+				Levels::RecordData* record = Levels::g_recordData[58];
+
+				if (Levels::g_recordData[58])
+				{
+					int32_t idx = g_unk830C9C;
+					int32_t savedIdx = g_unk830C9C;
+					Vector3I* emitter = &Levels::g_recordData[58]->data[g_unk830C9C];
+					Vector3I* savedEmitter = emitter;
+
+					if (g_unk830C9C < Levels::g_recordData[58]->recordCount)
+					{
+						do
+						{
+							y = emitter->y;
+
+							if (y != 0x80000000)
+							{
+								x = emitter->x;
+								z = emitter->z;
+								int32_t distYZ = ((Camera::g_activeCameraTransform.pos.y - y) >> 8) * ((Camera::g_activeCameraTransform.pos.y - y) >> 8)
+									+ ((Camera::g_activeCameraTransform.pos.z - z) >> 8) * ((Camera::g_activeCameraTransform.pos.z - z) >> 8);
+								int32_t distX =
+									((Camera::g_activeCameraTransform.pos.x - emitter->x) >> 8) * ((Camera::g_activeCameraTransform.pos.x - emitter->x) >> 8);
+
+								if (distX + distYZ >= 360000 || distX + distYZ == -1)
+								{
+									idx = savedIdx;
+								}
+								else
+								{
+									idx = savedIdx;
+
+									if (savedIdx >= g_unk830E28)
+										Nu3D::Particles::SpawnFromPreset(x, y, z, 115, 2);
+									else
+										Nu3D::Particles::SpawnFromPreset(x, y, z, 113, 2);
+								}
+							}
+
+							record = Levels::g_recordData[58];
+							idx += 4;
+							emitter = savedEmitter + 4;
+							savedEmitter += 4;
+							savedIdx = idx;
+						} while (idx < Levels::g_recordData[58]->recordCount);
+
+						idx = g_unk830C9C;
+					}
+
+					idx = idx + 1;
+					g_unk830C9C = idx;
+
+					if (idx >= record->recordCount || idx >= 4)
+						g_unk830C9C = 0;
+				}
+			}
+		}
 	}
 }
