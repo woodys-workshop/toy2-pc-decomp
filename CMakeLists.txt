@@ -293,10 +293,10 @@ target_link_directories(patcher PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/external/libs
     ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6
 )
-target_link_libraries(patcher PRIVATE minhook_x86 ddraw dxguid winmm dinput)
+target_link_libraries(patcher PRIVATE minhook_x86 ddraw dxguid winmm dinput dsound)
 
 target_link_directories(toy2decomp PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6
 )
-target_link_libraries(toy2decomp PRIVATE ddraw dxguid winmm dinput)
+target_link_libraries(toy2decomp PRIVATE ddraw dxguid winmm dinput dsound)
 set_target_properties(toy2decomp PROPERTIES OUTPUT_NAME "toy2")

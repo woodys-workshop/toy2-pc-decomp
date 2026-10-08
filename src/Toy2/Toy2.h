@@ -149,7 +149,7 @@ namespace Toy2
 	extern int16_t g_hudWidgetTimers[11];
 	extern int16_t g_hudWidgetPositions[12];
 	extern SoundSequencePlayer g_soundSequencePlayers[8];
-	extern SoundSequencePlayer* g_curSequencePlayer;
+	extern int32_t g_curSequencePlayer;
 	extern TickAccumulators g_tickAccumulators;
 	extern BeamShot g_beamShots[4];
 	extern Levels::Type63* g_cosmicShieldPickup;

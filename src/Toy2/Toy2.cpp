@@ -286,7 +286,7 @@ namespace Toy2
 	SoundSequencePlayer g_soundSequencePlayers[8];
 
 	// GLOBAL: TOY2 0x0052AD80
-	SoundSequencePlayer* g_curSequencePlayer;
+	int32_t g_curSequencePlayer;
 
 	// GLOBAL: TOY2 0x0052F2E0
 	int16_t g_hudWidgetPositions[12];
