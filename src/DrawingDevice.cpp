@@ -821,26 +821,26 @@ namespace DrawingDevice
 		return g_drawingDevice->m_pd3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION, matrix);
 	}
 
-	// STUB: TOY2 0x004ABC40
-	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc) { return 0; }
+	// FUNCTION: TOY2 0x004ABC40
+	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc) { return g_drawingDevice->m_pddsFrontBuffer->Lock(0, surfaceDesc, 2081, 0); }
 
-	// STUB: TOY2 0x004ABC60
-	HRESULT UnlockPrimarySurface() { return 0; }
+	// FUNCTION: TOY2 0x004ABC60
+	HRESULT UnlockPrimarySurface() { return g_drawingDevice->m_pddsFrontBuffer->Unlock(0); }
 
 	// FUNCTION: TOY2 0x004ABD50
 	int32_t RestoreToGDISurface(int32_t refreshWindow) { return g_drawingDevice->RestoreToGDISurface(refreshWindow); }
 
-	// STUB: TOY2 0x004ABE30
-	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface) { return 0; }
+	// FUNCTION: TOY2 0x004ABE30
+	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface) { return g_drawingDevice->GetSlotSurfaceByIndex(index, surface); }
 
-	// STUB: TOY2 0x004AC180
-	HRESULT SetTexture(DWORD flags, LPDIRECT3DTEXTURE2 texture) { return 0; }
+	// FUNCTION: TOY2 0x004AC180
+	HRESULT SetTexture(DWORD flags, LPDIRECT3DTEXTURE2 texture) { return g_drawingDevice->m_pd3dDevice->SetTexture(flags, texture); }
 
-	// STUB: TOY2 0x004ABE90
-	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext) { return 0; }
+	// FUNCTION: TOY2 0x004ABE90
+	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext) { return drawSurface->GetDC(deviceContext); }
 
-	// STUB: TOY2 0x004ABEA0
-	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc) { return 0; }
+	// FUNCTION: TOY2 0x004ABEA0
+	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc) { return drawSurface->ReleaseDC(hdc); }
 }
 
 namespace HardwareDevice

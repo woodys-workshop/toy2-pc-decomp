@@ -5,8 +5,10 @@
 #include "Logger.h"
 #include "Toy2/Actor.h"
 #include "Renderer/SpriteSheets.h"
+#include "NGNLoader/NGNLoader.h"
 
 #include <WINDOWS.H>
+#include <STDIO.H>
 
 namespace RawLoader
 {
@@ -493,6 +495,23 @@ namespace RawLoader
 		Renderer::g_spriteSheets[128] = &Renderer::g_rawLoaderSpriteSheet;
 	}
 
-	// STUB: TOY2 0x00450010
-	void LoadRawAndNGN(const char* filePath) {}
+	// FUNCTION: TOY2 0x00450010
+	void LoadRawAndNGN(char* filePath)
+	{
+		RawLoader::LoadPacketData(filePath);
+		FileUtils::AppendRegPathToBuffer();
+
+		char fileName[256];
+		sprintf(fileName, "%s%s", FileUtils::g_fileNameBuffer, filePath);
+
+		char* rawPath = strstr(fileName, ".raw");
+
+		if (rawPath)
+		{
+			strcpy(rawPath, ".ngn");
+
+			NGNLoader::SetNewImage(fileName);
+			NGNLoader::DetectBackdropTextures();
+		}
+	}
 }

@@ -220,7 +220,7 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B3210
 	void Primitive::ResizePatchVerts(Patch::PatchVertices* patchVerts, int32_t verticesSize)
 	{
-		Nu3D::Vertex* vertexList = (Nu3D::Vertex*)malloc(sizeof(Nu3D::Vertex) * verticesSize);
+		Vertex* vertexList = (Vertex*)malloc(sizeof(Vertex) * verticesSize);
 
 		if (vertexList)
 		{
@@ -282,12 +282,60 @@ namespace Nu3D
 		return indices && triMeta;
 	}
 
-	// STUB: TOY2 0x004B2E30
-	void Primitive::Header::Destroy(Nu3D::Primitive::Header* primHeader) {}
+	// FUNCTION: TOY2 0x004B2E30
+	void Primitive::Header::Destroy(Primitive::Header* primHeader)
+	{
+		if (primHeader->indices)
+			free(primHeader->indices);
 
-	// STUB: TOY2 0x004B3110
-	void Primitive::Destroy(Nu3D::Primitive* l_prim) {}
+		if (primHeader->triMeta)
+			free(primHeader->triMeta);
 
-	// STUB: TOY2 0x004B3190
-	void Primitive::Remove(Nu3D::Primitive* prim) {}
+		primHeader->indices = 0;
+	}
+
+	// FUNCTION: TOY2 0x004B3110
+	void Primitive::Destroy(Primitive* prim)
+	{
+		if (prim->listNext)
+			Primitive::Destroy(prim->listNext);
+
+		if (prim->header)
+		{
+			int32_t headerCount = 0;
+
+			if (prim->headerCount > 0)
+			{
+				int32_t curHeaderIndex = 0;
+
+				do
+				{
+					Primitive::Header::Destroy(&prim->header[curHeaderIndex]);
+					++headerCount;
+					++curHeaderIndex;
+				} while (headerCount < prim->headerCount);
+			}
+		}
+
+		Patch::PatchVertices::ReleaseBuffer(&prim->patchVerts);
+		Patch::PatchVertices::FreeVertices(&prim->patchVerts);
+
+		Primitive::Remove(prim);
+	}
+
+	// FUNCTION: TOY2 0x004B3190
+	void Primitive::Remove(Primitive* prim)
+	{
+		if (prim->next)
+			prim->next->prev = prim->prev;
+
+		Primitive* prev = prim->prev;
+
+		if (prev)
+			prev->next = prim->next;
+		else
+			g_primListHead = prim->next;
+
+		free(prim);
+	}
 }

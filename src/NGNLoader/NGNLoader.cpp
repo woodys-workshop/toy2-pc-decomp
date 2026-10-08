@@ -1515,13 +1515,63 @@ namespace NGNLoader
 			return 0;
 	}
 
-	// STUB: TOY2 0x004BB150
-	NGNLoader::NGNTextureData* ReleaseTextureData(NGNLoader::NGNTextureData* list) { return 0; }
+	// FUNCTION: TOY2 0x004BB150
+	NGNTextureData* ReleaseTextureData(NGNTextureData* list)
+	{
+		if (list->bmpDataNode)
+			Nu3D::ReleaseBmpDataNode_T(list->bmpDataNode);
 
-	// STUB: TOY2 0x004BB7D0
-	void ReleaseAllTextures() {}
+		NGNTextureData* next = list->next;
+		list->bmpDataNode = 0;
 
-	// STUB: TOY2 0x004BB810
-	void ReleaseTextureCache(NGNLoader::NGNTextureCache* textureCache) {}
+		if (next)
+			next->prev = list->prev;
+
+		NGNTextureData* result = list->prev;
+
+		if (result)
+		{
+			result->next = list->next;
+			result = g_textureData.freeList;
+		}
+		else
+		{
+			g_textureData.activeList = list->next;
+		}
+
+		list->next = g_textureData.freeList;
+		g_textureData.freeList = list;
+
+		return result;
+	}
+
+	// FUNCTION: TOY2 0x004BB810
+	void ReleaseTextureCache(NGNTextureCache* textureCache)
+	{
+		if (textureCache->next)
+			textureCache->next->prev = textureCache->prev;
+
+		NGNTextureCache* prev = textureCache->prev;
+
+		if (prev)
+			prev->next = textureCache->next;
+		else
+			g_textureCache.activeList = textureCache->next;
+
+		textureCache->next = g_textureCache.freeList;
+		g_textureCache.freeList = textureCache;
+	}
+
+	// FUNCTION: TOY2 0x004BB7D0
+	void ReleaseAllTextures()
+	{
+		for (NGNTextureData* curTexDatas = g_textureData.activeList; g_textureData.activeList; curTexDatas = g_textureData.activeList)
+			ReleaseTextureData(curTexDatas);
+
+		for (NGNTextureCache* curTexCache = g_textureCache.activeList; g_textureCache.activeList; curTexCache = g_textureCache.activeList)
+			ReleaseTextureCache(curTexCache);
+
+		Nu3D::FreeAllBmpDataNodes_T();
+	}
 
 }

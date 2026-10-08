@@ -7,6 +7,7 @@
 #include "CharacterLoader.h"
 #include "RawLoader.h"
 #include "Collision.h"
+#include "Renderer/Glue.h"
 
 #include "NGNLoader/NGNLoader.h"
 #include "Toy2/Toy2.h"
@@ -27,6 +28,7 @@
 #include "Toy2/D3DApp.h"
 #include "Toy2/Weather.h"
 #include "Toy2/Platform.h"
+#include "Toy2/Buzz.h"
 
 namespace Toy2
 {
@@ -146,8 +148,19 @@ namespace Toy2
 		// GLOBAL: TOY2 0x00550C20
 		uint8_t* g_unk550C20;
 
-		// STUB: TOY2 0x004CEA20
-		void FlushRenderer() {}
+		// FUNCTION: TOY2 0x004CEA20
+		void FlushRenderer()
+		{
+			Renderer::Glue::ReleaseBackdrop();
+			Nu3D::Light::Cleanup();
+
+			if (NGNLoader::g_ngnImage)
+				NGNLoader::NGNImage::Destroy(NGNLoader::g_ngnImage);
+
+			NGNLoader::g_ngnImage = 0;
+
+			Renderer::Cleanup();
+		}
 
 		// FUNCTION: TOY2 0x004885C0
 		int32_t GetSectorAtPosition(Vector3I* position)
@@ -1300,11 +1313,49 @@ namespace Toy2
 			Logger::Log("InitLevelPlay : END.\n");
 		}
 
-		// STUB: TOY2 0x00434090
-		int32_t Method2(int32_t a1, int16_t a2) { return 0; }
+		// FUNCTION: TOY2 0x00434090
+		int32_t Method2(int32_t a1, int16_t a2)
+		{
+			g_buzzActor.unkWord15 = a2;
+			g_buzzActor.collisionFlags = 0;
+			g_buzzActor.unkShort40 = 0;
+			g_buzzActor.unkVar37 = 2;
+			g_buzzActor.gravityVel = a1;
+			Buzz::g_curMoveableObject = 0;
+			Buzz::g_buzzSlipTimer = 0;
+			Buzz::g_unk53C61C = 0;
 
-		// STUB: TOY2 0x0048B660
-		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4) {}
+			return 0;
+		}
+
+		// FUNCTION: TOY2 0x0048B660
+		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4)
+		{
+			if (! Buzz::g_unk53C660 && ! Buzz::g_unk53C668 && ! Buzz::g_unk53C618)
+			{
+				if (Collision::g_buzzCollisionStates[a1].wasGroundedLastFrame
+					&& a4 * Collision::g_buzzCollisionStates[a1].surfaceNormal.z + a3 * Collision::g_buzzCollisionStates[a1].surfaceNormal.y
+							+ a2 * Collision::g_buzzCollisionStates[a1].surfaceNormal.x
+						< 0)
+				{
+					Collision::g_unk7295A0 = 0;
+				}
+				else
+				{
+					int32_t strength = Collision::g_unk7295A0;
+
+					if (Collision::g_unk7295A0 < 4096)
+					{
+						strength = Collision::g_unk7295A0 + 256;
+						Collision::g_unk7295A0 += 256;
+					}
+
+					Collision::g_buzzCollisionStates[a1].responseVel.x += a2 * strength / 4096;
+					Collision::g_buzzCollisionStates[a1].responseVel.y += a3 * strength / 4096;
+					Collision::g_buzzCollisionStates[a1].responseVel.z += a4 * strength / 4096;
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x0049FAB0
 		void Method3(int32_t a1, int32_t a2)

@@ -67,6 +67,8 @@ namespace SoftwareRenderer
 	extern uint8_t g_unk87E50C[16384];
 	extern BltCommand g_bltQueue[32];
 	extern int16_t g_bltQueueCount;
+	extern int32_t g_unk559C40;
+	extern int32_t g_unk839280;
 	extern void* g_unk504D34;
 	extern int32_t g_unk839278;
 	extern uint32_t g_unk731CBC;

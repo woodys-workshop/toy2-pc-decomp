@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "Nu3D/Creature.h"
 #include "Nu3D/Primitive.h"
+#include "NGNLoader/NGNLoader.h"
 #include "NGNLoader/ObjectLoad.h"
 #include <string.h>
 
@@ -876,26 +877,106 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B1180
 	void FreeAllBmpDataNodes_T() { FreeAllBmpDataNodes(); }
 
-	// STUB: TOY2 0x004AC260
-	int32_t ReleaseBmpDataNode_T(Nu3D::BmpDataNode* Block) { return 0; }
+	// FUNCTION: TOY2 0x004AC260
+	int32_t ReleaseBmpDataNode_T(Nu3D::BmpDataNode* Block)
+	{
+		Nu3D::ReleaseBmpDataNode(Block);
+		return 0;
+	}
 
-	// STUB: TOY2 0x004AD060
-	HRESULT BuildBmpNode(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags) { return 0; }
+	// FUNCTION: TOY2 0x004B0620
+	Nu3D::BmpDataNode* BuildRawBmpNode(HANDLE mainBmp, HANDLE alphaBmp, const char* texName, int32_t flags)
+	{
+		uint32_t* pixelData = Nu3D::ProcessBmpPixelData(mainBmp, alphaBmp, flags);
 
-	// STUB: TOY2 0x004AD090
-	HRESULT BuildBmpNodeWithAlpha(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags, HANDLE alphaBmp) { return 0; }
+		if (pixelData)
+		{
+			Nu3D::BmpDataNode* bmpDataNode = Nu3D::AllocateBmpDataNode();
 
-	// STUB: TOY2 0x004AD0C0
-	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return 0; }
+			if (bmpDataNode)
+			{
+				bmpDataNode->texData = pixelData;
 
-	// STUB: TOY2 0x004AD1C0
-	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode) { return 0; }
+				int32_t texSize = Nu3D::CalculateTexSize(mainBmp, flags);
 
-	// STUB: TOY2 0x004B0620
-	Nu3D::BmpDataNode* BuildRawBmpNode(HANDLE mainBmp, HANDLE alphaBmp, const char* texName, int32_t flags) { return 0; }
+				bmpDataNode->textureHeight = texSize;
+				bmpDataNode->textureWidth = texSize;
+				bmpDataNode->bitmapWidth = Nu3D::GetBitmapWidth(mainBmp);
+				bmpDataNode->bitmapHeight = Nu3D::GetBitmapHeight(mainBmp);
+				bmpDataNode->flags = flags;
 
-	// STUB: TOY2 0x004BB270
-	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags) { return 0; }
+				strcpy(bmpDataNode->texName, texName);
+
+				Nu3D::InitialiseTextureSurface(bmpDataNode);
+
+				return bmpDataNode;
+			}
+
+			free(pixelData);
+		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AD060
+	HRESULT BuildBmpNode(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags)
+	{
+		return Nu3D::BuildRawBmpNode(mainBmp, 0, texName, flags) != 0 ? 0 : DDERR_OUTOFMEMORY;
+	}
+
+	// FUNCTION: TOY2 0x004AD090
+	HRESULT BuildBmpNodeWithAlpha(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags, HANDLE alphaBmp)
+	{
+		return Nu3D::BuildRawBmpNode(mainBmp, alphaBmp, texName, flags) != 0 ? 0 : DDERR_OUTOFMEMORY;
+	}
+
+	// FUNCTION: TOY2 0x004AD0C0
+	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return Nu3D::GetBmpDataNodeByName(texName); }
+
+	// FUNCTION: TOY2 0x004AD1C0
+	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode)
+	{
+		if (! bmpNode)
+			return -1;
+
+		Nu3D::InitialiseTextureSurface(bmpNode);
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004BB270
+	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags)
+	{
+		NGNLoader::NGNTextureData* textureData = NGNLoader::AllocateTextureData();
+
+		if (textureData)
+		{
+			textureData->isTex14 = 0;
+			textureData->color.r = 0;
+			textureData->color.g = 0;
+			textureData->color.b = 0;
+			textureData->bmpDataNode = 0;
+
+			if (DrawingDevice::GetD3DDevice())
+			{
+				if (! Nu3D::BuildBmpNode(bmpHandle, texName, 0, flags))
+				{
+					Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+					textureData->bmpDataNode = bmpDataNode;
+
+					if (bmpDataNode)
+					{
+						Nu3D::InitBmpNodeSurface(bmpDataNode);
+						return textureData->textureIndex;
+					}
+				}
+			}
+
+			NGNLoader::ReleaseTextureData(textureData);
+		}
+
+		return 0;
+	}
 
 	// FUNCTION: TOY2 0x004CA0C0
 	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex)
@@ -959,6 +1040,12 @@ namespace Nu3D
 		}
 	}
 
-	// STUB: TOY2 0x004AD130
-	LPDIRECT3DTEXTURE2 BmpDataNode::GetTexture(Nu3D::BmpDataNode* bmpDataNode) { return 0; }
+	// FUNCTION: TOY2 0x004AD130
+	LPDIRECT3DTEXTURE2 BmpDataNode::GetTexture(Nu3D::BmpDataNode* bmpDataNode)
+	{
+		if (bmpDataNode)
+			return bmpDataNode->d3dTexture;
+		else
+			return 0;
+	}
 }

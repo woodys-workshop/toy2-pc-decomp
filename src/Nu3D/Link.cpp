@@ -320,14 +320,91 @@ namespace Nu3D
 			SetPositionRawAndCommit(linkId, targetX >> 5, targetY >> 5, targetZ >> 5);
 		}
 
-		// STUB: TOY2 0x004CCC70
-		void SetRotationRelative8bit(int32_t linkId, int32_t x, int32_t y, int32_t z) {}
+		// FUNCTION: TOY2 0x004CCC70
+		void SetRotationRelative8bit(int32_t linkId, int32_t x, int32_t y, int32_t z)
+		{
+			if (NGNLoader::g_ngnImage)
+			{
+				Link::Linker* links = NGNLoader::g_ngnImage->links;
 
-		// STUB: TOY2 0x004CCDA0
-		void TransformVectorInt3x3(int32_t linkId, Vector3I* out) {}
+				if (links)
+				{
+					if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+					{
+						Link::Linker* link = &links[linkId];
+						Link::DynamicScaler* scaler = link->dynamicScaler;
 
-		// STUB: TOY2 0x004CCF70
-		void GetTargetPosFixed(int32_t linkId, Vector3I* out) {}
+						if (scaler)
+						{
+							link->currentRot.x = 16 * x + scaler->rotation.x;
+							link->currentRot.y = 16 * y + scaler->rotation.y;
+							link->currentRot.z = 16 * z + scaler->rotation.z;
+
+							Link::RebuildMatrixAndCommit(link);
+						}
+					}
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CCDA0
+		void TransformVectorInt3x3(int32_t linkId, Vector3I* out)
+		{
+			if (NGNLoader::g_ngnImage)
+			{
+				Link::Linker* links = NGNLoader::g_ngnImage->links;
+
+				if (links)
+				{
+					if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+					{
+						Link::Linker* link = &links[linkId];
+
+						if (link->dynamicScaler)
+						{
+							Vector3F vector;
+
+							vector.x = out->x;
+							vector.y = out->y;
+							vector.z = out->z;
+
+							Math::TransformVectorByMatrix(&vector, &vector, &link->dynamicScaler->transformMatrix);
+
+							out->x = vector.x;
+							out->y = vector.y;
+							out->z = vector.z;
+						}
+					}
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004CCF70
+		void GetTargetPosFixed(int32_t linkId, Vector3I* out)
+		{
+			if (NGNLoader::g_ngnImage)
+			{
+				Nu3D::Link::Linker* links = NGNLoader::g_ngnImage->links;
+
+				if (links)
+				{
+					if (linkId < NGNLoader::g_ngnImage->maxLinkId)
+					{
+						Nu3D::Link::Linker* link = &links[linkId];
+						Nu3D::Link::DynamicScaler* scaler = link->dynamicScaler;
+
+						if (scaler)
+						{
+							uint32_t shift = scaler->gscaleType != 0 ? 3 : 5;
+
+							out->x = static_cast<int32_t>(link->targetPos.x) << shift;
+							out->y = static_cast<int32_t>(link->targetPos.y) << shift;
+							out->z = static_cast<int32_t>(link->targetPos.z) << shift;
+						}
+					}
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x004CCFF0
 		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2)

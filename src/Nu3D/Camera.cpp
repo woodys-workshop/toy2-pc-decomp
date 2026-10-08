@@ -1,5 +1,8 @@
 #include "Nu3D/Camera.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/RenderQueue.h"
+#include "Renderer/RenderType.h"
+#include "Renderer/Sprite.h"
 #include "DrawingDevice.h"
 #include "Nu3d/Math.h"
 #include "SoftwareRenderer.h"
@@ -593,7 +596,13 @@ namespace Nu3D
 			UnprojectPointsFromCamera(points, points, 4);
 
 			if (Viewport::g_fustrumInfo.unkInt6)
-				DrawDebugPortalOutlines(points, 4);
+			{
+				VectorState vecState;
+				vecState.vectorBuffer = points;
+				vecState.vectorCount = 4;
+
+				DrawDebugPortalOutlines(&vecState);
+			}
 
 			// rebuild the four side planes of the frustum so it only contains what is visible through the portal
 			Math::CalculatePlaneFromTriangle(&points[1], &points[0], &posVector, &Viewport::g_frustumData.leftPlane);
@@ -1180,8 +1189,8 @@ namespace Nu3D
 			return result;
 		}
 
-		// STUB: TOY2 0x0044F820
-		void EnableCameraSkew() {}
+		// FUNCTION: TOY2 0x0044F820
+		void EnableCameraSkew() { Nu3D::Camera::ToggleCameraSkew(1); }
 
 		// FUNCTION: TOY2 0x00450850
 		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1)
@@ -1238,10 +1247,35 @@ namespace Nu3D
 
 			return (viewZ[0] + viewZ[1] + viewZ[2] + viewZ[3]) / 16;
 		}
-	}
 
-	// STUB: TOY2 0x004B9B90
-	void DrawDebugPortalOutlines(Vector3F* points, int32_t count) {}
+		// FUNCTION: TOY2 0x004B9B90
+		void DrawDebugPortalOutlines(VectorState* vectorState)
+		{
+			int32_t oldFlags = Renderer::SetAdditionalRenderFlags(Renderer::RENDER_Z);
+			int32_t curVectorIdx = 1;
+
+			if (vectorState->vectorCount > 1)
+			{
+				int32_t nextVectorIdx = 1;
+
+				do
+				{
+					RGBA color;
+					color.r = -1;
+					color.g = -1;
+					color.b = -1;
+					color.a = -1;
+
+					Renderer::Sprite::QueueType10(&vectorState->vectorBuffer[nextVectorIdx - 1], &vectorState->vectorBuffer[nextVectorIdx], color);
+
+					++curVectorIdx;
+					++nextVectorIdx;
+				} while (curVectorIdx < vectorState->vectorCount);
+			}
+
+			Renderer::SetAdditionalRenderFlags(oldFlags);
+		}
+	}
 
 	namespace ViewMatrix
 	{

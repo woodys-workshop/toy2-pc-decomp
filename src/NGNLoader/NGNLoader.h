@@ -29,4 +29,5 @@ namespace NGNLoader
 	uint32_t GetOrAllocateTexture(NGNTextureParams* texParams);
 	NGNLoader::NGNTextureData* ReleaseTextureData(NGNLoader::NGNTextureData* list);
 	void ReleaseAllTextures();
+	NGNTextureData* AllocateTextureData();
 }

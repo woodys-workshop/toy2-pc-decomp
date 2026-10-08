@@ -3350,8 +3350,31 @@ namespace Toy2
 				buzzActor->gravityVel = 0;
 		}
 
-		// STUB: TOY2 0x004A4910
-		void RefreshDiscAmm() {}
+		// FUNCTION: TOY2 0x004A4910
+		void RefreshDiscAmm()
+		{
+			int32_t ammo = 6;
+			g_discLauncherAmmo = 6;
+
+			if (g_discLauncherTimer != 0)
+			{
+				// every disc (type 71 or 72) that is still flying takes one away
+				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::g_particleInstances;
+
+				do
+				{
+					if ((particle->typeId == 71 || particle->typeId == 72) && particle->lifetime > 0)
+						--ammo;
+
+					++particle;
+				} while (particle < &Nu3D::Particles::g_particleInstances[64]);
+
+				g_discLauncherAmmo = ammo;
+
+				if (ammo < 0)
+					g_discLauncherAmmo = 0;
+			}
+		}
 
 		// FUNCTION: TOY2 0x004A4E60
 		void DeactivateRocketBoots()

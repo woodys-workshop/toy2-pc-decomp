@@ -2391,11 +2391,18 @@ namespace Toy2
 		return result;
 	}
 
-	// STUB: TOY2 0x0049EB20
-	void UnlockAndPlayMovie(int32_t movieId, int32_t backgroundId, int32_t forcePlay) {}
-
 	// STUB: TOY2 0x0049AB90
 	int32_t PlayMovieWithTransition(int32_t movieId, int32_t backgroundId) { return 1; }
+
+	// FUNCTION: TOY2 0x0049EB20
+	void UnlockAndPlayMovie(int32_t movieId, int32_t backgroundId, int32_t forcePlay)
+	{
+		if (! SaveManager::g_save0Data.moviesUnlocked[movieId] || forcePlay)
+		{
+			SaveManager::g_save0Data.moviesUnlocked[movieId] = 1;
+			Toy2::PlayMovieWithTransition(movieId + 10, backgroundId);
+		}
+	}
 
 	// FUNCTION: TOY2 0x0048F1B0
 	void SetBackdropByIndex(int32_t index)
@@ -2732,8 +2739,52 @@ namespace Toy2
 		ReadIniFile();
 	}
 
-	// STUB: TOY2 0x00490730
-	void CheckForQuit() {}
+	// FUNCTION: TOY2 0x00412E80
+	int32_t CleanupManagers()
+	{
+		InputManager::Cleanup();
+		AudioManager::StopAndFlush();
+		AudioManager::ReleaseBuffers();
+		Renderer::Cleanup();
+		DrawingDevice::Quit();
+		return 1;
+	}
+
+	// FUNCTION: TOY2 0x00490730
+	void CheckForQuit()
+	{
+		if (D3DApp::g_windowData.wndIsExiting)
+		{
+			Logger::Log("CheckForQuit : Starting shutdown now...\n");
+			DestroyWindow(D3DApp::g_windowData.mainHwnd);
+
+			if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
+			{
+				SoftwareRenderer::Destroy();
+			}
+			else if (D3DApp::g_renderMode == RENDERMODE_D3D)
+			{
+				Logger::Log("QUIT : Destroying Direct3D renderer.\n");
+			}
+
+			Toy2::CleanupManagers();
+			D3DApp::PostQuitMessage();
+
+			CoUninitialize();
+
+			D3DApp::g_windowData.mainHwnd = 0;
+			Logger::Log("CheckForQuit : Code shutdown.\n");
+
+			g_clearScreenSaveResult = SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, 0, &g_setScreenSaveRunning, 0);
+
+			if (g_clearScreenSaveResult)
+				Logger::Log("Managed to clear SCREENSAVERRUNNING\n");
+			else
+				Logger::Log("Failed to clear SCREENSAVERRUNNING\n");
+
+			exit(D3DApp::g_windowData.wndEventMsg.wParam);
+		}
+	}
 
 	// FUNCTION: TOY2 0x004CE760
 	void InitCfg()
@@ -3266,9 +3317,6 @@ namespace Toy2
 		return 0;
 	}
 
-	// STUB: TOY2 0x00412E80
-	int32_t CleanupManagers() { return 0; }
-
 	// GLOBAL: TOY2 0x0072E340
 	int32_t g_unused72E340;
 
@@ -3457,9 +3505,6 @@ namespace Toy2
 		Nu3D::Camera::g_viewportLeftFixed10 = 0;
 		SoftwareRenderer::g_bltQueueCount = 0;
 	}
-
-	// STUB: TOY2 0x00414270
-	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag) {}
 
 	// FUNCTION: TOY2 0x00453CA0
 	void ResetBackdropState()
@@ -3709,11 +3754,11 @@ namespace Toy2
 		Levels::g_unk5574FC = highestCategory + 1;
 	}
 
-	// STUB: TOY2 0x0044F840
-	void ShowModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
+	// FUNCTION: TOY2 0x0044F840
+	void ShowModelNode(int32_t creatureIndex, int32_t nodeIdx) { Nu3D::Creature::SetNodeVisibleByIndex(creatureIndex, nodeIdx, 1); }
 
-	// STUB: TOY2 0x0044F860
-	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx) {}
+	// FUNCTION: TOY2 0x0044F860
+	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx) { Nu3D::Creature::SetNodeVisibleByIndex(creatureIndex, nodeIdx, 0); }
 
 	// FUNCTION: TOY2 0x004500A0
 	void LoadLevelGraphics(int32_t level)
@@ -3903,6 +3948,39 @@ namespace Toy2
 				RawLoader::LoadRawAndNGN("gfx\\level1a.raw");
 				break;
 		}
+	}
+
+	// FUNCTION: TOY2 0x00414270
+	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag)
+	{
+		if (! flag || flag == 123)
+			Toy2::LoadLevelGraphics(levelId);
+		else
+			Toy2::LoadLevelGraphics(0);
+
+		SoftwareRenderer::g_unk4F7400.x = 0;
+		SoftwareRenderer::g_unk4F7400.y = 0;
+
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+
+		int32_t delta = 28;
+
+		do
+		{
+			delta -= Renderer::g_frameDelta;
+
+			if (delta <= 0)
+				delta = 0;
+
+			Nu3D::Camera::FadeToTargetTint();
+
+			if (! flag)
+				Renderer::Sprite::DrawScaled(96, 200, 128, 1, 255u, 255u, 255u, 255, 2048, 2048);
+
+			Nullsub3();
+
+			Toy2::MainMenu::RenderMenu();
+		} while (delta);
 	}
 
 	// STUB: TOY2 0x00498550
@@ -5447,8 +5525,8 @@ namespace Toy2
 		return (hit & 4) != 0 ? beamShot : 0;
 	}
 
-	// STUB: TOY2 0x004CD110
-	int32_t ShowTokenSparkle() { return 0; }
+	// FUNCTION: TOY2 0x004CD110
+	int32_t ShowTokenSparkle() { return 1; }
 
 	namespace PostGameSaveMenu
 	{

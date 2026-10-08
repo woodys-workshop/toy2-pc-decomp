@@ -158,7 +158,31 @@ namespace Renderer
 
 namespace DevDraw
 {
+	struct DrawBuffer
+	{
+		void* vertex[65];
+		uint16_t vertexCount[65];
+		uint16_t index[65][1000];
+		uint16_t indexCount[65];
+	};
+
+	struct DrawTranBuffer
+	{
+		void* vertices[65];
+		uint16_t vertexCount[65];
+		uint16_t index[32][6000];
+		uint16_t indexCount[32];
+	};
+
+	extern DrawBuffer* g_drawBuffer;
+	extern DrawTranBuffer* g_drawTranBuffer;
+	extern int16_t g_bufferIndex;
 	extern int32_t g_vertexCount;
 
 	int16_t DrawSlots();
+	int16_t FlushDrawBufferSlot(int16_t bufferIndex);
+	int16_t FlushTransparentDrawBufferSlot(int16_t bufferIndex);
+
+	STATIC_ASSERT(sizeof(DrawBuffer) == 0x1FDD8);
+	STATIC_ASSERT(sizeof(DrawTranBuffer) == 0x5DDC8);
 }

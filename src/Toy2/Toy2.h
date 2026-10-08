@@ -119,6 +119,7 @@ namespace Toy2
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor);
 	int32_t ShowTokenSparkle();
+	void CheckForQuit();
 
 	extern ToyCfg g_toyCfgData;
 	extern ViewportPreset g_viewportPresets[3];

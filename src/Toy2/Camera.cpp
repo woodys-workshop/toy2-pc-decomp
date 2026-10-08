@@ -602,8 +602,40 @@ namespace Toy2
 			cameraState->angles.pitch = (cameraState->angles.pitch + (pitchDelta >> 2)) & 0xFFF;
 		}
 
-		// STUB: TOY2 0x00403730
-		void SnapBehindBuzz(Toy2::Camera::GameplayCameraState* cameraState) {}
+		// FUNCTION: TOY2 0x00403730
+		void SnapBehindBuzz(Toy2::Camera::GameplayCameraState* cameraState)
+		{
+			if (reinterpret_cast<int32_t>(g_unk50A538) != -1)
+			{
+				g_unk50A538->lifetime = 1;
+				g_unk50A538 = reinterpret_cast<Nu3D::Particles::ParticleInstance*>(-1);
+			}
+
+			if (reinterpret_cast<int32_t>(g_unk50A4DC) != -1)
+			{
+				g_unk50A4DC->lifetime = 1;
+				g_unk50A4DC = reinterpret_cast<Nu3D::Particles::ParticleInstance*>(-1);
+			}
+
+			cameraState->orbitYaw = Toy2::g_buzzActor.posAngles.angles.yaw;
+			Toy2::g_buzzActor.facingAngle = Toy2::g_buzzActor.posAngles.angles.yaw;
+			cameraState->distance = 1200;
+
+			int32_t yPos = Toy2::g_buzzActor.posAngles.pos.y - 12288;
+
+			cameraState->angles.pitch = 0;
+			cameraState->pos.y = yPos;
+			cameraState->targetPos.x = cameraState->pos.x;
+			cameraState->unkShort6 = 0;
+
+			Toy2::g_buzzActor.actorFlags |= 1u;
+
+			g_cameraState = 0;
+
+			Nu3D::Link::SetScaleFromFixedOffsets(45, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(46, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(47, 0, 0, 0);
+		}
 
 		// STUB: TOY2 0x004038E0
 		void VisorMode(Toy2::Camera::GameplayCameraState* state) {}

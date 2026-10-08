@@ -363,8 +363,13 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x004A0E60
-		void Deactivate(int32_t slotIdx) {}
+		// FUNCTION: TOY2 0x004A0E60
+		void Deactivate(int32_t slotIdx)
+		{
+			g_pickupSlots[slotIdx].state = 0;
+			*g_pickupSlots[slotIdx].yPosPtr = 0x80000000;
+			Nu3D::Link::SetScaleFromFixedOffsets(g_pickupSlots[slotIdx].linkId, 0, 0, 0);
+		}
 
 		// FUNCTION: TOY2 0x004A50D0
 		void CosmicShield(Toy2::Levels::Type63* object)

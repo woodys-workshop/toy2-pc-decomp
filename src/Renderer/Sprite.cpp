@@ -10,6 +10,8 @@
 #include "Nu3D/Viewport.h"
 #include "DrawingDevice.h"
 #include "Logger.h"
+#include "Toy2/Toy2.h"
+#include "Renderer/Glue.h"
 
 #include <STDIO.H>
 
@@ -836,10 +838,84 @@ namespace Renderer
 			}
 		}
 
-		// STUB: TOY2 0x00493A60
+		// FUNCTION: TOY2 0x00493A60
 		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags)
 		{
-			return 0;
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (sheet)
+			{
+				int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+				Vector2F uvTopLeft;
+				Vector2F uvBottomRight;
+
+				if (textureDataIndex)
+				{
+					uint32_t bitmapWidth;
+					uint32_t bitmapHeight;
+					NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+					double dW = (double)bitmapWidth;
+					double dH = (double)bitmapHeight;
+
+					uvTopLeft.x = sheet->tiles[tileIndex].x / dW;
+					uvTopLeft.y = sheet->tiles[tileIndex].y / dH;
+
+					uvBottomRight.x = ((double)sheet->tileWidth + (double)sheet->tiles[tileIndex].x) / dW;
+					uvBottomRight.y = ((double)sheet->tileHeight + (double)sheet->tiles[tileIndex].y) / dH;
+				}
+
+				// the colour is the tint of the camera, the red, green and blue arguments are not used
+				// NOTE: the first byte gets the red tint, the third one the blue tint
+				RGBA color;
+				color.g = Nu3D::Camera::g_cameraTintGreen;
+				color.r = Nu3D::Camera::g_cameraTintBlue;
+				color.b = Nu3D::Camera::g_cameraTintRed;
+
+				int32_t blendMode = flags & 0x60;
+				int32_t renderFlags;
+
+				if (blendMode != 0)
+				{
+					if (blendMode == 32)
+					{
+						color.a = 255;
+						renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_CUSTOM;
+					}
+					else if (blendMode == 64)
+					{
+						color.a = 255;
+						renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_ALT;
+					}
+					else
+					{
+						color.a = 255 - ((flags >> 8) & 0xFF);
+						renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
+					}
+				}
+				else
+				{
+					color.a = 128;
+					renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
+				}
+
+				float invHeight = 1.0 / g_virtualScreenHeight;
+				float invWidth = 1.0 / g_virtualScreenWidth;
+
+				Queue2DSprite(
+					xPos * invWidth,
+					yPos * invHeight,
+					sheet->tileWidth * invWidth,
+					sheet->tileHeight * invHeight,
+					&uvTopLeft,
+					&uvBottomRight,
+					textureDataIndex,
+					color,
+					renderFlags);
+			}
+
+			return 1;
 		}
 
 		// FUNCTION: TOY2 0x004942D0
@@ -933,8 +1009,82 @@ namespace Renderer
 			return 1;
 		}
 
-		// STUB: TOY2 0x004949B0
-		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex) {}
+		// FUNCTION: TOY2 0x004949B0
+		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex)
+		{
+			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
+
+			if (sheet)
+			{
+				int32_t textureIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+				Vector2F uvTopLeft;
+				Vector2F uvBottomRight;
+
+				if (textureIndex)
+				{
+					uint32_t bitmapWidth;
+					uint32_t bitmapHeight;
+					NGNLoader::RetrieveTextureData(textureIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+					double dW = (double)bitmapWidth;
+					float dH = (float)bitmapHeight;
+
+					uvTopLeft.x = sheet->tiles[tileIndex].x / dW;
+					uvTopLeft.y = sheet->tiles[tileIndex].y / dH;
+
+					uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / dW;
+					uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / dH;
+				}
+
+				// NOTE: the first byte gets the red tint, the third one the blue tint
+				RGBA color;
+				color.r = Nu3D::Camera::g_cameraTintBlue;
+				color.g = Nu3D::Camera::g_cameraTintGreen;
+				color.b = Nu3D::Camera::g_cameraTintRed;
+				color.a = 255;
+
+				float clipLeftF = clipLeft / g_virtualScreenWidth;
+				float clipRightF = clipRight / g_virtualScreenWidth;
+
+				double invWidth = 1.0 / g_virtualScreenWidth;
+
+				float x = xPos * invWidth;
+				float invHeight = 1.0 / g_virtualScreenHeight;
+
+				float y = yPos * invHeight;
+				float width = sheet->tileWidth * invWidth;
+				float height = sheet->tileHeight * invHeight;
+
+				if (width + x >= clipLeftF && x <= clipRightF)
+				{
+					// cut off the part that is left of the clip rect
+					if (x < clipLeftF)
+					{
+						double cut = clipLeftF - x;
+						x = clipLeftF;
+						float cutFraction = cut / width;
+						width = width - cut;
+
+						uvTopLeft.x = (uvBottomRight.x - uvTopLeft.x) * cutFraction + uvTopLeft.x;
+					}
+
+					double right = width + x;
+
+					// and the part that is right of it
+					if (right > clipRightF)
+					{
+						double cut = right - clipRightF;
+						float cutFraction = cut / width;
+						width = width - cut;
+
+						uvBottomRight.x = uvBottomRight.x - (uvBottomRight.x - uvTopLeft.x) * cutFraction;
+					}
+
+					Queue2DSprite(x, y, width, height, &uvTopLeft, &uvBottomRight, textureIndex, color, 3136);
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x0049D2D0
 		void QueueSegment(Vector3I* start, Vector3I* delta, uint8_t b, uint8_t g, uint8_t r)
@@ -960,8 +1110,61 @@ namespace Renderer
 			QueueType10(&startPos, &endPos, color);
 		}
 
-		// STUB: TOY2 0x0049D7A0
-		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration) {}
+		// FUNCTION: TOY2 0x0049D7A0
+		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration)
+		{
+			if (*timer <= 0)
+			{
+				*timer = cycleDuration;
+				int32_t nextIndex = *backdropIndex + 1;
+				*backdropIndex = nextIndex;
+
+				if (nextIndex > 9)
+					*backdropIndex = 0;
+
+				Toy2::g_nextBackdropId = *backdropIndex + 48;
+
+				Glue::SetBackdrop(Toy2::g_nextBackdropId);
+			}
+			else
+			{
+				*timer -= g_frameDelta;
+			}
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+			RGBA color;
+
+			// fade to black at the end of the cycle
+			if (*timer < 25)
+			{
+				color.value = 0;
+				color.a = -1 - 10 * *timer;
+
+				uvTopLeft.x = 0.0;
+				uvTopLeft.y = 0.0;
+
+				uvBottomRight.x = 1.0;
+				uvBottomRight.y = 1.0;
+
+				Queue2DSprite(0.0, 0.0, 1.0, 1.0, &uvTopLeft, &uvBottomRight, 0, color, 3136);
+			}
+
+			// and fade in from black at the start
+			if (*timer > cycleDuration - 25)
+			{
+				color.value = 0;
+				color.a = 10 * *timer - 10 * cycleDuration - 1;
+
+				uvBottomRight.x = 0.0;
+				uvBottomRight.y = 0.0;
+
+				uvTopLeft.x = 1.0;
+				uvTopLeft.y = 1.0;
+
+				Queue2DSprite(0.0, 0.0, 1.0, 1.0, &uvBottomRight, &uvTopLeft, 0, color, 3136);
+			}
+		}
 
 		// FUNCTION: TOY2 0x004B8F40
 		void QueueBillboardSprite(

@@ -15,10 +15,13 @@
 #include "Toy2/D3DApp.h"
 #include "Renderer/ApplyFixes.h"
 #include "Logger.h"
+#include "Nullsub.h"
+#include "Nu3D/Nu3D.h"
 
 #include <WINDOWS.H>
 #include <STDARG.H>
 #include <STDIO.H>
+#include <STRING.H>
 
 namespace Renderer
 {
@@ -211,6 +214,9 @@ namespace Renderer
 
 	// GLOBAL: TOY2 0x00559C60
 	int32_t g_letterboxTimer;
+
+	// GLOBAL: TOY2 0x00508218
+	int32_t g_blitWithWrappingPath = 1;
 }
 
 namespace DrawingAPI
@@ -574,8 +580,28 @@ namespace Renderer
 		DECOMP_PRINT(("Finished Renderer::InitResources\n"));
 	}
 
-	// STUB: TOY2 0x004B37F0
-	void Cleanup() {}
+	// FUNCTION: TOY2 0x004B37F0
+	void Cleanup()
+	{
+		for (Nu3D::Patch* patch = Nu3D::g_patchListHead; Nu3D::g_patchListHead; patch = Nu3D::g_patchListHead)
+		{
+			patch->listNext = 0;
+			Nu3D::Patch::PatchVertices::Destroy(Nu3D::g_patchListHead);
+		}
+
+		for (Nu3D::Primitive* prim = Nu3D::g_primListHead; Nu3D::g_primListHead; prim = Nu3D::g_primListHead)
+		{
+			prim->listNext = 0;
+			Nu3D::Primitive::Destroy(Nu3D::g_primListHead);
+		}
+
+		Nullsub8();
+
+		NGNLoader::ReleaseAllTextures();
+		Nu3D::Light::DestroyAllLights();
+
+		Renderer::g_rendererValid = 0;
+	}
 
 	// FUNCTION: TOY2 0x004B3630
 	void Init()
@@ -1511,26 +1537,171 @@ namespace Renderer
 		}
 	}
 
-	// STUB: TOY2 0x0049B260
-	void BlitTextureByIndexOffset(
-		int32_t texIndex,
-		int32_t destX,
-		int32_t destY,
-		int32_t width,
-		int32_t height,
-		int32_t horizontalWrapOffset,
-		int32_t verticalWrapOffset,
-		int32_t srcX,
-		int32_t srcY)
+	// FUNCTION: TOY2 0x0049B2A0
+	void DrawMenuText(int16_t yPos, char* text, int32_t shadow)
 	{
-		// not implemented
+		char* curText = text;
+		int32_t length = 0;
+
+		if (*text)
+		{
+			while (text[++length])
+				;
+		}
+
+		// centred on the screen
+		int16_t xPos = 4 * (40 - length);
+
+		if (length > 0)
+		{
+			int32_t remainingChars = length;
+
+			do
+			{
+				char curChar = *curText++;
+
+				switch (curChar)
+				{
+					// the button icons
+					case '1':
+						Sprite::DrawTile(xPos - 4, yPos - 3, 68, 2);
+						break;
+					case '2':
+						Sprite::DrawTile(xPos - 4, yPos - 3, 68, 3);
+						break;
+					case '3':
+						Sprite::DrawTile(xPos - 4, yPos - 3, 68, 1);
+						break;
+					case '4':
+						Sprite::DrawTile(xPos - 4, yPos - 3, 68, 0);
+						break;
+					default:
+						if (curChar != ' ')
+						{
+							uint8_t tileIndex;
+
+							if (curChar == '\'')
+								tileIndex = '/';
+							else
+								tileIndex = curChar - 'a';
+
+							if (shadow)
+								Sprite::DrawScaled(xPos, yPos, 67, tileIndex, 0x80, 0x80, 0x80, 0, 2048, 2048);
+							else
+								Sprite::DrawScaled(xPos, yPos, 67, tileIndex, 0x80, 0x80, 0x80, 255, 2048, 2048);
+						}
+
+						break;
+				}
+
+				xPos += 8;
+				--remainingChars;
+			} while (remainingChars);
+		}
 	}
 
-	// STUB: TOY2 0x0049B2A0
-	void DrawMenuText(int16_t yPos, char* text, int32_t shadow) {}
+	// FUNCTION: TOY2 0x0049B3B0
+	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale)
+	{
+		int32_t length = strlen(text);
+		int16_t curXPos;
 
-	// STUB: TOY2 0x0049B3B0
-	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale) {}
+		if (alignment)
+		{
+			int32_t offset;
+
+			if (alignment == 2)
+				offset = -16 * scale * length / 4096;
+			else
+				offset = -16 * scale * length / 0x2000;
+
+			curXPos = offset + xPos;
+		}
+		else
+		{
+			curXPos = xPos;
+		}
+
+		if (length > 0)
+		{
+			int32_t remainingChars = length;
+
+			do
+			{
+				char curChar = *text++;
+
+				if (curChar != ' ')
+				{
+					uint8_t tileIndex;
+
+					switch (curChar)
+					{
+						case '\'':
+							tileIndex = 47;
+							break;
+						case '(':
+							tileIndex = 33;
+							break;
+						case ')':
+							tileIndex = 34;
+							break;
+						case ',':
+							tileIndex = 26;
+							break;
+						case '.':
+							tileIndex = 27;
+							break;
+						case '/':
+							tileIndex = 28;
+							break;
+						case '0':
+							tileIndex = curChar - 4;
+							break;
+						case '1':
+						case '2':
+						case '3':
+						case '4':
+						case '5':
+						case '6':
+						case '7':
+						case '8':
+						case '9':
+							tileIndex = curChar - 14;
+							break;
+						case ':':
+							tileIndex = 31;
+							break;
+						case ';':
+							tileIndex = 32;
+							break;
+						case '?':
+							tileIndex = 30;
+							break;
+						case 'A':
+						case 'B':
+						case 'C':
+						case 'D':
+							tileIndex = curChar - 20;
+							break;
+						case '\\':
+							tileIndex = 29;
+							break;
+						default:
+							tileIndex = curChar - 97;
+							break;
+					}
+
+					if (shadow)
+						Sprite::DrawScaled(curXPos, yPos, 67, tileIndex, 0x80, 0x80, 0x80, 0, scale, scale);
+					else
+						Sprite::DrawScaled(curXPos, yPos, 67, tileIndex, 0x80, 0x80, 0x80, 255, scale, scale);
+				}
+
+				curXPos += 16 * scale / 4096;
+				--remainingChars;
+			} while (remainingChars);
+		}
+	}
 
 	// FUNCTION: TOY2 0x0049B630
 	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth)
@@ -1611,7 +1782,7 @@ namespace Renderer
 		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255);
 	}
 
-	// STUB: TOY2 0x004AFD30
+	// FUNCTION: TOY2 0x004AFD30
 	void BlitBitmapWithWrapping(
 		Nu3D::BmpDataNode* bmpDataNode,
 		int32_t srcX,
@@ -1623,7 +1794,75 @@ namespace Renderer
 		LONG destX,
 		LONG destY)
 	{
-		// not implemented
+		RECT srcRect;
+		RECT destRect;
+
+		LONG destRightEdge;
+		LONG destBottomEdge;
+		LONG srcBottomEdge;
+
+		if (g_blitWithWrappingPath)
+		{
+			DDBLTFX bltFx;
+			bltFx.dwSize = 100;
+			bltFx.dwROP = 0xCC0020;
+
+			LPDIRECTDRAWSURFACE4 surface = bmpDataNode->surface;
+
+			if (verticalWrapOffset)
+			{
+				destRect.left = srcX;
+				destRightEdge = srcX + width;
+				destRect.right = srcX + width;
+				destRect.top = srcY + verticalWrapOffset;
+				destRect.bottom = srcY + height;
+				srcRect.left = destX;
+				srcRect.top = destY;
+				destBottomEdge = destX + width;
+				srcRect.right = destX + width;
+				srcBottomEdge = height - verticalWrapOffset + destY;
+				srcRect.bottom = srcBottomEdge;
+				surface->Blt(&srcRect, surface, &destRect, 0x1020000, &bltFx);
+
+				srcRect.left = destX;
+				srcRect.top = srcBottomEdge;
+				destRect.right = destRightEdge;
+				srcRect.bottom = destY + height;
+				destRect.left = srcX;
+				destRect.top = srcY;
+				destRect.bottom = srcY + verticalWrapOffset;
+				srcRect.right = destBottomEdge;
+				surface->Blt(&srcRect, surface, &destRect, 16908288, &bltFx);
+			}
+			else
+			{
+				destRect.top = srcY;
+				destRect.right = width + srcX - horizontalWrapOffset;
+				destRect.left = srcX + horizontalWrapOffset;
+				destBottomEdge = height + srcY;
+				destRect.bottom = height + srcY;
+				srcRect.left = destX;
+				srcRect.top = destY;
+				srcBottomEdge = width - horizontalWrapOffset + destX;
+				srcRect.right = srcBottomEdge;
+				destRightEdge = destY + height;
+				srcRect.bottom = destY + height;
+				surface->Blt(&srcRect, surface, &destRect, 16908288, &bltFx);
+
+				if (horizontalWrapOffset)
+				{
+					destRect.top = srcY;
+					destRect.bottom = destBottomEdge;
+					srcRect.left = srcBottomEdge;
+					srcRect.top = destY;
+					srcRect.bottom = destRightEdge;
+					destRect.left = srcX;
+					destRect.right = srcX + horizontalWrapOffset;
+					srcRect.right = destX + width;
+					surface->Blt(&srcRect, surface, &destRect, 16908288, &bltFx);
+				}
+			}
+		}
 	}
 
 	// FUNCTION: TOY2 0x004B8940
@@ -1677,8 +1916,13 @@ namespace Renderer
 		return result;
 	}
 
-	// STUB: TOY2 0x004B9600
-	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState) {}
+	// FUNCTION: TOY2 0x004B9600
+	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState)
+	{
+		Renderer::InitRenderState(renderState);
+		Renderer::BindTexture(texIndex);
+		DrawingDevice::DrawPrimitive(D3DPT_TRIANGLELIST, D3DFVF_0x1C4, vertices, 3, 16);
+	}
 
 	// FUNCTION: TOY2 0x004B9A60
 	int32_t Set9F5FF8(int32_t value)
@@ -1689,7 +1933,7 @@ namespace Renderer
 		return result;
 	}
 
-	// STUB: TOY2 0x004CE510
+	// FUNCTION: TOY2 0x004CE510
 	void BlitTextureByIndex(
 		int32_t texIndex,
 		LONG destX,
@@ -1701,7 +1945,32 @@ namespace Renderer
 		int32_t srcX,
 		int32_t srcY)
 	{
-		// not implemented
+		if ((Toy2::g_toyCfgData.flags & 4) != 0)
+		{
+			int32_t texIndex = NGNLoader::GetTextureDataIndex(texIndex);
+
+			if (texIndex)
+			{
+				NGNLoader::NGNTextureData* texData = NGNLoader::GetTextureDataByIndex(texIndex);
+
+				Renderer::BlitBitmapWithWrapping(texData->bmpDataNode, srcX, srcY, width, height, horizontalWrapOffset, verticalWrapOffset, destX, destY);
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x0049B260
+	void BlitTextureByIndexOffset(
+		int32_t texIndex,
+		int32_t destX,
+		int32_t destY,
+		int32_t width,
+		int32_t height,
+		int32_t horizontalWrapOffset,
+		int32_t verticalWrapOffset,
+		int32_t srcX,
+		int32_t srcY)
+	{
+		Renderer::BlitTextureByIndex(texIndex, destX, destY, width, height, horizontalWrapOffset, verticalWrapOffset, destX + srcX, destY + srcY);
 	}
 
 	// FUNCTION: TOY2 0x004B89B0
@@ -1745,15 +2014,151 @@ namespace Renderer
 
 namespace DevDraw
 {
+	// GLOBAL: TOY2 0x00732FC8
+	DrawBuffer g_drawBufferSrc;
+
+	// GLOBAL: TOY2 0x007D2DA8
+	DrawTranBuffer g_drawTranBufferSrc;
+
+	// GLOBAL: TOY2 0x00500A10
+	DrawBuffer* g_drawBuffer = &g_drawBufferSrc;
+
+	// GLOBAL: TOY2 0x00500A14
+	DrawTranBuffer* g_drawTranBuffer = &g_drawTranBufferSrc;
+
+	// GLOBAL: TOY2 0x00500A28
+	int16_t g_bufferIndex = -1;
+
 	// GLOBAL: TOY2 0x00732FBC
 	int32_t g_vertexCount;
 
-	// STUB: TOY2 0x004907E0
-	int16_t DrawSlots() { return 0; }
+	// FUNCTION: TOY2 0x004907E0
+	int16_t DrawSlots()
+	{
+		if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
+		{
+			if (SoftwareRenderer::g_unk559C40 != 1 || (Renderer::g_frameDelta & 1) == 0)
+				SoftwareRenderer::UnkFunc8();
 
-	// STUB: TOY2 0x00490470
-	int16_t FlushDrawBufferSlot(int16_t bufferIndex) { return 0; }
+			SoftwareRenderer::g_unk839280 = 0;
 
-	// STUB: TOY2 0x004905C0
-	int16_t FlushTransparentDrawBufferSlot(int16_t bufferIndex) { return 0; }
+			Nu3D::MemSet32Util(SoftwareRenderer::g_unk504D34, 0x1000, 0);
+			return 1;
+		}
+
+		if (D3DApp::g_renderMode != RENDERMODE_D3D)
+			return 1;
+
+		for (int16_t dbSlot = 0; dbSlot < 64; ++dbSlot)
+			FlushDrawBufferSlot(dbSlot);
+
+		for (int16_t tranDbSlot = 0; tranDbSlot < 64; ++tranDbSlot)
+			FlushTransparentDrawBufferSlot(tranDbSlot);
+
+		return 1;
+	}
+
+	// FUNCTION: TOY2 0x00490470
+	int16_t FlushDrawBufferSlot(int16_t bufferIndex)
+	{
+		Renderer::InitRenderState(0);
+
+		LPDIRECT3DDEVICE3 device = DrawingDevice::GetD3DDevice();
+
+		DrawBuffer* drawBuffer = g_drawBuffer;
+
+		if (g_drawBuffer->vertexCount[bufferIndex])
+		{
+			// the textures of the draw buffer are called LOADTEXT_tex00, LOADTEXT_tex01 ...
+			char nodeName[16];
+			memcpy(nodeName, "LOADTEXT_tex", 12);
+
+			nodeName[14] = 0;
+			nodeName[12] = bufferIndex / 10 + 48;
+			nodeName[13] = bufferIndex % 10 + 48;
+
+			Nu3D::BmpDataNode* bmpNode = Nu3D::GetBmpDataNodeByName_T(nodeName);
+
+			device->SetTexture(0, Nu3D::BmpDataNode::GetTexture(bmpNode));
+
+			HRESULT result = device->DrawIndexedPrimitive(
+				D3DPT_TRIANGLELIST,
+				D3DFVF_0x1C4,
+				g_drawBuffer->vertex[bufferIndex],
+				g_drawBuffer->vertexCount[bufferIndex],
+				g_drawBuffer->index[bufferIndex],
+				g_drawBuffer->indexCount[bufferIndex],
+				8);
+
+			if (result < 0)
+				Logger::LogDDError(
+					"dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, ( 0x004 | 0x040 | 0x080 | 0x100 ), (LPVOID) (drawb->Vertice[i]), drawb->VerticeCount[i], "
+					"(LPWORD) & (drawb->Index[i]), drawb->IndexCount[i], 0x00000008l)",
+					result);
+
+			drawBuffer = g_drawBuffer;
+
+			g_bufferIndex = bufferIndex;
+			g_vertexCount += g_drawBuffer->vertexCount[bufferIndex];
+		}
+
+		drawBuffer->indexCount[bufferIndex] = 0;
+
+		g_drawBuffer->vertexCount[bufferIndex] = 0;
+
+		return 1;
+	}
+
+	// FUNCTION: TOY2 0x004905C0
+	int16_t FlushTransparentDrawBufferSlot(int16_t bufferIndex)
+	{
+		LPDIRECT3DDEVICE3 device = DrawingDevice::GetD3DDevice();
+
+		Renderer::InitRenderState(1024);
+
+		if (bufferIndex < 32 && g_drawTranBuffer->vertexCount[bufferIndex])
+		{
+			char nodeName[16];
+			nodeName[14] = 0;
+
+			memcpy(nodeName, "LOADTEXT_tex", 12);
+
+			nodeName[12] = bufferIndex / 10 + 48;
+			nodeName[13] = bufferIndex % 10 + 48;
+
+			Nu3D::BmpDataNode* bmpNode = Nu3D::GetBmpDataNodeByName_T(nodeName);
+
+			device->SetTexture(0, Nu3D::BmpDataNode::GetTexture(bmpNode));
+
+			HRESULT result = device->DrawIndexedPrimitive(
+				D3DPT_TRIANGLELIST,
+				D3DFVF_0x1C4,
+				g_drawTranBuffer->vertices[bufferIndex],
+				g_drawTranBuffer->vertexCount[bufferIndex],
+				g_drawTranBuffer->index[bufferIndex],
+				g_drawTranBuffer->indexCount[bufferIndex],
+				8);
+
+			if (result < 0)
+				Logger::LogDDError(
+					"dev->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, ( 0x004 | 0x040 | 0x080 | 0x100 ), (LPVOID) (drawtranb->Vertice[i]), "
+					"drawtranb->VerticeCount[i], (LPWORD) & (drawtranb->Index[i]), drawtranb->IndexCount[i], 0x00000008l)",
+					result);
+
+			g_bufferIndex = bufferIndex;
+			g_vertexCount += g_drawTranBuffer->vertexCount[bufferIndex];
+		}
+
+		Renderer::InitRenderState(0);
+
+#ifdef APPLY_FIXES
+		// the slots 32 to 63 are past the end of indexCount, the original zeroes whatever is behind the buffer
+		if (bufferIndex < 32)
+#endif
+			g_drawTranBuffer->indexCount[bufferIndex] = 0;
+
+		g_drawTranBuffer->vertexCount[bufferIndex] = 0;
+
+		return 1;
+	}
 }

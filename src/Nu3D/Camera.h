@@ -55,6 +55,18 @@ namespace Nu3D
 			int32_t unkInt3;
 		};
 
+		struct VectorState
+		{
+			int32_t unkInt1;
+			int32_t vectorCount;
+			int32_t unkInt3;
+			int32_t unkInt4;
+			int32_t unkInt5;
+			int32_t unkInt6;
+			int32_t unkInt7;
+			Vector3F* vectorBuffer;
+		};
+
 		extern int32_t g_billboardYaw;
 		extern CameraInstance* g_primaryCamera;
 		extern CameraInstance g_secondaryCamera;
@@ -117,13 +129,13 @@ namespace Nu3D
 		void EnableCameraSkew();
 		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1);
 		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8);
+		void DrawDebugPortalOutlines(VectorState* vectorState);
 
 		STATIC_ASSERT(sizeof(ActiveCameraTransform) == 0x14);
 		STATIC_ASSERT(sizeof(CameraInstance) == 0x64);
 		STATIC_ASSERT(sizeof(NineWords) == 0x20);
+		STATIC_ASSERT(sizeof(VectorState) == 0x20);
 	}
-
-	void DrawDebugPortalOutlines(Vector3F* points, int32_t count);
 
 	namespace ViewMatrix
 	{

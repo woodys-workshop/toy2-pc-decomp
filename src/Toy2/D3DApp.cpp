@@ -43,8 +43,12 @@ namespace D3DApp
 
 namespace D3DApp
 {
-	// STUB: TOY2 0x004318F0
-	void LogErrorNotSet() {}
+	// FUNCTION: TOY2 0x004318F0
+	void LogErrorNotSet()
+	{
+		char* errorNotSet = Logger::GetErrorNotSet();
+		Logger::LogLn(errorNotSet);
+	}
 
 	// FUNCTION: TOY2 0x004093A0
 	int32_t BuildProfileMachine()
@@ -973,10 +977,4 @@ namespace D3DApp
 
 	// FUNCTION: TOY2 0x004A6B10
 	void SysParmsOnExit() { SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, g_sysParamsInfo, &g_sysParamsInfo, 0); }
-
-	// STUB: TOY2 0x0040D2C0
-	CHAR* GetErrorNotSet() { return 0; }
-
-	// STUB: TOY2 0x004ADFF0
-	char* ErrorToString(int32_t d3dError) { return 0; }
 }

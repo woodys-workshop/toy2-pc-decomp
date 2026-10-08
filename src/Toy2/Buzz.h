@@ -94,6 +94,7 @@ namespace Toy2
 		extern int32_t g_unk53C5E4;
 		extern int32_t g_unk53C618;
 		extern int32_t g_buzzSlipTimer;
+		extern int32_t g_unk53C61C;
 		extern int32_t g_unk53C83C;
 		extern int32_t g_unk53C650;
 		extern int32_t g_groundSlamTicker;
