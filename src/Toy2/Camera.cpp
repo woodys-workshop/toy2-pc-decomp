@@ -15,6 +15,7 @@
 #include "Nu3D/Portal.h"
 #include "Toy2/Portal.h"
 #include "Toy2/Platform.h"
+#include "Toy2/Levels.h"
 #include "AudioManager/AudioManager.h"
 #include "CharacterLoader.h"
 
@@ -152,6 +153,31 @@ namespace Toy2
 		// the record the cutscene script uses
 		// GLOBAL: TOY2 0x0050A0C8
 		int32_t g_unk50A0C8;
+
+		// the yaw and pitch of the visor rings, they follow the aim with a delay
+		// GLOBAL: TOY2 0x0050A290
+		int32_t g_unk50A290;
+
+		// GLOBAL: TOY2 0x0050A28C
+		int32_t g_unk50A28C;
+
+		// the turn speed of the visor
+		// GLOBAL: TOY2 0x0050A130
+		int32_t g_unk50A130;
+
+		// GLOBAL: TOY2 0x0050A138
+		int32_t g_unk50A138;
+
+		// the phase of the spin of the visor rings
+		// GLOBAL: TOY2 0x0050A4C8
+		int32_t g_unk50A4C8;
+
+		// GLOBAL: TOY2 0x0050A14C
+		int32_t g_unk50A14C;
+
+		// the actors (and the grapple points + 1000) that can be locked on to, ends with -1
+		// GLOBAL: TOY2 0x0050A0D0
+		int32_t g_lockOnCandidates[16];
 
 		// GLOBAL: TOY2 0x004F5AB4
 		int16_t g_cameraAngleOffsetTable[10] = { 0, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 0 };
@@ -637,8 +663,711 @@ namespace Toy2
 			Nu3D::Link::SetScaleFromFixedOffsets(47, 0, 0, 0);
 		}
 
-		// STUB: TOY2 0x004038E0
-		void VisorMode(Toy2::Camera::GameplayCameraState* state) {}
+		// FUNCTION: TOY2 0x004037E0
+		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag)
+		{
+			int16_t yawAngle = actor->yawAngle;
+
+			int16_t angleOffset = yawAngle - 2048;
+			int32_t cosYaw = Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF];
+			Vector3I16* lockOnOffset = (Vector3I16*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
+
+			int32_t sinYaw = Numerics::g_sinCosLUT[angleOffset & 0xFFF] >> 2;
+			cosYaw >>= 2;
+			int32_t offsetX = lockOnOffset->x;
+
+			int32_t rotatedX = (sinYaw * lockOnOffset->z + cosYaw * offsetX) >> 12;
+			int32_t rotatedZ = (cosYaw * lockOnOffset->z - sinYaw * offsetX) >> 12;
+
+			if (flag == -1)
+			{
+				pos->x = rotatedX + actor->pos.x;
+				pos->y = actor->pos.y + lockOnOffset->y;
+				pos->z = rotatedZ + actor->pos.z;
+
+				return 0;
+			}
+
+			pos->x = (rotatedX + actor->pos.x - g_gameplayCameraState.pos.x) >> 5;
+			int32_t y = (actor->pos.y + lockOnOffset->y - g_gameplayCameraState.pos.y) >> 5;
+			pos->y = y;
+			int32_t z = (rotatedZ + actor->pos.z - g_gameplayCameraState.pos.z) >> 5;
+			pos->z = z;
+
+			if (flag == 0)
+				return 0;
+
+			return z * z + y * y + pos->x * pos->x < flag;
+		}
+
+		// FUNCTION: TOY2 0x004038E0
+		void VisorMode(Toy2::Camera::GameplayCameraState* state)
+		{
+			Vector3I lockOnPoint;
+			WorldPos startPos;
+			WorldPos displacement;
+			int32_t targetIdx;
+			int32_t candidateCount;
+			int32_t firstCandidate;
+			int32_t yawTarget;
+			int32_t pitchTarget;
+			int32_t yawInput;
+			int32_t pitchInput;
+			int32_t frameDelta;
+			int32_t yawVel;
+			int32_t pitchVel;
+			int32_t lockX;
+			int32_t lockZ;
+			int32_t x;
+			int32_t y;
+			int32_t z;
+			int32_t yawAccel;
+			int32_t pitchAccel;
+			int32_t pitchCap;
+			Nu3D::Particles::ParticleInstance* particle;
+
+			int32_t cameraState = g_cameraState;
+
+			// from the third state on, the camera sits at Buzz
+			if (g_cameraState >= 3)
+			{
+				state->pos.x = g_buzzActor.posAngles.pos.x;
+				state->pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				state->pos.z = g_buzzActor.posAngles.pos.z;
+				cameraState = g_cameraState;
+			}
+
+			yawTarget = 0;
+
+			// entering the visor
+			if (cameraState == 3)
+			{
+				AudioManager::PlaySoundEffect(42, &g_buzzActor.posAngles.pos);
+				state->angles.pitch = 0;
+				state->angles.yaw = g_buzzActor.posAngles.angles.yaw;
+				state->targetPos.x = 0;
+				g_unk50A290 = g_buzzActor.posAngles.angles.yaw;
+				targetIdx = -1;
+				g_buzzActor.actorFlags &= ~Actor::ACTOR_CUTSCENE_MOVE;
+				g_unk50A28C = 0;
+				g_unk50A130 = 0;
+				g_unk50A138 = 0;
+				g_unk50A4C8 = 2040;
+				g_unk50A538 = (Nu3D::Particles::ParticleInstance*)-1;
+				g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
+				g_cameraState = 4;
+				g_lockOnActorIdx = -1;
+				g_unk50A14C = 0;
+				g_unk50A540 = 0;
+			}
+			else
+			{
+				if (cameraState != 4)
+					goto LABEL_155;
+
+				targetIdx = g_lockOnActorIdx;
+			}
+
+			// collect the actors (and grapple points) that can be locked on to
+			{
+				Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+				candidateCount = 0;
+
+				if (Actor::g_activeActors[0])
+				{
+					Actor::Toy2Actor** activeActor = Actor::g_activeActors;
+					int32_t* candidate = g_lockOnCandidates;
+
+					do
+					{
+						if ((uint8_t)actor->creatureRam->defenseMode && actor->unkVar29 >= 0 && (actor->actorFlags & 3) == 3)
+						{
+							if (GetActorLockOnPoint(&lockOnPoint, actor, 0x1000000))
+							{
+								*candidate = actor - g_levelActors;
+								++candidateCount;
+								++candidate;
+							}
+
+							targetIdx = g_lockOnActorIdx;
+						}
+
+						actor = activeActor[1];
+						++activeActor;
+					} while (actor);
+
+					yawTarget = 0;
+				}
+			}
+
+			if (g_grappleTimer)
+			{
+				int32_t grapplePoint = g_type59VisibleIndices[0];
+
+				if (g_type59VisibleIndices[0] != 0xFF)
+				{
+					uint8_t* visibleIndex = g_type59VisibleIndices;
+					int32_t* candidate = &g_lockOnCandidates[candidateCount];
+
+					do
+					{
+						++candidate;
+						++candidateCount;
+						*(candidate - 1) = grapplePoint + 1000;
+						grapplePoint = *++visibleIndex;
+					} while (grapplePoint != 0xFF);
+				}
+			}
+
+			g_lockOnCandidates[candidateCount] = -1;
+			firstCandidate = g_lockOnCandidates[0];
+
+			if (targetIdx == -1 || g_lockOnCandidates[0] == -1)
+			{
+			LABEL_26:
+				targetIdx = -1;
+				g_unk50A14C = 1;
+				g_unk50A540 = 0;
+				g_lockOnActorIdx = -1;
+			}
+			else
+			{
+				int32_t candidateIdx = g_lockOnCandidates[0];
+				int32_t* candidate = g_lockOnCandidates;
+
+				while (candidateIdx != targetIdx)
+				{
+					candidateIdx = candidate[1];
+					++candidate;
+
+					if (candidateIdx == -1)
+						goto LABEL_26;
+				}
+
+				if ((InputManager::g_directionInputState & 0x800) == 0 || (InputManager::g_prevDirectionInputState & 0x800) != 0 || ! g_unk50A540)
+					goto LABEL_43;
+			}
+
+			// switch to the next target
+			if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
+			{
+				g_unk50A4DC->width = 8;
+				targetIdx = g_lockOnActorIdx;
+				firstCandidate = g_lockOnCandidates[0];
+			}
+
+			if (targetIdx == -1)
+			{
+				if (! candidateCount)
+					goto LABEL_50;
+
+				g_lockOnActorIdx = firstCandidate;
+			}
+			else
+			{
+				int32_t current = 0;
+
+				if (firstCandidate != targetIdx)
+				{
+					int32_t* candidate = g_lockOnCandidates;
+
+					do
+					{
+						++candidate;
+						++current;
+					} while (*candidate != targetIdx);
+				}
+
+				if (candidateCount == current)
+					g_lockOnActorIdx = firstCandidate;
+				else
+					g_lockOnActorIdx = g_lockOnCandidates[current + 1];
+			}
+
+			AudioManager::PlaySoundEffect(41, &g_buzzActor.posAngles.pos);
+			targetIdx = g_lockOnActorIdx;
+			g_unk50A14C = 0;
+
+		LABEL_43:
+			// the marker on the target
+			if (targetIdx != -1)
+			{
+				if (targetIdx < 1000)
+				{
+					GetActorLockOnPoint(&lockOnPoint, &g_levelActors[targetIdx], -1);
+					z = lockOnPoint.z;
+					y = lockOnPoint.y;
+					x = lockOnPoint.x;
+				}
+				else
+				{
+					int32_t pointOffset = 3 * targetIdx - 3000;
+
+					x = 32 * *(&Levels::g_recordData[59]->data[0].x + pointOffset);
+					lockOnPoint.x = x;
+					y = 32 * (*(&Levels::g_recordData[59]->data[0].y + pointOffset) - 208);
+					lockOnPoint.y = y;
+					z = 32 * *(&Levels::g_recordData[59]->data[0].z + pointOffset);
+					lockOnPoint.z = z;
+				}
+
+				particle = g_unk50A4DC;
+
+				if (g_unk50A4DC == (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					particle = Nu3D::Particles::SpawnFromPreset(x, y, z, 48, 2);
+					x = lockOnPoint.x;
+					g_unk50A4DC = particle;
+				}
+
+				particle->pos.x = x;
+				g_unk50A4DC->pos.y = lockOnPoint.y;
+				g_unk50A4DC->pos.z = lockOnPoint.z;
+				g_unk50A4DC->lifetime = 10000;
+				goto LABEL_52;
+			}
+
+		LABEL_50:
+			if (g_unk50A4DC == (Nu3D::Particles::ParticleInstance*)-1)
+				goto LABEL_53;
+
+			g_unk50A4DC->lifetime = 1;
+			g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
+
+		LABEL_52:
+			targetIdx = g_lockOnActorIdx;
+
+		LABEL_53:
+			// the analog stick (or the keys at full speed)
+			if ((InputManager::g_directionalInputCount == 1 || InputManager::g_directionalInputCount == 2) && ! g_demoMode)
+			{
+				yawInput = (InputManager::g_analogInputX * InputManager::g_analogInputX) >> 22;
+
+				if (yawInput < 9)
+					yawInput = 0;
+
+				pitchInput = (InputManager::g_analogInputY * InputManager::g_analogInputY) >> 22;
+
+				if (pitchInput < 9)
+					pitchInput = 0;
+			}
+			else
+			{
+				yawInput = 256;
+				pitchInput = 256;
+			}
+
+			yawAccel = 0;
+
+			if ((InputManager::g_directionInputState & 0x80u) == 0)
+			{
+				if ((InputManager::g_directionInputState & 0x20) != 0)
+				{
+					frameDelta = Renderer::g_frameDelta;
+					yawTarget = 2 * yawInput;
+					yawAccel = Renderer::g_frameDelta;
+				}
+				else
+				{
+					frameDelta = Renderer::g_frameDelta;
+
+					if (g_unk50A130 > 0)
+						yawAccel = -(int32_t)Renderer::g_frameDelta;
+
+					if (g_unk50A130 < 0)
+						yawAccel = Renderer::g_frameDelta;
+				}
+			}
+			else
+			{
+				frameDelta = Renderer::g_frameDelta;
+				yawAccel = -(int32_t)Renderer::g_frameDelta;
+				yawTarget = -2 * yawInput;
+			}
+
+			{
+				int32_t newYawVel = (yawAccel << 6) / 2 + g_unk50A130;
+				g_unk50A130 = newYawVel;
+
+				if (yawAccel >= 0)
+				{
+					if (newYawVel <= yawTarget)
+						goto LABEL_74;
+				}
+				else if (newYawVel >= yawTarget)
+				{
+					goto LABEL_74;
+				}
+
+				g_unk50A130 = yawTarget;
+			}
+
+		LABEL_74:
+			pitchAccel = 0;
+			pitchCap = 0;
+
+			if ((InputManager::g_directionInputState & 0x40) != 0)
+			{
+				pitchAccel = -frameDelta;
+				pitchCap = -2 * pitchInput;
+			}
+			else if ((InputManager::g_directionInputState & 0x10) != 0)
+			{
+				pitchAccel = frameDelta;
+				pitchCap = 2 * pitchInput;
+			}
+			else
+			{
+				bool negative = g_unk50A138 < 0;
+
+				if (g_unk50A138 > 0)
+				{
+					pitchAccel = -frameDelta;
+					negative = g_unk50A138 < 0;
+				}
+
+				if (negative)
+					pitchAccel = frameDelta;
+			}
+
+			{
+				int32_t newPitchVel = (pitchAccel << 6) / 2 + g_unk50A138;
+				g_unk50A138 = newPitchVel;
+
+				if (pitchAccel >= 0)
+				{
+					if (newPitchVel > pitchCap)
+					LABEL_86:
+						g_unk50A138 = pitchCap;
+				}
+				else if (newPitchVel < pitchCap)
+				{
+					goto LABEL_86;
+				}
+			}
+
+			{
+				int32_t lockHeld = g_unk50A540;
+
+				if (! g_unk50A540 && (InputManager::g_directionInputState & 0x800) != 0)
+				{
+					lockHeld = 1;
+					g_unk50A540 = 1;
+				}
+
+				if ((InputManager::g_directionInputState & 0xF0) != 0)
+				{
+					g_unk50A540 = 0;
+				LABEL_92:
+					if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
+					{
+						if (targetIdx < 1000)
+						{
+							g_unk50A4DC->groundAlignRot = 0;
+							g_unk50A4DC->colourR = 0;
+						}
+						else
+						{
+							g_unk50A4DC->groundAlignRot = 512;
+							g_unk50A4DC->colourR = -1;
+						}
+
+						g_unk50A4DC->colourG = -1;
+						frameDelta = Renderer::g_frameDelta;
+					}
+
+					yawVel = g_unk50A130;
+					pitchTarget = g_unk50A138;
+					g_unk50A14C = 0;
+					goto LABEL_124;
+				}
+
+				if (! lockHeld)
+					goto LABEL_92;
+			}
+
+			if (targetIdx == -1 || g_unk50A14C)
+				goto LABEL_124;
+
+			// the camera turns towards the target
+			{
+				Nu3D::Particles::ParticleInstance* marker;
+
+				if (g_tickState[8])
+				{
+					AudioManager::PlaySoundEffect(40, &g_buzzActor.posAngles.pos);
+					marker = g_unk50A4DC;
+					targetIdx = g_lockOnActorIdx;
+				}
+				else
+				{
+					marker = g_unk50A4DC;
+				}
+
+				if (marker != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					if (targetIdx < 1000)
+						marker->groundAlignRot = 0;
+					else
+						marker->groundAlignRot = 512;
+
+					if (g_tickAccumulators.tick8Acc >= 4u)
+					{
+						g_unk50A4DC->colourR = -1;
+						g_unk50A4DC->colourG = 0;
+					}
+					else
+					{
+						if (g_lockOnActorIdx < 1000)
+							g_unk50A4DC->colourR = 0;
+						else
+							g_unk50A4DC->colourR = -1;
+
+						g_unk50A4DC->colourG = -1;
+					}
+
+					targetIdx = g_lockOnActorIdx;
+				}
+			}
+
+			if (targetIdx < 1000)
+			{
+				GetActorLockOnPoint(&lockOnPoint, &g_levelActors[targetIdx], 0);
+				lockZ = lockOnPoint.z;
+				lockX = lockOnPoint.x;
+			}
+			else
+			{
+				int32_t pointOffset = 3 * targetIdx - 3000;
+
+				lockX = *(&Levels::g_recordData[59]->data[0].x + pointOffset) - (g_gameplayCameraState.pos.x >> 5);
+				lockOnPoint.x = lockX;
+				lockOnPoint.y = *(&Levels::g_recordData[59]->data[0].y + pointOffset) - (g_gameplayCameraState.pos.y >> 5) - 208;
+				lockZ = *(&Levels::g_recordData[59]->data[0].z + pointOffset) - (g_gameplayCameraState.pos.z >> 5);
+				lockOnPoint.z = lockZ;
+			}
+
+			{
+				int32_t yawDelta = (Nu3D::Math::CartesianToFixedAngle(lockX, lockZ) - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+
+				if (yawDelta >= 2048)
+					yawDelta -= 4096;
+
+				yawVel = 4 * yawDelta;
+				g_unk50A130 = 0;
+
+				int32_t pitchDelta =
+					(Nu3D::Math::CartesianToFixedAngle((int32_t)sqrt((double)(lockOnPoint.x * lockOnPoint.x + lockOnPoint.z * lockOnPoint.z)), -lockOnPoint.y)
+					 - (int16_t)state->targetPos.x - 1024)
+					& 0xFFF;
+
+				if (pitchDelta >= 2048)
+					pitchDelta -= 4096;
+
+				frameDelta = Renderer::g_frameDelta;
+				pitchTarget = 4 * pitchDelta;
+				g_unk50A138 = 0;
+			}
+
+		LABEL_124:
+			g_buzzActor.posAngles.angles.yaw = (g_buzzActor.posAngles.angles.yaw + yawVel * frameDelta / 16) & 0xFFF;
+
+			{
+				int32_t pitch = ((state->targetPos.x + 1024) & 0xFFF) + pitchTarget * frameDelta / 16;
+
+				if (pitch < 1824)
+				{
+					if (pitch > 200)
+						goto LABEL_129;
+
+					pitch = 200;
+				}
+				else
+				{
+					pitch = 1824;
+				}
+
+				g_unk50A138 = 0;
+
+			LABEL_129:
+				state->targetPos.x = (pitch - 1024) & 0xFFF;
+			}
+
+			{
+				int32_t pitchKick = 0;
+
+				if (g_unk50A510 > 0)
+				{
+					pitchKick = Numerics::g_sinCosLUT[(-384 * g_unk50A510) & 0xFFF] / (16 * (g_unk50A510 - 50));
+					g_unk50A510 -= Renderer::g_frameDelta;
+
+					if (g_unk50A510 < 0)
+						g_unk50A510 = 0;
+				}
+
+				int32_t pitchDelta = (pitchKick + state->targetPos.x - state->angles.pitch) & 0xFFF;
+
+				if (pitchDelta >= 0x800)
+					pitchDelta -= 4096;
+
+				state->angles.pitch = (state->angles.pitch + (pitchDelta * (int32_t)Renderer::g_frameDelta) / 8) & 0xFFF;
+
+				int32_t yawDelta = (g_buzzActor.posAngles.angles.yaw - state->angles.yaw) & 0xFFF;
+
+				if (yawDelta >= 0x800)
+					yawDelta -= 4096;
+
+				state->angles.yaw = (state->angles.yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 8) & 0xFFF;
+			}
+
+			g_buzzActor.actorFlags &= ~Actor::ACTOR_CUTSCENE_MOVE;
+
+			// the aim of the visor, a ray from Buzz
+			{
+				uint16_t pitch = state->angles.pitch;
+				int32_t cosPitch = Numerics::g_sinCosLUT[(1024 - pitch) & 0xFFF];
+
+				startPos.x = g_buzzActor.posAngles.pos.x;
+				startPos.y = g_buzzActor.posAngles.pos.y - 11264;
+				startPos.z = g_buzzActor.posAngles.pos.z;
+
+				uint16_t yaw = state->angles.yaw;
+
+				cosPitch *= 4;
+
+				int32_t zScaled = cosPitch * Numerics::g_sinCosLUT[(yaw + 1024) & 0xFFF];
+
+				displacement.x = (cosPitch * Numerics::g_sinCosLUT[yaw & 0xFFF]) >> 13;
+				displacement.y = 8 * Numerics::g_sinCosLUT[(-2048 - pitch) & 0xFFF];
+				displacement.z = zScaled >> 13;
+			}
+
+			{
+				int32_t hitWorld = Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 256);
+				int32_t hit = SweepSegmentVsActors(&startPos, &displacement, 0) | hitWorld;
+
+				particle = g_unk50A538;
+
+				if (g_unk50A538 == (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					particle = Nu3D::Particles::SpawnFromPreset(startPos.x + displacement.x, startPos.y + displacement.y, startPos.z + displacement.z, 8, 5);
+					g_unk50A538 = particle;
+				}
+
+				particle->pos.x = startPos.x + displacement.x;
+				g_unk50A538->pos.y = startPos.y + displacement.y;
+				g_unk50A538->pos.z = startPos.z + displacement.z;
+				g_unk50A538->lifetime = 10000;
+
+				if (hit > 1)
+				{
+					g_unk50A538->colourR = -1;
+					g_unk50A538->colourG = 0;
+				}
+				else
+				{
+					g_unk50A538->colourR = 0;
+					g_unk50A538->colourG = -1;
+				}
+			}
+
+			g_hudWidgetTimers[0] = 4;
+			g_hudWidgetTimers[1] = 4;
+			g_hudWidgetTimers[2] = 4;
+
+			Nu3D::Link::SetScaleFromFixedOffsets(45, 2048, 2048, 2048);
+			Nu3D::Link::SetScaleFromFixedOffsets(46, 2048, 2048, 2048);
+			Nu3D::Link::SetScaleFromFixedOffsets(47, 2048, 2048, 2048);
+
+			{
+				// the visor rings follow the aim with a delay
+				int32_t pitchLag = (g_unk50A28C - state->targetPos.x) & 0xFFF;
+
+				if (pitchLag >= 0x800)
+					pitchLag -= 4096;
+
+				g_unk50A28C = (g_unk50A28C - ((pitchLag * (int32_t)Renderer::g_frameDelta) / 6)) & 0xFFF;
+
+				int32_t yawLag = (g_unk50A290 - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+
+				if (yawLag >= 0x800)
+					yawLag -= 4096;
+
+				g_unk50A290 = (g_unk50A290 - (yawLag * (int32_t)Renderer::g_frameDelta) / 6) & 0xFFF;
+
+				int32_t ringSpin = Numerics::g_sinCosLUT[g_unk50A4C8] >> 10;
+
+				Nu3D::Link::SetPositionRawAndCommit(
+					45, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+				Nu3D::Link::SetPositionRawAndCommit(
+					46, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+				Nu3D::Link::SetPositionRawAndCommit(
+					47, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+
+				Nu3D::Link::SetRotationRelative8bit(45, 0, (g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF, ((ringSpin / 2) + state->targetPos.x) & 0xFFF);
+				Nu3D::Link::SetRotationRelative8bit(46, 0, (g_unk50A290 - 1024) & 0xFFF, (ringSpin + g_unk50A28C) & 0xFFF);
+				Nu3D::Link::SetRotationRelative8bit(47, 0, (g_unk50A290 - 1024) & 0xFFF, (g_unk50A28C + (ringSpin / 2)) & 0xFFF);
+			}
+
+			{
+				int32_t oldPhase = g_unk50A4C8;
+				int32_t newPhase;
+
+				if (g_buzzActor.health > 1)
+					newPhase = 32 * Renderer::g_frameDelta + g_unk50A4C8;
+				else
+					newPhase = (Renderer::g_frameDelta << 6) + g_unk50A4C8;
+
+				g_unk50A4C8 = newPhase;
+
+				if (oldPhase < 2048 && newPhase >= 2048)
+					AudioManager::PlaySoundEffect(19, 0);
+
+				if (oldPhase < 4096 && g_unk50A4C8 >= 4096)
+					AudioManager::PlaySoundEffect(20, 0);
+
+				g_unk50A4C8 &= 0xFFFu;
+				cameraState = g_cameraState;
+			}
+
+		LABEL_155:
+			// the visor button leaves the visor
+			if ((InputManager::g_directionInputState & 0x400) != 0 && (InputManager::g_prevDirectionInputState & 0x400) == 0 && cameraState == 4)
+			{
+				g_cameraState = 5;
+				AudioManager::PlaySoundEffect(43, &g_buzzActor.posAngles.pos);
+				cameraState = g_cameraState;
+			}
+
+			if (cameraState == 5)
+			{
+				if (g_unk50A538 != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A538->lifetime = 1;
+					g_unk50A538 = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A4DC->lifetime = 1;
+					g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+				int32_t posX = state->pos.x;
+				state->distance = 1200;
+				state->pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				state->angles.pitch = 0;
+				state->targetPos.x = posX;
+				state->unkShort6 = 0;
+				g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
+				g_cameraState = 0;
+				Nu3D::Link::SetScaleFromFixedOffsets(45, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(46, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(47, 0, 0, 0);
+			}
+		}
 
 		// FUNCTION: TOY2 0x004045E0
 		void GameplayMode(Toy2::Camera::GameplayCameraState* state)
@@ -2047,9 +2776,6 @@ namespace Toy2
 
 			return 16384;
 		}
-
-		// STUB: TOY2 0x004037E0
-		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag) { return 0; }
 
 		// FUNCTION: TOY2 0x004A5870
 		int32_t SweepSegmentVsActors(WorldPos* arg0, WorldPos* a2, int32_t a3)

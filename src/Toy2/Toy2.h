@@ -177,6 +177,7 @@ namespace Toy2
 	extern int32_t g_unk830CC4;
 	extern int32_t g_collectionCount;
 	extern int32_t g_unk52F2F8;
+	extern uint8_t g_type59VisibleIndices[36];
 	extern uint8_t g_tickState[12];
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
