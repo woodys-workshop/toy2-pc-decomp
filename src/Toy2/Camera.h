@@ -47,6 +47,7 @@ namespace Toy2
 		extern int32_t g_unk50A510;
 		extern int32_t g_lockOnActorIdx;
 		extern int32_t g_unk50A540;
+		extern int32_t g_unk52AD98;
 		extern ScriptedCameraState g_scriptedCameraState;
 		extern Nu3D::Particles::ParticleInstance* g_unk50A538;
 		extern Nu3D::Particles::ParticleInstance* g_unk50A4DC;

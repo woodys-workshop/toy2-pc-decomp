@@ -175,8 +175,13 @@ namespace Toy2
 	extern int16_t g_soundSliderToAmplitude[16];
 	extern char g_emptyStr[8];
 	extern int32_t g_unk830CC4;
+	extern int32_t g_unk830C90;
+	extern int32_t g_unk830C94;
+	extern int16_t g_unk830D4C;
 	extern int32_t g_collectionCount;
 	extern int32_t g_unk52F2F8;
+	extern int32_t g_unk52AD64;
+	extern int32_t g_unk830D44;
 	extern uint8_t g_type59VisibleIndices[36];
 	extern uint8_t g_tickState[12];
 

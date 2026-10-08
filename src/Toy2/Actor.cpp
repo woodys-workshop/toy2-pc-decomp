@@ -1,5 +1,10 @@
 #include "Toy2/Actor.h"
 #include "Toy2/Toy2.h"
+#include "Toy2/Dialogue.h"
+#include "Toy2/Gadget.h"
+#include "Toy2/Collectables.h"
+#include "Toy2/Camera.h"
+#include "SaveManager.h"
 #include "RawLoader.h"
 #include "Random.h"
 #include "Numerics.h"
@@ -1687,13 +1692,153 @@ namespace Toy2
 			return 0;
 		}
 
-		// STUB: TOY2 0x004A1CE0
-		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx) {}
+		// FUNCTION: TOY2 0x004A1CE0
+		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx)
+		{
+			int32_t* state = &Collectables::g_pickupSlots[pickupSlotIdx].state;
 
-		// STUB: TOY2 0x004A1E60
-		void RotatingHint(int32_t actorIdx, int32_t recordIdx, char** hintTable) {}
+			// the actor reminds Buzz of the quest from time to time
+			if (! *state && (g_levelActors[actorIdx].actorFlags & ACTOR_VISIBLE_ACTIVE) != 0 && (Camera::g_inCutscene & 1) == 0)
+			{
+				Gadget::g_unk830C98 -= Renderer::g_frameDelta;
 
-		// STUB: TOY2 0x004A2480
+				if (Gadget::g_unk830C98 < 0)
+				{
+					int32_t random = *g_randDatBufferPtr++;
+					Gadget::g_unk830C98 = 2 * random + 240;
+
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[172].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[172].pitch,
+						AudioManager::g_soundEffectPresets[172].volume,
+						&g_levelActors[actorIdx].pos);
+				}
+			}
+
+			int16_t flags = g_levelActors[actorIdx].actorFlags;
+
+			// Buzz talks to the actor
+			if ((flags & ACTOR_PLAYER_TRIGGER) != 0)
+			{
+				flags &= ~ACTOR_PLAYER_TRIGGER;
+				g_levelActors[actorIdx].actorFlags = flags;
+
+				if (! *state)
+				{
+					Toy2Actor* actor = &g_levelActors[actorIdx];
+
+					if (g_buzzActor.coinsCollected < 50)
+					{
+						AudioManager::PlayOneShotSound3DActor(
+							&g_levelActors[actorIdx],
+							AudioManager::g_soundEffectPresets[173].soundBufferIndex - 1,
+							AudioManager::g_soundEffectPresets[173].pitch,
+							AudioManager::g_soundEffectPresets[173].volume,
+							&actor->pos);
+
+						Dialogue::Begin(
+							actorIdx,
+							recordIdx,
+							"hi buzz! if you can bring me ^fifty^ coins, i will give you a pizza planet ^token^.",
+							camAngle,
+							camAngleValue,
+							-1);
+					}
+					else
+					{
+						AudioManager::PlayOneShotSound3DActor(
+							&g_levelActors[actorIdx],
+							AudioManager::g_soundEffectPresets[174].soundBufferIndex - 1,
+							AudioManager::g_soundEffectPresets[174].pitch,
+							AudioManager::g_soundEffectPresets[174].volume,
+							&actor->pos);
+
+						Gadget::g_unk830D1C = 1;
+						Dialogue::Begin(actorIdx, recordIdx, "well done buzz! here is your pizza planet ^token^.", camAngle, camAngleValue, pickupSlotIdx);
+					}
+				}
+			}
+		}
+
+		// FUNCTION: TOY2 0x004A1E60
+		void RotatingHint(int32_t actorIdx, int32_t recordIdx, char** hintTable)
+		{
+			if (Gadget::g_unk830D24 == -1 && (g_levelActors[actorIdx].actorFlags & ACTOR_CUTSCENE_MOVE) != 0)
+				Gadget::g_unk830D24 = *g_randDatBufferPtr++ & 3;
+
+			if ((g_levelActors[actorIdx].actorFlags & ACTOR_VISIBLE_ACTIVE) != 0 && (Camera::g_inCutscene & 1) == 0)
+			{
+				Gadget::g_unk830CA4 -= Renderer::g_frameDelta;
+
+				if (Gadget::g_unk830CA4 < 0)
+				{
+					int32_t random = *g_randDatBufferPtr++;
+					Gadget::g_unk830CA4 = 2 * random + 240;
+
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[170].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[170].pitch,
+						AudioManager::g_soundEffectPresets[170].volume,
+						&g_levelActors[actorIdx].pos);
+				}
+			}
+
+			int16_t flags = g_levelActors[actorIdx].actorFlags;
+
+			// Buzz talks to the actor
+			if ((flags & ACTOR_PLAYER_TRIGGER) != 0)
+			{
+				if (Gadget::g_unk830D24 == -1)
+					Gadget::g_unk830D24 = 0;
+
+				flags &= ~ACTOR_PLAYER_TRIGGER;
+				g_levelActors[actorIdx].actorFlags = flags;
+
+				int32_t tokens = SaveManager::g_save0Data.tokens[g_levelFileIndex];
+				char* hint;
+
+				// the hints go round in the order of the tokens that are missing
+				if (tokens < 31)
+				{
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[171].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[171].pitch,
+						AudioManager::g_soundEffectPresets[171].volume,
+						&g_levelActors[actorIdx].pos);
+
+					int32_t hintIdx = Gadget::g_unk830D24;
+
+					if (((tokens >> Gadget::g_unk830D24) & 1) != 0)
+					{
+						do
+						{
+							if (++hintIdx > 4)
+								hintIdx = 0;
+						} while (((tokens >> hintIdx) & 1) != 0);
+
+						Gadget::g_unk830D24 = hintIdx;
+					}
+
+					int32_t nextHintIdx = hintIdx + 1;
+					hint = hintTable[nextHintIdx - 1];
+					Gadget::g_unk830D24 = nextHintIdx;
+
+					if (nextHintIdx > 4)
+						Gadget::g_unk830D24 = 0;
+				}
+				else
+				{
+					hint = "hey! you have all the ^tokens^ buzz!";
+				}
+
+				Dialogue::Begin(actorIdx, recordIdx, hint, -1, 0, -1);
+			}
+		}
+
+		// FUNCTION: TOY2 0x004A2480
 		void ItemReturnReward(
 			int32_t actorIdx,
 			int32_t recordIdx,
@@ -1703,11 +1848,132 @@ namespace Toy2
 			int32_t camAngleValue,
 			int32_t camAngle)
 		{
-			// not implemented
+			if ((g_levelActors[actorIdx].actorFlags & ACTOR_VISIBLE_ACTIVE) != 0 && (Camera::g_inCutscene & 1) == 0)
+			{
+				Gadget::g_unk830D34 -= Renderer::g_frameDelta;
+
+				if (Gadget::g_unk830D34 < 0)
+				{
+					int32_t random = *g_randDatBufferPtr++;
+					Gadget::g_unk830D34 = 2 * random + 240;
+
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[175].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[175].pitch,
+						AudioManager::g_soundEffectPresets[175].volume,
+						&g_levelActors[actorIdx].pos);
+				}
+			}
+
+			int16_t flags = g_levelActors[actorIdx].actorFlags;
+
+			// Buzz talks to the actor
+			if ((flags & ACTOR_PLAYER_TRIGGER) != 0)
+			{
+				flags &= ~ACTOR_PLAYER_TRIGGER;
+				g_levelActors[actorIdx].actorFlags = flags;
+
+				// Gadget::g_unk830D48 is 0 when the item is back, positive while it is still missing and the negative piece that was found
+				if (! Gadget::g_unk830D48)
+					Dialogue::Begin(actorIdx, recordIdx, textComplete, camAngleValue, camAngle, -1);
+
+				bool foundPiece = Gadget::g_unk830D48 < 0;
+
+				if (Gadget::g_unk830D48 > 0)
+				{
+					Dialogue::Begin(actorIdx, recordIdx, textInProgress, camAngleValue, camAngle, -1);
+
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[176].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[176].pitch,
+						AudioManager::g_soundEffectPresets[176].volume,
+						&g_levelActors[actorIdx].pos);
+
+					foundPiece = Gadget::g_unk830D48 < 0;
+				}
+
+				if (foundPiece)
+				{
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorIdx],
+						AudioManager::g_soundEffectPresets[177].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[177].pitch,
+						AudioManager::g_soundEffectPresets[177].volume,
+						&g_levelActors[actorIdx].pos);
+
+					ShowModelNode(9, -Gadget::g_unk830D48);
+
+					if (Gadget::g_unk830D48 == -1)
+					{
+						ShowModelNode(9, 11);
+						ShowModelNode(9, 12);
+						ShowModelNode(9, 15);
+					}
+
+					Dialogue::Begin(actorIdx, recordIdx, textFoundPiece, camAngleValue, camAngle, -1);
+					Gadget::g_unk830D48 = 0;
+					int32_t unlock = (uint8_t)(Gadget::g_unk503A1E[g_levelFileIndex + 2] >> 8);
+
+					g_playerUnlocks |= unlock;
+
+					// the pieces of the gadget come back to the level
+					switch (unlock)
+					{
+						case Gadget::UNLOCK_SHIELD:
+							Gadget::ApplyUnlockToGeometry(Gadget::g_shieldUnlockTable, 8);
+							break;
+						case Gadget::UNLOCK_ROCKET:
+							Gadget::ApplyUnlockToGeometry(Gadget::g_rocketUnlockTable, 4);
+							break;
+						case Gadget::UNLOCK_DISC:
+							Gadget::ApplyUnlockToGeometry(Gadget::g_discUnlockTable, 4);
+							break;
+						case Gadget::UNLOCK_HOVER:
+							Gadget::ApplyUnlockToGeometry(Gadget::g_hoverUnlockTable, 4);
+							break;
+						case Gadget::UNLOCK_GRAPPLE:
+							Gadget::ApplyUnlockToGeometry(Gadget::g_grappleUnlockTable, 4);
+							break;
+						default:
+							return;
+					}
+				}
+			}
 		}
 
-		// STUB: TOY2 0x004A26F0
-		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx) {}
+		// FUNCTION: TOY2 0x004A26F0
+		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx)
+		{
+			if (soundIdx == 181)
+			{
+				if (g_unk52F2F8)
+					return;
+			}
+			else if (g_collectionCount < 0)
+			{
+				return;
+			}
+
+			if ((g_levelActors[actorId].actorFlags & ACTOR_VISIBLE_ACTIVE) != 0 && (Camera::g_inCutscene & 1) == 0)
+			{
+				Gadget::g_periodicHintSoundTimer -= Renderer::g_frameDelta;
+
+				if (Gadget::g_periodicHintSoundTimer < 0)
+				{
+					int32_t random = *g_randDatBufferPtr++;
+					Gadget::g_periodicHintSoundTimer = 2 * random + 240;
+
+					AudioManager::PlayOneShotSound3DActor(
+						&g_levelActors[actorId],
+						AudioManager::g_soundEffectPresets[soundIdx].soundBufferIndex - 1,
+						AudioManager::g_soundEffectPresets[soundIdx].pitch,
+						AudioManager::g_soundEffectPresets[soundIdx].volume,
+						&g_levelActors[actorId].pos);
+				}
+			}
+		}
 
 		// FUNCTION: TOY2 0x004A28B0
 		void PopulateActiveActors()

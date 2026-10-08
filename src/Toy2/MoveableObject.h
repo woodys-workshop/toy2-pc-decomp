@@ -25,6 +25,8 @@ namespace Toy2
 			int16_t modelNode;
 		};
 
+		extern MoveableObject g_moveableObjects[10];
+
 		void InitTable(int16_t* array);
 		void Update(Toy2::Buzz::Toy2BuzzActor* buzzActor);
 

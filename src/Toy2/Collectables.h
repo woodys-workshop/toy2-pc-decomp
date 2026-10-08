@@ -30,6 +30,8 @@ namespace Toy2
 			Toy2::Levels::Type63 data[112];
 		};
 
+		extern PickupSlot g_pickupSlots[5];
+
 		void BuildPickupTable();
 		int32_t* LoadTokenTable(int32_t* a1);
 		void Init(int16_t* linkTable, int32_t linkId);

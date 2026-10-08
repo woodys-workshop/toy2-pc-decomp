@@ -34,18 +34,6 @@ namespace AudioManager
 		int32_t effectId;
 	};
 
-	struct SoundEffectPreset
-	{
-		int16_t soundBufferIndex;
-		int16_t pitch;
-		int16_t volume;
-		int16_t unkWord4;
-		int16_t unkWord5;
-		int16_t unkWord6;
-		int16_t unkWord7;
-		int16_t unkWord8;
-	};
-
 	struct AudioChannel
 	{
 		int16_t bufferIndex;
@@ -66,7 +54,6 @@ namespace AudioManager
 
 	STATIC_ASSERT(sizeof(AudioConfig) == 0x10);
 	STATIC_ASSERT(sizeof(SoundEffect) == 0x8);
-	STATIC_ASSERT(sizeof(SoundEffectPreset) == 0x10);
 	STATIC_ASSERT(sizeof(AudioChannel) == 0xA);
 	STATIC_ASSERT(sizeof(StreamHandles) == 0x10);
 
