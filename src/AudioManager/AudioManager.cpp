@@ -4,7 +4,7 @@
 
 namespace AudioManager
 {
-	// GLOBAL: TOY2 005282CC
+	// GLOBAL: TOY2 0x005282CC
 	int32_t g_curTrackIndex;
 
 	// GLOBAL: TOY2 0x00830E3C
