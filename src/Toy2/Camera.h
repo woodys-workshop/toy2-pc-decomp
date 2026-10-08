@@ -41,6 +41,8 @@ namespace Toy2
 		extern int32_t g_cameraState;
 		extern int32_t g_freezeBuzz;
 		extern int32_t g_cutsceneFrameTimer;
+		extern int32_t g_cutsceneTimer;
+		extern int32_t g_cameraBlendTimer;
 		extern int32_t g_unk50A510;
 		extern int32_t g_lockOnActorIdx;
 		extern int32_t g_unk50A540;

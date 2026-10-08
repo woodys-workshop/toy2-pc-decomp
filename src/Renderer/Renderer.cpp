@@ -1470,11 +1470,46 @@ namespace Renderer
 		Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 	}
 
-	// STUB: TOY2 0x00401B60
-	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue) {}
+	// FUNCTION: TOY2 0x00401B60
+	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue)
+	{
+		Sprite::DrawScaled(xPos, yPos, 6, 1, 0, 0, 0, 96, 8192, height);
+		Sprite::DrawScaled((width >> 12) + xPos - 2, yPos, 6, 1, 0, 0, 0, 96, 8192, height);
+		Sprite::DrawScaled(xPos, yPos, 6, 1, 0, 0, 0, 96, width, 4096);
+		Sprite::DrawScaled(xPos, (height >> 12) + yPos - 1, 6, 1, 0, 0, 0, 96, width, 4096);
+		Sprite::DrawScaled(xPos + 2, yPos + 1, 6, 1, red, green, blue, 0, width - 0x4000, height - 0x2000);
+	}
 
-	// STUB: TOY2 0x00401FB0
-	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
+	// FUNCTION: TOY2 0x00401FB0
+	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth)
+	{
+		int32_t textLength = 0;
+		char* curText = text;
+
+		if (*text)
+		{
+			while (text[++textLength])
+				;
+		}
+
+		// the text is centered, a character is 8 wide
+		int32_t xPos = (useDynamicWidth != 0 ? 256 : 160) - 4 * textLength;
+
+		if (textLength > 0)
+		{
+			int32_t remainingChars = textLength;
+
+			do
+			{
+				char curChar = *curText++;
+
+				DrawChar(xPos, yPos, curChar, red, green, blue, useDynamicWidth);
+
+				xPos += 8;
+				--remainingChars;
+			} while (remainingChars);
+		}
+	}
 
 	// STUB: TOY2 0x0049B260
 	void BlitTextureByIndexOffset(
@@ -1497,8 +1532,71 @@ namespace Renderer
 	// STUB: TOY2 0x0049B3B0
 	void DrawMenuTextScaled(int16_t xPos, int16_t yPos, const char* text, int32_t shadow, int32_t alignment, int32_t scale) {}
 
-	// STUB: TOY2 0x0049B630
-	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth) {}
+	// FUNCTION: TOY2 0x0049B630
+	void DrawChar(int16_t xPos, int16_t yPos, char character, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth)
+	{
+		if (character == '@')
+		{
+			Sprite::DrawTiledFixed(xPos, yPos - 2, 38, 1);
+		}
+		else if (character == '~')
+		{
+			Sprite::DrawTiledFixed(xPos, yPos - 2, 38, 0);
+		}
+		else if (character != ' ')
+		{
+			uint8_t fontIndex;
+
+			switch (character)
+			{
+				case '!':
+					fontIndex = 41;
+					break;
+
+				case '\'':
+					fontIndex = 48;
+					break;
+
+				case '*':
+					fontIndex = 50;
+					break;
+
+				case ',':
+					fontIndex = 37;
+					break;
+
+				case '-':
+					fontIndex = 49;
+					break;
+
+				case '.':
+					fontIndex = 36;
+					break;
+
+				case '>':
+					fontIndex = 45;
+					break;
+
+				case '?':
+					fontIndex = 40;
+					break;
+
+				default:
+					// quirk: only lowercase letters and digits have a tile, upper case letters wrap around
+					if (character > '9')
+						fontIndex = character - 97;
+					else
+						fontIndex = character - 22;
+
+					break;
+			}
+
+			if (useDynamicWidth)
+				Sprite::DrawScaled(xPos, yPos, 20, fontIndex, red, green, blue, 255, 2048, 2048);
+			else
+				Sprite::DrawScaledFixed(xPos, yPos, 20, fontIndex, red, green, blue, 255, 2048, 2048);
+		}
+	}
 
 	// FUNCTION: TOY2 0x0049B990
 	void DrawFormattedText(int32_t screenX, int32_t screenY, char* format, ...)

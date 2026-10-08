@@ -96,6 +96,7 @@ namespace Toy2
 	void SetBackdropByIndex(int32_t index);
 	void ProcessMiscEventsEx();
 	void RenderGame(int32_t fullRender);
+	void RenderHUD();
 	uint32_t ComputeTokenProgress();
 	int32_t EnterLevel(int32_t levelIndex);
 	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec);

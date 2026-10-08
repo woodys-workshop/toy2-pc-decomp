@@ -449,6 +449,28 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00882940
 	WorldPos g_grappleTargetPos;
+
+	// GLOBAL: TOY2 0x00830C94
+	int32_t g_unk830C94;
+
+	// GLOBAL: TOY2 0x00830CA0
+	int32_t g_unk830CA0;
+
+	// GLOBAL: TOY2 0x00830E20
+	int32_t g_bgmVolumeUI;
+
+	// GLOBAL: TOY2 0x00830E30
+	int32_t g_sfxVolumeUI;
+
+	// the number of entries of every pause menu
+	// GLOBAL: TOY2 0x005039BC
+	uint8_t g_scrollCountsPerMenu[10] = { 4, 2, 2, 2, 2, 0, 0, 0, 0, 0 };
+
+	// GLOBAL: TOY2 0x00502750
+	char g_sfxVolumeStr[15] = "sfx **********";
+
+	// GLOBAL: TOY2 0x00502760
+	char g_bgmVolumeStr[15] = "bgm **********";
 }
 
 namespace Toy2
@@ -480,8 +502,434 @@ namespace Toy2
 
 	namespace Game
 	{
-		// STUB: TOY2 0x0049E330
-		void PauseLoop() {}
+		// FUNCTION: TOY2 0x0049F4B0
+		void MenuLoop()
+		{
+			int16_t scrollIdx;
+
+			int16_t buttons = InputManager::g_curButtonsPressed;
+			int32_t closeMenu = 0;
+
+			if ((InputManager::g_curButtonsPressed & 1) == 0 || (InputManager::g_prevButtonsPressed & 1) != 0)
+			{
+				scrollIdx = g_gameMenuScrollIdx;
+			}
+			else
+			{
+				AudioManager::PlaySoundEffect(61, 0);
+				buttons = InputManager::g_curButtonsPressed;
+				scrollIdx = 0;
+				g_pauseMenuType = MENU_SHORTENEDPAUSE;
+				g_gameMenuScrollIdx = 0;
+			}
+
+			if ((buttons & INPUT_DOWN) != 0 && (InputManager::g_prevButtonsPressed & INPUT_DOWN) == 0 && scrollIdx < g_scrollCountsPerMenu[g_pauseMenuType] - 1)
+			{
+				AudioManager::PlaySoundEffect(63, 0);
+				buttons = InputManager::g_curButtonsPressed;
+				scrollIdx = ++g_gameMenuScrollIdx;
+				g_devCamState = 3780;
+			}
+
+			if ((buttons & INPUT_UP) != 0 && (InputManager::g_prevButtonsPressed & INPUT_UP) == 0 && scrollIdx > 0)
+			{
+				AudioManager::PlaySoundEffect(63, 0);
+				buttons = InputManager::g_curButtonsPressed;
+				scrollIdx = --g_gameMenuScrollIdx;
+				g_devCamState = 3780;
+			}
+
+			BOOL cancelPressed = (buttons & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0;
+
+			if ((buttons & INPUT_JUMP) != 0 && (InputManager::g_prevButtonsPressed & INPUT_JUMP) == 0 || cancelPressed)
+			{
+				switch (g_pauseMenuType)
+				{
+					case MENU_MAIN:
+						if (cancelPressed)
+							goto LBL_TEST_VOL_SELECT;
+
+						if (! scrollIdx)
+						{
+							AudioManager::PlaySoundEffect(62, 0);
+							g_isPaused = 0;
+
+							AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
+
+							if (! g_buzzActor.unkWord15)
+								g_buzzActor.unkWord15 = 5;
+
+							scrollIdx = g_gameMenuScrollIdx;
+							Buzz::g_unk53C658 = 10;
+
+							closeMenu = 1;
+						}
+
+						if (scrollIdx == 1)
+						{
+							AudioManager::PlaySoundEffect(61, 0);
+							g_pauseMenuType = 1;
+							g_gameMenuScrollIdx = 0;
+
+							break;
+						}
+
+						if (scrollIdx == 2)
+						{
+							g_bgmVolumeUI = SaveManager::g_save0Data.musicVolume;
+							g_sfxVolumeUI = SaveManager::g_save0Data.soundVolume;
+							AudioManager::PlaySoundEffect(61, 0);
+							scrollIdx = 0;
+							g_pauseMenuType = MENU_VOLUME_CONTROL;
+							g_gameMenuScrollIdx = 0;
+
+							goto LBL_VOL_SELECT;
+						}
+
+						if (scrollIdx != 3)
+							goto LBL_TEST_VOL_SELECT;
+
+						AudioManager::PlaySoundEffect(61, 0);
+						g_pauseMenuType = MENU_AREYOUSURE;
+						g_gameMenuScrollIdx = 0;
+
+						break;
+
+					case MENU_CAMERA:
+						if (scrollIdx)
+						{
+							if (scrollIdx == 1)
+							{
+								if (! cancelPressed)
+									SaveManager::g_save0Data.cameraType |= SaveManager::CAMERA_ACTIVE;
+
+								g_pauseMenuType = MENU_MAIN;
+								g_gameMenuScrollIdx = 0;
+							}
+						}
+						else
+						{
+							if (! cancelPressed)
+								SaveManager::g_save0Data.cameraType &= SaveManager::CAMERA_PASSIVE | SaveManager::CAMERA_MASK;
+
+							g_pauseMenuType = MENU_MAIN;
+						}
+
+						AudioManager::PlaySoundEffect(62, 0);
+
+						goto LABEL_41;
+
+					case MENU_VOLUME_CONTROL:
+						if (scrollIdx)
+						{
+							if (scrollIdx == 1)
+							{
+								g_pauseMenuType = MENU_MAIN;
+								g_gameMenuScrollIdx = 0;
+							}
+						}
+						else
+						{
+							g_pauseMenuType = MENU_MAIN;
+						}
+
+						if (! cancelPressed)
+						{
+							SaveManager::g_save0Data.soundVolume = g_sfxVolumeUI;
+							SaveManager::g_save0Data.musicVolume = g_bgmVolumeUI;
+						}
+
+						AudioManager::SetVolumes(
+							2 * g_musicSliderToAmplitude[SaveManager::g_save0Data.musicVolume] / 3,
+							3 * g_soundSliderToAmplitude[SaveManager::g_save0Data.soundVolume] / 2);
+
+						AudioManager::PlaySoundEffect(62, 0);
+
+						goto LABEL_41;
+
+					case MENU_AREYOUSURE:
+						if (cancelPressed)
+						{
+							g_gameMenuScrollIdx = 0;
+						}
+						else if (scrollIdx)
+						{
+							goto LABEL_72;
+						}
+
+						g_pauseMenuType = MENU_MAIN;
+						AudioManager::PlaySoundEffect(62, 0);
+
+						scrollIdx = g_gameMenuScrollIdx;
+						g_quitToTitleFlag = 0;
+
+					LABEL_72:
+						if (scrollIdx == 1)
+						{
+							g_isPaused = 0;
+							AudioManager::PlaySoundEffect(61, 0);
+							closeMenu = 1;
+
+							if (g_levelTransition != 1)
+								g_levelTransition = 5;
+
+							g_buzzActor.actorFlags |= Actor::ACTOR_LOCKED_MOVE;
+
+							g_levelTransitionTimer = 46;
+							Nu3D::Camera::g_targetTintBlue = 0;
+							Nu3D::Camera::g_targetTintGreen = 0;
+							Nu3D::Camera::g_targetTintRed = 0;
+							Nu3D::Camera::g_targetTintFadeSpeed = 6;
+							Nu3D::Camera::g_tintBlend = -1;
+
+						LABEL_41:
+							scrollIdx = g_gameMenuScrollIdx;
+						}
+
+						goto LBL_TEST_VOL_SELECT;
+
+					case MENU_SHORTENEDPAUSE:
+						if (cancelPressed)
+						{
+							g_gameMenuScrollIdx = 0;
+						}
+						else if (scrollIdx)
+						{
+							goto LABEL_82;
+						}
+
+						AudioManager::PlaySoundEffect(62, 0);
+						g_isPaused = 0;
+						AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
+
+						if (! g_buzzActor.unkWord15)
+							g_buzzActor.unkWord15 = 5;
+
+						scrollIdx = g_gameMenuScrollIdx;
+						Buzz::g_unk53C658 = 10;
+						closeMenu = 1;
+
+					LABEL_82:
+						if (scrollIdx != 1)
+							goto LBL_TEST_VOL_SELECT;
+
+						AudioManager::PlaySoundEffect(61, 0);
+						g_pauseMenuType = MENU_AREYOUSURE;
+						g_gameMenuScrollIdx = 0;
+						g_quitToTitleFlag = 1;
+
+						break;
+
+					default:
+						goto LBL_TEST_VOL_SELECT;
+				}
+			}
+			else
+			{
+			LBL_TEST_VOL_SELECT:
+				if (g_pauseMenuType == MENU_VOLUME_CONTROL)
+				{
+				LBL_VOL_SELECT:
+					int32_t sfxVolume = g_sfxVolumeUI;
+					int32_t sfxCharIdx = 0;
+
+					// the bars of the volume sliders are made out of stars
+					if (g_sfxVolumeUI <= 0 || (memset(&g_sfxVolumeStr[4], '*', g_sfxVolumeUI), sfxCharIdx = sfxVolume, sfxVolume < 10))
+						memset(&g_sfxVolumeStr[sfxCharIdx + 4], ' ', 10 - sfxCharIdx);
+
+					int32_t bgmVolume = g_bgmVolumeUI;
+					int32_t bgmCharIdx = 0;
+
+					if (g_bgmVolumeUI <= 0 || (memset(&g_bgmVolumeStr[4], '*', g_bgmVolumeUI), bgmCharIdx = bgmVolume, bgmVolume < 10))
+						memset(&g_bgmVolumeStr[bgmCharIdx + 4], ' ', 10 - bgmCharIdx);
+
+					int32_t targetVolume = sfxVolume;
+
+					if (scrollIdx)
+						targetVolume = bgmVolume;
+
+					if ((InputManager::g_curButtonsPressed & INPUT_RIGHT) != 0 && (InputManager::g_prevButtonsPressed & INPUT_RIGHT) == 0 && targetVolume < 10)
+					{
+						++targetVolume;
+						AudioManager::PlaySoundEffect(61, 0);
+						scrollIdx = g_gameMenuScrollIdx;
+						bgmVolume = g_bgmVolumeUI;
+						sfxVolume = g_sfxVolumeUI;
+					}
+
+					if ((InputManager::g_curButtonsPressed & INPUT_LEFT) != 0 && (InputManager::g_prevButtonsPressed & INPUT_LEFT) == 0 && targetVolume > 0)
+					{
+						--targetVolume;
+						AudioManager::PlaySoundEffect(61, 0);
+						scrollIdx = g_gameMenuScrollIdx;
+						bgmVolume = g_bgmVolumeUI;
+						sfxVolume = g_sfxVolumeUI;
+					}
+
+					if (scrollIdx)
+					{
+						bgmVolume = targetVolume;
+						g_bgmVolumeUI = targetVolume;
+					}
+					else
+					{
+						sfxVolume = targetVolume;
+						g_sfxVolumeUI = targetVolume;
+					}
+
+					AudioManager::SetVolumes(2 * g_musicSliderToAmplitude[bgmVolume] / 3, 3 * g_soundSliderToAmplitude[sfxVolume] / 2);
+				}
+			}
+
+			if ((InputManager::g_curButtonsPressed & INPUT_MENU) == 0 || (InputManager::g_prevButtonsPressed & INPUT_MENU) != 0)
+			{
+				if (! closeMenu)
+					return;
+			}
+			else
+			{
+				AudioManager::PlaySoundEffect(62, 0);
+				g_isPaused = 0;
+				AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
+
+				if (! g_buzzActor.unkWord15)
+					g_buzzActor.unkWord15 = 5;
+
+				Buzz::g_unk53C658 = 10;
+			}
+
+			memcpy(&Camera::g_activeCameraTransform, &g_unk830CB0, sizeof(Camera::g_activeCameraTransform));
+		}
+
+		// FUNCTION: TOY2 0x0049E330
+		void PauseLoop()
+		{
+			int32_t devCamState;
+			int32_t x;
+			int32_t y;
+			int32_t z;
+			int32_t angleDiff;
+			WorldPos startPos;
+			WorldPos displacement;
+
+			int32_t frameDelta = Renderer::g_frameDelta;
+
+			if (g_pauseMenuBlinkTimer < 100)
+				g_pauseMenuBlinkTimer = (g_pauseMenuBlinkTimer + Renderer::g_frameDelta) & 0x3F;
+
+			if (g_attractModeTimer >= 0)
+			{
+				int32_t timer = g_returnedToTitle || ! InputManager::g_curButtonsPressed ? g_attractModeInputTimer : 2 * g_attractModeTimer;
+				g_attractModeInputTimer = timer - Renderer::g_frameDelta;
+
+				if (timer - Renderer::g_frameDelta <= 0 || (InputManager::g_curButtonsPressed & INPUT_SECRET_MENU) != 0)
+				{
+					g_isPaused = 0;
+					g_levelTransition = 4;
+					g_levelTransitionTimer = 46;
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					frameDelta = Renderer::g_frameDelta;
+				}
+			}
+
+			if (g_devCamState <= 3600)
+			{
+				devCamState = g_devCamState - frameDelta;
+
+				g_devCamState -= frameDelta;
+				goto LABEL_13;
+			}
+
+			// holding the camera right and visor buttons for a while is a cheat
+			if (InputManager::g_curButtonsPressed != (INPUT_CAMERA_RIGHT | INPUT_VISOR_TOGGLE))
+			{
+				g_devCamState = 3780;
+
+				goto LABEL_25;
+			}
+
+			devCamState = g_devCamState - frameDelta;
+			g_devCamState = devCamState;
+
+			if (devCamState > 3600)
+			{
+			LABEL_13:
+				if (devCamState > 0)
+					goto LABEL_25;
+
+				goto LABEL_14;
+			}
+
+			if (g_buzzActor.coinsCollected == 7)
+			{
+				g_buzzActor.lives = 9;
+				g_devCamState = 0;
+			}
+			else
+			{
+				if (g_buzzActor.coinsCollected == 5)
+					g_buzzActor.health = 14;
+
+				g_devCamState = 0;
+			}
+
+		LABEL_14:
+			if ((Camera::g_inCutscene & 1) == 0 && ! Camera::g_cameraState)
+			{
+				startPos.x = g_buzzActor.posAngles.pos.x;
+				Camera::g_activeCameraTransform.angles.yaw = (Camera::g_activeCameraTransform.angles.yaw + 8 * frameDelta) & 0xFFF;
+				startPos.y = g_buzzActor.posAngles.pos.y - 0x4000;
+				startPos.z = g_buzzActor.posAngles.pos.z;
+
+				displacement.x = -2 * Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw];
+				displacement.z = -2 * Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];
+				g_devCamState = 0;
+				displacement.y = 0;
+
+				Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 256);
+				frameDelta = Renderer::g_frameDelta;
+
+				x = displacement.x + startPos.x;
+				y = displacement.y + startPos.y;
+				z = displacement.z + startPos.z;
+
+				startPos.x += displacement.x;
+				startPos.y += displacement.y;
+				startPos.z += displacement.z;
+
+				goto LABEL_28;
+			}
+
+		LABEL_25:
+			x = g_unk830CB0.pos.x;
+			y = g_unk830CB0.pos.y;
+			z = g_unk830CB0.pos.z;
+
+			Camera::g_activeCameraTransform.angles.yaw &= 0xFFF;
+			angleDiff = (Camera::g_activeCameraTransform.angles.yaw - g_unk830CB0.angles.yaw) & 0xFFF;
+
+			startPos.x = g_unk830CB0.pos.x;
+			startPos.y = g_unk830CB0.pos.y;
+			startPos.z = g_unk830CB0.pos.z;
+
+			if (angleDiff > 0x800)
+				angleDiff -= 4096;
+
+			Camera::g_activeCameraTransform.angles.yaw += (angleDiff * frameDelta) / -16;
+
+		LABEL_28:
+			Camera::g_activeCameraTransform.pos.x += frameDelta * (Camera::g_activeCameraTransform.pos.x - x) / -16;
+			Camera::g_activeCameraTransform.pos.y += frameDelta * (Camera::g_activeCameraTransform.pos.y - y) / -16;
+			Camera::g_activeCameraTransform.pos.z += frameDelta * (Camera::g_activeCameraTransform.pos.z - z) / -16;
+
+			Nu3D::Camera::ApplyTransformToCamera(&Camera::g_activeCameraTransform);
+
+			RenderHUD();
+			Nullsub3();
+			RenderGame(1);
+
+			MenuLoop();
+		}
 
 		// FUNCTION: TOY2 0x00406CD0
 		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn)
@@ -982,9 +1430,6 @@ namespace Toy2
 			if (g_levelFileIndex == 10)
 				ElevatorHop::InitMouse();
 		}
-
-		// STUB: TOY2 0x0049F4B0
-		void MenuLoop() {}
 	}
 
 	namespace PostGameRecap
@@ -3475,11 +3920,582 @@ namespace Toy2
 	// STUB: TOY2 0x0049EAC0
 	void PlayLevelMusic() {}
 
-	// STUB: TOY2 0x0049F490
-	void UnusedVarUpdate() {}
+	// FUNCTION: TOY2 0x0049F490
+	void UnusedVarUpdate() { g_unused3 = (g_unused3 + 1) & 0xF; }
 
-	// STUB: TOY2 0x0049FD40
-	void RenderHUD() {}
+	// FUNCTION: TOY2 0x0049FC60
+	int32_t TickSlide(int32_t widgetIndex)
+	{
+		if (! g_isPaused)
+		{
+			int16_t timer = g_hudWidgetTimers[widgetIndex];
+
+			if (! timer || (Camera::g_inCutscene & 1) != 0)
+			{
+				int16_t position = g_hudWidgetPositions[widgetIndex];
+
+				if (position > 0)
+				{
+					int16_t newPosition = position - 32 * Renderer::g_frameDelta;
+					g_hudWidgetPositions[widgetIndex] = newPosition;
+
+					if (newPosition <= 0)
+						g_hudWidgetPositions[widgetIndex] = 0;
+				}
+			}
+			else
+			{
+				int16_t position = g_hudWidgetPositions[widgetIndex];
+				int16_t frameDelta = Renderer::g_frameDelta;
+
+				if (position < 1024)
+				{
+					int16_t newPosition = 32 * Renderer::g_frameDelta + position;
+					g_hudWidgetPositions[widgetIndex] = newPosition;
+
+					if (newPosition >= 1024)
+						g_hudWidgetPositions[widgetIndex] = 1024;
+				}
+
+				if (timer < 1000)
+				{
+					int16_t newTimer = timer - frameDelta;
+					g_hudWidgetTimers[widgetIndex] = newTimer;
+
+					if (newTimer <= 0)
+						g_hudWidgetTimers[widgetIndex] = 0;
+				}
+			}
+		}
+
+		int16_t position = g_hudWidgetPositions[widgetIndex];
+
+		if (position)
+			return (Numerics::g_sinCosLUT[position] >> 8) - 64;
+		else
+			return 1;
+	}
+
+	// FUNCTION: TOY2 0x0049FD40
+	void RenderHUD()
+	{
+		int32_t tick64Acc;
+		int32_t pulse;
+		int32_t colors[12];
+		int32_t tokenColor;
+		int32_t digits;
+		int32_t digitsLow;
+		int32_t health;
+		int32_t spinGreen;
+		int32_t slotIcon;
+		int32_t flicker;
+
+		if ((InputManager::g_directionInputState & DIR_TARGET_LOCK) != 0)
+		{
+			g_hudWidgetTimers[0] = 90;
+			g_hudWidgetTimers[1] = 90;
+			g_hudWidgetTimers[2] = 90;
+		}
+
+		g_hudWidgetTimers[10] = 5;
+
+		if (Buzz::g_unk53C83C)
+			g_hudWidgetTimers[3] = 120;
+
+		if (Buzz::g_fireChargeTimer || Buzz::g_greenGunCharge || g_grappleTimer || g_discLauncherTimer)
+			g_hudWidgetTimers[4] = 60;
+
+		if (g_collectionCount > 0)
+			g_hudWidgetTimers[5] = 5;
+
+		if (g_unk52F2F8 > 0 && g_unk52F2F8 < 3)
+			g_hudWidgetTimers[6] = 5;
+
+		if (Gadget::g_unk830D48 < 0)
+			g_hudWidgetTimers[8] = 5;
+
+		if (g_buzzActor.coinsCollected >= 50 && ! Gadget::g_unk830D1C)
+			g_hudWidgetTimers[9] = 5;
+
+		if (g_unk830CC4 == 9 && ! g_isPaused)
+		{
+			// the token that was just collected
+			Renderer::DrawString(94, "you have collected a token!", 0x80, 0x80, 0, 0);
+
+			tick64Acc = g_tickAccumulators.tick64Acc;
+
+			if (tick64Acc > 0x1F)
+				tick64Acc = 63 - tick64Acc;
+
+			pulse = 2 * tick64Acc + 64;
+
+			if ((InputManager::g_curButtonsPressed & 0x40) != 0 && (InputManager::g_prevButtonsPressed & 0x40) == 0 && ! g_unk830C94)
+			{
+				g_unk830C94 = 1;
+				AudioManager::PlaySoundEffect(63, 0);
+			}
+
+			if ((InputManager::g_curButtonsPressed & 0x10) != 0 && (InputManager::g_prevButtonsPressed & 0x10) == 0 && g_unk830C94 == 1)
+			{
+				g_unk830C94 = 0;
+				AudioManager::PlaySoundEffect(63, 0);
+			}
+
+			if (g_unk830C94)
+			{
+				Renderer::DrawString(106, "keep on playing", 0x80, 0x80, 0x80, 0);
+				Renderer::DrawString(114, "exit level?", pulse, pulse, pulse, 0);
+			}
+			else
+			{
+				Renderer::DrawString(106, "keep on playing", pulse, pulse, pulse, 0);
+				Renderer::DrawString(114, "exit level?", 0x80, 0x80, 0x80, 0);
+			}
+
+			Renderer::DrawString(124, "jump to select", 0x80, 0x80, 0x80, 0);
+			Renderer::DrawBlackBorderBox(77, 91, 0x166000, 0x2D000, 0, 0, 0x80);
+
+			if ((InputManager::g_curButtonsPressed & INPUT_JUMP) != 0 && (InputManager::g_prevButtonsPressed & INPUT_JUMP) == 0)
+			{
+				AudioManager::PlaySoundEffect(62, 0);
+
+				if (g_unk830C94 == 1)
+				{
+					g_unk830CC4 = 3;
+					g_levelTransition = 1;
+					g_levelTransitionTimer = 1000;
+					AudioManager::PlaySoundEffect(169, 0);
+				}
+				else
+				{
+					Camera::g_inCutscene &= 0xFE;
+					g_buzzActor.actorFlags &= ~4;
+					g_unk830CC4 = 0;
+					Camera::g_cutsceneTimer = 0;
+					Camera::g_cameraBlendTimer = 64;
+					g_buzzActor.unkWord15 = 5;
+				}
+			}
+		}
+
+		if (g_isPaused && g_devCamState)
+		{
+			g_pauseMenuBlinkTimer &= 0x3F;
+			int32_t pulseColor = g_pauseMenuBlinkTimer;
+
+			if (g_pauseMenuBlinkTimer > 31)
+				pulseColor = 63 - g_pauseMenuBlinkTimer;
+
+			pulseColor = 2 * pulseColor + 64;
+
+			// the colour of the four menu entries: elements 8 to 11 are the red channel, 4 to 7 the green channel and 0 to 3 the blue channel
+			colors[4] = 128;
+			colors[5] = 128;
+			memset(colors, 0, 16);
+			colors[6] = 128;
+			colors[7] = 128;
+			colors[8] = 128;
+			colors[9] = 128;
+			colors[10] = 128;
+			colors[11] = 128;
+
+			if (InputManager::g_directionalInputCount == 3 && pulseColor > 96)
+				Renderer::DrawString(200, "insert controller", 0x80, 0x80, 0, 0);
+
+			int32_t selection = g_gameMenuScrollIdx;
+			colors[selection + 8] = pulseColor;
+			colors[selection + 4] = pulseColor;
+			colors[selection] = 0;
+
+			if (g_pauseMenuType == MENU_MAIN)
+			{
+				Renderer::DrawString(84, "pause menu", 0x80, 0x80, 0, 0);
+				Renderer::DrawString(96, "continue", (uint8_t)colors[8], (uint8_t)colors[4], (uint8_t)colors[0], 0);
+				Renderer::DrawString(104, "camera mode", (uint8_t)colors[9], (uint8_t)colors[5], (uint8_t)colors[1], 0);
+				Renderer::DrawString(112, "volume control", (uint8_t)colors[10], (uint8_t)colors[6], (uint8_t)colors[2], 0);
+				Renderer::DrawString(120, "exit level", (uint8_t)colors[11], (uint8_t)colors[7], (uint8_t)colors[3], 0);
+			}
+
+			if (g_pauseMenuType == MENU_CAMERA)
+			{
+				Renderer::DrawString(84, "camera mode", 128, 0x80, 0, 0);
+				Renderer::DrawString(100, "passive camera", (uint8_t)colors[8], (uint8_t)colors[4], (uint8_t)colors[0], 0);
+				Renderer::DrawString(108, "active camera", (uint8_t)colors[9], (uint8_t)colors[5], (uint8_t)colors[1], 0);
+			}
+
+			if (g_pauseMenuType == MENU_VOLUME_CONTROL)
+			{
+				Renderer::DrawString(84, "volume control", 0x80, 0x80, 0, 0);
+				Renderer::DrawString(100, g_sfxVolumeStr, (uint8_t)colors[8], (uint8_t)colors[4], (uint8_t)colors[0], 0);
+				Renderer::DrawString(108, g_bgmVolumeStr, (uint8_t)colors[9], (uint8_t)colors[5], (uint8_t)colors[1], 0);
+			}
+
+			if (g_pauseMenuType == MENU_AREYOUSURE)
+			{
+				Renderer::DrawString(84, "are you sure?", 0x80, 0x80, 0, 0);
+				Renderer::DrawString(100, "no", (uint8_t)colors[8], (uint8_t)colors[4], (uint8_t)colors[0], 0);
+				Renderer::DrawString(108, "yes", (uint8_t)colors[9], (uint8_t)colors[5], (uint8_t)colors[1], 0);
+			}
+
+			if (g_pauseMenuType == MENU_SHORTENEDPAUSE)
+			{
+				Renderer::DrawString(84, "pause menu", 0x80, 0x80, 0, 0);
+				Renderer::DrawString(100, "continue", (uint8_t)colors[8], (uint8_t)colors[4], (uint8_t)colors[0], 0);
+				Renderer::DrawString(108, "exit game", (uint8_t)colors[9], (uint8_t)colors[5], (uint8_t)colors[1], 0);
+			}
+
+			Renderer::DrawString(134, "jump to select", 0x80, 0x80, 0x80, 0);
+			Renderer::DrawBlackBorderBox(0xA0, 0x51, 0xC0000, 0x41000, 128, 0, 0x80);
+		}
+
+		// lives
+		int32_t slide0 = TickSlide(0);
+		int16_t slide0Short = slide0;
+
+		if (slide0 <= 0)
+		{
+			Renderer::Sprite::DrawScaledFixed(16, slide0 + 16, 10, 0, 0x80, 0x80, 0x80, 255, 2048, 2048);
+			Renderer::Sprite::DrawScaled(60, slide0Short + 32, 20, g_buzzActor.lives + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
+		}
+
+		// the token pieces
+		int32_t slide6 = TickSlide(6);
+
+		if (slide6 <= 0)
+		{
+			int32_t offsetX = 0;
+			int32_t offsetY = 0;
+
+			if (g_unk52AD64 < 100)
+			{
+				Renderer::Sprite::DrawTile(250, slide6 + 24, 3, 3 - g_unk52AD64);
+
+				if (g_unk52AD64 == 2)
+				{
+					tick64Acc = g_tickAccumulators.tick64Acc;
+
+					if (tick64Acc > 31)
+						tick64Acc = 63 - tick64Acc;
+
+					tokenColor = 4 * tick64Acc + 20;
+				}
+				else
+				{
+					tokenColor = 0x80;
+				}
+
+				goto LABEL_78;
+			}
+
+			if (! g_isPaused)
+				AudioManager::PlaySoundEffect(94, 0);
+
+			if ((int16_t)g_unk830D4C < 0)
+			{
+			LABEL_71:
+				digits = g_unk52AD64 - 100;
+				digitsLow = (g_unk52AD64 - 100) / 10;
+				Renderer::Sprite::DrawTile(offsetY + 243, slide6 + 24, 3, (g_unk52AD64 - 100) / 10);
+				Renderer::Sprite::DrawTile(offsetY + 257, slide6 + 24, 3, digits - 10 * digitsLow);
+				tokenColor = 0x80;
+
+			LABEL_78:
+				Renderer::Sprite::DrawColouredFixed(offsetX + 140, slide6 + 16, 26, 0, tokenColor, tokenColor, tokenColor);
+			}
+			else
+			{
+				offsetX = -20;
+				offsetY = -32;
+
+				if ((int16_t)g_unk830D4C == 5)
+				{
+					pulse = g_tickAccumulators.tick32Acc & 0x1F;
+
+					if (pulse > 0xF)
+						pulse = 31 - pulse;
+
+					tokenColor = 4 * pulse + 80;
+
+					if (g_tickAccumulators.tick32Acc < 0x10)
+						goto LABEL_70;
+				}
+				else
+				{
+					tokenColor = 0x80;
+				}
+
+				Renderer::Sprite::DrawTile(302, slide6 + 32, 3, (int16_t)g_unk830D4C);
+
+			LABEL_70:
+				Renderer::Sprite::DrawColouredFixed(160, slide6 + 16, 51, 0, tokenColor, tokenColor, tokenColor);
+
+				goto LABEL_71;
+			}
+		}
+
+		// health
+		int32_t slide1 = TickSlide(1);
+
+		if (slide1 <= 0)
+		{
+			Renderer::Sprite::DrawScaledFixed(272, slide1 + 16, 11, 0, 0x80, 0x80, 0x80, 255, 2048, 2048);
+
+			health = 2 * g_buzzActor.health + 2;
+
+			if (health <= 4 && g_tickAccumulators.tick16Acc < 8)
+				health = 0;
+
+			Renderer::Sprite::DrawScaled(476, slide1 - health + 47, 6, 0, 0x80, (uint16_t)(6 * health), 0, 96, 20480, health << 12);
+			Renderer::Sprite::DrawTiledFixed(296, slide1 + 16, 12, 0);
+		}
+
+		// the collected pieces
+		int32_t slide5 = TickSlide(5);
+
+		if (slide1 == 1)
+			slide1 = -64;
+
+		int32_t offset5 = (slide1 + 64) / 2;
+
+		if (slide5 <= 0)
+		{
+			int32_t shown = g_collectionCount;
+
+			if (g_collectionCount == 5)
+			{
+				if (g_unk830E38 != 5)
+				{
+					AudioManager::StartSoundSequenceOnActor(-5, (Actor::Toy2Actor*)&g_buzzActor);
+					shown = g_collectionCount;
+				}
+
+				pulse = (g_tickAccumulators.tick32Acc - 16) & 0x1F;
+
+				if (pulse > 0xF)
+					pulse = 31 - pulse;
+
+				flicker = 4 * pulse + 80;
+			}
+			else
+			{
+				flicker = 0x80;
+			}
+
+			if (shown != 5 || g_tickAccumulators.tick32Acc >= 0x10)
+				Renderer::Sprite::DrawScaled(474 - (offset5 << 9) / 320, slide5 + 32, 20, shown + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
+
+			Renderer::Sprite::DrawColouredFixed(272 - offset5, slide5 + 16, 50, 0, flicker, flicker, flicker);
+		}
+
+		g_unk830E38 = g_collectionCount;
+		int32_t slide8 = TickSlide(8);
+
+		if (slide5 == 1)
+			slide5 = -64;
+
+		int32_t offset8 = (slide5 + 64) / 2 + offset5;
+
+		if (slide8 <= 0)
+		{
+			pulse = (g_tickAccumulators.tick32Acc + 8) & 0x1F;
+
+			if (pulse > 0xF)
+				pulse = 31 - pulse;
+
+			Renderer::Sprite::DrawColouredFixed(272 - offset8, slide8 + 16, 27, 0, 4 * pulse + 80, 4 * pulse + 80, 4 * pulse + 80);
+		}
+
+		int32_t barValue = slide8;
+		int32_t slide9 = TickSlide(9);
+
+		if (slide8 == 1)
+			barValue = -64;
+
+		int32_t offset9 = (barValue + 64) / 2 + offset8;
+
+		if (slide9 <= 0)
+		{
+			pulse = (g_tickAccumulators.tick32Acc - 8) & 0x1F;
+
+			if (pulse > 0xF)
+				pulse = 31 - pulse;
+
+			Renderer::Sprite::DrawColouredFixed(272 - offset9, slide9 + 16, 32, 0, 4 * pulse + 80, 4 * pulse + 80, 4 * pulse + 80);
+		}
+
+		// the coins
+		int32_t slide2 = TickSlide(2);
+
+		if (slide2 <= 0)
+		{
+			int32_t coinFrame = Renderer::g_frameDelta + g_unk830CA0;
+			g_unk830CA0 += Renderer::g_frameDelta;
+
+			if (g_unk830CA0 >= 24)
+			{
+				coinFrame = 0;
+				g_unk830CA0 = 0;
+			}
+
+			int16_t coinY = 224 - slide2;
+			Renderer::Sprite::DrawScaled(26, 224 - slide2, 16, coinFrame / 2, 0x80, 0x80, 0x80, 96, 3277, 2048);
+			Renderer::Sprite::DrawScaled(51, coinY, 20, g_buzzActor.coinsCollected / 10 + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
+			Renderer::Sprite::DrawScaled(63, coinY, 20, g_buzzActor.coinsCollected % 10 + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
+		}
+
+		// the spin
+		int32_t slide3 = TickSlide(3);
+
+		if (slide3 <= 0)
+		{
+			Renderer::Sprite::DrawScaledFixed(272, 222 - slide3, 14, 0, 0x80, 0x80, 0x80, 255, 2048, 2048);
+
+			int32_t spinCharge = 0;
+
+			if (Buzz::g_unk53C83C > 0)
+				spinCharge = Buzz::g_unk53C83C / 2;
+
+			int32_t spinFlashing = 0;
+			int32_t spinRed = 128;
+
+			if (Buzz::g_unk53C83C <= -120)
+			{
+				spinCharge = (Buzz::g_unk53C83C + 120) / -6;
+				spinFlashing = 1;
+			}
+
+			if (Buzz::g_unk53C83C >= 60)
+				spinFlashing = 1;
+
+			if (g_tickAccumulators.tick8Acc < 4 && spinFlashing)
+			{
+				spinRed = 0;
+				spinGreen = 0;
+			}
+			else
+			{
+				spinGreen = 128;
+			}
+
+			Renderer::Sprite::DrawScaled(438, 218 - slide3, 6, 0, spinRed, spinGreen, 0, 96, 6200 * spinCharge, 12288);
+			Renderer::Sprite::DrawTiledFixed(272, 216 - slide3, 13, 0);
+		}
+
+		// the gun
+		int32_t slide3Check = slide3;
+		int32_t slide4 = TickSlide(4);
+
+		if (slide4 <= 0)
+		{
+			if (slide3 == 1)
+				slide3Check = -64;
+
+			int32_t gunY = -slide4;
+			int32_t offset4 = (slide3Check + 64) / 2;
+			Renderer::Sprite::DrawScaledFixed(272 - offset4, 224 - slide4, 15, 0, 0x80, 0x80, 0x80, 255, 2048, 2048);
+
+			int32_t slotCount = 0;
+			int32_t slotOffsetY = -7;
+
+			if (g_discLauncherTimer)
+			{
+				slotIcon = 28;
+				slotCount = g_discLauncherTimer;
+				slotOffsetY = 0;
+			}
+
+			if (g_grappleTimer)
+			{
+				slotIcon = 29;
+				slotCount = g_grappleTimer;
+			}
+
+			if (slotCount)
+			{
+				int32_t slotY = slotOffsetY - slide4;
+				int32_t slotDrawY = slotOffsetY - slide4 + 216;
+
+				Renderer::Sprite::DrawScaledFixed(290 - offset4, slotDrawY, 20, slotCount / 10 + 26, 0xFF, 0xFF, 0xFF, 96, 2048, 2048);
+				Renderer::Sprite::DrawScaledFixed(297 - offset4, slotDrawY, 20, slotCount % 10 + 26, 0xFF, 0xFF, 0xFF, 96, 2048, 2048);
+
+				if (slotIcon == 28)
+					Renderer::Sprite::DrawScaled(438 - (offset4 << 9) / 320, slotY + 214, 28, 0, 0x80, 0x80, 0x80, 96, 3072, 2048);
+				else
+					Renderer::Sprite::DrawColouredFixed(274 - offset4, slotY + 206, 33, 0, 0x80, 0x60, 0x40);
+			}
+
+			if (slotOffsetY)
+			{
+				if (Buzz::g_greenGunCharge)
+				{
+					int32_t gunGreen = Buzz::g_greenGunCharge / 16 + 64;
+					Renderer::Sprite::DrawScaled(
+						438 - (offset4 << 9) / 320, gunY + 218, 6, 0, 0, (uint8_t)gunGreen, 0, 96, 152 * Buzz::g_greenGunCharge, 12288);
+				}
+				else
+				{
+					int32_t fireRed;
+
+					if (Buzz::g_fireHoldTimer == 64 && g_tickAccumulators.tick8Acc < 4)
+						fireRed = 0x80;
+					else
+						fireRed = 0;
+
+					uint32_t fireColor = (uint8_t)(2 * Buzz::g_fireHoldTimer - fireRed);
+
+					Renderer::Sprite::DrawScaled(
+						438 - (offset4 << 9) / 320, gunY + 218, 6, 0, (uint8_t)(0x80 - fireRed), fireColor, 0, 96, 5700 * Buzz::g_fireHoldTimer / 2, 12288);
+				}
+
+				Renderer::Sprite::DrawTiledFixed(272 - offset4, gunY + 216, 13, 0);
+			}
+		}
+
+		// the boss bar
+		int32_t slide7 = TickSlide(7);
+		int16_t slide7Short = slide7;
+
+		if (slide7 <= 0)
+		{
+			int32_t bossBar = g_unk52B7E0;
+
+			if (g_unk52B7E0 >= 0)
+			{
+				if (g_unk52B7E0 > 54)
+				{
+					bossBar = 54;
+					g_unk52B7E0 = 54;
+
+					goto LABEL_153;
+				}
+
+				if (g_unk52B7E0 > 10)
+					goto LABEL_153;
+			}
+			else
+			{
+				bossBar = 0;
+				g_unk52B7E0 = 0;
+			}
+
+			if (g_tickAccumulators.tick16Acc >= 8)
+			{
+			LABEL_154:
+				Renderer::Sprite::DrawScaled(224, slide7Short + 16, 13, 0, 0x80, 0x80, 0x80, 96, 0x2000, 0x2000);
+
+				goto LABEL_155;
+			}
+
+		LABEL_153:
+			Renderer::Sprite::DrawScaled(228, slide7Short + 20, 6, 0, 0x80, (uint8_t)(2 * bossBar), 0, 96, bossBar << 12, 0x4000);
+
+			goto LABEL_154;
+		}
+
+	LABEL_155:
+		if (g_demoMode == 1 && g_tickAccumulators.tick64Acc < 32)
+			Renderer::DrawString(112, "demo mode", 0x80, 0x80, 0, 0);
+	}
 
 	// FUNCTION: TOY2 0x004A1A50
 	void InitialiseLevelVariables(int32_t levelIndex)
@@ -4454,9 +5470,6 @@ namespace Toy2
 		// STUB: TOY2 0x00415640
 		int16_t KeyNameToScancode(char keyName) { return 0; }
 	}
-
-	// STUB: TOY2 0x0049FC60
-	int32_t TickSlide(int32_t widgetIndex) { return 0; }
 }
 
 // $FUNC DEBUG

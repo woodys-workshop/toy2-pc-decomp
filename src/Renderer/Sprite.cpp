@@ -842,7 +842,7 @@ namespace Renderer
 			return 0;
 		}
 
-		// STUB: TOY2 0x004942D0
+		// FUNCTION: TOY2 0x004942D0
 		int16_t DrawScaledFixed(
 			int16_t xPos,
 			int16_t yPos,
@@ -855,14 +855,110 @@ namespace Renderer
 			int32_t scaleX,
 			int32_t scaleY)
 		{
-			return 0;
+			SpriteSheet* sheet;
+
+			if ((sheetIndex & 0x8000) == 0)
+				sheet = g_spriteSheets[sheetIndex];
+			else
+				sheet = g_spriteSheets[129];
+
+			if (! sheet)
+				return 1;
+
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(sheet->texIndex);
+
+			Vector2F uvTopLeft;
+			Vector2F uvBottomRight;
+
+			if (textureDataIndex)
+			{
+				uint32_t bitmapWidth;
+				uint32_t bitmapHeight;
+				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
+
+				double width = bitmapWidth;
+				float height = bitmapHeight;
+
+				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
+				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
+				uvBottomRight.x = (sheet->tileWidth + sheet->tiles[tileIndex].x) / width;
+				uvBottomRight.y = (sheet->tileHeight + sheet->tiles[tileIndex].y) / height;
+			}
+
+			RGBA color;
+			color.g = green;
+			color.r = red;
+			color.b = blue;
+
+			int32_t renderFlags;
+
+			if ((flags & 0x60) != 0)
+			{
+				if ((flags & 0x60) == 32)
+				{
+					color.a = 255;
+					renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_CUSTOM;
+				}
+				else if ((flags & 0x60) == 64)
+				{
+					color.a = 255;
+					renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_ALT;
+				}
+				else
+				{
+					color.a = 255 - ((flags >> 8) & 0xFF);
+					renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
+				}
+			}
+			else
+			{
+				color.a = 128;
+				renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
+			}
+
+			double invHeight = 1.0 / g_virtualScreenHeight;
+
+			// quirk: unlike DrawScaled the x axis uses a fixed 1 / 320
+			Queue2DSprite(
+				xPos * 0.003125,
+				yPos * invHeight,
+				((scaleX * sheet->tileWidth) >> 12) * 0.003125,
+				((scaleY * sheet->tileHeight) >> 12) * invHeight,
+				&uvTopLeft,
+				&uvBottomRight,
+				textureDataIndex,
+				color,
+				renderFlags);
+
+			return 1;
 		}
 
 		// STUB: TOY2 0x004949B0
 		void DrawClipped(int16_t xPos, int16_t yPos, int32_t clipLeft, int32_t clipRight, int16_t sheetIndex, int16_t tileIndex) {}
 
-		// STUB: TOY2 0x0049D2D0
-		void QueueSegment(Vector3I* start, Vector3I* delta, uint8_t b, uint8_t g, uint8_t r) {}
+		// FUNCTION: TOY2 0x0049D2D0
+		void QueueSegment(Vector3I* start, Vector3I* delta, uint8_t b, uint8_t g, uint8_t r)
+		{
+			Vector3F startPos;
+			Vector3F endPos;
+
+			startPos.x = start->x >> 5;
+			startPos.y = start->y >> 5;
+			startPos.z = start->z >> 5;
+
+			endPos.x = (start->x + delta->x) >> 5;
+			endPos.y = (start->y + delta->y) >> 5;
+			endPos.z = (start->z + delta->z) >> 5;
+
+			// NOTE: the IDB's ARGB has the alpha in the first byte, the first byte gets the r argument and the third one the b argument
+			RGBA color;
+			color.a = 0xFF;
+			color.r = b;
+			color.g = g;
+			color.b = r;
+
+			QueueType10(&startPos, &endPos, color);
+		}
 
 		// STUB: TOY2 0x0049D7A0
 		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration) {}
@@ -910,8 +1006,28 @@ namespace Renderer
 			}
 		}
 
-		// STUB: TOY2 0x004B9210
-		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color) {}
+		// FUNCTION: TOY2 0x004B9210
+		void QueueType10(Vector3F* position, Vector3F* triVerts, RGBA color)
+		{
+			if (g_spriteBufferCount)
+			{
+				Nu3D::Sprite* sprite = &g_spriteBuffer[--g_spriteBufferCount];
+
+				sprite->type = RENDER_TYPE10;
+				sprite->position = *position;
+				sprite->triVerts[0] = *triVerts;
+				sprite->color = ApplyGammaCorrection(color);
+				sprite->renderFlags = g_additionalRenderFlags;
+
+				Nu3D::Viewport::GetViewClipRect(&sprite->viewportRect);
+
+				InsertIntoBucket(sprite);
+			}
+			else
+			{
+				Logger::DebugLog("sprite buffer underrun");
+			}
+		}
 
 	}
 }

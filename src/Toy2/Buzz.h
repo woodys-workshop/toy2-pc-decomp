@@ -105,6 +105,8 @@ namespace Toy2
 		extern MoveableObject::MoveableObject* g_curMoveableObject;
 		extern int32_t g_unk53C634;
 		extern int32_t g_unk50A098;
+		extern int32_t g_greenGunCharge;
+		extern int32_t g_unk53C658;
 		extern int32_t g_underwaterYLevel;
 		extern int32_t g_currentFluidType;
 

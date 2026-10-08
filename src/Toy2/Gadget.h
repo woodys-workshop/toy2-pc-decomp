@@ -15,6 +15,9 @@ namespace Toy2
 			UNLOCK_GRAPPLE = 0x10,
 		};
 
+		extern int32_t g_unk830D1C;
+		extern int32_t g_unk830D48;
+
 		void InitLevelUnlockGeometry();
 		void ApplyUnlockToGeometry(uint8_t* table, int32_t showScale);
 	}
