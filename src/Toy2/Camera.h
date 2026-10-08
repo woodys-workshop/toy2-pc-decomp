@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Nu3D/Camera.h"
+#include "Nu3D/Particles.h"
 #include "Numerics.h"
 #include "Toy2/Buzz.h"
 #include <windows.h>
@@ -46,6 +47,21 @@ namespace Toy2
 		extern int32_t g_unk50A510;
 		extern int32_t g_lockOnActorIdx;
 		extern int32_t g_unk50A540;
+		extern ScriptedCameraState g_scriptedCameraState;
+		extern Nu3D::Particles::ParticleInstance* g_unk50A538;
+		extern Nu3D::Particles::ParticleInstance* g_unk50A4DC;
+		extern Vector3I g_cutsceneFocusPos;
+		extern Vector3I g_cutsceneEyePos;
+		extern int32_t g_unk50A4D0;
+		extern int32_t g_unk50A1F0;
+		extern int32_t g_unk50A0C8;
+		extern int32_t* g_unk50A294;
+		extern int32_t g_unk50A134;
+		extern int32_t g_unk50A53C;
+		extern int32_t g_unk50A144;
+		extern int32_t g_unk50A0CC;
+		extern int32_t g_unk50A514;
+		extern int32_t g_unk50A4BC;
 
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);
 		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius);

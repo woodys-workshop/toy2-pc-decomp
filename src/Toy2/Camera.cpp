@@ -104,8 +104,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0050A4E0
 		int32_t g_unk50A4E0;
 
+		// the cutscene script that is running
 		// GLOBAL: TOY2 0x0050A294
-		int32_t g_unk50A294;
+		int32_t* g_unk50A294;
 
 		// GLOBAL: TOY2 0x0050A134
 		int32_t g_unk50A134;
@@ -125,20 +126,177 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0050A4BC
 		int32_t g_unk50A4BC;
 
+		// the particles of the visor mode, -1 for none
+		// GLOBAL: TOY2 0x0050A538
+		Nu3D::Particles::ParticleInstance* g_unk50A538;
+
+		// GLOBAL: TOY2 0x0050A4DC
+		Nu3D::Particles::ParticleInstance* g_unk50A4DC;
+
+		// where the scripted camera looks at
+		// GLOBAL: TOY2 0x0050A500
+		Vector3I g_cutsceneFocusPos;
+
+		// where the scripted camera is
+		// GLOBAL: TOY2 0x0050A520
+		Vector3I g_cutsceneEyePos;
+
+		// how long the dialogue cutscene runs
+		// GLOBAL: TOY2 0x0050A4D0
+		int32_t g_unk50A4D0;
+
+		// the length of the camera segment that is travelled
+		// GLOBAL: TOY2 0x0050A1F0
+		int32_t g_unk50A1F0;
+
+		// the record the cutscene script uses
+		// GLOBAL: TOY2 0x0050A0C8
+		int32_t g_unk50A0C8;
+
 		// GLOBAL: TOY2 0x004F5AB4
 		int16_t g_cameraAngleOffsetTable[10] = { 0, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 0 };
 
 		// GLOBAL: TOY2 0x004F5AC8
 		int16_t g_autoRotationSequence[16] = { 0, 0, 1024, 512, 2048, 0, 1536, 0, 3072, 3584, 0, 0, 2560, 0, 0, 0 };
 
-		// STUB: TOY2 0x00402030
-		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos) {}
+		// FUNCTION: TOY2 0x00402030
+		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos)
+		{
+			g_scriptedCameraState.pos = *pos;
+			g_scriptedCameraState.focusPos = *focusPos;
+			g_scriptedCameraState.eyePos = g_scriptedCameraState.pos;
 
-		// STUB: TOY2 0x004020F0
-		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius) {}
+			int32_t z = (g_scriptedCameraState.focusPos.z - g_scriptedCameraState.pos.z) >> 5;
+			int32_t x = (g_scriptedCameraState.focusPos.x - g_scriptedCameraState.pos.x) >> 5;
+			int32_t y = (g_scriptedCameraState.focusPos.y - g_scriptedCameraState.pos.y) >> 5;
 
-		// STUB: TOY2 0x00402290
-		void BeginScriptedCutsceneOnBuzz(int32_t duration) {}
+			g_scriptedCameraState.angles.yaw = Nu3D::Math::CartesianToFixedAngle(x, z);
+
+			int16_t angle;
+
+			if (y >= 0)
+				angle = Nu3D::Math::CartesianToFixedAngle(-(y * y), x * x + z * z);
+			else
+				angle = Nu3D::Math::CartesianToFixedAngle(y * y, x * x + z * z);
+
+			g_scriptedCameraRoll = 0;
+
+			g_scriptedCameraState.angles.pitch = -angle;
+		}
+
+		// FUNCTION: TOY2 0x004020F0
+		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius)
+		{
+			if (g_cameraState)
+			{
+				if (g_unk50A538 != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A538->lifetime = 1;
+					g_unk50A538 = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A4DC->lifetime = 1;
+					g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
+				g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+
+				g_gameplayCameraState.distance = 1200;
+				g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				g_gameplayCameraState.angles.pitch = 0;
+				g_gameplayCameraState.targetPos.x = g_gameplayCameraState.pos.x;
+				g_gameplayCameraState.unkShort6 = 0;
+
+				g_cameraState = 0;
+
+				Nu3D::Link::SetScaleFromFixedOffsets(45, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(46, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(47, 0, 0, 0);
+			}
+
+			g_inCutscene |= 1;
+			g_buzzActor.actorFlags |= Actor::ACTOR_LOCKED_MOVE;
+			InputManager::g_directionInputState &= 0x309;
+			g_cameraBlendTimer = 64;
+
+			g_cutsceneFocusPos = *target;
+
+			int16_t angle =
+				Nu3D::Math::CartesianToFixedAngle(g_cutsceneFocusPos.x - g_buzzActor.posAngles.pos.x, g_cutsceneFocusPos.z - g_buzzActor.posAngles.pos.z)
+				& 0xFFF;
+
+			int32_t sinValue = Numerics::g_sinCosLUT[(angle - 2048) & 0xFFF];
+			int32_t cosValue = orbitRadius * (Numerics::g_sinCosLUT[(angle - 1024) & 0xFFF] >> 4);
+
+			g_cutsceneEyePos.x = g_cutsceneFocusPos.x + orbitRadius * (sinValue >> 4);
+			g_cutsceneEyePos.y = g_cutsceneFocusPos.y;
+			g_cutsceneEyePos.z = g_cutsceneFocusPos.z + cosValue;
+
+			g_cutsceneTimer = duration;
+
+			InitCutsceneCamera(&g_cutsceneFocusPos, &g_cutsceneEyePos);
+		}
+
+		// FUNCTION: TOY2 0x00402290
+		void BeginScriptedCutsceneOnBuzz(int32_t duration)
+		{
+			if (g_cameraState)
+			{
+				if (g_unk50A538 != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A538->lifetime = 1;
+					g_unk50A538 = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk50A4DC->lifetime = 1;
+					g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+
+				g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
+				g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+
+				g_gameplayCameraState.distance = 1200;
+				g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				g_gameplayCameraState.angles.pitch = 0;
+				g_gameplayCameraState.targetPos.x = g_gameplayCameraState.pos.x;
+				g_gameplayCameraState.unkShort6 = 0;
+
+				g_cameraState = 0;
+				Nu3D::Link::SetScaleFromFixedOffsets(45, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(46, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(47, 0, 0, 0);
+			}
+
+			g_inCutscene |= 1;
+			g_buzzActor.actorFlags |= Actor::ACTOR_LOCKED_MOVE;
+			InputManager::g_directionInputState &= DIR_SECRET_MENU | DIR_MENU | DIR_CAMERA_LEFT | DIR_CAMERA_RIGHT;
+
+			g_cutsceneFocusPos.z = g_buzzActor.posAngles.pos.z;
+			g_cutsceneFocusPos.x = g_buzzActor.posAngles.pos.x;
+			g_cameraBlendTimer = 64;
+			g_cutsceneFocusPos.y = g_buzzActor.posAngles.pos.y - 12288;
+
+			int16_t angle =
+				Nu3D::Math::CartesianToFixedAngle(
+					g_buzzActor.posAngles.pos.x - g_activeCameraTransform.pos.x, g_buzzActor.posAngles.pos.z - g_activeCameraTransform.pos.z)
+				& 0xFFF;
+
+			g_cutsceneEyePos.x = g_cutsceneFocusPos.x + Numerics::g_sinCosLUT[(angle - 2048) & 0xFFF];
+			int32_t sinCosZ = Numerics::g_sinCosLUT[(angle - 1024) & 0xFFF];
+
+			g_cutsceneEyePos.y = g_cutsceneFocusPos.y;
+			g_cutsceneEyePos.z = g_cutsceneFocusPos.z + sinCosZ;
+			g_cutsceneTimer = duration;
+
+			InitCutsceneCamera(&g_cutsceneFocusPos, &g_cutsceneEyePos);
+		}
 
 		// FUNCTION: TOY2 0x00403450
 		void InitGameplayCamera(Toy2::Camera::GameplayCameraState* cameraState, Toy2::Buzz::Toy2BuzzActor* buzzActor)
