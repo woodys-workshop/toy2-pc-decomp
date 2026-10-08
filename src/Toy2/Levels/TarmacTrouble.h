@@ -8,5 +8,11 @@ namespace Toy2
 	{
 		void Method2();
 		void Interactions();
+
+		extern int32_t g_unk52FF4C;
+		extern int32_t g_unk52FF74;
+		extern int32_t g_unk52FF78;
+		extern int32_t g_unk52FFAC;
+		extern int32_t g_unk52FFE8;
 	}
 }

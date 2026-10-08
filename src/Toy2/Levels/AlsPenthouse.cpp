@@ -5,6 +5,18 @@ namespace Toy2
 {
 	namespace AlsPenthouse
 	{
+		// GLOBAL: TOY2 0x0052FD10
+		int32_t g_unk52FD10;
+
+		// GLOBAL: TOY2 0x0052FD2C
+		int32_t g_unk52FD2C;
+
+		// GLOBAL: TOY2 0x0052FD40
+		int32_t g_unk52FD40;
+
+		// GLOBAL: TOY2 0x0052FD70
+		int32_t g_unk52FD70;
+
 		// STUB: TOY2 0x00428700
 		void Method10(Vector3I* a1, int16_t a2) {}
 
