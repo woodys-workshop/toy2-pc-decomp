@@ -1846,7 +1846,141 @@ namespace Toy2
 		// STUB: TOY2 0x004037E0
 		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag) { return 0; }
 
-		// STUB: TOY2 0x004A5870
-		int32_t SweepSegmentVsActors(WorldPos* arg0, WorldPos* a2, int32_t a3) { return 0; }
+		// FUNCTION: TOY2 0x004A5870
+		int32_t SweepSegmentVsActors(WorldPos* arg0, WorldPos* a2, int32_t a3)
+		{
+			Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+			Toy2::Actor::Toy2Actor** nextActor;
+			Toy2::Actor::Toy2Actor* hitActor = 0;
+			int32_t hit = 0;
+			int16_t* attach;
+			int32_t sinYaw;
+			int32_t cosYaw;
+			int32_t centerX;
+			int32_t centerY;
+			int32_t centerZ;
+			int32_t startToCenterX;
+			int32_t startToCenterZ;
+			int32_t endToCenterX;
+			int32_t endX;
+			int32_t endY;
+			int32_t endZ;
+			int32_t scaleX;
+			int32_t scaleY;
+			int32_t scaleZ;
+			int32_t startScaledX;
+			int32_t startScaledY;
+			int32_t startScaledZ;
+			int32_t endScaledXTerm;
+			int32_t endScaledZ;
+			int32_t closest;
+			int32_t radiusSq;
+			int32_t distSq;
+			int32_t travel;
+			int32_t hitX;
+			int32_t hitY;
+			int32_t hitZ;
+			int32_t dirX;
+			int32_t dirY;
+			int32_t dirZ;
+			int32_t rayX;
+			int32_t rayY;
+			int32_t rayZ;
+			Vector3I dir;
+
+			if (!actor)
+				return hit;
+
+			nextActor = Actor::g_activeActors;
+
+			do
+			{
+				if ((actor->creatureRam->defenseMode & 4) != 0 && actor->damageCooldownTimer >= 0 && actor->unkVar29 >= 0)
+				{
+					endX = a2->x + arg0->x;
+					endY = a2->y + arg0->y;
+					endZ = a2->z + arg0->z;
+
+					attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
+
+					cosYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 1024) & 0xFFF] >> 2;
+					sinYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 2048) & 0xFFF] >> 2;
+
+					centerX = actor->pos.x + ((sinYaw * attach[2] + cosYaw * attach[0]) >> 12);
+					centerY = actor->pos.y + attach[1];
+					centerZ = actor->pos.z + ((cosYaw * attach[2] - sinYaw * attach[0]) >> 12);
+
+					startToCenterZ = centerZ - arg0->z;
+					startToCenterX = centerX - arg0->x;
+
+					scaleX = attach[4];
+					scaleY = attach[5];
+					scaleZ = attach[6];
+
+					startScaledY = (scaleY * (centerY - arg0->y)) >> 8;
+					startScaledX = (scaleX * ((sinYaw * startToCenterZ + cosYaw * startToCenterX) >> 12)) >> 8;
+					startScaledZ = (scaleZ * ((cosYaw * startToCenterZ - sinYaw * startToCenterX) >> 12)) >> 8;
+
+					endToCenterX = centerX - endX;
+					endScaledXTerm = scaleX * ((sinYaw * (centerZ - endZ) + cosYaw * endToCenterX) >> 12);
+					endScaledZ = (scaleZ * ((cosYaw * (centerZ - endZ) - sinYaw * endToCenterX) >> 12)) >> 8;
+
+					rayX = (startScaledX - (endScaledXTerm >> 8)) >> 5;
+					rayY = (startScaledY - ((scaleY * (centerY - endY)) >> 8)) >> 5;
+					rayZ = (startScaledZ - endScaledZ) >> 5;
+
+					dirX = startScaledX >> 5;
+					dirY = startScaledY >> 5;
+					dirZ = startScaledZ >> 5;
+
+					dir.x = rayX;
+					dir.y = rayY;
+					dir.z = rayZ;
+
+					Nu3D::Math::NormalizeToFixedPoint(&dir, &dir);
+
+					closest = (dirX * dir.x + dirY * dir.y + dirZ * dir.z) >> 12;
+
+					if (closest <= 0
+						|| closest > (rayX * dir.x + rayZ * dir.z + rayY * dir.y) >> 12
+						|| (radiusSq = attach[7] * attach[7],
+							distSq = (dirX - ((dir.x * closest) >> 12)) * (dirX - ((dir.x * closest) >> 12))
+								+ (dirZ - ((dir.z * closest) >> 12)) * (dirZ - ((dir.z * closest) >> 12))
+								+ (dirY - ((dir.y * closest) >> 12)) * (dirY - ((dir.y * closest) >> 12)),
+							distSq >= radiusSq))
+					{
+					}
+					else
+					{
+						travel = (int32_t)(closest - sqrt((double)(radiusSq - distSq)));
+						hitX = ((dir.x * travel) >> 4) / scaleX;
+						hitY = 2 * dir.y * travel / scaleY;
+						hitZ = ((dir.z * travel) >> 4) / scaleZ;
+
+						hitActor = actor;
+						hit = 2;
+
+						a2->y = hitY;
+						a2->x = (cosYaw * hitX - sinYaw * hitZ) >> 7;
+						a2->z = (sinYaw * hitX + cosYaw * hitZ) >> 7;
+					}
+				}
+
+				actor = *++nextActor;
+			} while (actor);
+
+			if (!hit || !a3)
+				return hit;
+
+			if (a3 == 1)
+				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 2);
+			else
+				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 3);
+
+			if ((hitActor->creatureRam->defenseMode & 1) != 0)
+				return hit;
+
+			return 4;
+		}
 	}
 }

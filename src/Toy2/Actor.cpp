@@ -34,6 +34,23 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0050A54C
 		int32_t g_unk50A54C = -1;
 
+		struct HitStruct
+		{
+			int16_t unkShort1;
+			int16_t unkShort2;
+			int16_t unkShort3;
+		};
+
+		// GLOBAL: TOY2 0x004E066C
+		HitStruct g_hitStructs[6] = {
+			{ 0, 0, 0 },
+			{ 1, 30, 2 },
+			{ 2, 4, 1 },
+			{ 2, 4, 4 },
+			{ 3, 4, 2 },
+			{ 1, 30, 2 },
+		};
+
 		// GLOBAL: TOY2 0x0052EF48
 		int32_t g_unk52EF48;
 
@@ -1499,11 +1516,75 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x00408A60
-		void HandleDamage(Toy2::Actor::Toy2Actor* actor, int32_t angle, int32_t hitType) {}
+		// FUNCTION: TOY2 0x004104D0
+		void HitType1Particles(int32_t a1, int32_t a2, int32_t a3)
+		{
+			int32_t count = 3;
+			Nu3D::Particles::ParticleInstance* particle;
 
-		// STUB: TOY2 0x004104D0
-		void HitType1Particles(int32_t a1, int32_t a2, int32_t a3) {}
+			do
+			{
+				particle = Nu3D::Particles::SpawnFromPreset(a1, a2, a3, 94, 9);
+				particle->rotSpeed = *g_randDatBufferPtr++ - 128;
+				particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+
+				--count;
+				++g_randDatBufferPtr;
+			} while (count);
+		}
+
+		// FUNCTION: TOY2 0x00408A60
+		void HandleDamage(Toy2::Actor::Toy2Actor* actor, int32_t angle, int32_t hitType)
+		{
+			g_unk50A54C = -1;
+
+			if (g_hitStructs[hitType].unkShort1 != 2 || (actor->creatureRam->defenseMode & 1) != 0)
+			{
+				if (actor->creatureRam->latSpeedTarget != 0xFF && g_levelFileIndex != 6)
+				{
+					actor->velX = Numerics::g_sinCosLUT[angle & 0xFFF] / 32;
+					actor->velForward = Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] / 32;
+					actor->actorFlags &= ~ACTOR_VEL_CLAMP_OVERRIDE;
+				}
+
+				if (!actor->damageCooldownTimer)
+				{
+					actor->damageCooldownTimer = g_hitStructs[hitType].unkShort2;
+
+					if (g_hitStructs[hitType].unkShort1)
+					{
+						if (g_hitStructs[hitType].unkShort1 == 1)
+						{
+							// quirk: the angle is not masked with 0xFFF for the x offset
+							if (hitType == 1)
+								HitType1Particles(
+									g_buzzActor.posAngles.pos.x + Numerics::g_sinCosLUT[angle] / 2,
+									g_buzzActor.posAngles.pos.y - 11264,
+									g_buzzActor.posAngles.pos.z + Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] / 2);
+							else
+								HitType1Particles(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z);
+						}
+
+						// actorPhase is the health of the actor, 100 and above is dead
+						if (actor->actorPhase < 100)
+						{
+							actor->actorPhase -= g_hitStructs[hitType].unkShort3;
+							AudioManager::PlaySoundEffect(9, &actor->pos);
+						}
+
+						if (actor->actorPhase <= 0)
+						{
+							actor->actorFlags &= ACTOR_CUTSCENE_MOVE | ACTOR_VISIBLE_ACTIVE | ACTOR_STUNNED | ACTOR_OOB_SPECIAL_MOVE | ACTOR_PLAYER_TRIGGER
+								| ACTOR_VEL_CLAMP_OVERRIDE | ACTOR_NO_DESPAWN | ACTOR_UNUSED_1000 | ACTOR_FORCE_REMOVE | ACTOR_CAMERA_HOVER | ACTOR_UNKNOWN_8000;
+							actor->actorPhase = 999;
+							actor->unkShort1 = 0;
+							actor->movementData = g_movementData[2];
+							Kill(actor, 1);
+						}
+					}
+				}
+			}
+		}
 
 		// STUB: TOY2 0x0043C1C0
 		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex) {}
