@@ -1,13 +1,13 @@
 #pragma once
 
 #include "Common.h"
-#include <windows.h>
+
 #include <directx6/ddraw.h>
 
-struct IAMMultiMediaStream;
-struct IDirectDrawMediaStream;
-struct IDirectDrawStreamSample;
-struct IMediaStream;
+#include <WINDOWS.H>
+#include <AMSTREAM.H>
+#include <DDSTREAM.H>
+#include <MMSTREAM.H>
 
 namespace Nu3D
 {
