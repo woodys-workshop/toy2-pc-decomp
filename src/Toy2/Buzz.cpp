@@ -83,7 +83,7 @@ namespace Toy2
 		int32_t g_fireHoldTimer;
 
 		// GLOBAL: TOY2 0x0053C648
-		MoveableObject::MoveableObject* g_curMoveableObject;
+		int32_t g_curMoveableObject;
 
 		// GLOBAL: TOY2 0x0053C624
 		int32_t g_unk53C624;

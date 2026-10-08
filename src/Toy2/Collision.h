@@ -127,6 +127,7 @@ namespace Toy2
 		};
 
 		extern CollisionMeshInstance g_collisionMeshInstances[300];
+		extern int16_t g_unk72D2A4;
 		extern uint8_t g_mathScratch[1024];
 		extern CollisionGridCell g_collisionGrid[256];
 		extern uint16_t g_collisionMeshList[2048];
