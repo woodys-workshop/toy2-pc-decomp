@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Numerics.h"
 #include "Toy2/Collectables.h"
 
 namespace Toy2
@@ -61,5 +62,13 @@ namespace Toy2
 		extern int32_t g_unk52FC3C;
 		extern int32_t* g_unk52FCF4;
 		extern int32_t* g_unk52FCF0;
+
+		extern int16_t g_unk4F35B4[14];
+		extern int16_t g_unk4F35D0[14];
+		extern int16_t g_unk4F35EC[10];
+		extern int16_t g_unk4F3600[10];
+		extern char* g_unk4F37D8[5];
+		extern Vector3I g_unk4F37EC[5];
+		extern int32_t g_unk52FC5C;
 	}
 }

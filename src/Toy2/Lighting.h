@@ -25,6 +25,9 @@ namespace Toy2
 			uint32_t packedColor;
 		};
 
+		extern DynamicLight g_dynamicLights[8];
+		extern LevelLightDef g_levelLightDefs[16];
+
 		void SpawnLight(int32_t x, int32_t y, int32_t z, int32_t color, int32_t lifetime, int32_t groupId);
 		void UpdateBuzzLight();
 		void InitBuzzLight();

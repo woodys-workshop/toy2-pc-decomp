@@ -113,6 +113,8 @@ namespace Toy2
 		extern int32_t g_greenGunCharge;
 		extern int32_t g_unk53C658;
 		extern int32_t g_underwaterYLevel;
+		extern int32_t g_unk830D30;
+		extern int32_t g_unk53C60C;
 		extern int32_t g_currentFluidType;
 
 		STATIC_ASSERT(sizeof(Toy2BuzzActor) == 0xA0);

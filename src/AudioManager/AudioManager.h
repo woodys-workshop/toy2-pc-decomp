@@ -42,6 +42,7 @@ namespace AudioManager
 	void ReleaseBuffers();
 	void PlaySoundEffect(int32_t effectId, Vector3I* worldPos);
 	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::Actor::Toy2Actor* actor);
+	void ClearSequence7Cursor();
 	void UpdateSoundSequences();
 	void UpdateChannels();
 	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos);

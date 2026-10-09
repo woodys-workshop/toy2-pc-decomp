@@ -168,6 +168,7 @@ namespace Toy2
 		extern uint16_t* g_movementData[44];
 		extern uint8_t* g_unk4E0588[26];
 		extern int32_t g_unk50A54C;
+		extern int32_t g_unk52FE34;
 
 		void GetCreatureList(uint8_t* creatureIdList);
 		void UpdatePrimaryAnimation(Toy2::Actor::Toy2Actor* actor);

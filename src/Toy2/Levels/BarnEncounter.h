@@ -26,5 +26,7 @@ namespace Toy2
 		extern int32_t g_unk52FBD0;
 		extern int32_t g_unk52FBF8;
 		extern int32_t g_unk52FBFC;
+
+		extern int32_t g_unk4F2F5C[13];
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.h"
+#include "Numerics.h"
 
 namespace Toy2
 {
@@ -25,5 +26,15 @@ namespace Toy2
 		extern int32_t g_unk53005C;
 		extern int32_t g_unk530060;
 		extern int32_t g_unk530064;
+
+		extern int32_t g_unk52FFF0;
+		extern int32_t g_unk52FFF8;
+		extern int32_t g_unk530000;
+		extern int32_t g_unk530014;
+		extern int32_t g_unk530024;
+		extern int32_t g_unk530048;
+		extern int32_t g_unk530058;
+		extern int32_t g_unk530068;
+		extern Vector3I g_unk530038;
 	}
 }

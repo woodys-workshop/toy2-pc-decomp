@@ -51,5 +51,13 @@ namespace Toy2
 		extern int32_t* g_unk52F9FC;
 		extern int32_t* g_unk52F9F0;
 		extern int32_t* g_unk52F9F4;
+
+		extern char* g_unk4F2A34[5];
+		extern int32_t g_unk52F9C4;
+		extern int32_t g_unk52F9C8;
+		extern int32_t g_unk52F9CC;
+		extern int32_t g_unk52F9D0;
+		extern int32_t g_unk52F9D4;
+		extern int32_t g_unk52F9D8;
 	}
 }
