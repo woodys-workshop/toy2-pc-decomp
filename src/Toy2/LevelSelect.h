@@ -31,6 +31,8 @@ namespace Toy2
 		void ResetCursor();
 		int32_t Tick();
 
+		extern char* g_jumpToSelectTxt;
+
 		STATIC_ASSERT(sizeof(LevelSelectCamera) == 0x28);
 		STATIC_ASSERT(sizeof(LevelLinkPair) == 0x8);
 		STATIC_ASSERT(sizeof(LevelSelectPathData) == 0x7C);

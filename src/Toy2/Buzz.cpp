@@ -4422,14 +4422,14 @@ namespace Toy2
 					{
 						if (g_currentFluidType == 1)
 						{
-							particle = Nu3D::Particles::SpawnFromPreset(
-								g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 13, presetIdx);
+							particle =
+								Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 13, presetIdx);
 						}
 
 						if (g_currentFluidType == 2)
 						{
-							particle = Nu3D::Particles::SpawnFromPreset(
-								g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 53, presetIdx);
+							particle =
+								Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 53, presetIdx);
 						}
 
 						if (presetIdx == 14)

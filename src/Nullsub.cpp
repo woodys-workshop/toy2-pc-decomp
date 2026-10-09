@@ -3,6 +3,9 @@
 // FUNCTION: TOY2 0x004150F0
 void Nullsub1() {}
 
+// FUNCTION: TOY2 0x0043D9D0
+void Nullsub2(int32_t a1, int32_t a2) {}
+
 // FUNCTION: TOY2 0x004A6380
 void Nullsub7() {}
 

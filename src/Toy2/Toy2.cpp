@@ -30,6 +30,7 @@
 #include "Toy2/Collectables.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
+#include "Toy2/Weather.h"
 
 // Level Includes
 #include "Toy2/Levels/AndysHouse.h"
@@ -1447,14 +1448,404 @@ namespace Toy2
 
 	namespace PostGameRecap
 	{
-		// STUB: TOY2 0x004398B0
-		void Tick() {}
+		// one sparkle of the recap screen, spawned when a token piece is counted
+		struct Sparkle
+		{
+			int32_t x;
+			int32_t y;
+			int16_t velX;
+			int16_t velY;
+			int16_t unk12;
+			int16_t lifetime;
+		};
+
+		STATIC_ASSERT(sizeof(Sparkle) == 0x10);
+
+		// FUNCTION: TOY2 0x004398B0
+		int32_t Tick()
+		{
+			int32_t unlockMasks[5];
+			int32_t currentTokens[5];
+			int32_t savedTokens[5];
+			Sparkle sparkles[64];
+			int32_t attractTimer;
+			int32_t timer;
+			int32_t tokenTimer;
+			int32_t coinTimer;
+			int32_t coinCountdown;
+			int32_t tokenStep;
+			int32_t coinsShown;
+			int32_t blink;
+			int32_t spawnFlag;
+			int32_t tokenIndex;
+			int32_t tintedOut;
+			int32_t frame;
+			int32_t newTokens;
+			int32_t i;
+			int32_t j;
+			int32_t savedBits;
+			int32_t remaining;
+			uint8_t* rand;
+			int32_t velX;
+			int32_t velY;
+			int32_t offsetX;
+			int32_t offsetY;
+			int32_t rand0;
+			int32_t rand1;
+			int32_t rand2;
+			int32_t frameDelta;
+
+			unlockMasks[0] = 1;
+			unlockMasks[1] = 2;
+			unlockMasks[2] = 4;
+			unlockMasks[3] = 16;
+			unlockMasks[4] = 8;
+			attractTimer = g_attractModeTimer < 0 ? -1 : 900;
+			SetBackdropByIndex(0);
+
+			for (i = 0; i < 64; ++i)
+				sparkles[i].lifetime = 0;
+
+			InputManager::g_curButtonsPressed = 0;
+			InputManager::g_prevButtonsPressed = 0;
+			MainMenu::g_fadeTimer = 0;
+			MainMenu::g_nextScreen = 0;
+			Nu3D::Camera::g_cameraTintBlue = 0;
+			Nu3D::Camera::g_cameraTintGreen = 0;
+			Nu3D::Camera::g_cameraTintRed = 0;
+			Nu3D::Camera::SetTint(128, 128, 128, 12);
+			SoftwareRenderer::UnkFunc67(0, 0);
+			*(uint16_t*)((char*)&Renderer::g_level0Sheet22.zero + 2) |= 8;
+
+			currentTokens[0] = SaveManager::g_curLevelTokenData & 1;
+			timer = 360;
+			currentTokens[1] = (SaveManager::g_curLevelTokenData & 2) >> 1;
+			currentTokens[2] = (SaveManager::g_curLevelTokenData & 4) >> 2;
+			currentTokens[3] = (SaveManager::g_curLevelTokenData & 8u) >> 3;
+			currentTokens[4] = (SaveManager::g_curLevelTokenData & 16) >> 4;
+			savedBits = SaveManager::g_save0Data.tokens[g_levelFileConversion[g_levelIndex]];
+			Renderer::g_frameDelta = 1;
+			savedTokens[0] = savedBits & 1;
+			savedTokens[1] = (savedBits & 2) >> 1;
+			savedTokens[2] = (savedBits & 4) >> 2;
+			savedTokens[4] = (savedBits & 0x10) >> 4;
+			newTokens = 0;
+			coinsShown = 0;
+			blink = 0;
+			spawnFlag = 0;
+			tokenIndex = 0;
+			tintedOut = 0;
+			// $TODO: the frame counter is never initialised in the original, it starts as whatever was on the stack
+			frame = 0;
+			g_randDatBufferPtr = g_randDatBuffer;
+			savedTokens[3] = (savedBits & 8u) >> 3;
+
+			for (i = 0; i < 5; ++i)
+			{
+				if (savedTokens[i] && ! currentTokens[i])
+					++newTokens;
+			}
+
+			tokenTimer = 60 * newTokens;
+
+			if (tokenTimer)
+			{
+				tokenTimer += 60;
+
+				if (tokenTimer)
+					g_savePromptPending = 1;
+			}
+
+			if (SaveManager::g_saveUnlocksCache != SaveManager::g_save0Data.unlocks)
+				g_savePromptPending = 1;
+
+			coinTimer = 3 * g_buzzActor.coinsCollected + 16;
+			AudioManager::PlayMusicOneShot(21);
+			tintedOut = 0;
+			g_unk55A120 = 1;
+			Nu3D::Camera::SetTint(128, 128, 128, 6);
+			tokenStep = tokenTimer - 30;
+			coinCountdown = coinTimer;
+
+			do
+			{
+				while (1)
+				{
+					Nu3D::Camera::FadeToTargetTint();
+
+					if (g_randDatBufferPtr > &g_randDatBuffer[1500])
+						g_randDatBufferPtr -= 1500;
+
+					SoftwareRenderer::UnkFunc67(0, 0);
+					frameDelta = Renderer::g_frameDelta;
+
+					for (i = 0; i < 64; ++i)
+					{
+						if (sparkles[i].lifetime > 0)
+						{
+							sparkles[i].x += frameDelta * sparkles[i].velX;
+							sparkles[i].y += frameDelta * sparkles[i].velY;
+							Renderer::Sprite::DrawTinted(sparkles[i].x >> 8, sparkles[i].y >> 8, 80, sparkles[i].lifetime >> 3, 64, 64, 0, 32);
+							frameDelta = Renderer::g_frameDelta;
+							sparkles[i].velY += 24 * frameDelta;
+							sparkles[i].lifetime -= frameDelta;
+						}
+					}
+
+					Renderer::Sprite::DrawScaledFixed(44, 60, 82, 15, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaledFixed(96, 60, 82, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaledFixed(148, 60, 82, 16, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaledFixed(200, 60, 82, 17, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaledFixed(252, 60, 83, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
+
+					for (i = 0; i < 5; ++i)
+					{
+						if (currentTokens[i])
+							Renderer::Sprite::DrawTile(52 * i + 36, 32, 76, (4 * i + (frame / 2)) & 0x1F);
+						else
+							Renderer::Sprite::DrawTinted(52 * i + 36, 32, 76, (4 * i + (frame / 2)) & 0x1F, 0, 0, 0, 0);
+					}
+
+					for (i = 0; i < 5; ++i)
+					{
+						if ((g_playerUnlocks & unlockMasks[i]) != 0)
+							Renderer::Sprite::DrawScaledFixed(40 * i + 68, 173, 81, i, 255, 255, 255, 255, 2048, 2048);
+						else
+							Renderer::Sprite::DrawScaledFixed(40 * i + 68, 173, 81, i, 0, 0, 0, 0, 2048, 2048);
+					}
+
+					Renderer::Sprite::DrawTile(92, 118, 78, (frame + 2 * i) & 0xF);
+					Renderer::Sprite::DrawTile(152, 122, 79, 10);
+					Renderer::Sprite::DrawTile(190, 122, 79, coinsShown / 10 % 10);
+					Renderer::Sprite::DrawTile(208, 122, 79, coinsShown % 10);
+
+					if (timer < 300)
+					{
+						if (tokenTimer <= 0)
+						{
+							if (coinTimer <= 0)
+							{
+								if (coinsShown < g_buzzActor.coinsCollected)
+									++coinsShown;
+							}
+							else
+							{
+								if (coinCountdown - coinTimer > 3)
+								{
+									if (coinsShown < g_buzzActor.coinsCollected)
+										AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+
+									if (coinCountdown - coinTimer > 3)
+									{
+										do
+										{
+											coinCountdown -= 3;
+
+											if (coinsShown < g_buzzActor.coinsCollected)
+												++coinsShown;
+										} while (coinCountdown - coinTimer > 3);
+									}
+								}
+
+								coinTimer -= Renderer::g_frameDelta;
+							}
+						}
+						else
+						{
+							if (tokenStep - tokenTimer >= 30)
+							{
+								j = 0;
+								tokenStep -= 30;
+
+								while (currentTokens[j] || ! savedTokens[j])
+								{
+									if (++j >= 5)
+									{
+										tokenTimer -= Renderer::g_frameDelta;
+										goto LABEL_52;
+									}
+								}
+
+								AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+								currentTokens[j] = 1;
+								tokenIndex = j;
+								spawnFlag = 20;
+							}
+
+							tokenTimer -= Renderer::g_frameDelta;
+						}
+					}
+				LABEL_52:
+					if (spawnFlag)
+					{
+						rand = g_randDatBufferPtr;
+						spawnFlag = 0;
+						remaining = 15;
+
+						do
+						{
+							rand0 = *rand;
+							offsetX = 16 * (rand0 - 128);
+							g_randDatBufferPtr = rand + 1;
+							rand1 = rand[1];
+							g_randDatBufferPtr = rand + 2;
+							offsetY = 8 * rand1 - 1024;
+							rand2 = rand[2];
+							velY = offsetY / 7 + (rand2 >> 1) - 384;
+							rand += 4;
+							velX = offsetX / 7 + (rand2 >> 4) - 16;
+							g_randDatBufferPtr = rand;
+
+							for (j = 0; j < 64; ++j)
+							{
+								if (! sparkles[j].lifetime)
+									break;
+							}
+
+							if (j != 64)
+							{
+								sparkles[j].x = offsetX + ((tokenIndex + 4 * (3 * tokenIndex + 3) + 1) << 10);
+								sparkles[j].y = offsetY + 10240;
+								sparkles[j].velX = velX;
+								sparkles[j].velY = velY;
+								sparkles[j].lifetime = 31;
+							}
+
+							--remaining;
+						} while (remaining);
+					}
+
+					Nullsub3();
+					MainMenu::RenderMenu();
+
+					if (timer > 120 && timer < 240)
+					{
+						blink = (Renderer::g_frameDelta + blink) & 0x3F;
+
+						if (blink < 0x30)
+							Renderer::Sprite::DrawWhiteText("press jump to exit", 220, 160);
+					}
+
+					Nullsub6();
+					frameDelta = Renderer::g_frameDelta;
+
+					if ((timer <= 180 && timer > 120) || (timer -= frameDelta, timer > 0))
+					{
+						if (timer > 23)
+							goto LABEL_72;
+					}
+					else
+					{
+						timer = 0;
+					}
+
+					if (! tintedOut)
+					{
+						Nu3D::Camera::SetTint(0, 0, 0, 12);
+						frameDelta = Renderer::g_frameDelta;
+						tintedOut = 1;
+					}
+				LABEL_72:
+					frame += frameDelta;
+
+					if (g_attractModeTimer >= 0)
+					{
+						if (attractTimer >= 0)
+						{
+							attractTimer -= frameDelta;
+
+							if (attractTimer <= 0)
+								attractTimer = -1;
+						}
+
+						if ((InputManager::g_curButtonsPressed & 1) != 0 || attractTimer < 0)
+						{
+							InputManager::g_curButtonsPressed |= 0x4000;
+							InputManager::g_prevButtonsPressed &= ~0x4000;
+						}
+					}
+
+					if ((InputManager::g_curButtonsPressed & 0x4000) == 0 || (InputManager::g_prevButtonsPressed & 0x4000) != 0 || timer >= 240 || timer <= 120)
+						break;
+
+					AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+
+					if (tokenTimer || coinTimer)
+					{
+						timer = 120;
+						coinsShown = g_buzzActor.coinsCollected;
+						memcpy(currentTokens, savedTokens, sizeof(currentTokens));
+					}
+					else
+					{
+						timer = 24;
+					}
+				}
+			} while (timer > 0);
+
+			return AudioManager::StopAndWait();
+		}
+
 	}
 
 	namespace GameOver
 	{
-		// STUB: TOY2 0x00437B20
-		void Tick() {}
+		// FUNCTION: TOY2 0x00437B20
+		int32_t Tick()
+		{
+			int32_t timer;
+
+			InputManager::g_curButtonsPressed = 0;
+			InputManager::g_prevButtonsPressed = 0;
+			MainMenu::g_fadeTimer = 0;
+			MainMenu::g_nextScreen = 0;
+			Nu3D::Camera::g_cameraTintBlue = 0;
+			Nu3D::Camera::g_cameraTintGreen = 0;
+			Nu3D::Camera::g_cameraTintRed = 0;
+			Nu3D::Camera::SetTint(128, 128, 128, 12);
+			SoftwareRenderer::UnkFunc67(0, 0);
+			Renderer::g_frameDelta = 1;
+			SetBackdropByIndex(1);
+			timer = 1200;
+			AudioManager::PlayMusicOneShot(17);
+
+			do
+			{
+				while (1)
+				{
+					Nu3D::Camera::FadeToTargetTint();
+					MainMenu::RenderMenu();
+					timer -= Renderer::g_frameDelta;
+
+					if (timer <= 0)
+						timer = 0;
+
+					if (AudioManager::IsStreamActive())
+					{
+						if (timer > 23)
+							goto LABEL_11;
+					}
+					else if (timer > 23)
+					{
+						timer = 23;
+					}
+
+					if ((int32_t)(timer + Renderer::g_frameDelta) > 23)
+						Nu3D::Camera::SetTint(0, 0, 0, 12);
+				LABEL_11:
+					if (g_attractModeTimer >= 0 && (InputManager::g_curButtonsPressed & 1) != 0)
+						InputManager::g_curButtonsPressed |= 0x4000;
+
+					if ((InputManager::g_curButtonsPressed & 0xF000) == 0 || (InputManager::g_prevButtonsPressed & 0xF000) != 0 || timer >= 1140 || timer <= 23)
+						break;
+
+					timer = 24;
+				}
+			} while (timer);
+
+			return AudioManager::StopAndWait();
+		}
+
 	}
 
 	// FUNCTION: TOY2 0x00440F70
@@ -1867,12 +2258,6 @@ namespace Toy2
 		Nu3D::Camera::SetSkewPhase((Renderer::g_frameDelta << 16) / 360);
 	}
 
-	// STUB: TOY2 0x00454020
-	void ShowPostGameSaveMenu() {}
-
-	// STUB: TOY2 0x00453D90
-	void ShowActClearScreen() {}
-
 	// FUNCTION: TOY2 0x0049EB50 [MATCHED]
 	uint32_t ComputeTokenProgress()
 	{
@@ -1901,8 +2286,17 @@ namespace Toy2
 		return idx + (((times << 8) + g_tokenProgressTable[idx]) << 8);
 	}
 
-	// STUB: TOY2 0x004A3770
-	void LoadPathBin() {}
+	// the path file of the current level, the two digits are replaced with the level number
+	// GLOBAL: TOY2 0x00503AD4
+	char g_padPathFile[15] = "PAD\\PATH00.BIN";
+
+	// FUNCTION: TOY2 0x004A3770
+	void LoadPathBin()
+	{
+		g_padPathFile[8] = g_levelFileIndex / 10 + 48;
+		g_padPathFile[9] = g_levelFileIndex % 10 + 48;
+		FileUtils::LoadFile(g_padPathFile, g_demoPathBuffer);
+	}
 
 	// FUNCTION: TOY2 0x00453CF0
 	int32_t ShowLevelSelect()
@@ -2873,9 +3267,8 @@ namespace Toy2
 	{
 		// GLOBAL: TOY2 0x004F6E3C
 		uint8_t g_unk4F6E3C[80] = {
-			66, 1, 65, 3, 67, 4, 65, 3, 67, 5, 65, 3, 67, 3, 65, 3, 67, 2, 65, 3, 65, 3, 65, 3, 66, 3, 65, 3, 66, 0, 65, 3, 67, 1, 65, 3,
-			65, 2, 65, 3, 65, 1, 65, 3, 65, 0, 65, 3, 68, 2, 65, 3, 68, 0, 65, 3, 68, 1, 65, 3, 68, 3, 65, 3, 67, 0, 65, 3, 66, 6, 65, 3,
-			66, 2, 65, 3, 255, 255, 255, 255
+			66, 1, 65, 3, 67, 4, 65, 3, 67, 5, 65, 3, 67, 3, 65, 3, 67, 2, 65, 3, 65, 3, 65, 3, 66, 3, 65, 3, 66, 0, 65, 3, 67, 1, 65, 3, 65,  2,	65,	 3,
+			65, 1, 65, 3, 65, 0, 65, 3, 68, 2, 65, 3, 68, 0, 65, 3, 68, 1, 65, 3, 68, 3, 65, 3, 67, 0, 65, 3, 66, 6, 65, 3, 66, 2, 65, 3, 255, 255, 255, 255
 		};
 
 		// GLOBAL: TOY2 0x004F6E8C
@@ -3190,11 +3583,431 @@ namespace Toy2
 		}
 	}
 
-	// STUB: TOY2 0x00438520
-	int32_t ShowStaticScreen(int32_t backdropIndex) { return 0; }
+	// FUNCTION: TOY2 0x00438520
+	int32_t ShowStaticScreen(int32_t backdropIndex)
+	{
+		int32_t result;
+		int32_t timer;
+		int32_t maxTimer;
 
-	// STUB: TOY2 0x0043A380
-	int32_t ShowCredits() { return 0; }
+		InputManager::g_curButtonsPressed = 0;
+		InputManager::g_prevButtonsPressed = 0;
+		MainMenu::g_fadeTimer = 0;
+		MainMenu::g_nextScreen = 0;
+		Nu3D::Camera::g_cameraTintBlue = 0;
+		Nu3D::Camera::g_cameraTintGreen = 0;
+		Nu3D::Camera::g_cameraTintRed = 0;
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+		SoftwareRenderer::UnkFunc67(0, 0);
+		Renderer::g_frameDelta = 1;
+		SetBackdropByIndex(backdropIndex);
+		result = 0;
+		timer = 600;
+		maxTimer = g_pastInitialBoot != 0 ? 600 : 300;
+
+		do
+		{
+			while (1)
+			{
+				Nu3D::Camera::FadeToTargetTint();
+				SoftwareRenderer::UnkFunc67(0, 0);
+				Nullsub3();
+				MainMenu::RenderMenu();
+				timer -= Renderer::g_frameDelta;
+
+				if (timer > 0)
+				{
+					if (timer > 23)
+						goto LABEL_8;
+				}
+				else
+				{
+					timer = 0;
+				}
+
+				if ((int32_t)(timer + Renderer::g_frameDelta) > 23)
+					Nu3D::Camera::SetTint(0, 0, 0, 12);
+			LABEL_8:
+				if (g_attractModeTimer >= 0 && (InputManager::g_curButtonsPressed & 1) != 0 && timer > 23)
+				{
+					timer = 24;
+					result = 1;
+				}
+
+				if ((InputManager::g_curButtonsPressed & (INPUT_CANCEL | INPUT_SPIN | INPUT_JUMP | INPUT_FIRE)) == 0
+					|| (InputManager::g_prevButtonsPressed & (INPUT_CANCEL | INPUT_SPIN | INPUT_JUMP | INPUT_FIRE)) != 0 || timer >= maxTimer || timer <= 23)
+				{
+					break;
+				}
+
+				timer = 24;
+			}
+		} while (timer > 0);
+
+		return result;
+	}
+
+	// the credits, the lines are separated with ~ and a ^ in front of a line makes it a heading
+	// GLOBAL: TOY2 0x004F5F54
+	char g_creditsText[2189] =
+		"Congratulations!~~~~You have completed~~~~Toy Story 2!~~~~~~~~~~Traveller's Tales~~"
+		"Credits~~~~~~~Game Design and~~Programming~~~^Jon Burton~~~~~3d engine programming~~~"
+		"^dave dootson~~~~~pc conversion~~~^steve monks~~~~~software renderer~~~^andy holdroyd~~~~~"
+		"character animation~~~^jeremy pardon~~~~~character artwork~~~^neil allen~~^dave burton~~"
+		"^jeremy pardon~~^will thompson~~~~~background artwork~~~^neil allen~~^dave burton~~"
+		"^leon warren~~^jeremy pardon~~^barry thompson~~^james cunliffe~~^bev bush~~~~~"
+		"terrain design~~~^barry thompson~~~~~utility programming~~~^andy holdroyd~~^dave dootson~~"
+		"^gary ireland~~~~~qa by~~~^arthur parsons~~~~~directed by~~~^Jon Burton~~~~~~~~~~"
+		"ACTIVISION credits~~~~~~Senior Producer~~~^Rob Letts~~~~~Associate Producer~~~"
+		"^William Oertel~~~~~VP European Studios~~~^Julian Lynn-Evans~~~~~Executive VP~~"
+		"Activision Studios~~~^Mitch Lasky~~~~~QA Manager~~~^Marilena Morini~~~~~"
+		"Senior Test Lead~~~^Marietta Pashayan~~~~~Project Lead~~~^Nadine Theuzillot~~~~~"
+		"PC Compatibility lead~~~^John Fritts~~~~~Test Team~~~^Richard Kurnadi~~^Kragen Lum~~"
+		"^Russell Shirley~~^Daniel Ramirez~~^Christian Biermann~~^David Silverman~~^David Hakim~~"
+		"^Keith Harris~~^Brian Ulmer~~^Josh Horowitz~~^Nicole Dodd~~^Eric Zimmerman~~"
+		"^Jenn Spencier~~^Peter Muravez~~^Todd D. Jones~~^Chad Bordwell~~^Hector Garcia~~~~~~~~~~"
+		"Disney Interactive~~Credits~~~~~~Senior Producer~~~^Dan Winters~~~~~Producer~~~"
+		"^Peter Wyse~~~~~Lead Designer~~~^Joel Goodsell~~~~~Original Character~~Design~~~"
+		"^Jeff Berting~~^Tom Barlow~~~~~Additional Art~~~^Jeff Berting~~^Tom Barlow~~~~~"
+		"Assistant Producer~~~^Renee Johnson~~~~~U.K. Production Lead~~~^Nick Bridger~~~~~"
+		"Game Dialogue~~~^Peter Wyse~~~~~Additional Dialogue~~~^Renee Johnson~~~~"
+		"Senior Lead Tester~~~^Carlos Schulte~~~~~Lead Tester~~~^Kevin Cope~~~~~Test Team~~~"
+		"^Patrick Larkin~~^Andre Aguilar~~^Bryan Martinez~~^Amir Firozkar~~~~~~~~~~~"
+		"Music Credits~~~~~~original music score~~~^swallow studios~~~~~sound effects~~~"
+		"^p.c. music~~~~~tt logo music~~~^aaron szpakowski~~~~~~~~~~Special Thanks~~~"
+		"^Helen Burton~~^John Lasseter~~^Ash Brannon~~^Helene Plotkin~~^Karen Robert Jackson~~"
+		"^Katherine Sarafian~~^Kathleen Handy~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~";
+
+	// FUNCTION: TOY2 0x0043A380
+	int32_t ShowCredits()
+	{
+		int32_t linesDone;
+		char* textPtr;
+		int32_t lineIdx;
+		int32_t i;
+		int32_t j;
+		int32_t newLines;
+		int32_t scroll;
+		int32_t exitTimer;
+		int32_t exitTimerCopy;
+		int32_t linesTotal;
+		int32_t backdropIndex;
+		int32_t backdropTimer;
+		char* line;
+		char lineBuffer[2560];
+		char ch;
+
+		linesDone = 0;
+
+		textPtr = g_creditsText;
+
+		scroll = 0;
+		linesTotal = 0;
+
+		for (i = 0; i < 40; ++i)
+			lineBuffer[64 * i] = 0;
+
+		InputManager::g_curButtonsPressed = 0;
+		InputManager::g_prevButtonsPressed = 0;
+		MainMenu::g_fadeTimer = 0;
+		MainMenu::g_nextScreen = 0;
+		Nu3D::Camera::g_cameraTintBlue = 0;
+		Nu3D::Camera::g_cameraTintGreen = 0;
+		Nu3D::Camera::g_cameraTintRed = 0;
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+		SoftwareRenderer::UnkFunc67(0, 0);
+		Renderer::g_frameDelta = 1;
+		SetBackdropByIndex(0);
+		MainMenu::g_menuClearColor.b = 0;
+		MainMenu::g_menuClearColor.g = 0;
+		MainMenu::g_menuClearColor.r = 0;
+		exitTimer = 4000;
+		AudioManager::PlayMusicLooping(18);
+		g_unk55A120 = 1;
+		Nu3D::Camera::SetTint(128, 128, 128, 6);
+
+		backdropIndex = 0;
+		backdropTimer = 600;
+
+		while (1)
+		{
+			Nu3D::Camera::FadeToTargetTint();
+
+			if (scroll / 128 > linesDone)
+			{
+				lineIdx = linesDone + 2;
+				newLines = scroll / 128 - linesDone;
+				linesTotal = scroll / 128;
+
+				do
+				{
+					ch = *textPtr;
+
+					for (i = 0; *textPtr != 126; ch = *textPtr)
+					{
+						if (! ch)
+							break;
+
+						j = i + ((lineIdx % 40) << 6);
+						++i;
+						++textPtr;
+						lineBuffer[j] = ch;
+					}
+
+					if (*textPtr)
+						++textPtr;
+
+					lineBuffer[64 * (lineIdx % 40) + i] = 0;
+					++lineIdx;
+					--newLines;
+				} while (newLines);
+			}
+
+			SoftwareRenderer::UnkFunc67(0, 0);
+			line = lineBuffer;
+
+			for (j = 320; j < 640; j += 8)
+			{
+				Renderer::Sprite::DrawWhiteText(line, (j - scroll / 16 % 320) % 320 - 33, 160);
+				line += 64;
+			}
+
+			Renderer::Sprite::DrawBackdropTransition(&backdropTimer, &backdropIndex, 600);
+
+			Nullsub6();
+			exitTimerCopy = exitTimer;
+			scroll += 8 * Renderer::g_frameDelta;
+
+			if (exitTimer > 0 && exitTimer < 1000)
+			{
+				exitTimerCopy = exitTimer - Renderer::g_frameDelta;
+				exitTimer -= Renderer::g_frameDelta;
+			}
+
+			if ((((InputManager::g_curButtonsPressed & 0xF000) != 0 && (InputManager::g_prevButtonsPressed & 0xF000) == 0) || ! *textPtr) && exitTimerCopy > 53
+				&& Nu3D::Camera::g_cameraTintBlue == 128)
+			{
+				exitTimer = 53;
+				Nu3D::Camera::SetTint(0, 0, 0, 6);
+				exitTimerCopy = 53;
+			}
+
+			MainMenu::RenderMenu();
+
+			if (exitTimerCopy <= 0)
+				break;
+
+			linesDone = linesTotal;
+		}
+
+		AudioManager::StopAndWait();
+		MainMenu::g_menuClearColor.b = 32;
+		MainMenu::g_menuClearColor.g = 32;
+		MainMenu::g_menuClearColor.r = 32;
+		return 32;
+	}
+
+	namespace PostGameSaveMenu
+	{
+		// FUNCTION: TOY2 0x0043A130
+		int32_t Tick()
+		{
+			int32_t timer;
+			int32_t choice;
+
+			InputManager::g_curButtonsPressed = 0;
+			InputManager::g_prevButtonsPressed = 0;
+			MainMenu::g_fadeTimer = 0;
+			MainMenu::g_nextScreen = 0;
+			Nu3D::Camera::g_cameraTintBlue = 0;
+			Nu3D::Camera::g_cameraTintGreen = 0;
+			Nu3D::Camera::g_cameraTintRed = 0;
+			Nu3D::Camera::SetTint(128, 128, 128, 12);
+			SoftwareRenderer::UnkFunc67(0, 0);
+			Renderer::g_frameDelta = 1;
+			SetBackdropByIndex(0);
+			timer = 4000;
+			choice = 1;
+			AudioManager::PlayMusicLooping(19);
+			g_unk55A120 = 1;
+			Nu3D::Camera::SetTint(128, 128, 128, 6);
+
+			do
+			{
+				while (1)
+				{
+					Nu3D::Camera::FadeToTargetTint();
+					SoftwareRenderer::UnkFunc67(0, 0);
+
+					if (timer > 1000)
+					{
+						if ((InputManager::g_curButtonsPressed & INPUT_LEFT) != 0 && ! choice)
+						{
+							choice = 1;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 64, 96);
+						}
+
+						if ((InputManager::g_curButtonsPressed & INPUT_RIGHT) != 0 && choice == 1)
+						{
+							choice = 0;
+							AudioManager::PlayOneShotSoundGlobal(1, 4608, 96, 64);
+						LABEL_9:
+							Renderer::Sprite::DrawTile(32, 112, 57, 0);
+							goto LABEL_10;
+						}
+					}
+
+					if (! choice)
+						goto LABEL_9;
+
+					Renderer::Sprite::DrawTile(448, 112, 57, 1);
+				LABEL_10:
+					Nullsub3();
+					Renderer::Sprite::DrawWhiteText(LevelSelect::g_jumpToSelectTxt, 200, 256);
+					Renderer::Sprite::DrawWhiteText("SAVE GAME?", 48, 256);
+					Renderer::Sprite::DrawWhiteText("   /   ", 128, 256);
+
+					if (choice)
+					{
+						Renderer::Sprite::DrawWhiteText("YES    ", 128, 256);
+						Renderer::Sprite::DrawBitmapText("    NO ", 128, 256, 64, 64, 64);
+					}
+					else
+					{
+						Renderer::Sprite::DrawWhiteText("    NO ", 128, 256);
+						Renderer::Sprite::DrawBitmapText("YES    ", 128, 256, 64, 64, 64);
+					}
+
+					Nullsub6();
+					MainMenu::RenderMenu();
+
+					if (timer < 1000)
+						timer -= Renderer::g_frameDelta;
+
+					if ((InputManager::g_curButtonsPressed & 0x4000) == 0 || (InputManager::g_prevButtonsPressed & 0x4000) != 0 || timer <= 23
+						|| Nu3D::Camera::g_cameraTintBlue != 128)
+					{
+						break;
+					}
+
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					timer = 53;
+					AudioManager::PlayOneShotSoundGlobal(0, 4608, 96, 96);
+				}
+			} while (timer > 0);
+
+			AudioManager::StopAndWait();
+			return choice;
+		}
+	}
+
+	// FUNCTION: TOY2 0x00454020
+	void ShowPostGameSaveMenu()
+	{
+		int32_t previousLevel = g_levelFileIndex;
+		g_levelFileIndex = 16;
+
+		if (g_savePromptPending)
+		{
+			Levels::g_levelLoadConfig = 248;
+			g_hasStaticBackdrop = 0;
+
+			Renderer::g_virtualScreenWidth = 512.0;
+			Renderer::g_virtualScreenHeight = 256.0;
+			g_nextBackdropId = 36;
+
+			Levels::InitLevelPlay(16);
+
+			g_savePromptPending = PostGameSaveMenu::Tick();
+
+			if (g_savePromptPending)
+			{
+				g_savePromptPending = 1;
+
+				SaveManager::TransferProgressData(&SaveManager::g_save0Data);
+				TickSaveMenuMachine(1);
+				SaveManager::LoadProgressData(&SaveManager::g_save0Data);
+
+				g_savePromptPending = 0;
+			}
+		}
+
+		g_levelFileIndex = previousLevel;
+	}
+
+	// FUNCTION: TOY2 0x00453D90
+	void ShowActClearScreen()
+	{
+		int32_t timer;
+		int32_t pressed;
+		int32_t blink;
+		int32_t exitTimer;
+		int32_t previousLevel = g_levelFileIndex;
+
+		g_levelFileIndex += 32;
+		Renderer::g_virtualScreenWidth = 320.0;
+		Renderer::g_virtualScreenHeight = 256.0;
+		LoadLevelGraphics(g_levelFileIndex);
+		SoftwareRenderer::g_unk4F7400.x = 0;
+		SoftwareRenderer::g_unk4F7400.y = 0;
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+		timer = 28;
+		AudioManager::PlayMusicOneShot(21);
+
+		do
+		{
+			timer -= Renderer::g_frameDelta;
+
+			if (timer <= 0)
+				timer = 0;
+
+			Nu3D::Camera::FadeToTargetTint();
+			MainMenu::RenderMenu();
+		} while (timer);
+
+		pressed = 0;
+		blink = 0;
+		SoftwareRenderer::g_unk4F7400.x = 0;
+		SoftwareRenderer::g_unk4F7400.y = 0;
+		exitTimer = 28;
+
+		do
+		{
+			Nu3D::Camera::FadeToTargetTint();
+
+			if (pressed)
+			{
+				exitTimer -= Renderer::g_frameDelta;
+
+				if (exitTimer <= 0)
+					exitTimer = 0;
+			}
+
+			if ((InputManager::g_curButtonsPressed & 0x4000) != 0 && (InputManager::g_prevButtonsPressed & 0x4000) == 0 && ! pressed)
+			{
+				Nu3D::Camera::SetTint(0, 0, 0, 12);
+				pressed = 1;
+				AudioManager::PlaySoundEffect(7, 0);
+			}
+
+			blink = (Renderer::g_frameDelta + blink) & 0x3F;
+
+			if (blink > 30)
+				Renderer::Sprite::DrawScaledFixed(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
+
+			MainMenu::RenderMenu();
+		} while (exitTimer);
+
+		AudioManager::StopAndWait();
+		g_hasStaticBackdrop = 0;
+		SoftwareRenderer::g_unk4F7400.x = -32768;
+		SoftwareRenderer::g_unk4F7400.y = -32768;
+		Renderer::g_virtualScreenWidth = 512.0;
+		Renderer::g_virtualScreenHeight = 256.0;
+		g_nextBackdropId = 36;
+		g_savePromptPending = 1;
+		g_levelFileIndex = previousLevel;
+	}
 
 	// FUNCTION: TOY2 0x004381F0
 	int32_t ScreenDispatcher(int32_t index)
@@ -3389,11 +4202,749 @@ namespace Toy2
 		return 1;
 	}
 
-	// STUB: TOY2 0x00430E90
-	void ReadIniFile() {}
+	// one word of the TOY2.INI, the table ends with a token value of -1
+	struct IniToken
+	{
+		char* tokenName;
+		int32_t tokenValue;
+	};
 
-	// STUB: TOY2 0x0047EF80
-	void ProfileCPU() {}
+	// GLOBAL: TOY2 0x004F4F60
+	IniToken g_iniTokens[47] = {
+		{ "US", 1 },		  { "DE", 2 },		 { "FR", 3 },		 { "NL", 10 },		  { "DK", 4 },		 { "SW", 5 },		{ "IT", 6 },
+		{ "CT", 7 },		  { "FN", 8 },		 { "NW", 9 },		 { "LANGUAGE", 12 },  { "DEFTEXT", 13 }, { "KEY", 14 },		{ "JOY", 15 },
+		{ "MESSAGE", 16 },	  { "QUIET", 17 },	 { "FINISHED", 47 }, { "CHEAT", 18 },	  { "HIMPEG", 19 },	 { "NOMPEG", 20 },	{ "LOG", 22 },
+		{ "IF", 21 },		  { "ENDIF", 23 },	 { "DEFKEY", 24 },	 { "FIRE", 25 },	  { "JUMP", 26 },	 { "CAMLEFT", 27 }, { "CAMRIGHT", 28 },
+		{ "HELMETVIEW", 29 }, { "PAUSE", 30 },	 { "SELECT", 31 },	 { "DERVISH", 32 },	  { "PAD_LL", 33 },	 { "PAD_LU", 34 },	{ "PAD_LR", 36 },
+		{ "PAD_LD", 35 },	  { "PAD_RL", 37 },	 { "PAD_RU", 38 },	 { "PAD_RR", 40 },	  { "PAD_RD", 39 },	 { "PAD_FLT", 41 }, { "PAD_FLB", 42 },
+		{ "PAD_FRT", 43 },	  { "PAD_FRB", 44 }, { "PAD_SEL", 45 },	 { "PAD_START", 46 }, { 0, -1 },
+	};
+
+	// GLOBAL: TOY2 0x0053407C
+	char g_iniTokenBuffer[1024];
+
+	// GLOBAL: TOY2 0x00534070
+	FILE* g_iniFileFd;
+
+	// the number of DEFTEXT lines that were read, they are stored in g_defTextStrings
+	// GLOBAL: TOY2 0x0053406C
+	int32_t g_defTextCount;
+
+	// GLOBAL: TOY2 0x00534480
+	int32_t g_languageToken;
+
+	// GLOBAL: TOY2 0x0053006C
+	char g_defTextStrings[16384];
+
+	// GLOBAL: TOY2 0x00882C24
+	int32_t g_useRelativePathForIni;
+
+	// GLOBAL: TOY2 0x00882A20
+	char g_empty512Chars[512];
+
+	// GLOBAL: TOY2 0x00882C2C
+	char g_empty512Chars_2[512];
+
+	// GLOBAL: TOY2 0x00504D54
+	char g_iniCdPath[256] = "cd\\";
+
+	namespace Ini
+	{
+		// a key name of the INI and the scancode it stands for
+		struct KeyNameEntry
+		{
+			uint16_t scancode;
+			uint16_t unk2;
+			uint16_t keyName;
+		};
+
+		// the position and the text of one entry of the key and gamepad configuration, ParseDefText replaces both
+		struct DefTextEntry
+		{
+			int32_t x;
+			int32_t y;
+			int32_t unk8;
+			char* text;
+			int32_t unk10;
+			int32_t unk14;
+		};
+
+		// the position and the text of one message, ParseDefText replaces both
+		struct DefTextMessage
+		{
+			int32_t x;
+			int32_t y;
+			char* text;
+			int32_t unkC;
+		};
+
+		// GLOBAL: TOY2 0x004EFCE0
+		KeyNameEntry g_keyNameTable[123] = {
+			{ 200, 39, 94 },   { 208, 40, 36 },	  { 203, 41, 40 },	 { 205, 42, 41 },		{ 1, 57, 32 },		{ 2, 44, 49 },		{ 3, 45, 50 },
+			{ 4, 46, 51 },	   { 5, 47, 52 },	  { 6, 48, 53 },	 { 7, 49, 54 },			{ 8, 50, 55 },		{ 9, 51, 56 },		{ 10, 52, 57 },
+			{ 11, 43, 48 },	   { 12, 34, 45 },	  { 14, 65535, 32 }, { 15, 59, 32 },		{ 16, 16, 113 },	{ 17, 22, 119 },	{ 18, 4, 101 },
+			{ 19, 17, 114 },   { 20, 19, 116 },	  { 21, 25, 122 },	 { 22, 20, 117 },		{ 23, 8, 105 },		{ 24, 14, 111 },	{ 25, 15, 112 },
+			{ 26, 30, 91 },	   { 27, 31, 93 },	  { 28, 56, 32 },	 { 29, 53, 32 },		{ 30, 0, 97 },		{ 31, 18, 115 },	{ 32, 3, 100 },
+			{ 33, 5, 102 },	   { 34, 6, 103 },	  { 35, 7, 104 },	 { 36, 9, 106 },		{ 37, 10, 107 },	{ 38, 11, 108 },	{ 39, 33, 59 },
+			{ 41, 65535, 32 }, { 42, 58, 32 },	  { 43, 32, 47 },	 { 44, 24, 121 },		{ 45, 23, 120 },	{ 46, 2, 99 },		{ 47, 21, 118 },
+			{ 48, 1, 98 },	   { 49, 13, 110 },	  { 50, 12, 109 },	 { 51, 28, 44 },		{ 52, 29, 46 },		{ 53, 36, 32 },		{ 54, 58, 32 },
+			{ 56, 54, 32 },	   { 184, 54, 32 },	  { 57, 55, 32 },	 { 58, 65535, 32 },		{ 59, 65535, 32 },	{ 60, 65535, 32 },	{ 61, 65535, 32 },
+			{ 62, 65535, 32 }, { 63, 65535, 32 }, { 64, 65535, 32 }, { 65, 65535, 32 },		{ 66, 65535, 32 },	{ 67, 65535, 32 },	{ 68, 65535, 32 },
+			{ 69, 65535, 32 }, { 70, 65535, 32 }, { 71, 65535, 55 }, { 72, 65535, 32 },		{ 73, 65535, 57 },	{ 74, 65535, 45 },	{ 75, 65535, 52 },
+			{ 76, 65535, 53 }, { 77, 65535, 54 }, { 78, 65535, 43 }, { 79, 65535, 49 },		{ 80, 65535, 50 },	{ 81, 65535, 51 },	{ 82, 65535, 48 },
+			{ 83, 29, 46 },	   { 87, 65535, 32 }, { 88, 65535, 32 }, { 100, 65535, 32 },	{ 101, 65535, 32 }, { 102, 65535, 32 }, { 41, 27, 35 },
+			{ 0, 69, 65 },	   { 0, 70, 66 },	  { 0, 71, 67 },	 { 0, 72, 68 },			{ 0, 73, 69 },		{ 0, 74, 70 },		{ 0, 75, 71 },
+			{ 0, 76, 72 },	   { 0, 77, 73 },	  { 0, 78, 74 },	 { 0, 79, 75 },			{ 0, 80, 76 },		{ 0, 81, 77 },		{ 0, 82, 78 },
+			{ 0, 83, 79 },	   { 0, 84, 80 },	  { 0, 85, 81 },	 { 0, 86, 82 },			{ 0, 87, 83 },		{ 0, 88, 84 },		{ 0, 89, 85 },
+			{ 0, 90, 86 },	   { 0, 91, 87 },	  { 0, 92, 88 },	 { 0, 93, 89 },			{ 0, 94, 90 },		{ 0, 64, 163 },		{ 0, 96, 37 },
+			{ 0, 97, 38 },	   { 0, 60, 42 },	  { 0, 95, 96 },	 { 65535, 65535, 255 },
+		};
+
+		// GLOBAL: TOY2 0x004EFFC8
+		DefTextEntry g_unk4EFFC8[14] = {
+			{ 60, 40, 0, "forward", 0 },		   { 60, 60, 0, "back", 0 },		 { 60, 80, 0, "left", 0 },		  { 60, 100, 0, "right", 0 },
+			{ 60, 120, 0, "fire/get/drop", 0 },	   { 60, 140, 0, "jump/change", 0 }, { 60, 160, 0, "seed color", 0 }, { 200, 40, 0, "camera", 0 },
+			{ 200, 60, 0, "lock camera", 0 },	   { 240, 80, 0, "walk", 0 },		 { 200, 100, 0, "kick", 0 },	  { 80, 180, 0, "game pad", 0 },
+			{ 80, 200, 0, "restore defaults", 0 }, { 80, 220, 0, "accept", 0 },
+		};
+
+		// GLOBAL: TOY2 0x004F0114
+		DefTextEntry* g_unk4F0114[15] = {
+			&g_unk4EFFC8[0], &g_unk4EFFC8[1], &g_unk4EFFC8[2],	&g_unk4EFFC8[3],  &g_unk4EFFC8[4],	&g_unk4EFFC8[5],  &g_unk4EFFC8[6],	&g_unk4EFFC8[7],
+			&g_unk4EFFC8[8], &g_unk4EFFC8[9], &g_unk4EFFC8[10], &g_unk4EFFC8[11], &g_unk4EFFC8[12], &g_unk4EFFC8[13], (DefTextEntry*)-1
+		};
+
+		// GLOBAL: TOY2 0x004F0150
+		DefTextEntry g_unk4F0150[10] = {
+			{ 40, 40, 0, "fire/get/drop", 0 },	   { 40, 60, 0, "jump/change", 256 }, { 40, 80, 0, "seed color", 512 }, { 40, 100, 0, "camera", 768 },
+			{ 200, 40, 0, "lock camera", 1024 },   { 200, 60, 0, "walk", 1280 },	  { 200, 80, 0, "kick", 1536 },		{ 80, 180, 0, "keyboard", 0 },
+			{ 80, 200, 0, "restore defaults", 0 }, { 80, 220, 0, "accept", 0 },
+		};
+
+		// GLOBAL: TOY2 0x004F023C
+		DefTextEntry* g_unk4F023C[11] = {
+			&g_unk4F0150[0], &g_unk4F0150[1], &g_unk4F0150[2], &g_unk4F0150[3], &g_unk4F0150[4],  &g_unk4F0150[5],
+			&g_unk4F0150[6], &g_unk4F0150[7], &g_unk4F0150[8], &g_unk4F0150[9], (DefTextEntry*)-1
+		};
+
+		// GLOBAL: TOY2 0x004F5398
+		DefTextMessage g_unk4F5398[25] = {
+			{ 20, 200, "select option and press enter", 0 },
+			{ 90, 200, "() - to change", 0 },
+			{ 20, 220, "press enter to accept changes", 0 },
+			{ 50, 240, "press esc to go back", 0 },
+			{ 70, 120, "do you want to quit", 0 },
+			{ 90, 4, "video options", 0 },
+			{ 100, 4, "define keys", 0 },
+			{ 130, 4, "save game", 0 },
+			{ 10, 200, "select file", 0 },
+			{ 10, 220, "press esc to go back", 0 },
+			{ 130, 4, "confirm", 0 },
+			{ 80, 180, "do you wish to", 0 },
+			{ 70, 200, "save over this game", 0 },
+			{ 130, 4, "enter name", 0 },
+			{ 130, 4, "load game", 0 },
+			{ 10, 200, "select game and press enter", 0 },
+			{ 10, 220, "press esc to go back", 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+			{ 0, 0, 0, 0 },
+		};
+
+		// GLOBAL: TOY2 0x004F5524
+		DefTextMessage* g_unk4F5524[25] = {
+			&g_unk4F5398[0],  &g_unk4F5398[1],	&g_unk4F5398[2],  &g_unk4F5398[3],	&g_unk4F5398[4],  &g_unk4F5398[5],	&g_unk4F5398[6],
+			&g_unk4F5398[7],  &g_unk4F5398[8],	&g_unk4F5398[9],  &g_unk4F5398[10], &g_unk4F5398[11], &g_unk4F5398[12], &g_unk4F5398[13],
+			&g_unk4F5398[14], &g_unk4F5398[15], &g_unk4F5398[16], &g_unk4F5398[17], &g_unk4F5398[18], &g_unk4F5398[19], &g_unk4F5398[20],
+			&g_unk4F5398[21], &g_unk4F5398[22], &g_unk4F5398[23], &g_unk4F5398[24]
+		};
+
+		// FUNCTION: TOY2 0x00430BF0
+		void ParseDefText()
+		{
+			IniToken* curToken;
+			int32_t tokenType;
+			int32_t tokenValue;
+			char* buffer;
+			FILE* file;
+			int32_t ch;
+			int32_t index;
+			uint8_t byteCh;
+			char* source;
+			int32_t x;
+			int32_t y;
+			DefTextEntry** table = 0;
+			DefTextEntry* entry;
+			DefTextMessage* message;
+			char text[256];
+
+			if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+				Logger::Log("EOF reached .\n");
+
+			curToken = g_iniTokens;
+
+			if (g_iniTokenBuffer[0] == '#')
+			{
+				tokenType = 11;
+			}
+			else if (g_iniTokens[0].tokenValue == -1)
+			{
+			LABEL_8:
+				tokenType = -1;
+			}
+			else
+			{
+				while (strcmp(curToken->tokenName, g_iniTokenBuffer))
+				{
+					tokenValue = curToken[1].tokenValue;
+					++curToken;
+
+					if (tokenValue == -1)
+						goto LABEL_8;
+				}
+
+				tokenType = curToken->tokenValue;
+			}
+
+			switch (tokenType)
+			{
+				case 14:
+					table = g_unk4F0114;
+					break;
+				case 15:
+					table = g_unk4F023C;
+					break;
+				case 16:
+					break;
+				default:
+					buffer = g_iniTokenBuffer;
+					memset(g_iniTokenBuffer, 0, sizeof(g_iniTokenBuffer));
+					file = g_iniFileFd;
+
+					do
+					{
+						ch = fgetc(file);
+
+						if (buffer)
+							*buffer++ = ch;
+					} while (ch != -1 && ch != 10);
+
+					Logger::Log("UNKNOWN DefText : %s", g_iniTokenBuffer);
+					return;
+			}
+
+			if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+				Logger::Log("EOF reached .\n");
+
+			index = atoi(g_iniTokenBuffer);
+			file = g_iniFileFd;
+
+			do
+				byteCh = fgetc(file);
+			while (byteCh != '"' && byteCh != -1);
+
+			file = g_iniFileFd;
+			source = text;
+
+			do
+			{
+				byteCh = fgetc(file);
+				*source++ = byteCh;
+			} while (byteCh != '"' && byteCh != -1);
+
+			*(source - 1) = 0;
+
+			if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+				Logger::Log("EOF reached .\n");
+
+			x = atoi(g_iniTokenBuffer);
+
+			if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+				Logger::Log("EOF reached .\n");
+
+			y = atoi(g_iniTokenBuffer);
+
+			if (g_defTextCount < 64)
+			{
+				strncpy(&g_defTextStrings[256 * g_defTextCount], text, 256);
+
+				if (tokenType <= 15)
+				{
+					entry = table[index];
+					entry->text = &g_defTextStrings[256 * g_defTextCount];
+					entry->x = x;
+					entry->y = y;
+				}
+				else
+				{
+					message = g_unk4F5524[index];
+					message->text = &g_defTextStrings[256 * g_defTextCount];
+					message->x = x;
+					message->y = y;
+				}
+
+				++g_defTextCount;
+			}
+		}
+
+		// FUNCTION: TOY2 0x00415640
+		int16_t KeyNameToScancode(char keyName)
+		{
+			int32_t index = 0;
+			int16_t result;
+			KeyNameEntry* entry;
+
+			switch (keyName)
+			{
+				case '#':
+					result = 0x39;
+					break;
+				case '%':
+					result = 0xF;
+					break;
+				case '+':
+					result = 28;
+					break;
+				case '<':
+					result = 203;
+					break;
+				case '>':
+					result = 205;
+					break;
+				case '@':
+					result = 29;
+					break;
+				case '[':
+					result = 42;
+					break;
+				case '^':
+					result = 200;
+					break;
+				case 'v':
+					result = 208;
+					break;
+				default:
+					if (g_keyNameTable[0].scancode == 0xFFFF)
+					{
+					LABEL_15:
+						result = -1;
+					}
+					else
+					{
+						entry = g_keyNameTable;
+
+						while ((char)entry->keyName != keyName)
+						{
+							++entry;
+							++index;
+
+							if (entry->scancode == 0xFFFF)
+								goto LABEL_15;
+						}
+
+						result = g_keyNameTable[index].scancode;
+					}
+					break;
+			}
+
+			return result;
+		}
+	}
+
+	// FUNCTION: TOY2 0x00430E90
+	void ReadIniFile()
+	{
+		FILE* cDriveFd;
+		char* rootPath;
+		IniToken* curTokenLookup;
+		int32_t tokenValue;
+		int32_t tokenValueEnd;
+		int32_t inputCode;
+		int32_t keyTokenValue;
+		char* buffer;
+		FILE* file;
+		int32_t ch;
+		char filePath[1024];
+
+		memset(filePath, 0, sizeof(filePath));
+
+		g_defTextCount = 0;
+
+		cDriveFd = fopen("c:\\toy2.ini", "rb");
+
+		if (cDriveFd) // Check for the INI on the c drive first
+		{
+			fclose(cDriveFd);
+			rootPath = "c:\\";
+		}
+		else
+		{
+			if (! FileUtils::GetFileSize("toy2.ini"))
+			{
+				Logger::Log("ReadIniFile : No TOY2.INI file found.\n");
+				return;
+			}
+
+			if (g_useRelativePathForIni)
+			{
+				strcat(filePath, g_empty512Chars);
+				rootPath = g_iniCdPath;
+			}
+			else
+			{
+				strcat(filePath, g_empty512Chars_2);
+				rootPath = "\\cd\\";
+			}
+		}
+
+		strcat(filePath, rootPath);
+		strcat(filePath, "toy2.ini");
+
+		g_iniFileFd = fopen(filePath, "rt");
+
+		if (g_iniFileFd)
+		{
+			while (1)
+			{
+			LABEL_10:
+				if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+					Logger::Log("EOF reached .\n");
+
+				curTokenLookup = g_iniTokens;
+
+				if (g_iniTokenBuffer[0] == '#')
+				{
+					tokenValue = 11;
+				}
+				else if (g_iniTokens[0].tokenValue == -1)
+				{
+				LABEL_17:
+					tokenValue = -1;
+				}
+				else
+				{
+					while (strcmp(curTokenLookup->tokenName, g_iniTokenBuffer))
+					{
+						tokenValueEnd = curTokenLookup[1].tokenValue;
+						++curTokenLookup;
+
+						if (tokenValueEnd == -1)
+							goto LABEL_17;
+					}
+
+					tokenValue = curTokenLookup->tokenValue;
+				}
+
+				switch (tokenValue)
+				{
+					case 11:
+						buffer = g_iniTokenBuffer;
+						memset(g_iniTokenBuffer, 0, sizeof(g_iniTokenBuffer));
+						file = g_iniFileFd;
+
+						do
+						{
+							ch = fgetc(file);
+
+							if (buffer)
+								*buffer++ = ch;
+						} while (ch != -1 && ch != 10);
+						continue;
+					case 12:
+						file = g_iniFileFd;
+
+						do
+						{
+							if (fscanf(file, "%s", g_iniTokenBuffer) == -1)
+								Logger::Log("EOF reached .\n");
+						} while (strcmp("=", g_iniTokenBuffer));
+
+						if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+							Logger::Log("EOF reached .\n");
+
+						curTokenLookup = g_iniTokens;
+
+						if (g_iniTokenBuffer[0] == '#')
+							goto LABEL_80;
+
+						if (g_iniTokens[0].tokenValue == -1)
+							continue;
+
+						while (strcmp(curTokenLookup->tokenName, g_iniTokenBuffer))
+						{
+							tokenValue = curTokenLookup[1].tokenValue;
+							++curTokenLookup;
+
+							if (tokenValue == -1)
+								goto LABEL_10;
+						}
+
+						if (curTokenLookup->tokenValue >= 0)
+						{
+						LABEL_80:
+							Logger::Log("ReadIniFile : LANGUAGE set to %s.\n", g_iniTokenBuffer);
+							strncpy(AudioManager::g_langPrefix, g_iniTokenBuffer, 2);
+							curTokenLookup = g_iniTokens;
+
+							if (AudioManager::g_langPrefix[0] == '#')
+							{
+								g_languageToken = 11;
+							}
+							else if (g_iniTokens[0].tokenValue == -1)
+							{
+							LABEL_85:
+								g_languageToken = -1;
+							}
+							else
+							{
+								while (strcmp(curTokenLookup->tokenName, AudioManager::g_langPrefix))
+								{
+									tokenValue = curTokenLookup[1].tokenValue;
+									++curTokenLookup;
+
+									if (tokenValue == -1)
+										goto LABEL_85;
+								}
+
+								g_languageToken = curTokenLookup->tokenValue;
+							}
+						}
+
+						continue;
+					case 13:
+						Ini::ParseDefText();
+
+						continue;
+					case 17:
+						AudioManager::g_quiet = 1;
+						Logger::Log("ReadIniFile : QUIET set TRUE\n");
+
+						continue;
+					case 18:
+						g_cheatsEnabled = g_cheatsEnabled == 0;
+
+						continue;
+					case 19:
+						g_highQualityMpegEnabled = g_highQualityMpegEnabled == 0;
+
+						continue;
+					case 20:
+						g_mpegPlay = 1;
+						Logger::Log("ReadIniFile : Mpeg play OFF.\n");
+
+						continue;
+					case 21:
+						if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+							Logger::Log("EOF reached .\n");
+
+						if (strcmp(g_iniTokenBuffer, AudioManager::g_langPrefix))
+						{
+							file = g_iniFileFd;
+
+							do
+							{
+								if (fscanf(file, "%s", g_iniTokenBuffer) == -1)
+									Logger::Log("EOF reached .\n");
+							} while (strcmp("ENDIF", g_iniTokenBuffer));
+						}
+						continue;
+					case 22:
+						Logger::g_logsEnabled = 1;
+
+						continue;
+					case 24:
+						if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+							Logger::Log("EOF reached .\n");
+
+						curTokenLookup = g_iniTokens;
+
+						if (g_iniTokenBuffer[0] == '#')
+						{
+							keyTokenValue = 11;
+						}
+						else if (g_iniTokens[0].tokenValue == -1)
+						{
+						LABEL_27:
+							keyTokenValue = -1;
+						}
+						else
+						{
+							while (strcmp(curTokenLookup->tokenName, g_iniTokenBuffer))
+							{
+								tokenValueEnd = curTokenLookup[1].tokenValue;
+								++curTokenLookup;
+
+								if (tokenValueEnd == -1)
+									goto LABEL_27;
+							}
+
+							keyTokenValue = curTokenLookup->tokenValue;
+						}
+
+						if (fscanf(g_iniFileFd, "%s", g_iniTokenBuffer) == -1)
+							Logger::Log("EOF reached .\n");
+
+						_strlwr(g_iniTokenBuffer);
+						inputCode = Ini::KeyNameToScancode(g_iniTokenBuffer[0]);
+
+						switch (keyTokenValue)
+						{
+							case 25:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[6].dInputCode = inputCode;
+
+								break;
+							case 26:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[5].dInputCode = inputCode;
+
+								break;
+							case 27:
+							case 44:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[8].dInputCode = inputCode;
+
+								break;
+							case 28:
+							case 42:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[9].dInputCode = inputCode;
+
+								break;
+							case 29:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[11].dInputCode = inputCode;
+
+								break;
+							case 30:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[13].dInputCode = inputCode;
+
+								break;
+							case 31:
+							case 45:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[12].dInputCode = inputCode;
+
+								break;
+							case 32:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[7].dInputCode = inputCode;
+
+								break;
+							case 37:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[6].dInputCode = inputCode;
+
+								break;
+							case 38:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[4].dInputCode = inputCode;
+
+								break;
+							case 39:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[5].dInputCode = inputCode;
+
+								break;
+							case 40:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[7].dInputCode = inputCode;
+
+								break;
+							case 41:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[11].dInputCode = inputCode;
+
+								break;
+							case 43:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[10].dInputCode = inputCode;
+
+								break;
+							case 46:
+								if (inputCode >= 0)
+									SaveManager::g_save99Data.saveStructs[13].dInputCode = inputCode;
+
+								break;
+							default:
+								continue;
+						}
+						break;
+					case 47:
+						fclose(g_iniFileFd);
+						return;
+					default:
+						continue;
+				}
+			}
+		}
+
+		Logger::Log("ReadIniFile : Failed to open TOY2.INI.\n");
+	}
+
+	// the result of the CPU speed test
+	struct CpuProfile
+	{
+		int32_t avgTime;
+		int32_t testIteration;
+		int32_t startTime;
+		int32_t loopCounter;
+		int32_t time[10];
+		float cpuSpeedInMhz;
+	};
+
+	STATIC_ASSERT(sizeof(CpuProfile) == 0x3C);
+
+	// GLOBAL: TOY2 0x00726F44
+	CpuProfile g_cpuProfile;
+
+	// FUNCTION: TOY2 0x0047EF80
+	void ProfileCPU()
+	{
+		DWORD time;
+		double speedInMhz;
+
+		g_cpuProfile.avgTime = 0;
+
+		for (g_cpuProfile.testIteration = 0; g_cpuProfile.testIteration < 10; g_cpuProfile.avgTime += g_cpuProfile.time[g_cpuProfile.testIteration++])
+		{
+			g_cpuProfile.startTime = timeGetTime();
+
+			for (g_cpuProfile.loopCounter = 0; g_cpuProfile.loopCounter < 1000000; ++g_cpuProfile.loopCounter)
+				g_cpuProfile.cpuSpeedInMhz = g_cpuProfile.loopCounter / 50000.0 * 50000.0;
+
+			time = timeGetTime();
+
+			g_cpuProfile.time[g_cpuProfile.testIteration] = abs((int32_t)(time - g_cpuProfile.startTime));
+		}
+
+		g_cpuProfile.avgTime /= 10;
+		g_cpuSpeed = 1000000 * (56000 / g_cpuProfile.avgTime);
+
+		Logger::Log("CalculateClockSpeed->time[0]=%i\n", g_cpuProfile.time[0]);
+		Logger::Log("                   ->time[1]=%i\n", g_cpuProfile.time[1]);
+		Logger::Log("                   ->time[2]=%i\n", g_cpuProfile.time[2]);
+		Logger::Log("                   ->time[3]=%i\n", g_cpuProfile.time[3]);
+		Logger::Log("                   ->time[4]=%i\n", g_cpuProfile.time[4]);
+		Logger::Log("                   ->time[5]=%i\n", g_cpuProfile.time[5]);
+		Logger::Log("                   ->time[6]=%i\n", g_cpuProfile.time[6]);
+		Logger::Log("                   ->time[7]=%i\n", g_cpuProfile.time[7]);
+		Logger::Log("                   ->time[8]=%i\n", g_cpuProfile.time[8]);
+		Logger::Log("                   ->time[9]=%i\n", g_cpuProfile.time[9]);
+		Logger::Log("                   ->avgtime=%i\n", g_cpuProfile.avgTime);
+		Logger::Log("                   ->CPUSPEED=%u\n", g_cpuSpeed);
+
+		speedInMhz = g_cpuSpeed / 1000000.0;
+		g_cpuProfile.cpuSpeedInMhz = speedInMhz;
+
+		Logger::Log("INIT : CPU clock speed is %f MHZ\n", speedInMhz);
+	}
 
 	// FUNCTION: TOY2 0x0048E730
 	void OneInit()
@@ -4266,20 +5817,335 @@ namespace Toy2
 		SoftwareRenderer::g_bltQueueCount = 0;
 	}
 
-	// STUB: TOY2 0x0041E020
-	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec) {}
+	// FUNCTION: TOY2 0x0041E020
+	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec)
+	{
+		int32_t vecId = path / 4096;
+		Levels::RecordData* data;
+		int32_t zPos;
 
-	// STUB: TOY2 0x00421090
-	void InitialiseLevel7() {}
+		vec->x = Levels::g_recordData[index]->data[vecId].x
+			+ (path & 0xFFF) * (Levels::g_recordData[index]->data[vecId + 1].x - Levels::g_recordData[index]->data[vecId].x) / 4096;
 
-	// STUB: TOY2 0x00424390
-	void InitialiseLevel9() {}
+		vec->y = Levels::g_recordData[index]->data[vecId].y
+			+ (path & 0xFFF) * (Levels::g_recordData[index]->data[vecId + 1].y - Levels::g_recordData[index]->data[vecId].y) / 4096;
 
-	// STUB: TOY2 0x00425B60
-	int32_t InitialiseLevel10() { return 0; }
+		data = Levels::g_recordData[index];
 
-	// STUB: TOY2 0x0042E600
-	int32_t InitialiseLevel14() { return 0; }
+		zPos = data->data[path / 4096].z;
+
+		vec->z = zPos + (path & 0xFFF) * (data->data[path / 4096 + 1].z - zPos) / 4096;
+	}
+
+	// GLOBAL: TOY2 0x004F73B4
+	RGB32 g_type36Color = { 118, 175, 158 };
+
+	// FUNCTION: TOY2 0x00421090
+	void InitialiseLevel7()
+	{
+		Vector3I origin;
+
+		Collectables::Init(AlsToyBarn::g_unk4F2A48, 65);
+		Collectables::LoadTokenTable((int32_t*)AlsToyBarn::g_unk4F2A54);
+		MoveableObject::InitTable(AlsToyBarn::g_unk4F2A24);
+		Collectables::Activate(3, 1);
+		Nullsub2(19, 18);
+		AlsToyBarn::g_unk52F9E4 = 0;
+		AlsToyBarn::g_unk52FA24 = 0;
+		AlsToyBarn::g_unk52FA30 = 0;
+		AlsToyBarn::g_unk52FA28 = 0;
+		Platform::AddFlags(0, 256);
+		g_levelActors[6].actorFlags &= 0xFF7E;
+		AlsToyBarn::g_unk52FA0C = 0;
+		AlsToyBarn::g_unk52FA14 = 0;
+		AlsToyBarn::g_unk52FA20 = 0;
+		AlsToyBarn::g_unk52FA50 = 0;
+		AlsToyBarn::g_unk52FA2C = g_levelActors[0].actorPhase;
+		AlsToyBarn::g_unk52F9DC = 0;
+		AlsToyBarn::g_unk52F9E0 = 0;
+		AlsToyBarn::g_unk52FA18 = 0;
+		AlsToyBarn::g_unk52F9C0 = 0;
+		Nu3D::Link::SetScaleFromFixedOffsets(30, 4096, 0, 4096);
+		AlsToyBarn::g_unk52F9EC = 0;
+		Nu3D::Link::SetScaleFromFixedOffsets(3, 4096, 0, 4096);
+		AlsToyBarn::g_unk52F9E8 = 0;
+		AlsToyBarn::g_unk52F9BC = 0;
+		AlsToyBarn::g_unk52FA4C = 0;
+		Platform::AddFlags(10, 256);
+		Platform::AddFlags(14, 256);
+		AlsToyBarn::g_unk52FA08 = 0;
+		AlsToyBarn::g_unk52FA1C = 0;
+		AlsToyBarn::g_unk52FA10 = 0;
+		g_unk52F2F8 = 0;
+		g_unk52AD64 = 0;
+		AlsToyBarn::g_unk52FA00 = AlsToyBarn::g_unk4F294C;
+		AlsToyBarn::g_unk52FA44 = 0;
+		AlsToyBarn::g_unk52FA04 = AlsToyBarn::g_unk4F2970;
+		AlsToyBarn::g_unk52FA48 = 0;
+		AlsToyBarn::g_unk52F9F8 = AlsToyBarn::g_unk4F2994;
+		AlsToyBarn::g_unk52FA3C = 0;
+		Platform::AddFlags(7, 256);
+		Platform::AddFlags(8, 256);
+		Platform::AddFlags(9, 256);
+		AlsToyBarn::g_unk52F9FC = AlsToyBarn::g_unk4F29B8;
+		AlsToyBarn::g_unk52FA40 = 0;
+		AlsToyBarn::g_unk52F9F0 = AlsToyBarn::g_unk4F29DC;
+		AlsToyBarn::g_unk52FA34 = 0;
+		AlsToyBarn::g_unk52F9F4 = AlsToyBarn::g_unk4F2A00;
+		AlsToyBarn::g_unk52FA38 = 0;
+		Platform::GetOrigin(13, &origin);
+		Platform::SetOrigin(13, origin.x + 25280, origin.y, origin.z);
+		Nu3D::Link::SetPositionRawAndCommit(12, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+		Platform::GetOrigin(12, &origin);
+		Platform::SetOrigin(12, origin.x + 25280, origin.y, origin.z);
+		Nu3D::Link::SetPositionRawAndCommit(13, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+		Platform::GetOrigin(11, &origin);
+		Platform::SetOrigin(11, origin.x + 25280, origin.y, origin.z);
+		Nu3D::Link::SetPositionRawAndCommit(14, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+		MainMenu::g_menuClearColor = g_type36Color;
+	}
+
+	// FUNCTION: TOY2 0x00424390
+	void InitialiseLevel9()
+	{
+		Actor::Toy2Actor* actor;
+
+		MoveableObject::InitTable(0);
+		Collectables::Init(0, 0);
+		BarnEncounter::g_unk52FBB8 = g_levelActors[0].actorPhase;
+		BarnEncounter::g_unk52FC0C = 0;
+		BarnEncounter::g_unk52FBEC = 0;
+		BarnEncounter::g_unk52FC08 = 0;
+		BarnEncounter::g_unk52FBCC = -360448;
+		BarnEncounter::g_unk52FC04 = 0;
+		BarnEncounter::g_unk52FBC0 = 0;
+		BarnEncounter::g_unk52FBE8 = 0;
+		BarnEncounter::g_unk52FBD4 = 1;
+		BarnEncounter::g_unk52FBF0 = 0;
+		BarnEncounter::g_unk52FC00 = 200;
+		BarnEncounter::g_unk52FBC8 = 7;
+		BarnEncounter::g_unk52FBC4 = 7;
+		BarnEncounter::g_unk52FBF4 = 0;
+		BarnEncounter::g_unk52FBBC = 0;
+		BarnEncounter::g_unk52FBD0 = 0;
+		BarnEncounter::g_unk52FBF8 = 120;
+		BarnEncounter::g_unk52FBFC = 0;
+		g_levelActors[0].creatureRam->speedTarget = 0;
+
+		actor = &g_levelActors[7];
+
+		do
+		{
+			actor->unkShort2 = 10000;
+			actor->actorPhase = 0;
+			actor->unkVar13_ = 0;
+
+			actor->creatureRam->boundHalfX = g_levelActors[6].creatureRam->boundHalfX;
+			actor->creatureRam->boundHalfZ = g_levelActors[6].creatureRam->boundHalfZ;
+
+			++actor;
+		} while (actor < &g_levelActors[12]);
+
+		actor = &g_levelActors[0];
+
+		do
+		{
+			actor->actorFlags |= 0x800;
+			++actor;
+		} while (actor < &g_levelActors[12]);
+	}
+
+	// FUNCTION: TOY2 0x00425B60
+	int32_t InitialiseLevel10()
+	{
+		int16_t* platformIdx;
+		int32_t* originY;
+		int16_t platform;
+		Vector3I origin;
+
+		Levels::g_recordData[9]->data[2].y = -27220;
+		Levels::g_recordData[9]->data[5].y = -27220;
+		Levels::g_recordData[9]->data[8].y = -27220;
+		Nu3D::Link::SetPositionRawAndCommit(110, Levels::g_recordData[14]->data[0].x, Levels::g_recordData[14]->data[0].y, Levels::g_recordData[14]->data[0].z);
+		MoveableObject::InitTable(0);
+		Collectables::Init(ElevatorHop::g_unk4F3798, 115);
+		Collectables::Activate(3, 1);
+		Collectables::LoadTokenTable((int32_t*)ElevatorHop::g_unk4F37A4);
+		ElevatorHop::g_unk52FC10 = (int32_t)Collectables::g_pickupSlots[2].yPosPtr - 4;
+		ElevatorHop::g_unk52FCDC = 0;
+		ElevatorHop::g_unk52FC44 = 0;
+		Platform::AddFlags(0, 256);
+		Platform::AddFlags(1, 256);
+		Platform::AddFlags(2, 256);
+		Platform::AddFlags(3, 256);
+		Platform::AddFlags(6, 256);
+		Platform::AddFlags(7, 256);
+		Platform::AddFlags(8, 256);
+		Platform::AddFlags(9, 256);
+		Platform::AddFlags(10, 256);
+		Platform::AddFlags(11, 256);
+		Platform::AddFlags(12, 256);
+		Platform::AddFlags(13, 256);
+		Platform::AddFlags(14, 256);
+		Platform::AddFlags(15, 256);
+		Platform::AddFlags(16, 256);
+		Platform::AddFlags(17, 256);
+
+		platform = ElevatorHop::g_unk4F3614[0];
+
+		if (platform != -1)
+		{
+			platformIdx = ElevatorHop::g_unk4F3614;
+			originY = ElevatorHop::g_unk52FCA0;
+
+			do
+			{
+				Platform::GetOrigin(platform, &origin);
+				++platformIdx;
+				*originY = origin.y;
+				platform = *platformIdx;
+				++originY;
+			} while (platform != -1);
+		}
+
+		platform = ElevatorHop::g_unk4F3628[0];
+
+		if (platform != -1)
+		{
+			platformIdx = ElevatorHop::g_unk4F3628;
+			originY = ElevatorHop::g_unk52FC78;
+
+			do
+			{
+				Platform::GetOrigin(platform, &origin);
+				++platformIdx;
+				*originY = origin.y;
+				platform = *platformIdx;
+				++originY;
+			} while (platform != -1);
+		}
+
+		ElevatorHop::g_unk52FCC8 = 0;
+		ElevatorHop::g_unk52FC1C = 0;
+		ElevatorHop::g_unk52FC28 = 0;
+		ElevatorHop::g_unk52FC38 = 0;
+		ElevatorHop::g_unk52FD00 = 0;
+		ElevatorHop::g_unk52FC54 = 0;
+		ElevatorHop::g_unk52FC6C = 0;
+		ElevatorHop::g_unk52FC34 = 0;
+		ElevatorHop::g_unk52FC2C = 0;
+		ElevatorHop::g_unk52FC58 = 0;
+		ElevatorHop::g_unk52FC64 = 0;
+		ElevatorHop::g_unk52FC74 = 0;
+		ElevatorHop::g_unk52FC60 = 0;
+		ElevatorHop::g_unk52FC70 = 0;
+		ElevatorHop::g_unk52FC4C = 0;
+		ElevatorHop::g_unk52FCFC = 12288;
+		ElevatorHop::g_unk52FC18 = 0x7FFF;
+		ElevatorHop::g_unk52FC40 = 400;
+		ElevatorHop::g_unk52FC48 = 5;
+		ElevatorHop::g_unk52FC20 = 0;
+		ElevatorHop::g_unk52FCE0 = 0;
+		ElevatorHop::g_unk52FCF8 = g_levelActors[8].actorPhase;
+		ElevatorHop::g_unk52FC68 = 0;
+		ElevatorHop::g_unk52FCEC = 0;
+		ElevatorHop::g_unk52FCD0 = 0;
+		ElevatorHop::g_unk52FC14 = 0;
+		ElevatorHop::g_unk52FC50 = 0;
+		ElevatorHop::g_unk52FC30 = 2;
+		ElevatorHop::g_unk52FCD8 = 0;
+		ElevatorHop::g_unk52FC24 = 1;
+		ElevatorHop::Method2();
+		Nu3D::Link::SetScaleFromFixedOffsets(71, 4096, 4096, 4096);
+		Nu3D::Link::SetScaleFromFixedOffsets(70, 0, 0, 0);
+		Nu3D::Link::SetScaleFromFixedOffsets(73, 4096, 4096, 4096);
+		Nu3D::Link::SetScaleFromFixedOffsets(72, 0, 0, 0);
+		Nu3D::Link::SetScaleFromFixedOffsets(79, 4096, 4096, 4096);
+		Nu3D::Link::SetScaleFromFixedOffsets(78, 0, 0, 0);
+		ElevatorHop::g_unk52FCCC = 0;
+		ElevatorHop::g_unk52FCE8 = 0;
+		ElevatorHop::g_unk52FCD4 = 0;
+		ElevatorHop::g_unk52FCE4 = 0;
+		ElevatorHop::g_unk52FC3C = 4096;
+		ElevatorHop::g_unk52FCF4 = ElevatorHop::g_unk4F3688;
+		ElevatorHop::g_unk52FCF0 = ElevatorHop::g_unk4F36DC;
+		g_levelActors[8].pos.x += 0x10000;
+		return g_levelActors[8].pos.x;
+	}
+
+	// FUNCTION: TOY2 0x0042E600
+	int32_t InitialiseLevel14()
+	{
+		Actor::Toy2Actor* actor;
+		int32_t i;
+		int32_t recordCount;
+		Levels::Type63* entry;
+		Vector3I pos1;
+		Vector3I pos2;
+
+		MoveableObject::InitTable(0);
+		Collectables::Init(TarmacTrouble::g_unk4F4C68, 120);
+		Collectables::LoadTokenTable((int32_t*)TarmacTrouble::g_unk4F4C40);
+		Collectables::Activate(3, 1);
+		Nu3D::Link::GetCurrentPosFixed(10, &pos1);
+		Nu3D::Link::GetCurrentPosFixed(11, &pos2);
+		pos1.x = (pos1.x + pos2.x) >> 1;
+		pos1.y = (pos1.y + pos2.y) >> 1;
+		pos1.z = (pos1.z + pos2.z) >> 1;
+		Nu3D::Link::GetCurrentPosFixed(13, &pos2);
+		TarmacTrouble::g_unk52FF60 = (pos2.x + pos1.x) >> 1;
+		TarmacTrouble::g_unk52FFB8 = (pos2.x + pos1.x) >> 1;
+		TarmacTrouble::g_unk52FF64 = (pos2.y + pos1.y) >> 1;
+		TarmacTrouble::g_unk52FFBC = (pos2.y + pos1.y) >> 1;
+		TarmacTrouble::g_unk52FF80.z = 0;
+		TarmacTrouble::g_unk52FF68 = (pos2.z + pos1.z) >> 1;
+		TarmacTrouble::g_unk52FFC0 = (pos2.z + pos1.z) >> 1;
+		TarmacTrouble::g_unk52FF80.y = 0;
+		TarmacTrouble::g_unk52FF80.x = 0;
+		Platform::AddFlags(0, 256);
+		TarmacTrouble::Method2();
+		TarmacTrouble::g_unk52FFB4 = 0;
+		TarmacTrouble::g_unk52FFEC = 0;
+		TarmacTrouble::g_unk52FF7C = 0;
+		TarmacTrouble::g_unk52FFD4 = 0;
+
+		for (i = 0; i < 64; ++i)
+		{
+			if (g_levelActors[i].creatureId)
+				g_levelActors[i].visibilityDistance = 1800;
+		}
+
+		TarmacTrouble::g_unk52FF74 = g_levelActors[46].actorPhase;
+		TarmacTrouble::g_unk52FFAC = 0;
+		TarmacTrouble::g_unk52FF78 = 0;
+		TarmacTrouble::g_unk52FF4C = 0;
+		TarmacTrouble::g_unk52FFE8 = 0;
+		TarmacTrouble::g_unk52FFCC = -1;
+		i = 0;
+		recordCount = Levels::g_recordData[63]->recordCount;
+
+		if (recordCount > 0)
+		{
+			entry = (Levels::Type63*)Levels::g_recordData[63]->data;
+
+			while (entry->props.linkId != 116)
+			{
+				++entry;
+				++i;
+
+				if (i >= recordCount)
+					goto LABEL_11;
+			}
+
+			TarmacTrouble::g_unk52FFCC = i;
+		}
+	LABEL_11:
+		TarmacTrouble::g_unk52FFA8 = 200;
+		Weather::Init();
+
+		// $TODO: the original returns whatever Weather::Init leaves in eax
+		return 0;
+	}
 
 	// FUNCTION: TOY2 0x00433ED0
 	void ResetBuzzState()
@@ -4462,14 +6328,570 @@ namespace Toy2
 		SoftwareRenderer::g_unk830C60 = 0;
 	}
 
-	// STUB: TOY2 0x0049C420
-	int32_t ShowControlConfig() { return 0; }
+	// one control of the configuration screen, the list ends with an id of 0
+	struct GameControl
+	{
+		int32_t id;
+		char* name;
+	};
 
-	// STUB: TOY2 0x0049CAA0
-	void ShowGraphicsConfig() {}
+	// GLOBAL: TOY2 0x00500E58
+	GameControl g_gameControls[14] = {
+		{ 16, "up" },
+		{ 64, "down" },
+		{ 128, "left" },
+		{ 32, "right" },
+		{ 16384, "jump" },
+		{ 32768, "fire" },
+		{ 8192, "spin" },
+		{ 256, "camera left" },
+		{ 512, "camera right" },
+		{ 1024, "visor toggle" },
+		{ 2048, "target lock" },
+		{ 8, "menu" },
+		{ 4096, "cancel" },
+		{ 0, 0 },
+	};
 
-	// STUB: TOY2 0x0049EAC0
-	void PlayLevelMusic() {}
+	// GLOBAL: TOY2 0x00830C6C
+	int32_t g_controlSettingsScrollIndex;
+
+	// GLOBAL: TOY2 0x00830C70
+	int32_t g_controlListTop;
+
+	// GLOBAL: TOY2 0x00830C74
+	int32_t g_controlEditing;
+
+	// GLOBAL: TOY2 0x00500ECC
+	int32_t g_controlBlink = 20;
+
+	// GLOBAL: TOY2 0x00500EC8
+	int32_t g_controlDelay = 30;
+
+	// FUNCTION: TOY2 0x0049C420
+	int32_t ShowControlConfig()
+	{
+		int32_t listTop;
+		int32_t rowIndex;
+		GameControl* control;
+		int32_t y;
+		int32_t controlName;
+		char* controlNameStr;
+		int32_t id;
+		int32_t nextId;
+		int32_t pressedInput;
+		int32_t scrollIdx;
+		int32_t result = 0;
+		int32_t moreBelow = 0;
+
+		g_inputSuppressFrames = 30 / Renderer::g_frameDelta;
+
+		if (SaveManager::GetControlSettingId(TOY_INPUT_ESC) != -1)
+		{
+			SaveManager::ClearBindByInputCode(TOY_INPUT_ESC);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_CAPITALA);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_CAPITALB);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_CAPITALC);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_CAPITALD);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_F1);
+			SaveManager::ClearBindByInputCode(TOY_INPUT_F2);
+		}
+
+		Renderer::DrawMenuTextScaled(160, 46, "control configuration", 0, 1, 2048);
+
+		listTop = g_controlListTop;
+		rowIndex = g_controlListTop;
+
+		if (g_gameControls[g_controlListTop].id)
+		{
+			control = &g_gameControls[g_controlListTop];
+
+			do
+			{
+				y = 16 * (rowIndex - listTop + 5);
+
+				if (y > 144)
+				{
+					moreBelow = 1;
+					break;
+				}
+
+				controlName = SaveManager::GetInputCodeByControlId((GameControlId)control->id);
+				controlNameStr = InputManager::GetGameControlName((ToyInputCodes)controlName);
+
+				if (rowIndex != g_controlSettingsScrollIndex || g_controlBlink > 10 || g_controlEditing)
+					Renderer::DrawMenuTextScaled(150, y, control->name, 0, 2, 2048);
+
+				if (rowIndex != g_controlSettingsScrollIndex || g_controlBlink > 10 || ! g_controlEditing)
+				{
+					if (controlNameStr)
+					{
+						Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
+					}
+					else
+					{
+						id = control->id;
+
+						if (control->id > INPUT_DOWN)
+						{
+							switch (id)
+							{
+								case INPUT_LEFT:
+									Renderer::DrawMenuTextScaled(160, y, "C", 0, 0, 2048);
+									goto LABEL_31;
+								case INPUT_CANCEL:
+									controlNameStr = InputManager::GetGameControlName(TOY_INPUT_ESC);
+									Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
+									goto LABEL_31;
+								case INPUT_JUMP:
+									controlNameStr = InputManager::GetGameControlName(TOY_INPUT_F2);
+									Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
+									goto LABEL_31;
+							}
+						LABEL_27:
+							Renderer::DrawMenuTextScaled(160, y, "???", 0, 0, 2048);
+							goto LABEL_31;
+						}
+
+						if (control->id == INPUT_DOWN)
+						{
+							Renderer::DrawMenuTextScaled(160, y, "B", 0, 0, 2048);
+						}
+						else
+						{
+							switch (id)
+							{
+								case INPUT_MENU:
+									controlNameStr = InputManager::GetGameControlName(TOY_INPUT_F1);
+									Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
+									break;
+								case INPUT_UP:
+									Renderer::DrawMenuTextScaled(160, y, "A", 0, 0, 2048);
+									break;
+								case INPUT_RIGHT:
+									Renderer::DrawMenuTextScaled(160, y, "D", 0, 0, 2048);
+									break;
+								default:
+									goto LABEL_27;
+							}
+						}
+					}
+				}
+			LABEL_31:
+
+				nextId = control[1].id;
+				++control;
+				listTop = g_controlListTop;
+				rowIndex = rowIndex + 1;
+			} while (nextId != 0);
+		}
+
+		if (g_controlBlink > 10)
+		{
+			if (listTop)
+				Renderer::Sprite::DrawScaledFixed(152, 64, 67, 45, 255, 255, 255, 255, 4096, 4096);
+
+			if (moreBelow)
+				Renderer::Sprite::DrawScaledFixed(152, 150, 67, 46, 255, 255, 255, 255, 4096, 4096);
+		}
+
+		if (g_controlEditing)
+		{
+			Renderer::DrawMenuTextScaled(160, 182, "press desired key / button", 0, 1, 1536);
+		}
+		else
+		{
+			Renderer::DrawMenuTextScaled(160, 178, "ABto select, space to change", 0, 1, 1536);
+			Renderer::DrawMenuTextScaled(160, 186, "return to accept, esc to cancel", 0, 1, 1536);
+		}
+
+		if (g_controlDelay <= 0)
+		{
+			if (g_controlEditing)
+			{
+				pressedInput = InputManager::GetPressedInput();
+
+				if (pressedInput != TOY_INPUT_UNKNOWN && pressedInput != TOY_INPUT_DIRECTIONPAD)
+				{
+					if (pressedInput > TOY_INPUT_CAPITALA)
+					{
+						if (pressedInput > TOY_INPUT_CAPITALB
+							|| (pressedInput != TOY_INPUT_CAPITALB && pressedInput != TOY_INPUT_CAPITALC && pressedInput != TOY_INPUT_CAPITALD))
+						{
+						LABEL_75:
+							SaveManager::ClearBindByControlId((GameControlId)g_gameControls[g_controlSettingsScrollIndex].id);
+							SaveManager::ClearBindByInputCode((ToyInputCodes)pressedInput);
+							g_controlDelay = 30;
+
+							SaveManager::AddInputEntry((ToyInputCodes)pressedInput, (GameControlId)g_gameControls[g_controlSettingsScrollIndex].id);
+							g_controlEditing = 0;
+							AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+						}
+					}
+					else if (pressedInput != TOY_INPUT_CAPITALA)
+					{
+						switch (pressedInput)
+						{
+							case TOY_INPUT_ESC:
+								g_controlEditing = 0;
+								InputManager::IsKeyPressed(DIK_ESCAPE);
+								AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+								break;
+							case TOY_INPUT_F1:
+							case TOY_INPUT_F2:
+							case TOY_INPUT_F3:
+							case TOY_INPUT_F4:
+							case TOY_INPUT_F5:
+							case TOY_INPUT_F6:
+							case TOY_INPUT_F7:
+							case TOY_INPUT_F8:
+							case TOY_INPUT_F9:
+							case TOY_INPUT_F10:
+							case TOY_INPUT_F11:
+							case TOY_INPUT_F12:
+							case TOY_INPUT_F13:
+							case TOY_INPUT_F14:
+							case TOY_INPUT_F15:
+								break;
+							default:
+								goto LABEL_75;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (InputManager::IsKeyPressed(DIK_UP))
+				{
+					if (g_controlSettingsScrollIndex)
+					{
+						AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+						--g_controlSettingsScrollIndex;
+					}
+
+					if (g_controlListTop && g_controlListTop >= g_controlSettingsScrollIndex)
+						--g_controlListTop;
+				}
+
+				if (InputManager::IsKeyPressed(DIK_DOWN))
+				{
+					scrollIdx = g_controlSettingsScrollIndex;
+
+					if ((g_gameControls[rowIndex].id && g_controlSettingsScrollIndex < rowIndex) || g_controlSettingsScrollIndex < rowIndex - 1)
+					{
+						AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+						scrollIdx = ++g_controlSettingsScrollIndex;
+					}
+
+					if (moreBelow && scrollIdx >= rowIndex)
+						++g_controlListTop;
+				}
+
+				if (InputManager::IsKeyPressed(DIK_ESCAPE))
+				{
+					result = 1;
+					g_controlEditing = 0;
+					g_controlListTop = 0;
+					g_controlSettingsScrollIndex = 0;
+					g_controlDelay = 30;
+					InputManager::g_curButtonsPressed = 0;
+					AudioManager::PlayOneShotSoundGlobal(2, 4608, 80, 80);
+				}
+
+				if (InputManager::IsKeyPressed(DIK_RETURN))
+				{
+					result = 2;
+					g_controlEditing = 0;
+					g_controlListTop = 0;
+					g_controlSettingsScrollIndex = 0;
+					g_controlDelay = 30;
+					SaveManager::AddInputEntry(TOY_INPUT_ESC, INPUT_CANCEL);
+					SaveManager::AddInputEntry(TOY_INPUT_CAPITALA, INPUT_UP);
+					SaveManager::AddInputEntry(TOY_INPUT_CAPITALB, INPUT_DOWN);
+					SaveManager::AddInputEntry(TOY_INPUT_CAPITALC, INPUT_LEFT);
+					SaveManager::AddInputEntry(TOY_INPUT_CAPITALD, INPUT_RIGHT);
+					SaveManager::AddInputEntry(TOY_INPUT_F1, INPUT_JUMP);
+					SaveManager::AddInputEntry(TOY_INPUT_F2, INPUT_MENU);
+					SaveManager::SaveToFile(99, 0);
+					AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+				}
+
+				if (InputManager::IsKeyPressed(DIK_SPACE))
+				{
+					g_controlEditing = 1;
+					g_controlDelay = 30;
+					AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+				}
+			}
+		}
+		else
+		{
+			g_controlDelay -= Renderer::g_frameDelta;
+		}
+
+		g_controlBlink = g_controlBlink - Renderer::g_frameDelta + ((g_controlBlink - (int32_t)Renderer::g_frameDelta) < 0 ? 20 : 0);
+
+		return result;
+	}
+
+	namespace GraphicsConfig
+	{
+		// GLOBAL: TOY2 0x00830C78
+		int32_t g_scrollerIdx;
+
+		// GLOBAL: TOY2 0x00500ED0
+		int32_t g_flashState = 20;
+
+		// GLOBAL: TOY2 0x00830C7C
+		int32_t g_scrollDelay;
+
+		// GLOBAL: TOY2 0x00500ED4
+		int32_t g_arrowYPos = 72;
+	}
+
+	// GLOBAL: TOY2 0x005009F4
+	char* g_detailOptionsStr[3] = { "low detail", "medium detail", "high detail" };
+
+	// GLOBAL: TOY2 0x00500A00
+	char* g_gammaCorrectionOptionsStr[3] = { "gamma correction normal", "gamma correction medium", "gamma correction high" };
+
+	// FUNCTION: TOY2 0x0049CAA0
+	void ShowGraphicsConfig()
+	{
+		int32_t showLeftArrow;
+		int32_t scrollIdx1;
+		int32_t scrollerWrap;
+		int32_t scrollIdx2;
+		int32_t frameDelta;
+		int32_t yPosAdd;
+		int32_t yPosDiv;
+		int32_t check;
+		int16_t arrowYPos;
+		uint8_t curButtons;
+		int32_t showRightArrow;
+
+		showLeftArrow = 0;
+
+		Renderer::DrawMenuText(50, "graphics configuration", 0);
+
+		if (! GraphicsConfig::g_scrollerIdx && GraphicsConfig::g_flashState >= 10)
+			goto LBL_DRAW_DETAIL;
+
+		if ((g_toyCfgData.flags & 1) != 0)
+			Renderer::DrawMenuText(75, "lens flare on", 0);
+		else
+			Renderer::DrawMenuText(75, "lens flare off", 0);
+
+		if (GraphicsConfig::g_scrollerIdx != 1 || GraphicsConfig::g_flashState < 10)
+		{
+		LBL_DRAW_DETAIL:
+			Renderer::DrawMenuText(100, g_detailOptionsStr[g_toyCfgData.detail], 0);
+
+			if (GraphicsConfig::g_scrollerIdx == 2 && GraphicsConfig::g_flashState >= 10)
+				goto LBL_DRAW_ANIMTEX;
+		}
+
+		Renderer::DrawMenuText(125, g_gammaCorrectionOptionsStr[(int32_t)(-((g_toyCfgData.gammaCorrection - 2.0) * -2.0))], 0);
+
+		if (GraphicsConfig::g_scrollerIdx != 3 || GraphicsConfig::g_flashState < 10)
+		{
+		LBL_DRAW_ANIMTEX:
+			if ((g_toyCfgData.flags & 4) != 0)
+				Renderer::DrawMenuText(150, "animated textures on", 0);
+			else
+				Renderer::DrawMenuText(150, "animated textures off", 0);
+		}
+
+		Renderer::DrawMenuTextScaled(160, 178, "AB to select, CD to change", 0, 1, 1536);
+		Renderer::DrawMenuTextScaled(160, 186, "jump:accept  cancel:go back", 0, 1, 1536);
+
+		if (GraphicsConfig::g_scrollDelay <= 0)
+		{
+			if ((InputManager::g_curButtonsPressed & INPUT_UP) != 0)
+			{
+				GraphicsConfig::g_scrollDelay = 15;
+				GraphicsConfig::g_scrollerIdx = (GraphicsConfig::g_scrollerIdx - 1) & ((GraphicsConfig::g_scrollerIdx - 1 < 0) - 1);
+				AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+			}
+
+			if ((InputManager::g_curButtonsPressed & INPUT_DOWN) != 0)
+			{
+				scrollIdx1 = GraphicsConfig::g_scrollerIdx;
+				GraphicsConfig::g_scrollerIdx = 3;
+				scrollerWrap = scrollIdx1 + 1;
+
+				if (scrollerWrap <= 3)
+					GraphicsConfig::g_scrollerIdx = scrollerWrap;
+
+				GraphicsConfig::g_scrollDelay = 15;
+				AudioManager::PlayOneShotSoundGlobal(0, 4608, 80, 80);
+			}
+		}
+
+		scrollIdx2 = GraphicsConfig::g_scrollerIdx;
+		showRightArrow = 0;
+
+		switch (GraphicsConfig::g_scrollerIdx)
+		{
+			case 0:
+			case 3:
+				showRightArrow = 1;
+				showLeftArrow = 1;
+				break;
+			case 1:
+				if (g_toyCfgData.detail)
+					showLeftArrow = 1;
+
+				if (g_toyCfgData.detail < 2)
+					showRightArrow = 1;
+
+				break;
+			case 2:
+				if (g_toyCfgData.gammaCorrection > 2.0)
+					showLeftArrow = 1;
+
+				if (g_toyCfgData.gammaCorrection < 3.0)
+					showRightArrow = 1;
+
+				break;
+			default:
+				break;
+		}
+
+		frameDelta = Renderer::g_frameDelta;
+		yPosAdd = 25 * GraphicsConfig::g_scrollerIdx - GraphicsConfig::g_arrowYPos + 72;
+
+		if (yPosAdd <= 0)
+		{
+			if (yPosAdd < 0)
+			{
+				yPosDiv = yPosAdd * (int32_t)Renderer::g_frameDelta / 5;
+				check = yPosDiv <= -1 ? yPosAdd * (int32_t)Renderer::g_frameDelta / 5 : -1;
+
+				if (yPosAdd <= check)
+				{
+					if (yPosDiv > -1)
+					{
+						yPosAdd = -1;
+						goto LBL_AFTER_CALC;
+					}
+					goto LBL_SET_YPOS;
+				}
+			}
+		}
+		else
+		{
+			yPosDiv = yPosAdd * (int32_t)Renderer::g_frameDelta / 5;
+			check = 1;
+
+			if (yPosDiv >= 1)
+				check = yPosAdd * (int32_t)Renderer::g_frameDelta / 5;
+
+			if (yPosAdd >= check)
+			{
+				if (yPosDiv < 1)
+				{
+					yPosAdd = 1;
+					goto LBL_AFTER_CALC;
+				}
+			LBL_SET_YPOS:
+
+				yPosAdd = yPosDiv;
+			}
+		}
+	LBL_AFTER_CALC:
+
+		arrowYPos = yPosAdd + GraphicsConfig::g_arrowYPos;
+		GraphicsConfig::g_arrowYPos += yPosAdd;
+
+		if (showLeftArrow) // Left Arrow
+		{
+			Renderer::Sprite::DrawScaledFixed(50, arrowYPos, 56, 3, 255, 255, 255, 255, 2048, 2048);
+
+			scrollIdx2 = GraphicsConfig::g_scrollerIdx;
+			arrowYPos = GraphicsConfig::g_arrowYPos;
+			frameDelta = Renderer::g_frameDelta;
+		}
+
+		if (showRightArrow) // Right Arrow
+		{
+			Renderer::Sprite::DrawScaledFixed(255, arrowYPos, 56, 2, 255, 255, 255, 255, 2048, 2048);
+
+			scrollIdx2 = GraphicsConfig::g_scrollerIdx;
+			frameDelta = Renderer::g_frameDelta;
+		}
+
+		GraphicsConfig::g_flashState = GraphicsConfig::g_flashState - frameDelta + (GraphicsConfig::g_flashState - frameDelta < 0 ? 20 : 0);
+
+		if (GraphicsConfig::g_scrollDelay <= 0)
+		{
+			curButtons = InputManager::g_curButtonsPressed;
+
+			if ((InputManager::g_curButtonsPressed & (INPUT_RIGHT | INPUT_LEFT)) != 0)
+			{
+				if ((InputManager::g_curButtonsPressed & INPUT_LEFT) != 0 && showLeftArrow)
+				{
+					AudioManager::PlayOneShotSoundGlobal(1, 4608, 80, 80);
+					scrollIdx2 = GraphicsConfig::g_scrollerIdx;
+				}
+
+				curButtons = InputManager::g_curButtonsPressed;
+				GraphicsConfig::g_scrollDelay = 15;
+			}
+
+			switch (scrollIdx2)
+			{
+				case 0:
+					if ((curButtons & (INPUT_RIGHT | INPUT_LEFT)) != 0)
+						g_toyCfgData.flags ^= ((uint8_t)g_toyCfgData.flags ^ (-1 - (g_toyCfgData.flags & 1))) & 1;
+
+					break;
+				case 1:
+					if (showLeftArrow && (int8_t)curButtons < 0)
+						--g_toyCfgData.detail;
+
+					if (showRightArrow && (curButtons & INPUT_RIGHT) != 0)
+						++g_toyCfgData.detail;
+					break;
+				case 2:
+					if (showLeftArrow && (int8_t)curButtons < 0)
+						g_toyCfgData.gammaCorrection = g_toyCfgData.gammaCorrection - 0.5;
+
+					if (showRightArrow && (curButtons & INPUT_RIGHT) != 0)
+						g_toyCfgData.gammaCorrection = g_toyCfgData.gammaCorrection + 0.5;
+					break;
+				case 3:
+					if ((curButtons & (INPUT_RIGHT | INPUT_LEFT)) != 0)
+						g_toyCfgData.flags ^= ((uint8_t)g_toyCfgData.flags ^ (4 * -(((g_toyCfgData.flags >> 2) & 1) + 1))) & 4;
+					break;
+				default:
+					return;
+			}
+		}
+		else
+		{
+			GraphicsConfig::g_scrollDelay -= frameDelta;
+		}
+	}
+
+	// FUNCTION: TOY2 0x0049EAC0
+	void PlayLevelMusic()
+	{
+		if (g_hudWidgetTimers[7])
+		{
+			if (AudioManager::g_curLoopingTrack != 15)
+				AudioManager::PlayMusicLooping(15);
+		}
+		else if (g_hudWidgetTimers[6] && g_unk52F2F8 > 1)
+		{
+			if (AudioManager::g_curLoopingTrack != 16)
+				AudioManager::PlayMusicLooping(16);
+		}
+		else if (AudioManager::g_curLoopingTrack != g_levelIndex)
+		{
+			AudioManager::PlayMusicLooping(g_levelIndex);
+		}
+	}
 
 	// FUNCTION: TOY2 0x0049F490
 	void UnusedVarUpdate() { g_unused3 = (g_unused3 + 1) & 0xF; }
@@ -6000,21 +8422,6 @@ namespace Toy2
 
 	// FUNCTION: TOY2 0x004CD110
 	int32_t ShowTokenSparkle() { return 1; }
-
-	namespace PostGameSaveMenu
-	{
-		// STUB: TOY2 0x0043A130
-		int32_t Tick() { return 0; }
-	}
-
-	namespace Ini
-	{
-		// STUB: TOY2 0x00430BF0
-		void ParseDefText() {}
-
-		// STUB: TOY2 0x00415640
-		int16_t KeyNameToScancode(char keyName) { return 0; }
-	}
 }
 
 // $FUNC DEBUG

@@ -24,9 +24,13 @@ namespace AudioManager
 	extern int32_t g_curTrackIndex;
 	extern int16_t g_pitchArray[14];
 	extern SoundEffectPreset g_soundEffectPresets[218];
+	extern int32_t g_quiet;
+	extern char g_langPrefix[4];
+	extern int32_t g_curLoopingTrack;
 
 	void StopAndFlush();
 	void Init();
+	int32_t IsStreamActive();
 	void SetVolumesProcessed(int32_t musicVolume, int32_t sfxVolume);
 	void FlushSoundVoices();
 	int32_t StopAndWait();

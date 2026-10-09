@@ -54,6 +54,7 @@ namespace SaveManager
 	void InitProgressData(Save0Data* save);
 	void LoadProgressData(Save0Data* save);
 	void SaveToFile(int32_t saveNum, const char* saveName);
+	void AddInputEntry(ToyInputCodes inputCode, GameControlId controlId);
 	void ClearBindByControlId(GameControlId controlId);
 	void ClearBindByInputCode(ToyInputCodes inputCode);
 	int32_t GetInputCodeByControlId(GameControlId controlId);
