@@ -49,6 +49,7 @@
 #include "Toy2/Levels/FinalShowdown.h"
 
 #include "Nu3D/Font.h"
+#include "Nu3D/FMV.h"
 #include "Nu3D/Viewport.h"
 #include "Nu3D/Camera.h"
 #include "Nu3D/Light.h"
@@ -78,6 +79,18 @@ namespace Toy2
 {
 	// GLOBAL: TOY2 0x0072E34C
 	int32_t g_mpegPlay;
+
+	// GLOBAL: TOY2 0x0072EFB0
+	uint32_t g_cpuTime;
+
+	// GLOBAL: TOY2 0x0072EF94
+	int32_t g_cpuTicks;
+
+	// GLOBAL: TOY2 0x00731F0C
+	uint32_t g_cpuSpeed;
+
+	// GLOBAL: TOY2 0x0055A120
+	int32_t g_unk55A120;
 
 	// GLOBAL: TOY2 0x00534078
 	int32_t g_cheatsEnabled;
@@ -1922,9 +1935,6 @@ namespace Toy2
 		return newState;
 	}
 
-	// STUB: TOY2 0x00453FA0
-	void ShowMovieViewer() {}
-
 	// FUNCTION: TOY2 0x0047D7C0
 	void UpdateAudioChannels() { AudioManager::UpdateChannels(); }
 
@@ -2391,8 +2401,463 @@ namespace Toy2
 		return result;
 	}
 
-	// STUB: TOY2 0x0049AB90
-	int32_t PlayMovieWithTransition(int32_t movieId, int32_t backgroundId) { return 1; }
+	// FUNCTION: TOY2 0x00453CA0
+	void ResetBackdropState()
+	{
+		g_hasStaticBackdrop = 0;
+		Renderer::g_virtualScreenWidth = 512.0;
+		Renderer::g_virtualScreenHeight = 256.0;
+		g_nextBackdropId = 36;
+	}
+
+	// FUNCTION: TOY2 0x00414320
+	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo)
+	{
+		int32_t skippedByAttractMode = 0;
+
+		if (! demo || demo == 123)
+		{
+			int32_t attractTimer;
+
+			if (g_attractModeTimer < 0)
+				attractTimer = -1;
+			else
+				attractTimer = 2 * g_attractModeTimer;
+
+			int32_t fadingOut = 0;
+			int32_t titleSlidePos = 0;
+			int32_t blinkTimer = 0;
+
+			SoftwareRenderer::g_unk4F7400.x = 0;
+			SoftwareRenderer::g_unk4F7400.y = 0;
+
+			int32_t fadeFrames = 28;
+
+			do
+			{
+				if (fadingOut)
+				{
+					fadeFrames -= Renderer::g_frameDelta;
+
+					if (fadeFrames <= 0)
+						fadeFrames = 0;
+				}
+
+				if (attractTimer > 0)
+				{
+					attractTimer -= Renderer::g_frameDelta;
+
+					if (attractTimer <= 0)
+					{
+						InputManager::g_curButtonsPressed |= 1;
+						attractTimer = 0;
+					}
+				}
+
+				if ((InputManager::g_curButtonsPressed & INPUT_JUMP) && ! (InputManager::g_prevButtonsPressed & INPUT_JUMP) && ! fadingOut)
+				{
+					Nu3D::Camera::SetTint(0, 0, 0, 12);
+					fadingOut = 1;
+					AudioManager::PlaySoundEffect(7, 0);
+				}
+
+				if ((InputManager::g_curButtonsPressed & 1) && ! fadingOut && g_attractModeTimer >= 0)
+				{
+					Nu3D::Camera::SetTint(0, 0, 0, 12);
+					fadingOut = 1;
+					skippedByAttractMode = 1;
+				}
+
+				Nu3D::Camera::FadeToTargetTint();
+
+				uint32_t frameDelta = Renderer::g_frameDelta;
+				blinkTimer = (Renderer::g_frameDelta + blinkTimer) & 0x3F;
+
+				if (blinkTimer > 30)
+				{
+					Renderer::Sprite::DrawScaled(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
+					frameDelta = Renderer::g_frameDelta;
+				}
+
+				if (titleSlidePos < 1024 && demo != 123)
+				{
+					titleSlidePos += 32 * frameDelta;
+					Renderer::Sprite::DrawScaled(96, 264 - (Numerics::g_sinCosLUT[titleSlidePos + 1024] >> 8), 128, 1, 255, 255, 255, 255, 2048, 2048);
+				}
+
+				Nullsub3();
+				MainMenu::RenderMenu();
+			} while (fadeFrames);
+		}
+		else
+		{
+			Nu3D::Camera::SetTint(0, 0, 0, 12);
+			Nu3D::Camera::g_cameraTintBlue = Nu3D::Camera::g_targetTintBlue;
+			Nu3D::Camera::g_cameraTintGreen = Nu3D::Camera::g_targetTintGreen;
+			Nu3D::Camera::g_cameraTintRed = Nu3D::Camera::g_targetTintRed;
+			Nu3D::Camera::g_targetTintFadeSpeed = 0;
+		}
+
+		ResetBackdropState();
+
+		SoftwareRenderer::g_unk4F7400.x = 0xFFFF8000;
+		SoftwareRenderer::g_unk4F7400.y = 0xFFFF8000;
+
+		return skippedByAttractMode;
+	}
+
+	// FUNCTION: TOY2 0x004500A0
+	void LoadLevelGraphics(int32_t level)
+	{
+		char levelName[256];
+		char* fileName;
+
+		Levels::FlushRenderer();
+		Levels::InitLevelDefaults();
+
+		Levels::g_levelLoadArena = Levels::g_levelDataHeapBase;
+
+		switch (level)
+		{
+			case -1:
+				RawLoader::LoadPacketData("gfx\\film.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\film.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 0:
+				RawLoader::LoadPacketData("gfx\\loading.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\loading.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 1:
+				RawLoader::LoadPacketData("gfx\\level1a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 2:
+				RawLoader::LoadPacketData("gfx\\level1b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 3:
+				RawLoader::LoadPacketData("gfx\\level1c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 4:
+				RawLoader::LoadPacketData("gfx\\level2a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 5:
+				RawLoader::LoadPacketData("gfx\\level2b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 6:
+				RawLoader::LoadPacketData("gfx\\level2c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 7:
+				RawLoader::LoadPacketData("gfx\\level3a.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3a.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 8:
+				RawLoader::LoadPacketData("gfx\\level3b.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3b.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+					goto LBL_MAKENGN_IMAGE;
+
+				break;
+
+			case 9:
+				RawLoader::LoadPacketData("gfx\\level3c.raw");
+				FileUtils::AppendRegPathToBuffer();
+				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3c.raw");
+				fileName = strstr(levelName, ".raw");
+
+				if (fileName)
+				{
+				LBL_MAKENGN_IMAGE:
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+				}
+
+				break;
+
+			case 10:
+				RawLoader::LoadRawAndNGN("gfx\\level4a.raw");
+				break;
+
+			case 11:
+				RawLoader::LoadRawAndNGN("gfx\\level4b.raw");
+				break;
+
+			case 12:
+				RawLoader::LoadRawAndNGN("gfx\\level4c.raw");
+				break;
+
+			case 13:
+				RawLoader::LoadRawAndNGN("gfx\\level5a.raw");
+				break;
+
+			case 14:
+				RawLoader::LoadRawAndNGN("gfx\\level5b.raw");
+				break;
+
+			case 15:
+				RawLoader::LoadRawAndNGN("gfx\\level5c.raw");
+				break;
+
+			case 16:
+			case 17:
+				RawLoader::LoadRawAndNGN("gfx\\congrats.raw");
+				break;
+
+			case 30:
+				RawLoader::LoadRawAndNGN("gfx\\bonus.raw");
+				break;
+
+			case 31:
+				RawLoader::LoadRawAndNGN("gfx\\gamewin.raw");
+				break;
+
+			case 35:
+			case 38:
+			case 41:
+			case 44:
+			case 47:
+				RawLoader::LoadRawAndNGN("gfx\\boss.raw");
+				break;
+
+			default:
+				RawLoader::LoadRawAndNGN("gfx\\level1a.raw");
+				break;
+		}
+	}
+
+	// FUNCTION: TOY2 0x00414270
+	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag)
+	{
+		if (! flag || flag == 123)
+			Toy2::LoadLevelGraphics(levelId);
+		else
+			Toy2::LoadLevelGraphics(0);
+
+		SoftwareRenderer::g_unk4F7400.x = 0;
+		SoftwareRenderer::g_unk4F7400.y = 0;
+
+		Nu3D::Camera::SetTint(128, 128, 128, 12);
+
+		int32_t delta = 28;
+
+		do
+		{
+			delta -= Renderer::g_frameDelta;
+
+			if (delta <= 0)
+				delta = 0;
+
+			Nu3D::Camera::FadeToTargetTint();
+
+			if (! flag)
+				Renderer::Sprite::DrawScaled(96, 200, 128, 1, 255u, 255u, 255u, 255, 2048, 2048);
+
+			Nullsub3();
+
+			Toy2::MainMenu::RenderMenu();
+		} while (delta);
+	}
+
+	// FUNCTION: TOY2 0x0049A930
+	int32_t PlayMovie(int32_t movieId)
+	{
+		const char* movieName;
+		int32_t exited;
+		int32_t result;
+		CHAR filePath[256];
+
+		FileUtils::AppendCDPath(filePath);
+
+		strcat(filePath, "rtlibs\\");
+
+		switch (movieId)
+		{
+			case 0:
+				movieName = "dlogo";
+				goto LABEL_24;
+			case 1:
+				movieName = "tt";
+				goto LABEL_24;
+			case 2:
+				movieName = "acti";
+				goto LABEL_24;
+			case 10:
+				movieName = "1st trailer";
+				goto LABEL_24;
+			case 11:
+				movieName = "l 01 in";
+				goto LABEL_24;
+			case 12:
+				movieName = "l 02 in";
+				goto LABEL_24;
+			case 13:
+				movieName = "l 03 bo";
+				goto LABEL_24;
+			case 14:
+				movieName = "l 04 in";
+				goto LABEL_24;
+			case 15:
+				movieName = "l 05 in";
+				goto LABEL_24;
+			case 16:
+				movieName = "l 06 bo";
+				goto LABEL_24;
+			case 17:
+				movieName = "l 07 in";
+				goto LABEL_24;
+			case 18:
+				movieName = "l 08 in";
+				goto LABEL_24;
+			case 19:
+				movieName = "l 09 bo";
+				goto LABEL_24;
+			case 20:
+				movieName = "l 10 in";
+				goto LABEL_24;
+			case 21:
+				movieName = "l 11 in";
+				goto LABEL_24;
+			case 22:
+				movieName = "l 12 bo";
+				goto LABEL_24;
+			case 23:
+				movieName = "l 13 in";
+				goto LABEL_24;
+			case 24:
+				movieName = "l 14 in";
+				goto LABEL_24;
+			case 25:
+				movieName = "l 15 bo 1";
+				goto LABEL_24;
+			case 26:
+				movieName = "l 12 in";
+				goto LABEL_24;
+			case 27:
+				movieName = "l 15 bo 2";
+				goto LABEL_24;
+			case 28:
+				movieName = "end 01";
+			LABEL_24:
+				strcat(filePath, movieName);
+				strcat(filePath, ".dll");
+
+				AudioManager::ReleaseBuffers();
+				exited = Nu3D::FMV::PlayMovie(filePath);
+				AudioManager::Init();
+
+				result = exited;
+				break;
+			default:
+				result = 0;
+				break;
+		}
+
+		return result;
+	}
+
+	// FUNCTION: TOY2 0x0049AB90
+	int32_t PlayMovieWithTransition(int32_t movieId, int32_t backgroundId)
+	{
+		int32_t counter;
+
+		Renderer::SetVirtualRatioTo54();
+
+		if (backgroundId)
+			LoadLevelWithFadeIn(backgroundId, 0);
+
+		counter = 60;
+
+		do
+		{
+			g_cpuTime = timeGetTime();
+			g_cpuTicks = g_cpuSpeed / (abs((int32_t)(timeGetTime() - g_cpuTime)) + 1);
+
+			do
+				g_cpuTicks = 1000 / (abs((int32_t)(timeGetTime() - g_cpuTime)) + 1);
+			while (g_cpuTicks > 60);
+
+			--counter;
+		} while (counter);
+
+		if (backgroundId)
+			ShowLevelIntroScreen(backgroundId, 0);
+
+		if (g_mpegPlay)
+			return 0;
+		else
+			return PlayMovie(movieId);
+	}
 
 	// FUNCTION: TOY2 0x0049EB20
 	void UnlockAndPlayMovie(int32_t movieId, int32_t backgroundId, int32_t forcePlay)
@@ -2402,6 +2867,301 @@ namespace Toy2
 			SaveManager::g_save0Data.moviesUnlocked[movieId] = 1;
 			Toy2::PlayMovieWithTransition(movieId + 10, backgroundId);
 		}
+	}
+
+	namespace MovieViewer
+	{
+		// GLOBAL: TOY2 0x004F6E3C
+		uint8_t g_unk4F6E3C[80] = {
+			66, 1, 65, 3, 67, 4, 65, 3, 67, 5, 65, 3, 67, 3, 65, 3, 67, 2, 65, 3, 65, 3, 65, 3, 66, 3, 65, 3, 66, 0, 65, 3, 67, 1, 65, 3,
+			65, 2, 65, 3, 65, 1, 65, 3, 65, 0, 65, 3, 68, 2, 65, 3, 68, 0, 65, 3, 68, 1, 65, 3, 68, 3, 65, 3, 67, 0, 65, 3, 66, 6, 65, 3,
+			66, 2, 65, 3, 255, 255, 255, 255
+		};
+
+		// GLOBAL: TOY2 0x004F6E8C
+		uint8_t g_unk4F6E8C[20] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 16, 12, 13, 14, 15, 17, 18, 255 };
+
+		// FUNCTION: TOY2 0x0043A600
+		int32_t Tick(int32_t a1)
+		{
+			int32_t unlockedBefore;
+			uint8_t* idPtr;
+			int32_t selected;
+			int32_t menuIdx;
+			int32_t idIdx;
+			uint8_t movieId;
+			uint8_t nextEntry;
+			int32_t slotPos;
+			int32_t curPos;
+			int32_t frame;
+			int32_t nextFrame;
+			int32_t timer;
+			int32_t timerCopy;
+			int32_t velocity;
+			int32_t minPos;
+			int32_t maxPos;
+			int32_t targetPos;
+			int32_t result;
+			int32_t speed;
+			int32_t scrollX;
+			int16_t tile;
+			int16_t sheet;
+			uint8_t menu[192];
+
+			InputManager::g_curButtonsPressed = 0;
+			InputManager::g_prevButtonsPressed = 0;
+			MainMenu::g_fadeTimer = 0;
+			MainMenu::g_nextScreen = 0;
+			Nu3D::Camera::g_cameraTintBlue = 0;
+			Nu3D::Camera::g_cameraTintGreen = 0;
+			Nu3D::Camera::g_cameraTintRed = 0;
+			Nu3D::Camera::SetTint(128, 128, 128, 12);
+			SoftwareRenderer::UnkFunc67(0, 0);
+			Renderer::g_frameDelta = 1;
+			SetBackdropByIndex(0);
+			unlockedBefore = 0;
+			SaveManager::g_save0Data.moviesUnlocked[0] = 1;
+
+			if (g_unk4F6E8C[0] != a1)
+			{
+				idPtr = g_unk4F6E8C;
+
+				do
+				{
+					if (idPtr[1] == 0xFF)
+						break;
+
+					if (SaveManager::g_save0Data.moviesUnlocked[*idPtr])
+						++unlockedBefore;
+
+					++idPtr;
+				} while (*idPtr != a1);
+			}
+
+			idIdx = 0;
+			selected = g_unk4F6E8C[unlockedBefore] != 0xFF ? unlockedBefore : 0;
+			menuIdx = 0;
+
+			if (g_unk4F6E3C[0] != 0xFF)
+			{
+				do
+				{
+					movieId = g_unk4F6E8C[idIdx / 4];
+
+					if (SaveManager::g_save0Data.moviesUnlocked[movieId])
+					{
+						menu[menuIdx] = g_unk4F6E3C[4 * movieId];
+						menu[menuIdx + 1] = g_unk4F6E3C[4 * movieId + 1];
+						menu[menuIdx + 2] = movieId;
+						menuIdx += 4;
+					}
+
+					nextEntry = g_unk4F6E3C[4 + idIdx];
+					idIdx += 4;
+				} while (nextEntry != 0xFF);
+			}
+
+			menu[menuIdx] = 0xFF;
+			menu[menuIdx + 1] = 0xFF;
+			slotPos = selected << 12;
+			menu[menuIdx + 2] = 0xFF;
+			menu[menuIdx + 3] = 0xFF;
+			timer = 4000;
+			velocity = 0;
+			targetPos = slotPos;
+			curPos = slotPos;
+			frame = 0;
+			AudioManager::PlayMusicLooping(19);
+			g_unk55A120 = 1;
+			result = -1;
+			Nu3D::Camera::SetTint(128, 128, 128, 6);
+			maxPos = slotPos + 1024;
+			minPos = slotPos - 1024;
+
+			while (1)
+			{
+				Nu3D::Camera::FadeToTargetTint();
+				nextFrame = Renderer::g_frameDelta + frame;
+
+				if (minPos > -1024 && (nextFrame & 0x3Fu) < 0x30)
+					Renderer::Sprite::DrawTile(16, 112, 57, 0);
+
+				if (menu[4 * (slotPos >> 12) + 4] != 0xFF && (nextFrame & 0x3Fu) < 0x30)
+					Renderer::Sprite::DrawTile(272, 112, 57, 1);
+
+				Renderer::Sprite::DrawTile(0, 0, 60, 0);
+				Renderer::Sprite::DrawTile(128, 0, 60, 1);
+				Renderer::Sprite::DrawTile(256, 0, 61, 0);
+				Renderer::Sprite::DrawClipped(268 - ((curPos >> 5) & 0x7F), 80, 208, 264, 64, 0);
+				Renderer::Sprite::DrawClipped(114 - ((curPos >> 5) & 0x7F), 80, 56, 112, 64, 0);
+
+				tile = menu[4 * ((curPos + 2048) >> 12) + 1];
+				sheet = menu[4 * ((curPos + 2048) >> 12)];
+				Renderer::Sprite::DrawClipped(268 - (((curPos - 2048) >> 5) & 0x7F), 80, 208, 264, sheet, tile);
+				Renderer::Sprite::DrawClipped(114 - (((curPos - 2048) >> 5) & 0x7F), 80, 56, 112, sheet, tile);
+
+				scrollX = -(curPos >> 6) % 320;
+				Renderer::Sprite::DrawTile(scrollX, 0, 62, 0);
+				Renderer::Sprite::DrawTile(scrollX + 128, 0, 62, 1);
+				Renderer::Sprite::DrawTile(scrollX + 256, 0, 63, 0);
+				Renderer::Sprite::DrawTile(320 - (curPos >> 6) % 320, 0, 62, 0);
+				Renderer::Sprite::DrawTile(448 - (curPos >> 6) % 320, 0, 62, 1);
+				Renderer::Sprite::DrawTile(576 - (curPos >> 6) % 320, 0, 63, 0);
+				Nullsub3();
+				MainMenu::RenderMenu();
+				timerCopy = timer;
+
+				if (timer > 1000)
+				{
+					if ((InputManager::g_curButtonsPressed & INPUT_LEFT) != 0 && (InputManager::g_prevButtonsPressed & INPUT_LEFT) == 0 && minPos > -1024
+						&& abs(curPos - targetPos) < 2048)
+					{
+						targetPos -= 4096;
+						minPos -= 4096;
+						maxPos -= 4096;
+						AudioManager::PlayOneShotSoundGlobal(1, 4608, 64, 96);
+					}
+
+					if ((InputManager::g_curButtonsPressed & INPUT_RIGHT) != 0 && (InputManager::g_prevButtonsPressed & INPUT_RIGHT) == 0
+						&& menu[4 * (targetPos >> 12) + 4] != 0xFF && abs(curPos - targetPos) < 2048)
+					{
+						targetPos += 4096;
+						minPos += 4096;
+						maxPos += 4096;
+						AudioManager::PlayOneShotSoundGlobal(1, 4608, 96, 64);
+					}
+
+					speed = velocity;
+
+					if (velocity >= 0)
+					{
+						if (velocity <= 0)
+						{
+						LABEL_37:
+							if (curPos < minPos)
+							{
+								speed += 16 * Renderer::g_frameDelta;
+								velocity = speed;
+							}
+
+							if (curPos > maxPos)
+							{
+								speed += -16 * Renderer::g_frameDelta;
+								velocity = speed;
+							}
+
+							if (speed <= 128)
+							{
+								if (speed < -128)
+								{
+									velocity = -128;
+									speed = -128;
+								}
+
+								curPos += speed;
+							}
+							else
+							{
+								velocity = 128;
+								curPos += 128;
+							}
+
+							goto LABEL_46;
+						}
+
+						velocity -= 8 * Renderer::g_frameDelta;
+
+						if (velocity < 0)
+							goto LABEL_35;
+					}
+					else
+					{
+						velocity += 8 * Renderer::g_frameDelta;
+
+						if (velocity > 0)
+						{
+						LABEL_35:
+							velocity = 0;
+						}
+					}
+
+					speed = velocity;
+					goto LABEL_37;
+				}
+			LABEL_46:
+				Renderer::Sprite::DrawWhiteText("press jump to select", 212, 160);
+				Nullsub6();
+
+				if (timer > 0 && timer < 1000)
+				{
+					timerCopy = timer - Renderer::g_frameDelta;
+					timer -= Renderer::g_frameDelta;
+				}
+
+				if ((InputManager::g_curButtonsPressed & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0 && timerCopy > 23
+					&& Nu3D::Camera::g_cameraTintBlue == 128)
+				{
+					timer = 53;
+					AudioManager::PlayOneShotSoundGlobal(2, 4608, 96, 96);
+					result = -1;
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					timerCopy = 53;
+				}
+
+				if ((InputManager::g_curButtonsPressed & INPUT_JUMP) != 0 && (InputManager::g_prevButtonsPressed & INPUT_JUMP) == 0 && timerCopy > 23
+					&& Nu3D::Camera::g_cameraTintBlue == 128)
+				{
+					timer = 53;
+					AudioManager::PlayOneShotSoundGlobal(0, 4608, 96, 96);
+					result = menu[4 * ((curPos + 2048) >> 12) + 2];
+					Nu3D::Camera::SetTint(0, 0, 0, 6);
+					goto LABEL_12;
+				}
+
+				if (timerCopy <= 0)
+					break;
+			LABEL_12:
+				slotPos = targetPos;
+				frame = nextFrame;
+			}
+
+			AudioManager::StopAndWait();
+			return result;
+		}
+	}
+
+	// FUNCTION: TOY2 0x00453FA0
+	void ShowMovieViewer()
+	{
+		int32_t oldLevelSave = g_levelFileIndex;
+		int32_t selectedMovie;
+
+		g_levelFileIndex = 16;
+
+		selectedMovie = 0;
+
+		while (1)
+		{
+			Levels::g_levelLoadConfig = 184;
+
+			Renderer::g_virtualScreenWidth = 320.0;
+			Renderer::g_virtualScreenHeight = 256.0;
+
+			Levels::InitLevelPlay(g_levelFileIndex);
+
+			MainMenu::g_menuClearColor.b = 0;
+			MainMenu::g_menuClearColor.g = 0;
+			MainMenu::g_menuClearColor.r = 0;
+
+			selectedMovie = MovieViewer::Tick(selectedMovie);
+
+			if (selectedMovie < 0)
+				break;
+
+			PlayMovieWithTransition(selectedMovie + 10, 0);
+		}
+
+		g_levelFileIndex = oldLevelSave;
 	}
 
 	// FUNCTION: TOY2 0x0048F1B0
@@ -3506,111 +4266,6 @@ namespace Toy2
 		SoftwareRenderer::g_bltQueueCount = 0;
 	}
 
-	// FUNCTION: TOY2 0x00453CA0
-	void ResetBackdropState()
-	{
-		g_hasStaticBackdrop = 0;
-		Renderer::g_virtualScreenWidth = 512.0;
-		Renderer::g_virtualScreenHeight = 256.0;
-		g_nextBackdropId = 36;
-	}
-
-	// FUNCTION: TOY2 0x00414320
-	int32_t ShowLevelIntroScreen(int32_t levelId, int32_t demo)
-	{
-		int32_t skippedByAttractMode = 0;
-
-		if (! demo || demo == 123)
-		{
-			int32_t attractTimer;
-
-			if (g_attractModeTimer < 0)
-				attractTimer = -1;
-			else
-				attractTimer = 2 * g_attractModeTimer;
-
-			int32_t fadingOut = 0;
-			int32_t titleSlidePos = 0;
-			int32_t blinkTimer = 0;
-
-			SoftwareRenderer::g_unk4F7400.x = 0;
-			SoftwareRenderer::g_unk4F7400.y = 0;
-
-			int32_t fadeFrames = 28;
-
-			do
-			{
-				if (fadingOut)
-				{
-					fadeFrames -= Renderer::g_frameDelta;
-
-					if (fadeFrames <= 0)
-						fadeFrames = 0;
-				}
-
-				if (attractTimer > 0)
-				{
-					attractTimer -= Renderer::g_frameDelta;
-
-					if (attractTimer <= 0)
-					{
-						InputManager::g_curButtonsPressed |= 1;
-						attractTimer = 0;
-					}
-				}
-
-				if ((InputManager::g_curButtonsPressed & INPUT_JUMP) && ! (InputManager::g_prevButtonsPressed & INPUT_JUMP) && ! fadingOut)
-				{
-					Nu3D::Camera::SetTint(0, 0, 0, 12);
-					fadingOut = 1;
-					AudioManager::PlaySoundEffect(7, 0);
-				}
-
-				if ((InputManager::g_curButtonsPressed & 1) && ! fadingOut && g_attractModeTimer >= 0)
-				{
-					Nu3D::Camera::SetTint(0, 0, 0, 12);
-					fadingOut = 1;
-					skippedByAttractMode = 1;
-				}
-
-				Nu3D::Camera::FadeToTargetTint();
-
-				uint32_t frameDelta = Renderer::g_frameDelta;
-				blinkTimer = (Renderer::g_frameDelta + blinkTimer) & 0x3F;
-
-				if (blinkTimer > 30)
-				{
-					Renderer::Sprite::DrawScaled(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
-					frameDelta = Renderer::g_frameDelta;
-				}
-
-				if (titleSlidePos < 1024 && demo != 123)
-				{
-					titleSlidePos += 32 * frameDelta;
-					Renderer::Sprite::DrawScaled(96, 264 - (Numerics::g_sinCosLUT[titleSlidePos + 1024] >> 8), 128, 1, 255, 255, 255, 255, 2048, 2048);
-				}
-
-				Nullsub3();
-				MainMenu::RenderMenu();
-			} while (fadeFrames);
-		}
-		else
-		{
-			Nu3D::Camera::SetTint(0, 0, 0, 12);
-			Nu3D::Camera::g_cameraTintBlue = Nu3D::Camera::g_targetTintBlue;
-			Nu3D::Camera::g_cameraTintGreen = Nu3D::Camera::g_targetTintGreen;
-			Nu3D::Camera::g_cameraTintRed = Nu3D::Camera::g_targetTintRed;
-			Nu3D::Camera::g_targetTintFadeSpeed = 0;
-		}
-
-		ResetBackdropState();
-
-		SoftwareRenderer::g_unk4F7400.x = 0xFFFF8000;
-		SoftwareRenderer::g_unk4F7400.y = 0xFFFF8000;
-
-		return skippedByAttractMode;
-	}
-
 	// STUB: TOY2 0x0041E020
 	void InterpolatePathPoint(int32_t index, int32_t path, Vector3I* vec) {}
 
@@ -3760,234 +4415,52 @@ namespace Toy2
 	// FUNCTION: TOY2 0x0044F860
 	void HideModelNode(int32_t creatureIndex, int32_t nodeIdx) { Nu3D::Creature::SetNodeVisibleByIndex(creatureIndex, nodeIdx, 0); }
 
-	// FUNCTION: TOY2 0x004500A0
-	void LoadLevelGraphics(int32_t level)
+	// FUNCTION: TOY2 0x00498550
+	void ProcessMiscEvents()
 	{
-		char levelName[256];
-		char* fileName;
+		D3DApp::ProcessWndEvents();
 
-		Levels::FlushRenderer();
-		Levels::InitLevelDefaults();
-
-		Levels::g_levelLoadArena = Levels::g_levelDataHeapBase;
-
-		switch (level)
+		if (D3DApp::g_windowData.wndIsExiting)
 		{
-			case -1:
-				RawLoader::LoadPacketData("gfx\\film.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\film.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 0:
-				RawLoader::LoadPacketData("gfx\\loading.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\loading.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 1:
-				RawLoader::LoadPacketData("gfx\\level1a.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1a.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 2:
-				RawLoader::LoadPacketData("gfx\\level1b.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1b.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 3:
-				RawLoader::LoadPacketData("gfx\\level1c.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level1c.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 4:
-				RawLoader::LoadPacketData("gfx\\level2a.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2a.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 5:
-				RawLoader::LoadPacketData("gfx\\level2b.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2b.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 6:
-				RawLoader::LoadPacketData("gfx\\level2c.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level2c.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 7:
-				RawLoader::LoadPacketData("gfx\\level3a.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3a.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 8:
-				RawLoader::LoadPacketData("gfx\\level3b.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3b.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
-
-				break;
-
-			case 9:
-				RawLoader::LoadPacketData("gfx\\level3c.raw");
-				FileUtils::AppendRegPathToBuffer();
-				sprintf(levelName, "%s%s", FileUtils::g_fileNameBuffer, "gfx\\level3c.raw");
-				fileName = strstr(levelName, ".raw");
-
-				if (fileName)
-				{
-				LBL_MAKENGN_IMAGE:
-					strcpy(fileName, ".ngn");
-					NGNLoader::SetNewImage(levelName);
-					NGNLoader::DetectBackdropTextures();
-				}
-
-				break;
-
-			case 10:
-				RawLoader::LoadRawAndNGN("gfx\\level4a.raw");
-				break;
-
-			case 11:
-				RawLoader::LoadRawAndNGN("gfx\\level4b.raw");
-				break;
-
-			case 12:
-				RawLoader::LoadRawAndNGN("gfx\\level4c.raw");
-				break;
-
-			case 13:
-				RawLoader::LoadRawAndNGN("gfx\\level5a.raw");
-				break;
-
-			case 14:
-				RawLoader::LoadRawAndNGN("gfx\\level5b.raw");
-				break;
-
-			case 15:
-				RawLoader::LoadRawAndNGN("gfx\\level5c.raw");
-				break;
-
-			case 16:
-			case 17:
-				RawLoader::LoadRawAndNGN("gfx\\congrats.raw");
-				break;
-
-			case 30:
-				RawLoader::LoadRawAndNGN("gfx\\bonus.raw");
-				break;
-
-			case 31:
-				RawLoader::LoadRawAndNGN("gfx\\gamewin.raw");
-				break;
-
-			case 35:
-			case 38:
-			case 41:
-			case 44:
-			case 47:
-				RawLoader::LoadRawAndNGN("gfx\\boss.raw");
-				break;
-
-			default:
-				RawLoader::LoadRawAndNGN("gfx\\level1a.raw");
-				break;
+			DrawingDevice::g_drawingDevice->RestoreToGDISurface(1);
+			Logger::GetErrorHandler("C:\projects\toy2\toy2.cpp", 4670)("");
 		}
-	}
 
-	// FUNCTION: TOY2 0x00414270
-	void LoadLevelWithFadeIn(int32_t levelId, int32_t flag)
-	{
-		if (! flag || flag == 123)
-			Toy2::LoadLevelGraphics(levelId);
-		else
-			Toy2::LoadLevelGraphics(0);
-
-		SoftwareRenderer::g_unk4F7400.x = 0;
-		SoftwareRenderer::g_unk4F7400.y = 0;
-
-		Nu3D::Camera::SetTint(128, 128, 128, 12);
-
-		int32_t delta = 28;
-
-		do
+		if (InputManager::IsKeyPressed(DIK_F3))
 		{
-			delta -= Renderer::g_frameDelta;
+			SoftwareRenderer::ZoomOut();
+			g_extraControlsUnused = 15;
+		}
 
-			if (delta <= 0)
-				delta = 0;
+		if (InputManager::IsKeyPressed(DIK_F4))
+		{
+			SoftwareRenderer::ZoomIn();
+			g_extraControlsUnused = 15;
+		}
 
-			Nu3D::Camera::FadeToTargetTint();
+		if (InputManager::IsKeyPressed(DIK_F5))
+		{
+			Graphics::RemoveDetailLevel();
+			g_extraControlsUnused = 15;
+		}
 
-			if (! flag)
-				Renderer::Sprite::DrawScaled(96, 200, 128, 1, 255u, 255u, 255u, 255, 2048, 2048);
+		if (InputManager::IsKeyPressed(DIK_F6))
+		{
+			Graphics::AddDetailLevel();
+			g_extraControlsUnused = 15;
+		}
 
-			Nullsub3();
+		InputManager::UpdateButtonStates();
 
-			Toy2::MainMenu::RenderMenu();
-		} while (delta);
+		if (g_inputSuppressFrames)
+		{
+			InputManager::g_curButtonsPressed = 0;
+			--g_inputSuppressFrames;
+		}
+
+		UpdateAudioChannels();
+		SoftwareRenderer::g_unk830C60 = 0;
 	}
-
-	// STUB: TOY2 0x00498550
-	void ProcessMiscEvents() {}
-
-	// STUB: TOY2 0x0049A930
-	int32_t PlayMovie(int32_t movieId) { return 0; }
 
 	// STUB: TOY2 0x0049C420
 	int32_t ShowControlConfig() { return 0; }
@@ -5532,12 +6005,6 @@ namespace Toy2
 	{
 		// STUB: TOY2 0x0043A130
 		int32_t Tick() { return 0; }
-	}
-
-	namespace MovieViewer
-	{
-		// STUB: TOY2 0x0043A600
-		int32_t Tick(int32_t a1) { return 0; }
 	}
 
 	namespace Ini
