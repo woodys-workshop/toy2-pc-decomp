@@ -4,6 +4,7 @@
 #include "Numerics.h"
 #include "Toy2/Buzz.h"
 #include "Toy2/Actor.h"
+#include "Nu3D/Particles.h"
 
 namespace Toy2
 {
@@ -181,6 +182,10 @@ namespace Toy2
 	extern int16_t g_unk830D4C;
 	extern int32_t g_collectionCount;
 	extern int32_t g_unk52F2F8;
+	extern Nu3D::Particles::ParticleInstance* g_unk830E2C;
+	extern uint8_t g_underwaterTintBlue;
+	extern uint8_t g_underwaterTintGreen;
+	extern uint8_t g_underwaterTintRed;
 	extern int32_t g_unk52AD64;
 	extern int32_t g_unk830D44;
 	extern uint8_t g_type59VisibleIndices[36];

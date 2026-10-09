@@ -395,7 +395,7 @@ namespace Toy2
 	int32_t g_unk830C90;
 
 	// GLOBAL: TOY2 0x00830E2C
-	int32_t g_unk830E2C;
+	Nu3D::Particles::ParticleInstance* g_unk830E2C;
 
 	// GLOBAL: TOY2 0x0052B820
 	int16_t g_demoPathBuffer[2048];
@@ -5533,7 +5533,7 @@ namespace Toy2
 		g_unk830D44 = 0;
 		g_unk830D38 = 0;
 		g_unk830C90 = 0;
-		g_unk830E2C = -1;
+		g_unk830E2C = (Nu3D::Particles::ParticleInstance*)-1;
 
 		// the level music, every third level is a boss and has its own
 		if (g_levelFileIndex > 0 && g_levelFileIndex < 16 && g_levelIndex < 15 && g_levelFileIndex % 3)

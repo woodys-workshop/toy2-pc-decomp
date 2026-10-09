@@ -133,6 +133,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0053C60C
 		int32_t g_unk53C60C;
 
+		// GLOBAL: TOY2 0x00830D30
+		int32_t g_unk830D30;
+
 		// GLOBAL: TOY2 0x0053C810
 		int32_t g_unk53C810;
 
@@ -4073,8 +4076,467 @@ namespace Toy2
 			}
 		}
 
-		// STUB: TOY2 0x004A2D80
-		void UpdateContactEffects() {}
+		// FUNCTION: TOY2 0x004A2D80
+		void UpdateContactEffects()
+		{
+			int32_t inFluid;
+			int32_t flags;
+			int32_t stepSound;
+			int32_t stepDX = 0;
+			int32_t stepDZ = 0;
+			int32_t spawnX;
+			int32_t spawnZ;
+			int32_t v6;
+			int32_t v7;
+			int32_t fluidType;
+			int32_t surfaceY;
+			int32_t blend;
+			int32_t presetIdx;
+			int32_t altIdx;
+			int32_t spriteBase;
+			int32_t count;
+			int32_t i;
+			int32_t bandIdx;
+			int32_t bubbleIdx;
+			int32_t soundIdx;
+			Nu3D::Particles::ParticleInstance* particle;
+			Vector3I soundPos;
+
+			inFluid = g_currentFluidType && g_buzzActor.posAngles.pos.y > g_underwaterYLevel;
+
+			// the charge orb on Buzz's hand
+			if (! g_fireChargeTimer || (Camera::g_lockOnActorIdx >= 1000 && Camera::g_cameraState) || g_discLauncherTimer)
+			{
+				if (g_unk830E2C != (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					g_unk830E2C->lifetime = 0;
+					g_unk830E2C->spriteSheet = 0;
+					g_unk830E2C = (Nu3D::Particles::ParticleInstance*)-1;
+				}
+			}
+			else
+			{
+				particle = g_unk830E2C;
+
+				if (g_unk830E2C == (Nu3D::Particles::ParticleInstance*)-1)
+				{
+					particle = Nu3D::Particles::SpawnFromPreset(g_unk50A0A0.x, g_unk50A0A0.y, g_unk50A0A0.z, 9, 5);
+					g_unk830E2C = particle;
+				}
+
+				particle->lifetime = 10000;
+				g_unk830E2C->pos.x = g_unk50A0A0.x;
+				g_unk830E2C->pos.y = g_unk50A0A0.y;
+				g_unk830E2C->pos.z = g_unk50A0A0.z;
+
+				if (g_greenGunCharge)
+				{
+					if (g_fireChargeTimer < 16)
+						g_unk830E2C->colourG = 8 * g_fireChargeTimer;
+
+					if (g_fireChargeTimer > 52)
+						g_unk830E2C->colourG = -8 * g_fireChargeTimer;
+
+					g_unk830E2C->colourR = 0;
+				}
+				else
+				{
+					if (g_fireChargeTimer < 16)
+						g_unk830E2C->colourR = 8 * g_fireChargeTimer;
+
+					if (g_fireChargeTimer > 52)
+						g_unk830E2C->colourR = -8 * g_fireChargeTimer;
+
+					if (g_fireHoldTimer <= 0)
+						g_unk830E2C->colourG = 0;
+					else
+						g_unk830E2C->colourG = 2 * g_fireHoldTimer;
+				}
+			}
+
+			// footstep effects, g_unk53C634 holds the foot (1 and 2) and the surface (4, 8 and 16) Buzz is standing on
+			flags = g_unk53C634;
+			stepSound = 0;
+
+			if ((flags & 1) != 0)
+			{
+				stepSound = 1;
+				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] >> 4;
+				stepDZ = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 4;
+			}
+
+			if ((flags & 2) != 0)
+			{
+				stepSound = 1;
+				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF] >> 4;
+				stepDZ = Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF] >> 4;
+			}
+
+			if (! inFluid)
+			{
+				v6 = 0;
+				v7 = g_tickState[6];
+				spawnX = stepDX;
+				spawnZ = stepDZ;
+
+				if (flags == 1)
+				{
+					v7 = 1;
+					v6 = 1;
+				}
+				else if (flags == 2)
+				{
+					v7 = 1;
+					v6 = 1;
+				}
+				else
+				{
+					spawnX = 4 * *g_randDatBufferPtr++ - 512;
+					spawnZ = 4 * *g_randDatBufferPtr++ - 512;
+				}
+
+				if ((flags & 4) != 0)
+					v7 = g_tickState[4];
+
+				if ((flags & 8) != 0)
+					v7 = g_tickState[9];
+
+				if ((flags & 0x10) != 0)
+					v6 = 1;
+
+				if (((flags & 0x10) != 0 || v7) && g_buzzActor.unkShort40)
+				{
+					switch (g_unk52B81C)
+					{
+						case -1:
+						case 13:
+							if (g_unk53C60C > 0 && flags > 0 && flags <= 3)
+							{
+								particle = Nu3D::Particles::SpawnFromPreset(
+									g_buzzActor.posAngles.pos.x + spawnX,
+									g_buzzActor.posAngles.pos.y,
+									g_buzzActor.posAngles.pos.z + spawnZ,
+									(g_unk53C60C & 0xFFFF) + 30,
+									2);
+								particle->groundAlignRot = (-1024 - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+								flags = g_unk53C634;
+							}
+
+							if ((flags & 4) != 0)
+							{
+								i = 0;
+
+								if (g_tickState[2])
+								{
+									do
+									{
+										Nu3D::Particles::SpawnFromPreset(
+											g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 2, 2);
+										++i;
+									} while (i < g_tickState[2]);
+								}
+							}
+							break;
+						case 0:
+							g_unk53C60C = 0xB40001;
+
+							if (! v6)
+							{
+								Nu3D::Particles::SpawnFromPreset(
+									g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 30, 4);
+							}
+							else
+							{
+								count = 4;
+
+								do
+								{
+									Nu3D::Particles::SpawnFromPreset(
+										g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 30, 4);
+									--count;
+								} while (count);
+							}
+							break;
+						case 4:
+							g_unk53C60C = 0xB40002;
+							Nu3D::Particles::SpawnFromPreset(
+								g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, v6 + 27, 2);
+							break;
+						case 5:
+							g_unk53C60C = 11796483;
+
+							if (v6)
+							{
+								count = 4;
+
+								do
+								{
+									Nu3D::Particles::SpawnFromPreset(
+										g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 29, 4);
+									--count;
+								} while (count);
+							}
+							else if ((flags & 4) != 0)
+							{
+								Nu3D::Particles::SpawnFromPreset(
+									g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 29, 4);
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+
+			if (g_unk53C60C > 0)
+			{
+				g_unk53C60C += -65536 * Renderer::g_frameDelta;
+
+				if (g_unk53C60C < 0)
+					g_unk53C60C = 0;
+			}
+
+			// splash, water tint and the bubbles of the fluid Buzz is in
+			if (g_tickState[4])
+			{
+				fluidType = g_currentFluidType;
+
+				if (g_currentFluidType != 1)
+				{
+				LABEL_93:
+					surfaceY = g_underwaterYLevel;
+					goto LABEL_95;
+				}
+
+				surfaceY = g_underwaterYLevel;
+
+				if (g_underwaterYLevel - Camera::g_activeCameraTransform.pos.y >= 0)
+					goto LABEL_83;
+
+				i = (*g_randDatBufferPtr - 128) << 8;
+				g_randDatBufferPtr += 2;
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x + i, g_underwaterYLevel, i + g_buzzActor.posAngles.pos.z, 57, 2);
+			}
+
+			fluidType = g_currentFluidType;
+
+			if (g_currentFluidType != 1)
+				goto LABEL_93;
+
+			surfaceY = g_underwaterYLevel;
+		LABEL_83:
+			if (Nu3D::Camera::g_targetTintFadeSpeed)
+			{
+				fluidType = g_currentFluidType;
+			LABEL_95:
+				if (Nu3D::Camera::g_tintBlend != -1)
+				{
+					Nu3D::Camera::g_tintBlend = -1;
+					Nu3D::Camera::g_cameraTintBlue = 128;
+					Nu3D::Camera::g_cameraTintGreen = 128;
+					Nu3D::Camera::g_cameraTintRed = 128;
+				}
+			LABEL_97:
+				if (fluidType <= 0 || fluidType >= 3)
+					goto LABEL_144;
+
+				goto LABEL_99;
+			}
+
+			blend = ((surfaceY - Camera::g_activeCameraTransform.pos.y) >> 4) + 128;
+
+			if (blend < 0)
+			{
+				blend = 0;
+				goto LABEL_88;
+			}
+
+			if (blend < 256)
+			{
+				if (blend >= 128)
+				{
+				LABEL_89:
+					if (! blend)
+					{
+						Nu3D::Camera::EnableCameraSkew();
+						surfaceY = g_underwaterYLevel;
+					}
+
+					Nu3D::Camera::g_cameraTintBlue = g_underwaterTintBlue;
+					Nu3D::Camera::g_cameraTintGreen = g_underwaterTintGreen;
+					fluidType = g_currentFluidType;
+					Nu3D::Camera::g_tintBlend = blend;
+					Nu3D::Camera::g_cameraTintRed = g_underwaterTintRed;
+					goto LABEL_97;
+				}
+			LABEL_88:
+				AudioManager::PlaySoundEffect(95, 0);
+				surfaceY = g_underwaterYLevel;
+				goto LABEL_89;
+			}
+
+			fluidType = g_currentFluidType;
+			Nu3D::Camera::g_tintBlend = -1;
+			Nu3D::Camera::g_cameraTintBlue = 128;
+			Nu3D::Camera::g_cameraTintGreen = 128;
+			Nu3D::Camera::g_cameraTintRed = 128;
+		LABEL_99:
+			if (fluidType == 1)
+			{
+				presetIdx = 9;
+				altIdx = 4;
+				spriteBase = 27;
+			}
+			else if (fluidType == 2)
+			{
+				presetIdx = 4;
+				altIdx = 9;
+				spriteBase = 51;
+			}
+
+			if (g_buzzActor.posAngles.pos.y <= surfaceY)
+			{
+				if (g_unk830D30 > surfaceY)
+				{
+					if (fluidType == 1)
+						g_unk53C60C = 11796482;
+					else if (fluidType == 2)
+						g_unk53C60C = 11796504;
+				}
+			}
+			else
+			{
+				if (g_unk830D30 <= surfaceY)
+				{
+					if (g_unk53C838 == 80)
+					{
+						count = 20;
+						presetIdx = 14;
+					}
+					else
+					{
+						count = 5;
+					}
+
+					do
+					{
+						if (g_currentFluidType == 1)
+						{
+							particle = Nu3D::Particles::SpawnFromPreset(
+								g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 13, presetIdx);
+						}
+
+						if (g_currentFluidType == 2)
+						{
+							particle = Nu3D::Particles::SpawnFromPreset(
+								g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 53, presetIdx);
+						}
+
+						if (presetIdx == 14)
+							particle->unkByte1 = 2 * ((*g_randDatBufferPtr & 1) + 4);
+						else
+							particle->unkByte1 = 2 * ((*g_randDatBufferPtr & 1) + 3);
+
+						++g_randDatBufferPtr;
+						particle->lifetime = 5 * particle->unkByte1;
+						particle->groundAlignRot = 16 * *g_randDatBufferPtr;
+						--count;
+						++g_randDatBufferPtr;
+					} while (count);
+
+					if (g_currentFluidType == 1)
+						AudioManager::PlaySoundEffect(58, &g_buzzActor.posAngles.pos);
+					else
+						AudioManager::PlaySoundEffect(78, &g_buzzActor.posAngles.pos);
+				}
+
+				surfaceY = g_underwaterYLevel;
+				g_unk53C60C = 0;
+			}
+
+			bandIdx = 9;
+
+			if (g_buzzActor.unkVar30 || g_buzzActor.unkVar31)
+				bandIdx = altIdx;
+
+			if (g_buzzActor.posAngles.pos.y > surfaceY && g_buzzActor.posAngles.pos.y < surfaceY + 12288 && g_tickState[bandIdx])
+			{
+				Nu3D::Particles::SpawnFromPreset(
+					g_buzzActor.posAngles.pos.x, surfaceY, g_buzzActor.posAngles.pos.z, spriteBase + (*g_randDatBufferPtr++ & 1), 2);
+			}
+
+			if (g_unk53C650 || (bubbleIdx = 7, g_unk53C83C < -120))
+				bubbleIdx = 2;
+
+			if ((g_buzzActor.actorFlags & Actor::ACTOR_AIRBORNE_SPECIAL) != 0 && ! (*g_randDatBufferPtr++ & 3))
+			{
+				i = 0;
+
+				if (g_tickState[bubbleIdx])
+				{
+					do
+					{
+						if (g_currentFluidType == 1)
+						{
+							count = *g_randDatBufferPtr;
+							g_randDatBufferPtr += 3;
+							Nu3D::Particles::SpawnFromPreset(
+								g_buzzActor.posAngles.pos.x + 16 * (count - 128),
+								g_buzzActor.posAngles.pos.y + 16 * (count - 640),
+								16 * (count - 128) + g_buzzActor.posAngles.pos.z,
+								45,
+								18);
+						}
+
+						if (g_currentFluidType == 2)
+						{
+							count = *g_randDatBufferPtr - 128;
+							g_randDatBufferPtr += 2;
+							Nu3D::Particles::SpawnFromPreset(
+								g_buzzActor.posAngles.pos.x + 16 * count, g_underwaterYLevel, 16 * count + g_buzzActor.posAngles.pos.z, 53, 4);
+						}
+
+						++i;
+					} while (i < g_tickState[bubbleIdx]);
+				}
+			}
+		LABEL_144:
+			g_unk830D30 = g_buzzActor.posAngles.pos.y;
+
+			if (g_buzzActor.unkShort40 && stepSound)
+			{
+				if (g_unk52B81C == -1)
+				{
+				LABEL_152:
+					soundIdx = 0;
+				}
+				else
+				{
+					switch (g_unk53C60C & 0xFFFF)
+					{
+						case 1:
+							soundIdx = 1;
+							break;
+						case 2:
+							soundIdx = 3;
+							break;
+						case 3:
+							soundIdx = 4;
+							break;
+						case 24:
+							soundIdx = 5;
+							break;
+						default:
+							goto LABEL_152;
+					}
+				}
+
+				soundPos.x = g_buzzActor.posAngles.pos.x + 8 * stepDX;
+				soundPos.y = g_buzzActor.posAngles.pos.y;
+				soundPos.z = g_buzzActor.posAngles.pos.z + 8 * stepDZ;
+				AudioManager::PlaySoundEffect(soundIdx, &soundPos);
+			}
+		}
 
 		// FUNCTION: TOY2 0x004A4B90
 		void ResetGravityBoots()

@@ -37,8 +37,36 @@ namespace Toy2
 			{ { 0x400, -0x400, 0x400 }, 0x960, 0x406080 },
 		};
 
-		// STUB: TOY2 0x0049EE50
-		void SpawnLight(int32_t x, int32_t y, int32_t z, int32_t color, int32_t lifetime, int32_t groupId) {}
+		// FUNCTION: TOY2 0x0049EE50
+		void SpawnLight(int32_t x, int32_t y, int32_t z, int32_t color, int32_t lifetime, int32_t groupId)
+		{
+			// $TODO: the original starts with x as the light index, so it stays x when no light has a lifetime below the maximum
+			int32_t nextId = x;
+			int32_t minLifetime = 0x7FFFFFFF;
+			int32_t idx = 2;
+			DynamicLight* light = &g_dynamicLights[2];
+
+			do
+			{
+				if (light->lifetime < minLifetime)
+				{
+					minLifetime = light->lifetime;
+					nextId = idx;
+				}
+
+				++light;
+				++idx;
+			} while (light < &g_dynamicLights[6]);
+
+			g_dynamicLights[nextId].pos.x = x;
+			g_dynamicLights[nextId].pos.y = y;
+			g_dynamicLights[nextId].pos.z = z;
+			g_dynamicLights[nextId].colorB = (uint8_t)color;
+			g_dynamicLights[nextId].colorG = (uint8_t)(color >> 8);
+			g_dynamicLights[nextId].colorR = (uint8_t)(color >> 16);
+			g_dynamicLights[nextId].groupId = groupId;
+			g_dynamicLights[nextId].lifetime = lifetime;
+		}
 
 		// FUNCTION: TOY2 0x0049EEE0
 		void UpdateBuzzLight()
