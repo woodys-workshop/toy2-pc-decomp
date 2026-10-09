@@ -62,6 +62,16 @@ namespace Nu3D
 		static int32_t ComputeUnscaledCharClip(char charValue);
 		static int32_t CalculateScaledTextSize(char* string);
 		static int32_t CalculateUnscaledTextSize(char* string);
+
+		// the text functions that match the current font scale, SetFontScale picks them
+		static char* (*DrawText)(char* string);
+		static int32_t (*CalculateTextSize)(char* string);
+
+		static int32_t g_clipRectTop;
+		static int32_t g_clipRectRight;
+		static int32_t g_clipRectBottom;
+		static int32_t g_renderFlags;
+		static int32_t g_measuredTextHeight;
 	};
 
 	extern float g_scaledFontAscent;
