@@ -4925,6 +4925,14 @@ namespace Toy2
 		}
 
 		g_cpuProfile.avgTime /= 10;
+
+#ifdef APPLY_FIXES
+		// On modern CPUs the 1M-iteration loop finishes within one timer tick, so every sample is 0 and the
+		// original divides by zero (0xC0000094 at 0x411E5F).
+		if (g_cpuProfile.avgTime == 0)
+			g_cpuProfile.avgTime = 1;
+#endif
+
 		g_cpuSpeed = 1000000 * (56000 / g_cpuProfile.avgTime);
 
 		Logger::Log("CalculateClockSpeed->time[0]=%i\n", g_cpuProfile.time[0]);
@@ -5044,9 +5052,7 @@ namespace Toy2
 		g_randDatBufferPtr = g_randDatBuffer;
 
 		ProfileCPU();
-
 		Nullsub7();
-
 		ReadIniFile();
 	}
 
