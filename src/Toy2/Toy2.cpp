@@ -7488,42 +7488,42 @@ namespace Toy2
 				Collectables::Activate(3, 1);
 				MoveableObject::InitTable(AndysHouse::g_unk4F0F90);
 
-				AndysHouse::g_unk52F52C = 1;
-				AndysHouse::g_unk52F598 = 0;
-				AndysHouse::g_unk52F5B0 = 0;
+				AndysHouse::g_sparkPathIndex = 1;
+				AndysHouse::g_sparkPresetIndex = 0;
+				AndysHouse::g_sparkPresetTimer = 0;
 				AndysHouse::g_unk52F4F4 = 0;
 				AndysHouse::g_unk52F568 = 0;
-				AndysHouse::g_unk52F5CC = 0;
-				AndysHouse::g_unk52F504 = 0;
-				AndysHouse::g_unk52F58C = 0;
+				AndysHouse::g_link14Rotation = 0;
+				AndysHouse::g_liftVelocity = 0;
+				AndysHouse::g_atticTilt = 0;
 
 				Platform::SetRotationAngles(15, 0, 0, 0);
 
-				AndysHouse::g_unk52F5A8 = g_levelActors[8].actorPhase;
+				AndysHouse::g_tinRobotLastPhase = g_levelActors[8].actorPhase;
 				AndysHouse::g_unk52F4FC = 0;
 				AndysHouse::g_unk52F5AC = 1024;
 				AndysHouse::g_inTinRobotFight = 0;
-				AndysHouse::g_unk52F528 = 0;
+				AndysHouse::g_raceCarPathIndex = 0;
 				g_unk52F2F8 = 0;
-				AndysHouse::g_unk52F4F8 = 0;
+				AndysHouse::g_raceCarLaps = 0;
 				g_unk52AD64 = 0;
-				AndysHouse::g_unk52F584 = 0;
+				AndysHouse::g_raceBuzzLastSide = 0;
 				AndysHouse::g_unk52F580 = 0;
 				AndysHouse::g_unk52F574 = 0;
 				AndysHouse::g_unk52F570 = 0;
 				AndysHouse::g_unk52F56C = 0;
 				AndysHouse::g_unk52F57C = 0;
 				AndysHouse::g_unk52F594 = 0;
-				AndysHouse::g_unk52F5D0 = 0;
+				AndysHouse::g_potatoHeadBlitAngle = 0;
 				AndysHouse::g_unk52F500 = 0;
 				AndysHouse::g_unk52F59C = Levels::g_recordData[58]->data[Level::g_unk830E28 + 1].y;
 
 				Levels::Method3(1, 1);
 
-				Nu3D::Link::GetCurrentPosFixed(6, &AndysHouse::g_unk52F5B8);
+				Nu3D::Link::GetCurrentPosFixed(6, &AndysHouse::g_liftPos);
 
-				AndysHouse::g_unk52F5B4 = AndysHouse::g_unk52F5B8.y + 47104;
-				AndysHouse::g_unk52F530 = Levels::g_recordData[61]->data[16].y - AndysHouse::g_unk52F5B8.y;
+				AndysHouse::g_liftMaxY = AndysHouse::g_liftPos.y + 47104;
+				AndysHouse::g_unk52F530 = Levels::g_recordData[61]->data[16].y - AndysHouse::g_liftPos.y;
 
 				Nu3D::Link::GetCurrentPosFixed(9, (Vector3I*)AndysHouse::g_unk52F538);
 				Nu3D::Link::GetCurrentPosFixed(17, (Vector3I*)AndysHouse::g_unk52F548);
@@ -7536,8 +7536,8 @@ namespace Toy2
 				Platform::DisableCollision(8);
 				Platform::DisableCollision(14);
 
-				AndysHouse::g_unk52F590 = 0;
-				AndysHouse::g_unk52F5C8 = 0;
+				AndysHouse::g_tinRobotFlashTimer = 0;
+				AndysHouse::g_tinRobotFlash = 0;
 				break;
 
 			default:

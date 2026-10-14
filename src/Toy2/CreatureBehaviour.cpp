@@ -477,8 +477,8 @@ namespace Toy2
 		void TinMan(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
 		{
 			Toy2::Actor::Toy2Actor* actor = context->actor;
-			int32_t flash = (AndysHouse::g_unk52F5C8 - 1) & 1;
-			bool timerExpired = AndysHouse::g_unk52F590 - (int32_t)Renderer::g_frameDelta < 0;
+			int32_t flash = (AndysHouse::g_tinRobotFlash - 1) & 1;
+			bool timerExpired = AndysHouse::g_tinRobotFlashTimer - (int32_t)Renderer::g_frameDelta < 0;
 			int32_t insideBounds;
 			int32_t pitch;
 			int16_t* unkVar34;
@@ -487,12 +487,12 @@ namespace Toy2
 			int32_t spawnZ;
 			int32_t count;
 
-			AndysHouse::g_unk52F5C8 = flash;
-			AndysHouse::g_unk52F590 -= Renderer::g_frameDelta;
+			AndysHouse::g_tinRobotFlash = flash;
+			AndysHouse::g_tinRobotFlashTimer -= Renderer::g_frameDelta;
 
 			if (timerExpired)
 			{
-				AndysHouse::g_unk52F590 = 0;
+				AndysHouse::g_tinRobotFlashTimer = 0;
 				actor->useTint = 0;
 			}
 			else if (flash)
@@ -515,9 +515,9 @@ namespace Toy2
 			{
 				*(uint8_t*)&actor->creatureRam->defenseMode = 7;
 
-				if (actor->actorPhase != AndysHouse::g_unk52F5A8)
+				if (actor->actorPhase != AndysHouse::g_tinRobotLastPhase)
 				{
-					AndysHouse::g_unk52F590 = 60;
+					AndysHouse::g_tinRobotFlashTimer = 60;
 
 					if (actor->actorPhase >= 10)
 					{
@@ -546,7 +546,7 @@ namespace Toy2
 						AndysHouse::g_inTinRobotFight = 3;
 					}
 
-					AndysHouse::g_unk52F5A8 = actor->actorPhase;
+					AndysHouse::g_tinRobotLastPhase = actor->actorPhase;
 					actor->unkShort1 = 0;
 				}
 			}

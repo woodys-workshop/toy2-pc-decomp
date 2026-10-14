@@ -86,7 +86,7 @@ namespace Toy2
 		int32_t g_unk52F588;
 
 		// GLOBAL: TOY2 0x0052F5A0
-		int32_t g_unk52F5A0;
+		int32_t g_link21Scale;
 
 		// GLOBAL: TOY2 0x0052F5A4
 		int32_t g_unk52F5A4;
@@ -95,7 +95,7 @@ namespace Toy2
 		int32_t g_unk52F4F4;
 
 		// GLOBAL: TOY2 0x0052F4F8
-		int32_t g_unk52F4F8;
+		int32_t g_raceCarLaps;
 
 		// GLOBAL: TOY2 0x0052F4FC
 		int32_t g_unk52F4FC;
@@ -104,7 +104,7 @@ namespace Toy2
 		int32_t g_unk52F500;
 
 		// GLOBAL: TOY2 0x0052F504
-		int32_t g_unk52F504;
+		int32_t g_liftVelocity;
 
 		// GLOBAL: TOY2 0x0052F508
 		int32_t g_unk52F508[4];
@@ -113,10 +113,10 @@ namespace Toy2
 		int32_t g_unk52F518[4];
 
 		// GLOBAL: TOY2 0x0052F528
-		int32_t g_unk52F528;
+		int32_t g_raceCarPathIndex;
 
 		// GLOBAL: TOY2 0x0052F52C
-		int32_t g_unk52F52C;
+		int32_t g_sparkPathIndex;
 
 		// GLOBAL: TOY2 0x0052F530
 		int32_t g_unk52F530;
@@ -152,46 +152,46 @@ namespace Toy2
 		int32_t g_unk52F580;
 
 		// GLOBAL: TOY2 0x0052F584
-		int32_t g_unk52F584;
+		int32_t g_raceBuzzLastSide;
 
 		// GLOBAL: TOY2 0x0052F58C
-		int32_t g_unk52F58C;
+		int32_t g_atticTilt;
 
 		// GLOBAL: TOY2 0x0052F590
-		int32_t g_unk52F590;
+		int32_t g_tinRobotFlashTimer;
 
 		// GLOBAL: TOY2 0x0052F594
 		int32_t g_unk52F594;
 
 		// GLOBAL: TOY2 0x0052F598
-		int32_t g_unk52F598;
+		int32_t g_sparkPresetIndex;
 
 		// GLOBAL: TOY2 0x0052F59C
 		int32_t g_unk52F59C;
 
 		// GLOBAL: TOY2 0x0052F5A8
-		int32_t g_unk52F5A8;
+		int32_t g_tinRobotLastPhase;
 
 		// GLOBAL: TOY2 0x0052F5AC
 		int32_t g_unk52F5AC;
 
 		// GLOBAL: TOY2 0x0052F5B0
-		int32_t g_unk52F5B0;
+		int32_t g_sparkPresetTimer;
 
 		// GLOBAL: TOY2 0x0052F5B4
-		int32_t g_unk52F5B4;
+		int32_t g_liftMaxY;
 
 		// GLOBAL: TOY2 0x0052F5B8
-		Vector3I g_unk52F5B8;
+		Vector3I g_liftPos;
 
 		// GLOBAL: TOY2 0x0052F5C8
-		int32_t g_unk52F5C8;
+		int32_t g_tinRobotFlash;
 
 		// GLOBAL: TOY2 0x0052F5CC
-		int32_t g_unk52F5CC;
+		int32_t g_link14Rotation;
 
 		// GLOBAL: TOY2 0x0052F5D0
-		int32_t g_unk52F5D0;
+		int32_t g_potatoHeadBlitAngle;
 
 		// FUNCTION: TOY2 0x00417380
 		void Method2(int16_t a1, int32_t linkId, Vector3I* v1, int16_t a4, int32_t a5)
@@ -384,16 +384,15 @@ namespace Toy2
 					g_unk52F594 = 2;
 				}
 
-				// the lamp falls
-				int32_t lampTimer = g_unk52F56C;
+				int32_t timer = g_unk52F56C;
 
-				if (lampTimer > 0)
+				if (timer > 0)
 				{
 					g_unk52F57C += 16 * Renderer::g_frameDelta;
-					lampTimer -= Renderer::g_frameDelta;
-					g_unk52F56C = lampTimer;
+					timer -= Renderer::g_frameDelta;
+					g_unk52F56C = timer;
 
-					if (lampTimer <= 0)
+					if (timer <= 0)
 						g_unk52F56C = -1;
 
 					Nu3D::Link::GetCurrentPosFixed(19, &pos);
@@ -428,25 +427,29 @@ namespace Toy2
 				Nu3D::Link::SetRotationRelative8bit(4, g_unk52F500, 0, 0);
 			}
 
-			if (! g_unk52F5A0)
+			if (! g_link21Scale)
 			{
-				if ((uint32_t)g_buzzActor.posAngles.pos.z < (uint32_t)-321858 && (uint32_t)g_buzzActor.posAngles.pos.z > (uint32_t)-361602
-					&& g_buzzActor.posAngles.pos.x < 314294 && g_buzzActor.posAngles.pos.x > 287606 && g_buzzActor.posAngles.pos.y < 18432
-					&& g_buzzActor.posAngles.pos.y > 0 && g_buzzActor.unkShort40)
+				if (g_buzzActor.posAngles.pos.z < -321858u
+					&& g_buzzActor.posAngles.pos.z > -361602u
+					&& g_buzzActor.posAngles.pos.x < 314294
+					&& g_buzzActor.posAngles.pos.x > 287606
+					&& g_buzzActor.posAngles.pos.y < 18432
+					&& g_buzzActor.posAngles.pos.y > 0
+					&& g_buzzActor.unkShort40)
 				{
 					Collision::MarkPlatformAsMoving(8);
-					g_unk52F5A0 = 8;
+					g_link21Scale = 8;
 				}
 			}
-			else if (g_unk52F5A0 < 4096)
+			else if (g_link21Scale < 4096)
 			{
-				g_unk52F5A0 += Renderer::g_frameDelta << 6;
-				int32_t scale = g_unk52F5A0;
+				g_link21Scale += Renderer::g_frameDelta << 6;
+				int32_t scale = g_link21Scale;
 
-				if (g_unk52F5A0 >= 4096)
+				if (g_link21Scale >= 4096)
 				{
 					scale = 4096;
-					g_unk52F5A0 = 4096;
+					g_link21Scale = 4096;
 				}
 
 				Nu3D::Link::SetScaleFromFixedOffsets(21, scale, 4096, 4096);
@@ -467,8 +470,8 @@ namespace Toy2
 						int32_t spawnY = 32 * Levels::g_recordData[22]->data[0].y;
 						int32_t spawnX = 32 * Levels::g_recordData[22]->data[0].x;
 						int32_t spawnZ = 32 * Levels::g_recordData[22]->data[0].z;
-						int32_t deltaX = (spawnX - 32 * Levels::g_recordData[22]->data[g_unk52F52C].x) >> 8;
-						int32_t deltaZ = (spawnZ - 32 * Levels::g_recordData[22]->data[g_unk52F52C].z) >> 8;
+						int32_t deltaX = (spawnX - 32 * Levels::g_recordData[22]->data[g_sparkPathIndex].x) >> 8;
+						int32_t deltaZ = (spawnZ - 32 * Levels::g_recordData[22]->data[g_sparkPathIndex].z) >> 8;
 
 						int32_t sparkAngle = (Nu3D::Math::CartesianToFixedAngle(deltaX, deltaZ) - 2048) & 0xFFF;
 						int32_t distance = (int32_t)sqrt((double)(deltaX * deltaX + deltaZ * deltaZ));
@@ -486,23 +489,24 @@ namespace Toy2
 							(*g_randDatBufferPtr++ - 128) >> 2,
 							12);
 
-						g_unk52F52C += (*g_randDatBufferPtr++ & 0xF) + 1;
+						g_sparkPathIndex += (*g_randDatBufferPtr++ & 0xF) + 1;
 
-						if (g_unk52F52C >= Levels::g_recordData[22]->recordCount)
-							g_unk52F52C = 1 - Levels::g_recordData[22]->recordCount + g_unk52F52C;
+						if (g_sparkPathIndex >= Levels::g_recordData[22]->recordCount)
+							g_sparkPathIndex = 1 - Levels::g_recordData[22]->recordCount + g_sparkPathIndex;
 					}
 
-					g_unk52F5B0 += Renderer::g_frameDelta;
+					g_sparkPresetTimer += Renderer::g_frameDelta;
 
-					if (g_unk52F5B0 > 120)
+					if (g_sparkPresetTimer > 120)
 					{
-						g_unk52F5B0 -= 120;
-						g_unk52F598 += 3;
+						g_sparkPresetTimer -= 120;
+						g_sparkPresetIndex += 3;
 
-						if (g_unk52F598 == 9)
-							g_unk52F598 = 0;
+						if (g_sparkPresetIndex == 9)
+							g_sparkPresetIndex = 0;
 
-						Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1] - 2048, g_unk4F0EB8[g_unk52F598 + 2], 34, 2);
+						Nu3D::Particles::SpawnFromPreset(
+							g_unk4F0EB8[g_sparkPresetIndex], g_unk4F0EB8[g_sparkPresetIndex + 1] - 2048, g_unk4F0EB8[g_sparkPresetIndex + 2], 34, 2);
 					}
 
 					int32_t i = 0;
@@ -511,8 +515,8 @@ namespace Toy2
 					{
 						do
 						{
-							Nu3D::Particles::ParticleInstance* particle =
-								Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1], g_unk4F0EB8[g_unk52F598 + 2], 16, 10);
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(
+								g_unk4F0EB8[g_sparkPresetIndex], g_unk4F0EB8[g_sparkPresetIndex + 1], g_unk4F0EB8[g_sparkPresetIndex + 2], 16, 10);
 							particle->lifetime = (*g_randDatBufferPtr & 0xF) + 32;
 							++g_randDatBufferPtr;
 							++i;
@@ -592,28 +596,28 @@ namespace Toy2
 
 			if (g_curSectorCopy1 == 2)
 			{
-				if (Buzz::g_unk53C5E4 == 48 && ! g_unk52F504)
+				if (Buzz::g_unk53C5E4 == 48 && ! g_liftVelocity)
 				{
-					g_unk52F504 = 2;
+					g_liftVelocity = 2;
 					AudioManager::PlaySoundEffect(33, &g_buzzActor.posAngles.pos);
 				}
 
 				int32_t soundTime;
 
-				if (g_unk52F504 > 0)
+				if (g_liftVelocity > 0)
 				{
-					g_unk52F5B8.y += g_unk52F504 * Renderer::g_frameDelta;
+					g_liftPos.y += g_liftVelocity * Renderer::g_frameDelta;
 
-					if (g_unk52F5B8.y > g_unk52F5B4)
+					if (g_liftPos.y > g_liftMaxY)
 					{
-						g_unk52F5B8.y = g_unk52F5B4;
-						g_unk52F504 = -1;
+						g_liftPos.y = g_liftMaxY;
+						g_liftVelocity = -1;
 					}
 
-					Levels::g_recordData[61]->data[16].y = g_unk52F5B8.y + g_unk52F530;
-					Nu3D::Link::SetPositionRawAndCommit(6, g_unk52F5B8.x >> 5, g_unk52F5B8.y >> 5, g_unk52F5B8.z >> 5);
+					Levels::g_recordData[61]->data[16].y = g_liftPos.y + g_unk52F530;
+					Nu3D::Link::SetPositionRawAndCommit(6, g_liftPos.x >> 5, g_liftPos.y >> 5, g_liftPos.z >> 5);
 					soundTime = Renderer::g_frameDelta;
-					g_unk52F504 += (soundTime << 7) / 4;
+					g_liftVelocity += (soundTime << 7) / 4;
 				}
 				else
 				{
@@ -647,10 +651,10 @@ namespace Toy2
 						0,
 						-1);
 					g_unk52F2F8 = 1;
-					g_unk52F528 = 0;
-					g_unk52F4F8 = 0;
+					g_raceCarPathIndex = 0;
+					g_raceCarLaps = 0;
 					g_unk52AD64 = 0;
-					g_unk52F584 = 0;
+					g_raceBuzzLastSide = 0;
 					g_unk52F580 = 1;
 
 					g_levelActors[29].actorPhase = 202;
@@ -685,7 +689,7 @@ namespace Toy2
 
 						if (side == 14)
 						{
-							if (g_unk52F584 == 15)
+							if (g_raceBuzzLastSide == 15)
 							{
 								if (! g_unk52F580)
 									++g_unk52AD64;
@@ -693,31 +697,31 @@ namespace Toy2
 								g_unk52F580 = 0;
 							}
 						}
-						else if (side == 15 && g_unk52F584 == 14)
+						else if (side == 15 && g_raceBuzzLastSide == 14)
 						{
 							g_unk52F580 = 1;
 						}
 
-						g_unk52F584 = side;
+						g_raceBuzzLastSide = side;
 					}
 
 					// the RC car drives along the path
-					int32_t pointDeltaX = Levels::g_recordData[30]->data[g_unk52F528].x - (g_levelActors[29].pos.x >> 5);
-					int32_t* pointZ = &Levels::g_recordData[30]->data[g_unk52F528].z;
+					int32_t pointDeltaX = Levels::g_recordData[30]->data[g_raceCarPathIndex].x - (g_levelActors[29].pos.x >> 5);
+					int32_t* pointZ = &Levels::g_recordData[30]->data[g_raceCarPathIndex].z;
 
 					if ((*pointZ - (g_levelActors[29].pos.z >> 5)) * (*pointZ - (g_levelActors[29].pos.z >> 5)) + pointDeltaX * pointDeltaX < 360000)
 					{
-						g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
+						g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_raceCarPathIndex].x;
 						g_levelActors[29].boundary.z = 32 * *pointZ;
 
-						if (g_unk52F4F8 < 3)
+						if (g_raceCarLaps < 3)
 						{
-							++g_unk52F528;
+							++g_raceCarPathIndex;
 
-							if (g_unk52F528 > 44)
+							if (g_raceCarPathIndex > 44)
 							{
-								g_unk52F528 = 0;
-								++g_unk52F4F8;
+								g_raceCarPathIndex = 0;
+								++g_raceCarLaps;
 							}
 						}
 						else if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
@@ -729,8 +733,8 @@ namespace Toy2
 						}
 					}
 
-					g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
-					g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[g_unk52F528].z;
+					g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[g_raceCarPathIndex].x;
+					g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[g_raceCarPathIndex].z;
 
 					if (g_unk52AD64 == 3)
 					{
@@ -740,7 +744,6 @@ namespace Toy2
 				}
 			}
 
-			// the basement, the box that is pushed
 			if (g_curSectorCopy1 == 3)
 			{
 				Nu3D::Link::SetScaleFromFixedOffsets(23, 4096, abs(g_unk52F4FC) << 7, 4096);
@@ -803,7 +806,7 @@ namespace Toy2
 			// the attic, the fight against the tin robot
 			if (g_curSectorCopy1 == 5)
 			{
-				g_unk52F58C = Platform::StepTiltPhysics(15, 15, g_unk52F58C, 1, -448, 448, 8);
+				g_atticTilt = Platform::StepTiltPhysics(15, 15, g_atticTilt, 1, -448, 448, 8);
 
 				if (g_inTinRobotFight == 1 && ! Renderer::g_enableCinematicBars)
 				{
@@ -832,9 +835,9 @@ namespace Toy2
 					"the ^cosmic shield^ will only protect you from harm for a little while so make sure you use it wisely.",
 					512,
 					2560);
-				Renderer::BlitTextureByIndexOffset(8, 128, 128, 64, 64, 0, (Numerics::g_sinCosLUT[g_unk52F5D0] >> 11) & 0x3F, 64, 0);
+				Renderer::BlitTextureByIndexOffset(8, 128, 128, 64, 64, 0, (Numerics::g_sinCosLUT[g_potatoHeadBlitAngle] >> 11) & 0x3F, 64, 0);
 				frameDelta = Renderer::g_frameDelta;
-				g_unk52F5D0 = (g_unk52F5D0 + 32 * frameDelta) & 0xFFF;
+				g_potatoHeadBlitAngle = (g_potatoHeadBlitAngle + 32 * frameDelta) & 0xFFF;
 			}
 			else
 			{
@@ -865,8 +868,8 @@ namespace Toy2
 				}
 			}
 
-			g_unk52F5CC = (g_unk52F5CC + 32 * frameDelta) & 0xFFF;
-			Nu3D::Link::SetRotationRelative8bit(14, 0, g_unk52F5CC, 0);
+			g_link14Rotation = (g_link14Rotation + 32 * frameDelta) & 0xFFF;
+			Nu3D::Link::SetRotationRelative8bit(14, 0, g_link14Rotation, 0);
 
 			if (g_curSectorCopy1 != 2 && g_unk52F2F8 && (g_levelActors[29].actorFlags & Actor::ACTOR_CUTSCENE_MOVE) == 0
 				&& ! Collectables::g_pickupSlots[2].state)
