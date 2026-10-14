@@ -316,20 +316,12 @@ namespace Toy2
 			{
 				int32_t w;
 			} pos;
-			Nu3D::Particles::ParticleInstance* particle;
-			int32_t soundTime;
-			int32_t side;
-			int32_t lampTimer;
-			int32_t buzzX;
-			int32_t buzzZ;
-			int32_t slamTimer;
-			int32_t newTimer;
 
 			if (g_curSectorCopy1 == 1)
 			{
 				if (g_levelActors[0].actorPhase != 80)
 				{
-					*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 0;
+					g_levelActors[0].creatureRam->defenseMode = 0;
 					g_unk52F574 += 4 * Renderer::g_frameDelta;
 					g_levelActors[0].rollAngle += g_unk52F574;
 
@@ -346,7 +338,7 @@ namespace Toy2
 
 				if (g_levelActors[2].actorPhase != 80)
 				{
-					*(uint8_t*)&g_levelActors[2].creatureRam->defenseMode = 0;
+					g_levelActors[2].creatureRam->defenseMode = 0;
 					g_unk52F570 += 4 * Renderer::g_frameDelta;
 					g_levelActors[2].rollAngle = (g_levelActors[2].rollAngle - g_unk52F570) & 0xFFF;
 
@@ -361,23 +353,23 @@ namespace Toy2
 					}
 				}
 
-				if ((uint8_t)g_levelActors[0].creatureRam->defenseMode || (uint8_t)g_levelActors[2].creatureRam->defenseMode)
+				if (g_levelActors[0].creatureRam->defenseMode || g_levelActors[2].creatureRam->defenseMode)
 				{
 					if (g_buzzActor.posAngles.pos.x < 311924)
 					{
-						if ((uint8_t)g_levelActors[0].creatureRam->defenseMode)
-							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 4;
+						if (g_levelActors[0].creatureRam->defenseMode)
+							g_levelActors[0].creatureRam->defenseMode = 4;
 
-						if ((uint8_t)g_levelActors[2].creatureRam->defenseMode)
-							*(uint8_t*)&g_levelActors[2].creatureRam->defenseMode = 4;
+						if (g_levelActors[2].creatureRam->defenseMode)
+							g_levelActors[2].creatureRam->defenseMode = 4;
 					}
 					else
 					{
-						if ((uint8_t)g_levelActors[0].creatureRam->defenseMode)
-							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 5;
+						if (g_levelActors[0].creatureRam->defenseMode)
+							g_levelActors[0].creatureRam->defenseMode = 5;
 
-						if ((uint8_t)g_levelActors[2].creatureRam->defenseMode)
-							*(uint8_t*)&g_levelActors[2].creatureRam->defenseMode = 5;
+						if (g_levelActors[2].creatureRam->defenseMode)
+							g_levelActors[2].creatureRam->defenseMode = 5;
 					}
 
 					if (g_buzzActor.collisionFlags && Buzz::g_unk52B81C == 14)
@@ -393,7 +385,7 @@ namespace Toy2
 				}
 
 				// the lamp falls
-				lampTimer = g_unk52F56C;
+				int32_t lampTimer = g_unk52F56C;
 
 				if (lampTimer > 0)
 				{
@@ -519,7 +511,7 @@ namespace Toy2
 					{
 						do
 						{
-							particle =
+							Nu3D::Particles::ParticleInstance* particle =
 								Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1], g_unk4F0EB8[g_unk52F598 + 2], 16, 10);
 							particle->lifetime = (*g_randDatBufferPtr & 0xF) + 32;
 							++g_randDatBufferPtr;
@@ -541,7 +533,7 @@ namespace Toy2
 
 					if (g_tickState[8])
 					{
-						particle = Nu3D::Particles::SpawnFromPreset(pos.x, pos.y, pos.z, 17, 10);
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos.x, pos.y, pos.z, 17, 10);
 						particle->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
 						++g_randDatBufferPtr;
 					}
@@ -606,6 +598,8 @@ namespace Toy2
 					AudioManager::PlaySoundEffect(33, &g_buzzActor.posAngles.pos);
 				}
 
+				int32_t soundTime;
+
 				if (g_unk52F504 > 0)
 				{
 					g_unk52F5B8.y += g_unk52F504 * Renderer::g_frameDelta;
@@ -641,22 +635,8 @@ namespace Toy2
 					12);
 				Method2(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
 
-				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) == 0
-					|| ((g_levelActors[29].actorFlags &= ~Actor::ACTOR_PLAYER_TRIGGER), Collectables::g_pickupSlots[2].state == 2) || g_unk52F2F8)
-				{
-					if (g_unk52F2F8 == 1) {}
-					else
-					{
-						if (g_unk52F2F8 < 2)
-							goto LABEL_130;
-
-						if (g_unk52F2F8 != 2)
-							goto LABEL_119;
-
-						goto LABEL_104;
-					}
-				}
-				else
+				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0
+					&& ((g_levelActors[29].actorFlags &= ~Actor::ACTOR_PLAYER_TRIGGER), Collectables::g_pickupSlots[2].state != 2) && ! g_unk52F2F8)
 				{
 					Dialogue::Begin(
 						29,
@@ -676,143 +656,148 @@ namespace Toy2
 					g_levelActors[29].actorPhase = 202;
 				}
 
-				if (Renderer::g_enableCinematicBars)
-					goto LABEL_130;
-
-				g_levelActors[29].actorFlags |= Actor::ACTOR_LOCKED_MOVE;
-				g_unk52F2F8 = 2;
-
-			LABEL_104:
-				// which side of the car Buzz is on, to count the laps
-				side = 0;
-				buzzZ = g_buzzActor.posAngles.pos.z;
-				buzzX = g_buzzActor.posAngles.pos.x;
-
-				if ((uint32_t)buzzZ < (uint32_t)-106496)
-					side = 1;
-
-				if (buzzX > 10496)
-					side |= 2u;
-
-				if (buzzX < 135168)
-					side |= 4u;
-
-				if ((uint32_t)buzzZ > (uint32_t)-122880)
-					side |= 8u;
-
-				if (side == 14)
+				if (g_unk52F2F8 == 1 && ! Renderer::g_enableCinematicBars)
 				{
-					if (g_unk52F584 == 15)
-					{
-						if (! g_unk52F580)
-							++g_unk52AD64;
-
-						g_unk52F580 = 0;
-					}
-				}
-				else if (side == 15 && g_unk52F584 == 14)
-				{
-					g_unk52F580 = 1;
+					g_levelActors[29].actorFlags |= Actor::ACTOR_LOCKED_MOVE;
+					g_unk52F2F8 = 2;
 				}
 
-				g_unk52F584 = side;
-
-			LABEL_119:
-				// the RC car drives along the path
-				int32_t pointDeltaX = Levels::g_recordData[30]->data[g_unk52F528].x - (g_levelActors[29].pos.x >> 5);
-				int32_t* pointZ = &Levels::g_recordData[30]->data[g_unk52F528].z;
-
-				if ((*pointZ - (g_levelActors[29].pos.z >> 5)) * (*pointZ - (g_levelActors[29].pos.z >> 5)) + pointDeltaX * pointDeltaX < 360000)
+				if (g_unk52F2F8 >= 2)
 				{
-					g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
-					g_levelActors[29].boundary.z = 32 * *pointZ;
-
-					if (g_unk52F4F8 < 3)
+					if (g_unk52F2F8 == 2)
 					{
-						++g_unk52F528;
+						// which side of the car Buzz is on, to count the laps
+						int32_t side = 0;
+						int32_t buzzZ = g_buzzActor.posAngles.pos.z;
+						int32_t buzzX = g_buzzActor.posAngles.pos.x;
 
-						if (g_unk52F528 > 44)
+						if (buzzZ < -106496u)
+							side = 1;
+
+						if (buzzX > 10496)
+							side |= 2;
+
+						if (buzzX < 135168)
+							side |= 4;
+
+						if (buzzZ > -122880u)
+							side |= 8;
+
+						if (side == 14)
 						{
-							g_unk52F528 = 0;
-							++g_unk52F4F8;
+							if (g_unk52F584 == 15)
+							{
+								if (! g_unk52F580)
+									++g_unk52AD64;
+
+								g_unk52F580 = 0;
+							}
+						}
+						else if (side == 15 && g_unk52F584 == 14)
+						{
+							g_unk52F580 = 1;
+						}
+
+						g_unk52F584 = side;
+					}
+
+					// the RC car drives along the path
+					int32_t pointDeltaX = Levels::g_recordData[30]->data[g_unk52F528].x - (g_levelActors[29].pos.x >> 5);
+					int32_t* pointZ = &Levels::g_recordData[30]->data[g_unk52F528].z;
+
+					if ((*pointZ - (g_levelActors[29].pos.z >> 5)) * (*pointZ - (g_levelActors[29].pos.z >> 5)) + pointDeltaX * pointDeltaX < 360000)
+					{
+						g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
+						g_levelActors[29].boundary.z = 32 * *pointZ;
+
+						if (g_unk52F4F8 < 3)
+						{
+							++g_unk52F528;
+
+							if (g_unk52F528 > 44)
+							{
+								g_unk52F528 = 0;
+								++g_unk52F4F8;
+							}
+						}
+						else if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
+						{
+							if (g_unk52F2F8 == 2 && g_unk52AD64 < 3)
+								g_unk52F2F8 = 3;
+
+							g_levelActors[29].actorPhase = 1;
 						}
 					}
-					else if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
-					{
-						if (g_unk52F2F8 == 2 && g_unk52AD64 < 3)
-							g_unk52F2F8 = 3;
 
-						g_levelActors[29].actorPhase = 1;
+					g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
+					g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[g_unk52F528].z;
+
+					if (g_unk52AD64 == 3)
+					{
+						Collectables::Activate(2, 0);
+						g_unk52F2F8 = 3;
+					}
+				}
+			}
+
+			// the basement, the box that is pushed
+			if (g_curSectorCopy1 == 3)
+			{
+				Nu3D::Link::SetScaleFromFixedOffsets(23, 4096, abs(g_unk52F4FC) << 7, 4096);
+				Nu3D::Link::SetRotationRelative8bit(23, 0, 0, 32 * abs(g_unk52F4FC));
+
+				int32_t slamTimer;
+
+				if (g_buzzActor.collisionFlags && Buzz::g_unk52B81C == 8)
+				{
+					slamTimer = g_unk52F4FC;
+
+					if (! slamTimer && Buzz::g_groundSlamTicker)
+						slamTimer = 2;
+				}
+				else
+				{
+					slamTimer = g_unk52F4FC;
+				}
+
+				if (slamTimer)
+				{
+					if (slamTimer > 0)
+					{
+						int32_t newTimer = Renderer::g_frameDelta + slamTimer;
+						g_unk52F4FC = newTimer;
+
+						if (newTimer > 32)
+						{
+							g_unk52F4FC = -32;
+						}
+						else if (newTimer > 6 && newTimer - (int32_t)Renderer::g_frameDelta <= 6)
+						{
+							Levels::Method3(0, 1);
+							Buzz::g_groundSlamTicker = 0;
+							Levels::Method2(-4736, 2);
+							AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+							g_buzzActor.velX = Numerics::g_sinCosLUT[286];
+
+							g_buzzActor.actorFlags |= 0x44;
+							g_buzzActor.velForward = Numerics::g_sinCosLUT[1310];
+							g_buzzActor.posAngles.angles.yaw = 286;
+							g_buzzActor.facingAngle = 286;
+							Camera::g_unk52AD98 = 64;
+						}
+					}
+					else
+					{
+						g_unk52F4FC += Renderer::g_frameDelta;
+
+						if (g_unk52F4FC > 0)
+							g_unk52F4FC = 0;
 					}
 				}
 
-				g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
-				g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[g_unk52F528].z;
-
-				if (g_unk52AD64 == 3)
-				{
-					Collectables::Activate(2, 0);
-					g_unk52F2F8 = 3;
-				}
+				Actor::CollectQuestReward(30, 29, 3600, 1760, 0);
 			}
 
-		LABEL_130:
-			// the basement, the box that is pushed
-			if (g_curSectorCopy1 != 3)
-				goto LABEL_146;
-
-			Nu3D::Link::SetScaleFromFixedOffsets(23, 4096, abs(g_unk52F4FC) << 7, 4096);
-			Nu3D::Link::SetRotationRelative8bit(23, 0, 0, 32 * abs(g_unk52F4FC));
-
-			// the pseudocode shows gotos into the middle of this, this is the shape that compiles to the same code
-			if (g_buzzActor.collisionFlags && Buzz::g_unk52B81C == 8 && ! g_unk52F4FC && Buzz::g_groundSlamTicker)
-			{
-				slamTimer = 2;
-				goto LABEL_138;
-			}
-
-			if (! g_unk52F4FC)
-				goto LABEL_145;
-
-			if (g_unk52F4FC > 0)
-			{
-				slamTimer = g_unk52F4FC;
-
-			LABEL_138:
-				newTimer = Renderer::g_frameDelta + slamTimer;
-				g_unk52F4FC = newTimer;
-
-				if (newTimer > 32)
-				{
-					g_unk52F4FC = -32;
-				}
-				else if (newTimer > 6 && newTimer - (int32_t)Renderer::g_frameDelta <= 6)
-				{
-					Levels::Method3(0, 1);
-					Buzz::g_groundSlamTicker = 0;
-					Levels::Method2(-4736, 2);
-					AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
-					g_buzzActor.velX = Numerics::g_sinCosLUT[286];
-
-					g_buzzActor.actorFlags |= 0x44;
-					g_buzzActor.velForward = Numerics::g_sinCosLUT[1310];
-					g_buzzActor.posAngles.angles.yaw = 286;
-					g_buzzActor.facingAngle = 286;
-					Camera::g_unk52AD98 = 64;
-				}
-			}
-			else
-			{
-				g_unk52F4FC += Renderer::g_frameDelta;
-
-				if (g_unk52F4FC > 0)
-					g_unk52F4FC = 0;
-			}
-
-		LABEL_145:
-			Actor::CollectQuestReward(30, 29, 3600, 1760, 0);
-
-		LABEL_146:
 			Actor::RotatingHint(35, 39, g_unk4F0F7C);
 
 			// the attic, the fight against the tin robot
@@ -859,53 +844,27 @@ namespace Toy2
 			// the camera stays between the ceiling and the floor of the stairs
 			if (Buzz::g_unk53C5E4 == 60)
 			{
-				if (g_buzzActor.posAngles.pos.y > -150000)
+				if (g_buzzActor.posAngles.pos.y > -150000 && g_buzzActor.posAngles.pos.y < -100000 && Camera::g_gameplayCameraState.pos.y > -150000)
 				{
-					if (g_buzzActor.posAngles.pos.y >= -100000)
-					{
-					LABEL_161:
-						if (g_buzzActor.posAngles.pos.y >= -68288)
-						{
-						LABEL_165:
-							if (Camera::g_gameplayCameraState.pos.y < -50000)
-							{
-								Camera::g_gameplayCameraState.pos.y = -50000;
-
-								Camera::g_gameplayCameraState.targetPos.y = -50000;
-							}
-
-							goto LABEL_167;
-						}
-
-						if (Camera::g_gameplayCameraState.pos.y < -50000)
-						{
-							Camera::g_gameplayCameraState.pos.y = -50000;
-							Camera::g_gameplayCameraState.targetPos.y = -50000;
-							Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch + 256) / -8;
-						}
-
-					LABEL_164:
-						if (g_buzzActor.posAngles.pos.y < -68288)
-							goto LABEL_167;
-
-						goto LABEL_165;
-					}
-
-					if (Camera::g_gameplayCameraState.pos.y > -150000)
-					{
-						Camera::g_gameplayCameraState.pos.y = -150000;
-						Camera::g_gameplayCameraState.targetPos.y = -150000;
-						Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch - 768) / -8;
-					}
+					Camera::g_gameplayCameraState.pos.y = -150000;
+					Camera::g_gameplayCameraState.targetPos.y = -150000;
+					Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch - 768) / -8;
 				}
 
-				if (g_buzzActor.posAngles.pos.y < -100000)
-					goto LABEL_164;
+				if (g_buzzActor.posAngles.pos.y >= -100000 && g_buzzActor.posAngles.pos.y < -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
+				{
+					Camera::g_gameplayCameraState.pos.y = -50000;
+					Camera::g_gameplayCameraState.targetPos.y = -50000;
+					Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch + 256) / -8;
+				}
 
-				goto LABEL_161;
+				if (g_buzzActor.posAngles.pos.y >= -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
+				{
+					Camera::g_gameplayCameraState.pos.y = -50000;
+					Camera::g_gameplayCameraState.targetPos.y = -50000;
+				}
 			}
 
-		LABEL_167:
 			g_unk52F5CC = (g_unk52F5CC + 32 * frameDelta) & 0xFFF;
 			Nu3D::Link::SetRotationRelative8bit(14, 0, g_unk52F5CC, 0);
 
