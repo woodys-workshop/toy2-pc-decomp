@@ -745,24 +745,14 @@ namespace Toy2
 				g_unk53C634 |= 8;
 		}
 
-		// FUNCTION: TOY2 0x004071E0
-		void HandleDamage(int16_t hitAngle, uint8_t hitType)
+		// FUNCTION: TOY2 0x004071E0 [MATCHED]
+		void HandleDamage(int32_t hitAngle, int32_t hitType)
 		{
-			int32_t cameraState;
-			uint8_t effectiveHitType;
-
 			if (g_buzzActor.health < 0 || (Camera::g_inCutscene & 1) != 0)
 				return;
 
-			cameraState = Camera::g_cameraState;
-
 			if (Camera::g_cameraState)
-			{
-				cameraState = 5;
 				Camera::g_cameraState = 5;
-			}
-
-			effectiveHitType = hitType;
 
 			if ((hitType & 1) != 0)
 			{
@@ -770,43 +760,46 @@ namespace Toy2
 				g_buzzActor.velForward = Numerics::g_sinCosLUT[(hitAngle + 1024) & 0xFFF] / 16;
 			}
 
-			if ((hitType & 2) == 0)
-				goto LABEL_19;
-
-			if (g_buzzActor.stunTimer > 0)
-				goto LABEL_18;
-
-			g_buzzActor.actorFlags |= 2;
-
-			if (g_buzzActor.inhibitMovementTimer)
+			if ((hitType & 2) != 0)
 			{
-				if (g_buzzActor.inhibitMovementTimer >= 0)
+				if (g_buzzActor.stunTimer > 0)
 				{
-				LABEL_17:
-					g_buzzActor.stunTimer = -60;
-					goto LABEL_18;
+					hitType &= ~2;
 				}
-
-				if (! g_buzzActor.stunTimer)
+				else
 				{
-					++g_buzzActor.inhibitMovementTimer;
-					goto LABEL_17;
-				}
+					g_buzzActor.actorFlags |= 2;
 
-			LABEL_18:
-				effectiveHitType = hitType & 0xFD;
-				goto LABEL_19;
+					if (! g_buzzActor.inhibitMovementTimer)
+					{
+						if (g_levelTransition == 1 || g_levelTransition == 5 || g_unk53C660)
+						{
+							g_buzzActor.stunTimer = -60;
+							hitType &= ~2;
+						}
+					}
+					else
+					{
+						if (g_buzzActor.inhibitMovementTimer >= 0)
+						{
+							g_buzzActor.stunTimer = -60;
+						}
+						else if (! g_buzzActor.stunTimer)
+						{
+							++g_buzzActor.inhibitMovementTimer;
+							g_buzzActor.stunTimer = -60;
+						}
+
+						hitType &= ~2;
+					}
+				}
 			}
 
-			if (g_levelTransition == 1 || g_levelTransition == 5 || g_unk53C660)
-				goto LABEL_17;
-
-		LABEL_19:
-			if ((effectiveHitType & 4) != 0)
+			if ((hitType & 4) != 0)
 			{
 				if (g_levelTransition != 2)
 				{
-					if (cameraState)
+					if (Camera::g_cameraState)
 						Camera::g_cameraState = 5;
 
 					AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
@@ -821,7 +814,7 @@ namespace Toy2
 					g_hudWidgetTimers[0] = 180;
 				}
 			}
-			else if ((effectiveHitType & 2) != 0)
+			else if ((hitType & 2) != 0)
 			{
 				--g_buzzActor.health;
 
@@ -835,7 +828,28 @@ namespace Toy2
 				g_unk53C834 = 1;
 				g_hudWidgetTimers[1] = 180;
 
-				if (g_buzzActor.health >= 0)
+				if (g_buzzActor.health < 0)
+				{
+					if (g_levelTransition != 2)
+					{
+						if (Camera::g_cameraState)
+							Camera::g_cameraState = 5;
+
+						AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
+
+						if (g_feedbackTimerA < 14)
+							g_feedbackTimerA = 14;
+
+						g_buzzActor.actorFlags |= 4;
+
+						g_hudWidgetTimers[0] = 180;
+						g_levelTransition = 2;
+						g_levelTransitionTimer = 120;
+
+						g_buzzActor.stunTimer = -90;
+					}
+				}
+				else
 				{
 					g_buzzActor.stunTimer = 90;
 
@@ -844,24 +858,6 @@ namespace Toy2
 
 					if (g_feedbackTimerA < 14)
 						g_feedbackTimerA = 14;
-				}
-				else if (g_levelTransition != 2)
-				{
-					if (Camera::g_cameraState)
-						Camera::g_cameraState = 5;
-
-					AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
-
-					if (g_feedbackTimerA < 14)
-						g_feedbackTimerA = 14;
-
-					g_buzzActor.actorFlags |= 4;
-
-					g_hudWidgetTimers[0] = 180;
-					g_levelTransition = 2;
-					g_levelTransitionTimer = 120;
-
-					g_buzzActor.stunTimer = -90;
 				}
 			}
 		}

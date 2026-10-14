@@ -75,7 +75,7 @@ namespace Toy2
 
 		void Respawn();
 		void UpdateAnimationState();
-		void HandleDamage(int16_t hitAngle, uint8_t hitType);
+		void HandleDamage(int32_t hitAngle, int32_t hitType);
 		void CheckParticleCollisions();
 		void Init(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t levelIndex);
 		void HandleGameplay(Toy2::Buzz::Toy2BuzzActor* buzzActor);

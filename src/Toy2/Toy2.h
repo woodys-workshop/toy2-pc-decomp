@@ -143,7 +143,7 @@ namespace Toy2
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[16];
 	extern Buzz::Toy2BuzzActor g_buzzActor;
-	extern int32_t g_levelTransition;
+	extern int16_t g_levelTransition;
 	extern int16_t g_levelTransitionTimer;
 	extern int16_t g_feedbackTimerA;
 	extern int16_t g_feedbackTimerB;
