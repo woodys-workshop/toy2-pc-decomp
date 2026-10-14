@@ -20,7 +20,6 @@ namespace Toy2
 
 		extern int16_t g_unk4F1508[8];
 		extern char* g_unk4F1528[5];
-		extern int32_t g_unk52F2F8;
 		extern int32_t g_unk52F5DC;
 		extern int32_t g_unk52F5E0;
 		extern int32_t g_unk52F5E4;

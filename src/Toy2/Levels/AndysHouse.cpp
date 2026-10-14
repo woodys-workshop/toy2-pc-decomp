@@ -83,13 +83,13 @@ namespace Toy2
 		};
 
 		// GLOBAL: TOY2 0x0052F588
-		int16_t g_unk52F588;
+		int32_t g_unk52F588;
 
 		// GLOBAL: TOY2 0x0052F5A0
 		int32_t g_unk52F5A0;
 
 		// GLOBAL: TOY2 0x0052F5A4
-		int16_t g_unk52F5A4;
+		int32_t g_unk52F5A4;
 
 		// GLOBAL: TOY2 0x0052F4F4
 		int32_t g_unk52F4F4;
@@ -308,15 +308,22 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x00417680
+		// FUNCTION: TOY2 0x00417680 [MATCHED]
 		void Interactions()
 		{
-			Vector3I pos;
+			// $TODO: the original frame is 4 bytes larger than its locals need (sub esp, 0x1c), the padding member keeps the size
+			struct PosBuf : Vector3I
+			{
+				int32_t w;
+			} pos;
+			Nu3D::Particles::ParticleInstance* particle;
 			int32_t soundTime;
-			int32_t racePoint;
 			int32_t side;
+			int32_t lampTimer;
+			int32_t buzzX;
+			int32_t buzzZ;
 			int32_t slamTimer;
-			bool slamNegative;
+			int32_t newTimer;
 
 			if (g_curSectorCopy1 == 1)
 			{
@@ -354,32 +361,23 @@ namespace Toy2
 					}
 				}
 
-				RawLoader::CreatureListRam* creatureRam = g_levelActors[2].creatureRam;
-				char defenseMode = g_levelActors[0].creatureRam->defenseMode;
-
-				if (defenseMode || (uint8_t)g_levelActors[2].creatureRam->defenseMode)
+				if ((uint8_t)g_levelActors[0].creatureRam->defenseMode || (uint8_t)g_levelActors[2].creatureRam->defenseMode)
 				{
-					if (g_buzzActor.posAngles.pos.x >= 311924)
+					if (g_buzzActor.posAngles.pos.x < 311924)
 					{
-						if (defenseMode)
-						{
-							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 5;
-							creatureRam = g_levelActors[2].creatureRam;
-						}
+						if ((uint8_t)g_levelActors[0].creatureRam->defenseMode)
+							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 4;
 
-						if ((uint8_t)creatureRam->defenseMode)
-							*(uint8_t*)&creatureRam->defenseMode = 5;
+						if ((uint8_t)g_levelActors[2].creatureRam->defenseMode)
+							*(uint8_t*)&g_levelActors[2].creatureRam->defenseMode = 4;
 					}
 					else
 					{
-						if (defenseMode)
-						{
-							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 4;
-							creatureRam = g_levelActors[2].creatureRam;
-						}
+						if ((uint8_t)g_levelActors[0].creatureRam->defenseMode)
+							*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 5;
 
-						if ((uint8_t)creatureRam->defenseMode)
-							*(uint8_t*)&creatureRam->defenseMode = 4;
+						if ((uint8_t)g_levelActors[2].creatureRam->defenseMode)
+							*(uint8_t*)&g_levelActors[2].creatureRam->defenseMode = 5;
 					}
 
 					if (g_buzzActor.collisionFlags && Buzz::g_unk52B81C == 14)
@@ -395,24 +393,22 @@ namespace Toy2
 				}
 
 				// the lamp falls
-				if (g_unk52F56C > 0)
+				lampTimer = g_unk52F56C;
+
+				if (lampTimer > 0)
 				{
 					g_unk52F57C += 16 * Renderer::g_frameDelta;
-					g_unk52F56C -= Renderer::g_frameDelta;
+					lampTimer -= Renderer::g_frameDelta;
+					g_unk52F56C = lampTimer;
 
-					if (g_unk52F56C <= 0)
+					if (lampTimer <= 0)
 						g_unk52F56C = -1;
 
 					Nu3D::Link::GetCurrentPosFixed(19, &pos);
-					int32_t speed = g_unk52F57C;
-
 					if (pos.y > 72704 && g_unk52F57C > 0)
-					{
-						speed = g_unk52F57C / -2;
 						g_unk52F57C /= -2;
-					}
 
-					pos.y += Renderer::g_frameDelta * speed;
+					pos.y += g_unk52F57C * Renderer::g_frameDelta;
 					Nu3D::Link::SetPositionRawAndCommit(19, pos.x >> 5, pos.y >> 5, pos.z >> 5);
 					Nu3D::Link::GetCurrentPosFixed(20, &pos);
 					pos.y += Renderer::g_frameDelta * g_unk52F57C;
@@ -426,51 +422,43 @@ namespace Toy2
 
 			if (MoveableObject::g_moveableObjects[3].pushState == -1 || MoveableObject::g_moveableObjects[3].liftVel)
 			{
-				int32_t angle = g_unk52F500;
-
 				if (! g_unk52F500)
 				{
 					Collision::MarkPlatformAsMoving(14);
 					Platform::DisableCollision(1);
-					angle = g_unk52F500;
 				}
 
-				int32_t newAngle = 16 * Renderer::g_frameDelta + angle;
-				g_unk52F500 = newAngle;
+				g_unk52F500 += 16 * Renderer::g_frameDelta;
 
-				if (newAngle > 512)
-				{
-					newAngle = 512;
+				if (g_unk52F500 > 512)
 					g_unk52F500 = 512;
-				}
 
-				Nu3D::Link::SetRotationRelative8bit(4, newAngle, 0, 0);
+				Nu3D::Link::SetRotationRelative8bit(4, g_unk52F500, 0, 0);
 			}
 
-			if (g_unk52F5A0)
+			if (! g_unk52F5A0)
 			{
-				if (g_unk52F5A0 < 4096)
+				if ((uint32_t)g_buzzActor.posAngles.pos.z < (uint32_t)-321858 && (uint32_t)g_buzzActor.posAngles.pos.z > (uint32_t)-361602
+					&& g_buzzActor.posAngles.pos.x < 314294 && g_buzzActor.posAngles.pos.x > 287606 && g_buzzActor.posAngles.pos.y < 18432
+					&& g_buzzActor.posAngles.pos.y > 0 && g_buzzActor.unkShort40)
 				{
-					g_unk52F5A0 += Renderer::g_frameDelta << 6;
-					int32_t scale = g_unk52F5A0;
-
-					if (g_unk52F5A0 >= 4096)
-					{
-						scale = 4096;
-						g_unk52F5A0 = 4096;
-					}
-
-					Nu3D::Link::SetScaleFromFixedOffsets(21, scale, 4096, 4096);
-					Nu3D::Link::SnapToOtherLinkUsingScale(22, 21);
+					Collision::MarkPlatformAsMoving(8);
+					g_unk52F5A0 = 8;
 				}
 			}
-			else if (
-				(uint32_t)g_buzzActor.posAngles.pos.z < (uint32_t)-321858 && (uint32_t)g_buzzActor.posAngles.pos.z > (uint32_t)-361602
-				&& g_buzzActor.posAngles.pos.x < 314294 && g_buzzActor.posAngles.pos.x > 287606 && g_buzzActor.posAngles.pos.y < 18432
-				&& g_buzzActor.posAngles.pos.y > 0 && g_buzzActor.unkShort40)
+			else if (g_unk52F5A0 < 4096)
 			{
-				Collision::MarkPlatformAsMoving(8);
-				g_unk52F5A0 = 8;
+				g_unk52F5A0 += Renderer::g_frameDelta << 6;
+				int32_t scale = g_unk52F5A0;
+
+				if (g_unk52F5A0 >= 4096)
+				{
+					scale = 4096;
+					g_unk52F5A0 = 4096;
+				}
+
+				Nu3D::Link::SetScaleFromFixedOffsets(21, scale, 4096, 4096);
+				Nu3D::Link::SnapToOtherLinkUsingScale(22, 21);
 			}
 
 			// the garage
@@ -487,16 +475,12 @@ namespace Toy2
 						int32_t spawnY = 32 * Levels::g_recordData[22]->data[0].y;
 						int32_t spawnX = 32 * Levels::g_recordData[22]->data[0].x;
 						int32_t spawnZ = 32 * Levels::g_recordData[22]->data[0].z;
-						int32_t deltaZ = (spawnZ - 32 * Levels::g_recordData[22]->data[g_unk52F52C].z) >> 8;
 						int32_t deltaX = (spawnX - 32 * Levels::g_recordData[22]->data[g_unk52F52C].x) >> 8;
+						int32_t deltaZ = (spawnZ - 32 * Levels::g_recordData[22]->data[g_unk52F52C].z) >> 8;
 
 						int32_t sparkAngle = (Nu3D::Math::CartesianToFixedAngle(deltaX, deltaZ) - 2048) & 0xFFF;
 						int32_t distance = (int32_t)sqrt((double)(deltaX * deltaX + deltaZ * deltaZ));
-						int32_t randomOffset = (*g_randDatBufferPtr - 128) >> 2;
 						int32_t speed = 7 * distance / 2;
-						int32_t velZ = speed * Numerics::g_sinCosLUT[(sparkAngle + 1024) & 0xFFF] / 0x2000;
-
-						++g_randDatBufferPtr;
 
 						Nu3D::Particles::SpawnInstance(
 							spawnX,
@@ -504,48 +488,42 @@ namespace Toy2
 							spawnZ,
 							speed * Numerics::g_sinCosLUT[sparkAngle] / 0x2000,
 							-128 * ((distance << 12) / speed) / 64,
-							velZ,
+							speed * Numerics::g_sinCosLUT[(sparkAngle + 1024) & 0xFFF] / 0x2000,
 							128,
 							0,
-							randomOffset,
+							(*g_randDatBufferPtr++ - 128) >> 2,
 							12);
 
-						int32_t skip = *g_randDatBufferPtr++ & 0xF;
-						int32_t nextPoint = g_unk52F52C + skip + 1;
-						g_unk52F52C = nextPoint;
+						g_unk52F52C += (*g_randDatBufferPtr++ & 0xF) + 1;
 
-						if (nextPoint >= Levels::g_recordData[22]->recordCount)
-							g_unk52F52C = 1 - Levels::g_recordData[22]->recordCount + nextPoint;
+						if (g_unk52F52C >= Levels::g_recordData[22]->recordCount)
+							g_unk52F52C = 1 - Levels::g_recordData[22]->recordCount + g_unk52F52C;
 					}
 
-					int32_t timer = Renderer::g_frameDelta + g_unk52F5B0;
 					g_unk52F5B0 += Renderer::g_frameDelta;
 
 					if (g_unk52F5B0 > 120)
 					{
-						g_unk52F5B0 = timer - 120;
-						int32_t sparkTable = g_unk52F598 + 3;
+						g_unk52F5B0 -= 120;
 						g_unk52F598 += 3;
 
 						if (g_unk52F598 == 9)
-						{
-							sparkTable = 0;
 							g_unk52F598 = 0;
-						}
 
-						Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[sparkTable], g_unk4F0EB8[sparkTable + 1] - 2048, g_unk4F0EB8[sparkTable + 2], 34, 2);
+						Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1] - 2048, g_unk4F0EB8[g_unk52F598 + 2], 34, 2);
 					}
 
 					int32_t i = 0;
 
-					if (g_tickState[2])
+					if (g_tickState[2] > 0)
 					{
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1], g_unk4F0EB8[g_unk52F598 + 2], 16, 10)
-								->lifetime = (*g_randDatBufferPtr & 0xF) + 32;
-							++i;
+							particle =
+								Nu3D::Particles::SpawnFromPreset(g_unk4F0EB8[g_unk52F598], g_unk4F0EB8[g_unk52F598 + 1], g_unk4F0EB8[g_unk52F598 + 2], 16, 10);
+							particle->lifetime = (*g_randDatBufferPtr & 0xF) + 32;
 							++g_randDatBufferPtr;
+							++i;
 						} while (i < g_tickState[2]);
 					}
 				}
@@ -563,7 +541,8 @@ namespace Toy2
 
 					if (g_tickState[8])
 					{
-						Nu3D::Particles::SpawnFromPreset(pos.x, pos.y, pos.z, 17, 10)->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
+						particle = Nu3D::Particles::SpawnFromPreset(pos.x, pos.y, pos.z, 17, 10);
+						particle->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
 						++g_randDatBufferPtr;
 					}
 				}
@@ -571,21 +550,22 @@ namespace Toy2
 				if (MoveableObject::g_moveableObjects[4].pushState == -1)
 					Levels::g_recordData[58]->data[Level::g_unk830E28 + 1].y = g_unk52F59C;
 
-				if (g_buzzActor.collisionFlags && (Platform::GetFlags(3) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(3))[2] < -12288)
+				if (g_buzzActor.collisionFlags && (Platform::GetFlags(3) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(3))[1] < -12288)
 				{
 					Levels::Method3(1, 1);
 
+					// the sound is in both branches, that way the compiler merges the stack clean up of the two calls
 					if (Buzz::g_groundSlamTicker)
 					{
 						Buzz::g_groundSlamTicker = 0;
 						Levels::Method2(-3072, 2);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
 					}
 					else
 					{
 						Levels::Method2(-2432, 2);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
 					}
-
-					AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
 				}
 
 				Actor::PlayPeriodicHintSound(1, 178);
@@ -620,79 +600,61 @@ namespace Toy2
 
 			if (g_curSectorCopy1 == 2)
 			{
-				int32_t speed = g_unk52F504;
-				bool notMoving;
-
-				if (Buzz::g_unk53C5E4 == 48)
+				if (Buzz::g_unk53C5E4 == 48 && ! g_unk52F504)
 				{
-					notMoving = g_unk52F504 <= 0;
-
-					if (g_unk52F504)
-						goto LABEL_89;
-
 					g_unk52F504 = 2;
 					AudioManager::PlaySoundEffect(33, &g_buzzActor.posAngles.pos);
-					speed = g_unk52F504;
 				}
 
-				notMoving = speed <= 0;
-
-			LABEL_89:
-				if (notMoving)
+				if (g_unk52F504 > 0)
 				{
+					g_unk52F5B8.y += g_unk52F504 * Renderer::g_frameDelta;
+
+					if (g_unk52F5B8.y > g_unk52F5B4)
+					{
+						g_unk52F5B8.y = g_unk52F5B4;
+						g_unk52F504 = -1;
+					}
+
+					Levels::g_recordData[61]->data[16].y = g_unk52F5B8.y + g_unk52F530;
+					Nu3D::Link::SetPositionRawAndCommit(6, g_unk52F5B8.x >> 5, g_unk52F5B8.y >> 5, g_unk52F5B8.z >> 5);
 					soundTime = Renderer::g_frameDelta;
+					g_unk52F504 += (soundTime << 7) / 4;
 				}
 				else
 				{
-					int32_t height = Renderer::g_frameDelta * speed + g_unk52F5B8.y;
-					g_unk52F5B8.y = height;
-
-					if (height > g_unk52F5B4)
-					{
-						height = g_unk52F5B4;
-						g_unk52F504 = -1;
-						g_unk52F5B8.y = g_unk52F5B4;
-					}
-
-					Levels::g_recordData[61]->data[16].y = height + g_unk52F530;
-					Nu3D::Link::SetPositionRawAndCommit(6, g_unk52F5B8.x >> 5, g_unk52F5B8.y >> 5, g_unk52F5B8.z >> 5);
 					soundTime = Renderer::g_frameDelta;
-					g_unk52F504 += (Renderer::g_frameDelta << 7) / 4;
 				}
 
-				uint16_t spin = (g_unk52F4F4 + (soundTime << 8)) & 0xFFF;
-				g_unk52F4F4 = spin;
+				g_unk52F4F4 = (g_unk52F4F4 + (soundTime << 8)) & 0xFFF;
 				g_unk52F568 = (g_unk52F568 + (soundTime << 6)) & 0x1FFF;
 
-				Method1(g_unk52F568, 9, (Vector3I*)g_unk52F538, spin);
+				Method1(g_unk52F568, 9, (Vector3I*)g_unk52F538, g_unk52F4F4);
 				Method1(g_unk52F568 + 2730, 17, (Vector3I*)g_unk52F548, g_unk52F4F4 + 512);
 				Method1(g_unk52F568 + 5461, 18, (Vector3I*)g_unk52F558, g_unk52F4F4 + 1024);
 
-				uint16_t spinB = (g_unk52F5A4 + (Renderer::g_frameDelta << 7)) & 0xFFF;
-				uint16_t phaseB = (g_unk52F588 + (Renderer::g_frameDelta << 6)) & 0x1FFF;
-				g_unk52F5A4 = spinB;
-				g_unk52F588 = phaseB;
-
-				Method2(phaseB, 10, (Vector3I*)g_unk52F508, spinB, 12);
+				Method2(
+					g_unk52F588 = (g_unk52F588 + (Renderer::g_frameDelta << 6)) & 0x1FFF,
+					10,
+					(Vector3I*)g_unk52F508,
+					g_unk52F5A4 = (g_unk52F5A4 + (Renderer::g_frameDelta << 7)) & 0xFFF,
+					12);
 				Method2(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
 
 				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) == 0
 					|| ((g_levelActors[29].actorFlags &= ~Actor::ACTOR_PLAYER_TRIGGER), Collectables::g_pickupSlots[2].state == 2) || g_unk52F2F8)
 				{
-					if (g_unk52F2F8 != 1)
+					if (g_unk52F2F8 == 1) {}
+					else
 					{
 						if (g_unk52F2F8 < 2)
 							goto LABEL_130;
-
-						racePoint = g_unk52F528;
 
 						if (g_unk52F2F8 != 2)
 							goto LABEL_119;
 
 						goto LABEL_104;
 					}
-
-					racePoint = g_unk52F528;
 				}
 				else
 				{
@@ -704,8 +666,6 @@ namespace Toy2
 						0,
 						0,
 						-1);
-					racePoint = 0;
-
 					g_unk52F2F8 = 1;
 					g_unk52F528 = 0;
 					g_unk52F4F8 = 0;
@@ -724,15 +684,20 @@ namespace Toy2
 
 			LABEL_104:
 				// which side of the car Buzz is on, to count the laps
-				side = (uint32_t)g_buzzActor.posAngles.pos.z < (uint32_t)-106496;
+				side = 0;
+				buzzZ = g_buzzActor.posAngles.pos.z;
+				buzzX = g_buzzActor.posAngles.pos.x;
 
-				if (g_buzzActor.posAngles.pos.x > 10496)
+				if ((uint32_t)buzzZ < (uint32_t)-106496)
+					side = 1;
+
+				if (buzzX > 10496)
 					side |= 2u;
 
-				if (g_buzzActor.posAngles.pos.x < 135168)
+				if (buzzX < 135168)
 					side |= 4u;
 
-				if ((uint32_t)g_buzzActor.posAngles.pos.z > (uint32_t)-122880)
+				if ((uint32_t)buzzZ > (uint32_t)-122880)
 					side |= 8u;
 
 				if (side == 14)
@@ -754,39 +719,35 @@ namespace Toy2
 
 			LABEL_119:
 				// the RC car drives along the path
-				int32_t* pointZ = &Levels::g_recordData[30]->data[racePoint].z;
-				int32_t pointDeltaX = Levels::g_recordData[30]->data[racePoint].x - (g_levelActors[29].pos.x >> 5);
+				int32_t pointDeltaX = Levels::g_recordData[30]->data[g_unk52F528].x - (g_levelActors[29].pos.x >> 5);
+				int32_t* pointZ = &Levels::g_recordData[30]->data[g_unk52F528].z;
 
 				if ((*pointZ - (g_levelActors[29].pos.z >> 5)) * (*pointZ - (g_levelActors[29].pos.z >> 5)) + pointDeltaX * pointDeltaX < 360000)
 				{
-					g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[racePoint].x;
+					g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
 					g_levelActors[29].boundary.z = 32 * *pointZ;
 
-					if (g_unk52F4F8 >= 3)
+					if (g_unk52F4F8 < 3)
 					{
-						if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
-						{
-							if (g_unk52F2F8 == 2 && g_unk52AD64 < 3)
-								g_unk52F2F8 = 3;
+						++g_unk52F528;
 
-							g_levelActors[29].actorPhase = 1;
-						}
-					}
-					else
-					{
-						g_unk52F528 = ++racePoint;
-
-						if (racePoint > 44)
+						if (g_unk52F528 > 44)
 						{
-							racePoint = 0;
 							g_unk52F528 = 0;
 							++g_unk52F4F8;
 						}
 					}
+					else if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
+					{
+						if (g_unk52F2F8 == 2 && g_unk52AD64 < 3)
+							g_unk52F2F8 = 3;
+
+						g_levelActors[29].actorPhase = 1;
+					}
 				}
 
-				g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[racePoint].x;
-				g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[racePoint].z;
+				g_levelActors[29].motionTargetPos.x = 32 * Levels::g_recordData[30]->data[g_unk52F528].x;
+				g_levelActors[29].motionTargetPos.z = 32 * Levels::g_recordData[30]->data[g_unk52F528].z;
 
 				if (g_unk52AD64 == 3)
 				{
@@ -803,63 +764,49 @@ namespace Toy2
 			Nu3D::Link::SetScaleFromFixedOffsets(23, 4096, abs(g_unk52F4FC) << 7, 4096);
 			Nu3D::Link::SetRotationRelative8bit(23, 0, 0, 32 * abs(g_unk52F4FC));
 
-			if (! g_buzzActor.collisionFlags || Buzz::g_unk52B81C != 8)
+			// the pseudocode shows gotos into the middle of this, this is the shape that compiles to the same code
+			if (g_buzzActor.collisionFlags && Buzz::g_unk52B81C == 8 && ! g_unk52F4FC && Buzz::g_groundSlamTicker)
 			{
-				slamTimer = g_unk52F4FC;
-				slamNegative = g_unk52F4FC <= 0;
-
-				if (! g_unk52F4FC)
-					goto LABEL_145;
-
-			LABEL_137:
-				if (slamNegative)
-				{
-					g_unk52F4FC = Renderer::g_frameDelta + slamTimer;
-
-					if (Renderer::g_frameDelta + slamTimer > 0)
-						g_unk52F4FC = 0;
-
-					goto LABEL_145;
-				}
-
+				slamTimer = 2;
 				goto LABEL_138;
 			}
 
-			slamTimer = g_unk52F4FC;
-			slamNegative = g_unk52F4FC <= 0;
+			if (! g_unk52F4FC)
+				goto LABEL_145;
 
-			if (g_unk52F4FC)
-				goto LABEL_137;
-
-			if (Buzz::g_groundSlamTicker)
+			if (g_unk52F4FC > 0)
 			{
-				slamTimer = 2;
+				slamTimer = g_unk52F4FC;
 
 			LABEL_138:
-				int32_t newTimer = Renderer::g_frameDelta + slamTimer;
+				newTimer = Renderer::g_frameDelta + slamTimer;
 				g_unk52F4FC = newTimer;
 
-				if (newTimer <= 32)
-				{
-					if (newTimer > 6 && newTimer - Renderer::g_frameDelta <= 6)
-					{
-						Levels::Method3(0, 1);
-						Buzz::g_groundSlamTicker = 0;
-						Levels::Method2(-4736, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
-						g_buzzActor.velForward = Numerics::g_sinCosLUT[1310];
-
-						g_buzzActor.actorFlags |= 0x44;
-						g_buzzActor.velX = Numerics::g_sinCosLUT[286];
-						g_buzzActor.posAngles.angles.yaw = 286;
-						g_buzzActor.facingAngle = 286;
-						Camera::g_unk52AD98 = 64;
-					}
-				}
-				else
+				if (newTimer > 32)
 				{
 					g_unk52F4FC = -32;
 				}
+				else if (newTimer > 6 && newTimer - (int32_t)Renderer::g_frameDelta <= 6)
+				{
+					Levels::Method3(0, 1);
+					Buzz::g_groundSlamTicker = 0;
+					Levels::Method2(-4736, 2);
+					AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+					g_buzzActor.velX = Numerics::g_sinCosLUT[286];
+
+					g_buzzActor.actorFlags |= 0x44;
+					g_buzzActor.velForward = Numerics::g_sinCosLUT[1310];
+					g_buzzActor.posAngles.angles.yaw = 286;
+					g_buzzActor.facingAngle = 286;
+					Camera::g_unk52AD98 = 64;
+				}
+			}
+			else
+			{
+				g_unk52F4FC += Renderer::g_frameDelta;
+
+				if (g_unk52F4FC > 0)
+					g_unk52F4FC = 0;
 			}
 
 		LABEL_145:
@@ -876,8 +823,8 @@ namespace Toy2
 				if (g_inTinRobotFight == 1 && ! Renderer::g_enableCinematicBars)
 				{
 					g_inTinRobotFight = 2;
-					g_levelActors[8].actorFlags |= Actor::ACTOR_GROUNDED;
 					g_levelActors[8].movementData = Actor::g_movementData[5] + 10;
+					g_levelActors[8].actorFlags |= Actor::ACTOR_GROUNDED;
 					g_levelActors[8].unkShort1 = 0;
 					g_unk830D44 = 180;
 				}
@@ -902,7 +849,7 @@ namespace Toy2
 					2560);
 				Renderer::BlitTextureByIndexOffset(8, 128, 128, 64, 64, 0, (Numerics::g_sinCosLUT[g_unk52F5D0] >> 11) & 0x3F, 64, 0);
 				frameDelta = Renderer::g_frameDelta;
-				g_unk52F5D0 = (g_unk52F5D0 + 32 * Renderer::g_frameDelta) & 0xFFF;
+				g_unk52F5D0 = (g_unk52F5D0 + 32 * frameDelta) & 0xFFF;
 			}
 			else
 			{

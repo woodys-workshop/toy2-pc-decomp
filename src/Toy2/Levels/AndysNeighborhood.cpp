@@ -54,9 +54,6 @@ namespace Toy2
 			"can quickly get back into the tree."
 		};
 
-		// GLOBAL: TOY2 0x0052F2F8
-		int32_t g_unk52F2F8;
-
 		// GLOBAL: TOY2 0x0052F5DC
 		int32_t g_unk52F5DC;
 

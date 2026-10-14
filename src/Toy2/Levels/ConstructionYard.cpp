@@ -80,9 +80,6 @@ namespace Toy2
 			"launcher^ to defeat the ^jackhammer^ boss."
 		};
 
-		// GLOBAL: TOY2 0x0052F2F8
-		int32_t g_unk52F2F8;
-
 		// GLOBAL: TOY2 0x0052F760
 		int32_t g_unk52F760;
 

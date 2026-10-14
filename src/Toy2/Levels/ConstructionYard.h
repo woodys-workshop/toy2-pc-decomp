@@ -41,7 +41,6 @@ namespace Toy2
 		extern int16_t g_unk4F1C98[6];
 		extern Collectables::TokenTableEntry g_unk4F1CA4[2];
 		extern char* g_unk4F1CB8[5];
-		extern int32_t g_unk52F2F8;
 		extern int32_t g_unk52F760;
 		extern int32_t g_unk52F764;
 		extern int32_t g_unk52F768;
