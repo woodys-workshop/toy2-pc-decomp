@@ -48,368 +48,388 @@ namespace RawLoader
 	// FUNCTION: TOY2 0x0047B170
 	void DecompressBuffer(uint8_t* inBuffer, uint8_t* outBuffer)
 	{
-		// Decompression is based on RNC ProPack Method 2. Normally these files
-		// have a standard 18 byte header, which looks like it has been replaced
-		// in Toy 2 with a custom 15 byte header.
+		uint8_t* src;
+		uint8_t* dst;
+		uint32_t scratch;
+		uint32_t carry;
+		uint32_t length;
+		uint32_t distance;
+		uint32_t accum;
+		uint8_t* matchPtr;
+		int32_t bitIndex;
+		uint32_t tmpAccum;
+		uint32_t distHigh;
+		uint8_t byteA;
+		uint8_t byteB;
 
-		// this method is incredibly hard to instruction match, this current version
-		// is no where near what the original looks like, but it works. Its a future
-		// me problem to match it for now.
+		src = inBuffer + 14;
+		dst = outBuffer;
+		accum = *src++;
+		accum = 4 * accum + 2;
 
-		typedef union
+	L1A0:
+		while (1)
 		{
-			uint32_t dword;
-			uint16_t word[2];
-			uint8_t byte[4];
-		} RawReg;
+			accum *= 2;
+			carry = (accum >> 8) & 1;
 
-		uint32_t copyLength;
-		uint32_t exitFlag;
-		RawReg lengthCode;
-		RawReg distanceHighOrLiteralCount;
-		uint32_t extendedLengthBit;
-		uint32_t lengthFollowupBit;
-		uint32_t hasDistanceHighBits;
-
-		uint8_t* afterHeader = inBuffer + 15;
-		RawReg bitAccum;
-		bitAccum.dword = 4 * inBuffer[14] + 2;
-
-		do
-		{
-			while (true)
+			if (carry || (accum *= 2, carry = *src++, *dst++ = (uint8_t)carry, carry = (accum >> 8) & 1, carry))
 			{
-				while (true)
-				{
-					while (true)
-					{
-						bitAccum.dword *= 2;
-						uint32_t bitTest = (bitAccum.dword >> 8) & 1;
+				accum &= 0xFF;
 
-						if (! bitTest)
-						{
-							bitAccum.dword *= 2;
-
-							*outBuffer++ = *afterHeader++;
-
-							bitTest = (bitAccum.dword >> 8) & 1;
-						}
-
-						if (bitTest)
-						{
-							bitAccum.dword &= 0xFF;
-
-							if (bitAccum.dword)
-								break;
-
-							bitAccum.dword = bitTest + 2 * (*afterHeader++);
-
-							if ((bitAccum.dword & 0x100) != 0)
-								break;
-						}
-
-						*outBuffer++ = *afterHeader++;
-					}
-
-					lengthCode.byte[0] = 2 * bitAccum.dword;
-					distanceHighOrLiteralCount.dword = 0;
-					copyLength = 2;
-
-					uint32_t lengthCodeBit = ((2 * bitAccum.dword) >> 8) & 1;
-					lengthCode.dword &= 0xFF;
-
-					if (! lengthCode.dword)
-					{
-						lengthCode.dword = lengthCodeBit + 2 * (*afterHeader++);
-						lengthCodeBit = (lengthCode.dword >> 8) & 1;
-					}
-
-					if (lengthCodeBit)
-						break;
-
-					uint32_t shiftedLengthCode = 2 * lengthCode.dword;
-					uint32_t shiftedLengthBit = (shiftedLengthCode >> 8) & 1;
-					shiftedLengthCode &= 0xFF;
-
-					if (! shiftedLengthCode)
-					{
-						RawReg lengthCodeBitReg;
-						lengthCodeBitReg.byte[0] = (*afterHeader++);
-						lengthCodeBit = lengthCodeBitReg.dword; // only low byte was written
-						shiftedLengthCode = shiftedLengthBit + 2 * lengthCodeBit;
-						shiftedLengthBit = (shiftedLengthCode >> 8) & 1;
-					}
-
-					bitAccum.byte[0] = 2 * shiftedLengthCode;
-					copyLength = shiftedLengthBit + 4;
-
-					uint32_t extraLengthBit = ((2 * shiftedLengthCode) >> 8) & 1;
-
-					bitAccum.dword &= 0xFF;
-
-					if (! bitAccum.dword)
-					{
-						bitAccum.dword = extraLengthBit + 2 * (*afterHeader++);
-						extraLengthBit = (bitAccum.dword >> 8) & 1;
-					}
-
-					if (! extraLengthBit)
-						goto LBL_DECODE_DISTANCE;
-
-					bitAccum.dword *= 2;
-					uint32_t finalLengthBit = (bitAccum.dword >> 8) & 1;
-					bitAccum.dword &= 0xFF;
-
-					if (! bitAccum.dword)
-					{
-						bitAccum.dword = finalLengthBit + 2 * (*afterHeader++);
-						finalLengthBit = (bitAccum.dword >> 8) & 1;
-					}
-
-					copyLength = finalLengthBit + 2 * (copyLength - 1);
-
-					if (copyLength != 9)
-						goto LBL_DECODE_DISTANCE;
-
-					for (int32_t bitIndex = 3; bitIndex >= 0; --bitIndex)
-					{
-						bitAccum.dword *= 2;
-						uint32_t literalCountBit = (bitAccum.dword >> 8) & 1;
-						bitAccum.dword &= 0xFF;
-
-						if (! bitAccum.dword)
-						{
-							bitAccum.dword = literalCountBit + 2 * (*afterHeader++);
-							literalCountBit = (bitAccum.dword >> 8) & 1;
-						}
-
-						distanceHighOrLiteralCount.dword = literalCountBit + 2 * distanceHighOrLiteralCount.dword;
-					}
-
-					outBuffer[0] = afterHeader[0];
-					outBuffer[1] = afterHeader[1];
-					outBuffer[2] = afterHeader[2];
-					outBuffer[3] = afterHeader[3];
-
-					outBuffer += 4;
-					afterHeader += 4;
-
-					uint32_t literalBlockCount = distanceHighOrLiteralCount.dword + 1;
-					uint32_t literalBlocksRemaining = literalBlockCount + 1;
-
-					do
-					{
-						outBuffer[0] = afterHeader[0];
-						outBuffer[1] = afterHeader[1];
-						outBuffer[2] = afterHeader[2];
-						outBuffer[3] = afterHeader[3];
-
-						outBuffer += 4;
-						afterHeader += 4;
-						--literalBlocksRemaining;
-					} while (literalBlocksRemaining);
-				}
-
-				bitAccum.byte[0] = 2 * lengthCode.dword;
-				lengthFollowupBit = ((2 * lengthCode.dword) >> 8) & 1;
-				bitAccum.dword &= 0xFF;
-
-				if (! bitAccum.dword)
-				{
-					bitAccum.dword = lengthFollowupBit + 2 * (*afterHeader++);
-					lengthFollowupBit = (bitAccum.dword >> 8) & 1;
-				}
-
-				if (! lengthFollowupBit)
-					goto LBL_COPY_MATCH;
-
-				bitAccum.dword *= 2;
-				copyLength = 3;
-
-				extendedLengthBit = (bitAccum.dword >> 8) & 1;
-				bitAccum.dword &= 0xFF;
-
-				if (! bitAccum.dword)
-				{
-					bitAccum.dword = extendedLengthBit + 2 * (*afterHeader++);
-					extendedLengthBit = (bitAccum.dword >> 8) & 1;
-				}
-
-				if (extendedLengthBit)
+				if (accum)
 					break;
 
-			LBL_DECODE_DISTANCE:
+				accum = *src++;
+				accum = carry + 2 * accum;
 
-				bitAccum.dword *= 2;
-				hasDistanceHighBits = (bitAccum.dword >> 8) & 1;
-				bitAccum.dword &= 0xFF;
-
-				if (! bitAccum.dword)
-				{
-					bitAccum.dword = hasDistanceHighBits + 2 * (*afterHeader++);
-					hasDistanceHighBits = (bitAccum.dword >> 8) & 1;
-				}
-
-				if (hasDistanceHighBits)
-				{
-					uint32_t distancePrefixAccum = 2 * bitAccum.dword;
-					uint32_t distancePrefixBit = (distancePrefixAccum >> 8) & 1;
-
-					distancePrefixAccum &= 0xFF;
-
-					if (! distancePrefixAccum)
-					{
-						distancePrefixAccum = distancePrefixBit + 2 * (*afterHeader++);
-						distancePrefixBit = (distancePrefixAccum >> 8) & 1;
-					}
-
-					bitAccum.dword = 2 * distancePrefixAccum;
-					uint32_t distanceHighBits = distancePrefixBit;
-
-					uint32_t hasMoreDistanceBits = (bitAccum.dword >> 8) & 1;
-					bitAccum.dword &= 0xFF;
-
-					if (! bitAccum.dword)
-					{
-						bitAccum.dword = hasMoreDistanceBits + 2 * (*afterHeader++);
-						hasMoreDistanceBits = (bitAccum.dword >> 8) & 1;
-					}
-
-					if (hasMoreDistanceBits)
-					{
-						uint32_t shifted = 2 * bitAccum.dword;
-						uint32_t distanceExtraBit = (shifted >> 8) & 1;
-						uint32_t distanceExtraAccum = shifted & 0xFF;
-
-						if (! distanceExtraAccum)
-						{
-							distanceExtraAccum = distanceExtraBit + 2 * (*afterHeader++);
-							distanceExtraBit = (distanceExtraAccum >> 8) & 1;
-						}
-
-						distanceHighBits = (distanceExtraBit + 2 * distanceHighBits) | 4;
-
-						shifted = 2 * distanceExtraAccum;
-						uint32_t distanceTerminatorBit = (shifted >> 8) & 1;
-						bitAccum.dword = shifted & 0xFF;
-
-						if (! bitAccum.dword)
-						{
-							bitAccum.dword = distanceTerminatorBit + 2 * (*afterHeader++);
-							distanceTerminatorBit = (bitAccum.dword >> 8) & 1;
-						}
-
-						if (distanceTerminatorBit)
-							goto LBL_COMMIT_DISTANCE;
-					}
-					else
-					{
-						if (distanceHighBits)
-						{
-						LBL_COMMIT_DISTANCE:
-
-							RawReg distanceHighWord;
-							distanceHighWord.dword = 0;
-							distanceHighWord.byte[1] = distanceHighBits;
-							distanceHighOrLiteralCount.word[0] = distanceHighWord.word[0] | (distanceHighBits >> 8);
-
-							goto LBL_COPY_MATCH;
-						}
-
-						distanceHighBits = 1;
-					}
-
-					bitAccum.dword *= 2;
-					uint32_t distanceTailBit = (bitAccum.dword >> 8) & 1;
-					bitAccum.dword &= 0xFF;
-
-					if (! bitAccum.dword)
-					{
-						bitAccum.dword = distanceTailBit + 2 * (*afterHeader++);
-						distanceTailBit = (bitAccum.dword >> 8) & 1;
-					}
-
-					distanceHighBits = distanceTailBit + 2 * distanceHighBits;
-					goto LBL_COMMIT_DISTANCE;
-				}
-
-			LBL_COPY_MATCH:
-
-				int32_t matchDistance = (distanceHighOrLiteralCount.dword & 0xFF00) | (*afterHeader++);
-				uint8_t* matchSource = &outBuffer[-matchDistance - 1];
-
-				if (copyLength & 1)
-				{
-					*outBuffer++ = *matchSource++;
-				}
-
-				int32_t pairCopyCount = (copyLength >> 1) - 1;
-
-				if (matchDistance)
-				{
-					outBuffer += 2;
-					uint16_t* matchSourceWords = (uint16_t*)(matchSource + 2);
-
-					*(outBuffer - 1) = *((uint8_t*)matchSourceWords - 1);
-					*(outBuffer - 2) = *matchSource;
-
-					int32_t wordCopyLoopCount = pairCopyCount - 1;
-
-					if (wordCopyLoopCount >= 0)
-					{
-						uint32_t wordCopiesRemaining = wordCopyLoopCount + 1;
-
-						do
-						{
-							*(uint16_t*)outBuffer = *matchSourceWords++;
-							outBuffer += 2;
-							--wordCopiesRemaining;
-						} while (wordCopiesRemaining);
-					}
-				}
-				else
-				{
-					outBuffer += 2;
-					uint8_t repeatedByte = *matchSource;
-					int32_t repeatPairLoopCount = pairCopyCount - 1;
-
-					*(outBuffer - 2) = repeatedByte;
-					*(outBuffer - 1) = repeatedByte;
-
-					if (repeatPairLoopCount >= 0)
-					{
-						int32_t repeatPairsRemaining = repeatPairLoopCount + 1;
-
-						do
-						{
-							*outBuffer = repeatedByte;
-							outBuffer[1] = repeatedByte;
-							outBuffer += 2;
-							--repeatPairsRemaining;
-						} while (repeatPairsRemaining);
-					}
-				}
+				if (accum & 0x100)
+					break;
 			}
 
-			int32_t extendedLengthByte = (*afterHeader++);
+			carry = *src++;
+			*dst++ = (uint8_t)carry;
+		}
 
-			if (extendedLengthByte)
+		carry = 2 * accum;
+		distance = 0;
+		accum = carry;
+		length = 2;
+		accum = (accum >> 8) & 1;
+		carry &= 0xFF;
+
+		if (!carry)
+		{
+			carry = *src++;
+			carry = accum + 2 * carry;
+			scratch = (carry >> 8) & 1;
+			accum = scratch;
+		}
+
+		if (!accum)
+		{
+			carry *= 2;
+			length = (carry >> 8) & 1;
+			carry &= 0xFF;
+
+			if (!carry)
 			{
-				copyLength = extendedLengthByte + 8;
-				goto LBL_DECODE_DISTANCE;
+				accum = *src++;
+				carry = length + 2 * accum;
+				accum = (carry >> 8) & 1;
+				length = accum;
 			}
 
-			bitAccum.dword *= 2;
-			exitFlag = (bitAccum.dword >> 8) & 1;
-			bitAccum.dword &= 0xFF;
+			accum = 2 * carry;
+			length += 4;
+			carry = (accum >> 8) & 1;
+			accum &= 0xFF;
 
-			if (! bitAccum.dword)
+			if (!accum)
 			{
-				bitAccum.dword = exitFlag + 2 * (*afterHeader++);
-				exitFlag = (bitAccum.dword >> 8) & 1;
+				accum = *src++;
+				accum = carry + 2 * accum;
+				carry = (accum >> 8) & 1;
 			}
-		} while (exitFlag);
+
+			if (!carry)
+				goto L3A1;
+
+			accum *= 2;
+			length--;
+			carry = (accum >> 8) & 1;
+			accum &= 0xFF;
+
+			if (!accum)
+			{
+				accum = *src++;
+				accum = carry + 2 * accum;
+				scratch = (accum >> 8) & 1;
+				carry = scratch;
+			}
+
+			length = carry + 2 * length;
+
+			if (length - 9)
+				goto L3A1;
+
+			bitIndex = 3;
+
+		L298:
+			accum *= 2;
+			carry = (accum >> 8) & 1;
+			accum &= 0xFF;
+
+			if (!accum)
+			{
+				accum = *src++;
+				accum = carry + 2 * accum;
+				carry = (accum >> 8) & 1;
+			}
+
+			bitIndex--;
+			distance = carry + 2 * distance;
+
+			if (bitIndex >= 0)
+				goto L298;
+
+			byteA = src[0];
+			carry = src[1];
+			dst[0] = byteA;
+			dst[1] = (uint8_t)carry;
+			byteA = src[2];
+			carry = src[3];
+			dst += 4;
+			src += 4;
+			dst[-2] = byteA;
+			dst[-1] = (uint8_t)carry;
+
+			distance++;
+
+			if ((int32_t)distance < 0)
+				goto L1A0;
+
+			distance++;
+
+			do
+			{
+				byteA = src[0];
+				carry = src[1];
+				dst[0] = byteA;
+				dst[1] = (uint8_t)carry;
+				byteA = src[2];
+				carry = src[3];
+				dst += 4;
+				dst[-2] = byteA;
+				dst[-1] = (uint8_t)carry;
+				src += 4;
+				distance--;
+			} while (distance);
+
+			goto L1A0;
+		}
+
+		accum = carry + carry;
+		carry = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = carry + 2 * accum;
+			carry = (accum >> 8) & 1;
+		}
+
+		if (!carry)
+			goto L4A4;
+
+		accum *= 2;
+		length = 3;
+		carry = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = carry + 2 * accum;
+			scratch = (accum >> 8) & 1;
+			carry = scratch;
+		}
+
+		if (!carry)
+			goto L3A1;
+
+		length = *src++;
+
+		if (!length)
+		{
+			accum *= 2;
+			carry = (accum >> 8) & 1;
+			accum &= 0xFF;
+
+			if (!accum)
+			{
+				accum = *src++;
+				accum = carry + 2 * accum;
+				carry = (accum >> 8) & 1;
+			}
+
+			if (carry)
+				goto L1A0;
+
+			return;
+		}
+
+		length += 8;
+
+	L3A1:
+		accum *= 2;
+		carry = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = carry + 2 * accum;
+			scratch = (accum >> 8) & 1;
+			carry = scratch;
+		}
+
+		if (!carry)
+			goto L4A4;
+
+		accum *= 2;
+		carry = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = carry + 2 * accum;
+			carry = (accum >> 8) & 1;
+		}
+
+		accum *= 2;
+		distHigh = carry;
+		carry = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = carry + 2 * accum;
+			carry = (accum >> 8) & 1;
+		}
+
+		if (carry)
+		{
+			tmpAccum = 2 * accum;
+			carry = (tmpAccum >> 8) & 1;
+			tmpAccum &= 0xFF;
+
+			if (!tmpAccum)
+			{
+				accum = *src++;
+				tmpAccum = carry + 2 * accum;
+				accum = (tmpAccum >> 8) & 1;
+				carry = accum;
+			}
+
+			accum = 2 * tmpAccum;
+			distHigh = carry + 2 * distHigh;
+			carry = accum;
+			distHigh |= 4;
+			carry = (carry >> 8) & 1;
+			accum &= 0xFF;
+
+			if (!accum)
+			{
+				accum = *src++;
+				accum = carry + 2 * accum;
+				carry = (accum >> 8) & 1;
+			}
+
+			if (carry)
+				goto L499;
+		}
+		else
+		{
+			if (distHigh)
+				goto L499;
+
+			distHigh = 1;
+		}
+
+		accum *= 2;
+		tmpAccum = (accum >> 8) & 1;
+		accum &= 0xFF;
+
+		if (!accum)
+		{
+			accum = *src++;
+			accum = tmpAccum + 2 * accum;
+			carry = (accum >> 8) & 1;
+			tmpAccum = carry;
+		}
+
+		distHigh = tmpAccum + 2 * distHigh;
+
+	L499:
+		scratch = distHigh;
+		carry = 0;
+		carry = (carry & 0xFFFF00FF) | ((scratch & 0xFF) << 8);
+		scratch >>= 8;
+		scratch |= carry;
+		distance = scratch;
+
+	L4A4:
+		distance = (distance & 0xFF00) | *src++;
+		matchPtr = dst - distance - 1;
+		scratch = length & 1;
+		length >>= 1;
+
+		if (scratch)
+		{
+			scratch = *matchPtr++;
+			*dst++ = (uint8_t)scratch;
+		}
+
+		length--;
+
+		if (distance)
+		{
+			scratch = matchPtr[0];
+			dst += 2;
+			matchPtr += 2;
+			byteA = matchPtr[-1];
+			dst[-1] = byteA;
+			dst[-2] = (uint8_t)scratch;
+			length--;
+
+			if ((int32_t)length < 0)
+				goto L1A0;
+
+			distance = length + 1;
+
+			do
+			{
+				byteB = matchPtr[1];
+				scratch = matchPtr[0];
+				dst[1] = byteB;
+				dst[0] = (uint8_t)scratch;
+				matchPtr += 2;
+				dst += 2;
+				distance--;
+			} while (distance);
+
+			goto L1A0;
+		}
+		else
+		{
+			scratch = *matchPtr;
+			carry = scratch | (distance & 0xFF00);
+			dst += 2;
+			length--;
+			dst[-2] = (uint8_t)carry;
+			dst[-1] = (uint8_t)carry;
+
+			if ((int32_t)length < 0)
+				goto L1A0;
+
+			scratch = length + 1;
+
+			do
+			{
+				dst[0] = (uint8_t)carry;
+				dst[1] = (uint8_t)carry;
+				dst += 2;
+				scratch--;
+			} while (scratch);
+
+			goto L1A0;
+		}
 	}
+
 
 	// FUNCTION: TOY2 0x00452310
 	void LoadPacketData(char* fileName)
