@@ -214,58 +214,52 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052F5D0
 		int32_t g_potatoHeadBlitAngle;
 
-		// FUNCTION: TOY2 0x00417380
+		// FUNCTION: TOY2 0x00417380 [MATCHED]
 		void AnimateBobbingPlatform(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t roll, int32_t platformId)
 		{
 			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640))
 			{
 				int32_t phase = cycleTime & 0x1FFF;
-				int16_t angle;
+				int32_t angle;
 
-				if (phase >= 0x800)
+				if (phase < 0x800)
 				{
-					if ((cycleTime & 0x1FFF) >= 0x1000)
-					{
-						if ((cycleTime & 0x1FFF) >= 0x1800)
-						{
-							int32_t i = 0;
-
-							if (g_tickState[2])
-							{
-								do
-								{
-									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x - 14336, pos->y + 4096, pos->z, 24, 13);
-									particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
-									particle->rotSpeed = *g_randDatBufferPtr - 128;
-									++i;
-									++g_randDatBufferPtr;
-								} while (i < g_tickState[2]);
-							}
-
-							angle = 0;
-						}
-						else
-						{
-							if ((phase - (Renderer::g_frameDelta << 6)) < 5120 && (cycleTime & 0x1FFF) >= 0x1400)
-							{
-								Collision::MarkPlatformAsMoving(platformId);
-								AudioManager::PlaySoundEffect(37, pos);
-							}
-
-							angle = 6144 - phase;
-						}
-					}
-					else
-					{
-						angle = 2048;
-					}
-				}
-				else
-				{
-					if ((phase - (Renderer::g_frameDelta << 6)) < 1024 && (cycleTime & 0x1FFF) >= 0x400)
+					if ((phase - (int32_t)(Renderer::g_frameDelta << 6)) < 1024 && phase >= 1024)
 						Platform::DisableCollision(platformId);
 
 					angle = phase;
+				}
+				else if (phase < 0x1000)
+				{
+					angle = 2048;
+				}
+				else if (phase < 0x1800)
+				{
+					if ((phase - (int32_t)(Renderer::g_frameDelta << 6)) < 5120 && phase >= 5120)
+					{
+						Collision::MarkPlatformAsMoving(platformId);
+						AudioManager::PlaySoundEffect(37, pos);
+					}
+
+					angle = 6144 - phase;
+				}
+				else
+				{
+					int32_t i = 0;
+
+					if (g_tickState[2] > 0)
+					{
+						do
+						{
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x - 14336, pos->y + 4096, pos->z, 24, 13);
+							particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
+							particle->rotSpeed = *g_randDatBufferPtr - 128;
+							++g_randDatBufferPtr;
+							++i;
+						} while (i < g_tickState[2]);
+					}
+
+					angle = 0;
 				}
 
 				Nu3D::Link::SetRotationRelative8bit(linkId, 0, 0, roll & 0xFFF);
@@ -273,55 +267,49 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x00417510
+		// FUNCTION: TOY2 0x00417510 [MATCHED]
 		void AnimateStretchingObject(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t yaw)
 		{
 			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640) != 0)
 			{
 				int32_t phase = cycleTime & 0x1FFF;
-				int16_t angle;
+				int32_t angle;
 
-				if (phase >= 0x800)
+				if (phase < 0x800)
 				{
-					if ((cycleTime & 0x1FFF) >= 0x1000)
-					{
-						if ((cycleTime & 0x1FFF) >= 0x1800)
-						{
-							if ((phase - (Renderer::g_frameDelta << 6)) < 6144)
-							{
-								Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 18432, pos->z, 25, 2);
-								Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 26, 2);
-								AudioManager::PlaySoundEffect(36, pos);
-							}
-
-							angle = 0;
-							int32_t i = 0;
-
-							if (g_tickState[2] != 0)
-							{
-								do
-								{
-									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 24, 9);
-									particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
-									particle->rotSpeed = *g_randDatBufferPtr - 128;
-									++i;
-									++g_randDatBufferPtr;
-								} while (i < g_tickState[2]);
-							}
-						}
-						else
-						{
-							angle = 6144 - phase;
-						}
-					}
-					else
-					{
-						angle = 2048;
-					}
+					angle = phase;
+				}
+				else if (phase < 0x1000)
+				{
+					angle = 2048;
+				}
+				else if (phase < 0x1800)
+				{
+					angle = 6144 - phase;
 				}
 				else
 				{
-					angle = cycleTime & 0x1FFF;
+					if ((phase - (int32_t)(Renderer::g_frameDelta << 6)) < 6144)
+					{
+						Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 18432, pos->z, 25, 2);
+						Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 26, 2);
+						AudioManager::PlaySoundEffect(36, pos);
+					}
+
+					angle = 0;
+					int32_t i = 0;
+
+					if (g_tickState[2] > 0)
+					{
+						do
+						{
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 24, 9);
+							particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
+							particle->rotSpeed = *g_randDatBufferPtr - 128;
+							++g_randDatBufferPtr;
+							++i;
+						} while (i < g_tickState[2]);
+					}
 				}
 
 				Nu3D::Link::SetRotationRelative8bit(linkId, 0, yaw & 0xFFF, 0);
