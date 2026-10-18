@@ -61,7 +61,7 @@
 // _fgetc
 
 // LIBRARY: TOY2 0x004CF118
-// __strlwr
+// _strlwr
 
 // LIBRARY: TOY2 0x004CF1B6
 // _fclose
@@ -121,7 +121,7 @@
 // _fread
 
 // LIBRARY: TOY2 0x004CF680
-// __alloca_probe
+// __chkstk
 
 // LIBRARY: TOY2 0x004CF6AF
 // _fwrite
@@ -559,22 +559,22 @@
 // __ld12cvt
 
 // LIBRARY: TOY2 0x004D5652
-// msvc_float_method6
+// __ld12tod
 
 // LIBRARY: TOY2 0x004D5668
-// msvc_float_method3
+// __ld12tof
 
 // LIBRARY: TOY2 0x004D567E
 // __ld12told
 
 // LIBRARY: TOY2 0x004D56F8
-// msvc_float_method4
+// __atodbl
 
 // LIBRARY: TOY2 0x004D5725
 // __atoldbl
 
 // LIBRARY: TOY2 0x004D5753
-// msvc_float_method2
+// __atoflt
 
 // LIBRARY: TOY2 0x004D5780
 // __fptostr
