@@ -26,7 +26,7 @@ namespace Toy2
 		// one rope of the kite tail, allocated from the level load arena by Init
 		struct Rope
 		{
-			WorldPos points[64];
+			Transform points[64];
 			RopeVelocity velocities[64];
 			int32_t pointCount;
 			int32_t spacing;
@@ -147,9 +147,9 @@ namespace Toy2
 				do
 				{
 					result += 2;
-					rope->points[i].x = a1->x;
-					rope->points[i].y = a1->y + offsetY;
-					rope->points[i].z = a1->z;
+					rope->points[i].pos.x = a1->x;
+					rope->points[i].pos.y = a1->y + offsetY;
+					rope->points[i].pos.z = a1->z;
 					rope->velocities[i].x = 0;
 					rope->velocities[i].y = 0;
 					rope->velocities[i].z = 0;
@@ -172,13 +172,13 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0044E710
 		void Simulate(Vector3I* anchor, int32_t slot)
 		{
-			WorldPos* scratch = (WorldPos*)Collision::g_mathScratch;
+			Transform* scratch = (Transform*)Collision::g_mathScratch;
 			Rope* rope = g_ropes[slot];
 			int32_t i;
 
-			rope->points[0].x = anchor->x;
-			rope->points[0].y = anchor->y;
-			rope->points[0].z = anchor->z;
+			rope->points[0].pos.x = anchor->x;
+			rope->points[0].pos.y = anchor->y;
+			rope->points[0].pos.z = anchor->z;
 
 			int32_t spacing = rope->spacing;
 			int32_t gravity = rope->gravity;
@@ -190,19 +190,19 @@ namespace Toy2
 			{
 				do
 				{
-					rope->points[i].x += rope->velocities[i].x;
-					rope->points[i].y += rope->velocities[i].y;
-					rope->points[i].z += rope->velocities[i].z;
+					rope->points[i].pos.x += rope->velocities[i].x;
+					rope->points[i].pos.y += rope->velocities[i].y;
+					rope->points[i].pos.z += rope->velocities[i].z;
 
-					scratch[i - 1].x = (rope->points[i].x - rope->points[i - 1].x) >> 3;
-					scratch[i - 1].y = (rope->points[i].y - rope->points[i - 1].y) >> 3;
-					scratch[i - 1].z = (rope->points[i].z - rope->points[i - 1].z) >> 3;
+					scratch[i - 1].pos.x = (rope->points[i].pos.x - rope->points[i - 1].pos.x) >> 3;
+					scratch[i - 1].pos.y = (rope->points[i].pos.y - rope->points[i - 1].pos.y) >> 3;
+					scratch[i - 1].pos.z = (rope->points[i].pos.z - rope->points[i - 1].pos.z) >> 3;
 
 					Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&scratch[i - 1], (Vector3I*)&scratch[i - 1]);
 
-					scratch[i - 1].x = rope->points[i - 1].x + ((spacing * scratch[i - 1].x) >> 12);
-					scratch[i - 1].y = rope->points[i - 1].y + ((spacing * scratch[i - 1].y) >> 12);
-					scratch[i - 1].z = rope->points[i - 1].z + ((spacing * scratch[i - 1].z) >> 12);
+					scratch[i - 1].pos.x = rope->points[i - 1].pos.x + ((spacing * scratch[i - 1].pos.x) >> 12);
+					scratch[i - 1].pos.y = rope->points[i - 1].pos.y + ((spacing * scratch[i - 1].pos.y) >> 12);
+					scratch[i - 1].pos.z = rope->points[i - 1].pos.z + ((spacing * scratch[i - 1].pos.z) >> 12);
 
 					++i;
 				} while (i < rope->pointCount);
@@ -216,20 +216,20 @@ namespace Toy2
 				do
 				{
 					rope->velocities[i].x =
-						((rope->points[i + 1].x - scratch[i].x) >> 5) + ((scratch[i - 1].x - rope->points[i].x) >> 4) + 30 * rope->velocities[i].x / 32;
-					rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].y - rope->points[i].y) >> 4)
-						+ ((rope->points[i + 1].y - scratch[i].y) >> 5);
+						((rope->points[i + 1].pos.x - scratch[i].pos.x) >> 5) + ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4) + 30 * rope->velocities[i].x / 32;
+					rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4)
+						+ ((rope->points[i + 1].pos.y - scratch[i].pos.y) >> 5);
 					rope->velocities[i].z =
-						30 * rope->velocities[i].z / 32 + ((scratch[i - 1].z - rope->points[i].z) >> 4) + ((rope->points[i + 1].z - scratch[i].z) >> 5);
+						30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4) + ((rope->points[i + 1].pos.z - scratch[i].pos.z) >> 5);
 
 					++i;
 				} while (i < rope->pointCount - 1);
 			}
 
 			// the last point has no neighbour after it
-			rope->velocities[i].x = ((scratch[i - 1].x - rope->points[i].x) >> 4) + 30 * rope->velocities[i].x / 32;
-			rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].y - rope->points[i].y) >> 4);
-			rope->velocities[i].z = 30 * rope->velocities[i].z / 32 + ((scratch[i - 1].z - rope->points[i].z) >> 4);
+			rope->velocities[i].x = ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4) + 30 * rope->velocities[i].x / 32;
+			rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4);
+			rope->velocities[i].z = 30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4);
 
 			// keep the points out of the arena walls, then store the new positions
 			i = 1;
@@ -238,28 +238,28 @@ namespace Toy2
 			{
 				do
 				{
-					WorldPos* point = &scratch[i - 1];
+					Transform* point = &scratch[i - 1];
 					RopeVelocity* velocity = &rope->velocities[i];
 
-					if ((uint32_t)(point->x - 118212) < 0x1558C)
+					if ((uint32_t)(point->pos.x - 118212) < 0x1558C)
 					{
-						if ((uint32_t)(point->z - 183960) < 0x1FC38 && point->y >= -467398)
+						if ((uint32_t)(point->pos.z - 183960) < 0x1FC38 && point->pos.y >= -467398)
 						{
-							if ((uint32_t)(point->x - 117188) >= 0x14D8C || (uint32_t)(point->z - 182936) >= 0x1F438)
+							if ((uint32_t)(point->pos.x - 117188) >= 0x14D8C || (uint32_t)(point->pos.z - 182936) >= 0x1F438)
 							{
-								int32_t distX = abs(point->x - 118212);
-								int32_t distX2 = abs(point->x - 205648);
+								int32_t distX = abs(point->pos.x - 118212);
+								int32_t distX2 = abs(point->pos.x - 205648);
 
 								if (distX2 < distX)
 									distX = -distX2;
 
-								int32_t distZ = abs(point->z - 183960);
-								int32_t distZ2 = abs(point->z - 314064);
+								int32_t distZ = abs(point->pos.z - 183960);
+								int32_t distZ2 = abs(point->pos.z - 314064);
 
 								if (distZ2 < distZ)
 									distZ = -distZ2;
 
-								int32_t depth = point->y + 467398;
+								int32_t depth = point->pos.y + 467398;
 								velocity->grounded = 0;
 								int32_t absDistX = abs(distX);
 
@@ -267,36 +267,36 @@ namespace Toy2
 								{
 									if (abs(distZ) >= depth)
 									{
-										point->y = -467654;
+										point->pos.y = -467654;
 										velocity->grounded = 1;
 									}
 									else
 									{
-										point->z = distZ <= 0 ? 314320 : 183704;
+										point->pos.z = distZ <= 0 ? 314320 : 183704;
 										velocity->y += (-6 * gravity * (int32_t)Renderer::g_frameDelta) / 4;
 									}
 								}
 								else
 								{
 									if (absDistX >= abs(distZ))
-										point->z = distZ <= 0 ? 314320 : 183704;
+										point->pos.z = distZ <= 0 ? 314320 : 183704;
 									else
-										point->x = distX <= 0 ? 205904 : 117956;
+										point->pos.x = distX <= 0 ? 205904 : 117956;
 
 									velocity->y += (-6 * gravity * (int32_t)Renderer::g_frameDelta) / 4;
 								}
 							}
 							else
 							{
-								point->y = -467654;
+								point->pos.y = -467654;
 								velocity->grounded = 1;
 							}
 						}
 					}
 
-					rope->points[i].x = point->x;
-					rope->points[i].y = point->y;
-					rope->points[i].z = point->z;
+					rope->points[i].pos.x = point->pos.x;
+					rope->points[i].pos.y = point->pos.y;
+					rope->points[i].pos.z = point->pos.z;
 
 					++i;
 				} while (i < rope->pointCount);

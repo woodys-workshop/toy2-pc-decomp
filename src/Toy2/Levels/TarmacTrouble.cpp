@@ -891,7 +891,7 @@ namespace Toy2
 				p_v2.x = v9 + Camera::g_activeCameraTransform.pos.x + 2 * v9 + ((*g_randDatBufferPtr++ - 128) << 8);
 				p_v2.y = Camera::g_activeCameraTransform.pos.y - 0x8000;
 				p_v2.z = v10 + Camera::g_activeCameraTransform.pos.z + 2 * v10 + ((*g_randDatBufferPtr++ - 128) << 8);
-				GroundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)&p_v2, 0);
+				GroundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&p_v2, 0);
 
 				if (GroundHeight != 0x80000000 && GroundHeight > Camera::g_activeCameraTransform.pos.y)
 					Nu3D::Particles::SpawnFromPreset(p_v2.x, GroundHeight, p_v2.z, 27, 2);

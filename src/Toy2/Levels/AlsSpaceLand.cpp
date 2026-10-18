@@ -51,7 +51,7 @@ namespace Toy2
 		};
 
 		// GLOBAL: TOY2 0x0052FA60
-		WorldPos g_laserPositions[2];
+		Transform g_laserPositions[2];
 
 		// GLOBAL: TOY2 0x0052FA80
 		Levels::Type63* g_unk52FA80;
@@ -194,9 +194,9 @@ namespace Toy2
 			int32_t v18;
 			int32_t v19;
 			int32_t v20;
-			WorldPos* v21;
+			Transform* v21;
 			int16_t v22;
-			WorldPos a5;
+			Transform a5;
 
 			l_newTimer = g_laserTimer[laserIndex] - (int32_t)Renderer::g_frameDelta;
 			g_laserTimer[laserIndex] = l_newTimer;
@@ -224,38 +224,38 @@ namespace Toy2
 				l_waypointData = l_waypointTablePtr;
 
 				l_posXIndex = laserIndex;
-				g_laserPositions[l_posXIndex].x = 32 * l_waypointData->data[g_laserWaypointIdx[laserIndex]].x;
-				g_laserPositions[l_posXIndex].y = 32 * l_waypointData->data[g_laserWaypointIdx[laserIndex]].y;
+				g_laserPositions[l_posXIndex].pos.x = 32 * l_waypointData->data[g_laserWaypointIdx[laserIndex]].x;
+				g_laserPositions[l_posXIndex].pos.y = 32 * l_waypointData->data[g_laserWaypointIdx[laserIndex]].y;
 				l_posX = 32 * l_waypointData->data[g_laserWaypointIdx[laserIndex]].z;
-				g_laserPositions[l_posXIndex].z = l_posX;
+				g_laserPositions[l_posXIndex].pos.z = l_posX;
 
 				if (l_buzzPosY > -5391
-					&& ((g_laserPositions[laserIndex].x - g_buzzActor.posAngles.pos.x)
-						>> 8) * ((g_laserPositions[laserIndex].x - g_buzzActor.posAngles.pos.x) >> 8)
-							+ ((g_laserPositions[laserIndex].y - l_buzzPosY) >> 8) * ((g_laserPositions[laserIndex].y - l_buzzPosY) >> 8)
+					&& ((g_laserPositions[laserIndex].pos.x - g_buzzActor.posAngles.pos.x)
+						>> 8) * ((g_laserPositions[laserIndex].pos.x - g_buzzActor.posAngles.pos.x) >> 8)
+							+ ((g_laserPositions[laserIndex].pos.y - l_buzzPosY) >> 8) * ((g_laserPositions[laserIndex].pos.y - l_buzzPosY) >> 8)
 							+ ((l_posX - g_buzzActor.posAngles.pos.z) >> 8) * ((l_posX - g_buzzActor.posAngles.pos.z) >> 8)
 						< 250000)
 				{
 					l_targetPosZ = g_buzzActor.posAngles.pos.z;
-					g_laserPositions[laserIndex].x = g_buzzActor.posAngles.pos.x;
-					g_laserPositions[laserIndex].y = l_buzzPosY - 2048;
-					g_laserPositions[laserIndex].z = l_targetPosZ;
+					g_laserPositions[laserIndex].pos.x = g_buzzActor.posAngles.pos.x;
+					g_laserPositions[laserIndex].pos.y = l_buzzPosY - 2048;
+					g_laserPositions[laserIndex].pos.z = l_targetPosZ;
 				}
 			}
 
 			v12 = g_laserWaypointIdx[laserIndex];
 			v13 = Levels::g_recordData[-laserIndex + 15];
 			v14 = laserIndex;
-			y = g_laserPositions[laserIndex].y;
+			y = g_laserPositions[laserIndex].pos.y;
 
-			a5.x = 32 * v13->data[v12].x - g_laserPositions[laserIndex].x;
-			a5.y = 32 * v13->data[v12].y - y;
+			a5.pos.x = 32 * v13->data[v12].x - g_laserPositions[laserIndex].pos.x;
+			a5.pos.y = 32 * v13->data[v12].y - y;
 			z = v13->data[v12].z;
 			v18 = g_laserTotalTicks[laserIndex];
-			v19 = 32 * z - g_laserPositions[laserIndex].z;
-			a5.x = a5.x * g_laserTimer[laserIndex] / v18;
-			a5.y = a5.y * g_laserTimer[laserIndex] / v18;
-			a5.z = v19 * g_laserTimer[laserIndex] / v18;
+			v19 = 32 * z - g_laserPositions[laserIndex].pos.z;
+			a5.pos.x = a5.pos.x * g_laserTimer[laserIndex] / v18;
+			a5.pos.y = a5.pos.y * g_laserTimer[laserIndex] / v18;
+			a5.pos.z = v19 * g_laserTimer[laserIndex] / v18;
 
 			if (laserIndex)
 				Renderer::Beam::QueueBeam(9, 64, 400, &g_laserPositions[v14], &a5, 0, 0x40u, 0x80u);
@@ -268,22 +268,22 @@ namespace Toy2
 				do
 				{
 					v21 = &g_laserPositions[v14];
-					Nu3D::Particles::SpawnFromPreset(g_laserPositions[laserIndex].x, g_laserPositions[laserIndex].y, g_laserPositions[laserIndex].z, 4, 4)
+					Nu3D::Particles::SpawnFromPreset(g_laserPositions[laserIndex].pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 4, 4)
 						->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					--v20;
 					++g_randDatBufferPtr;
 				} while (v20);
 
 				if (laserIndex)
-					Lighting::SpawnLight(v21->x, g_laserPositions[laserIndex].y, g_laserPositions[laserIndex].z, 30960, 16, v21->x);
+					Lighting::SpawnLight(v21->pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 30960, 16, v21->pos.x);
 				else
-					Lighting::SpawnLight(g_laserPositions[0].x, g_laserPositions[0].y, g_laserPositions[0].z, 15728640, 16, g_laserPositions[0].z);
+					Lighting::SpawnLight(g_laserPositions[0].pos.x, g_laserPositions[0].pos.y, g_laserPositions[0].pos.z, 15728640, 16, g_laserPositions[0].pos.z);
 
 				AudioManager::PlaySoundEffect(7, (Vector3I*)&g_laserPositions[v14]);
 
 				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&g_laserPositions[v14], 25))
 				{
-					v22 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - v21->x, g_buzzActor.posAngles.pos.z - g_laserPositions[laserIndex].z);
+					v22 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - v21->pos.x, g_buzzActor.posAngles.pos.z - g_laserPositions[laserIndex].pos.z);
 
 					Buzz::HandleDamage(v22, 2u);
 				}

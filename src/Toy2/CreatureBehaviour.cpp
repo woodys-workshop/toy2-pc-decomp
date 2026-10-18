@@ -204,8 +204,8 @@ namespace Toy2
 		{
 			int32_t localStrafeSpeed = context->localStrafeSpeed;
 			Toy2::Actor::Toy2Actor* actor = context->actor;
-			WorldPos worldPos;
-			WorldPos displacement;
+			Transform transform;
+			Transform displacement;
 
 			if (localStrafeSpeed <= 512)
 			{
@@ -243,21 +243,21 @@ namespace Toy2
 
 				if (timer <= 280 && timer >= 100)
 				{
-					worldPos.x = 0;
-					worldPos.y = 0;
-					worldPos.z = -100;
-					Toy2::Actor::ResolveBoneAttachmentPos((Vector3I*)&worldPos, actor, 0);
+					transform.pos.x = 0;
+					transform.pos.y = 0;
+					transform.pos.z = -100;
+					Toy2::Actor::ResolveBoneAttachmentPos((Vector3I*)&transform, actor, 0);
 
-					displacement.y = 96000;
-					displacement.x = 4 * Numerics::g_sinCosLUT[actor->yawAngle & 0xFFF];
-					displacement.z = 4 * Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF];
-					Nu3D::Collision::SweepAndSlide(&worldPos, &displacement, 0x8000, 0, 256);
-					Renderer::Beam::QueueBeam(9, 32, 400, &worldPos, &displacement, 0, 0x80, 0);
+					displacement.pos.y = 96000;
+					displacement.pos.x = 4 * Numerics::g_sinCosLUT[actor->yawAngle & 0xFFF];
+					displacement.pos.z = 4 * Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF];
+					Nu3D::Collision::SweepAndSlide(&transform, &displacement, 0x8000, 0, 256);
+					Renderer::Beam::QueueBeam(9, 32, 400, &transform, &displacement, 0, 0x80, 0);
 
-					worldPos.x += displacement.x;
-					worldPos.y += displacement.y;
-					worldPos.z += displacement.z;
-					AudioManager::PlaySoundEffect(92, (Vector3I*)&worldPos);
+					transform.pos.x += displacement.pos.x;
+					transform.pos.y += displacement.pos.y;
+					transform.pos.z += displacement.pos.z;
+					AudioManager::PlaySoundEffect(92, (Vector3I*)&transform);
 
 					int32_t i = 0;
 
@@ -265,23 +265,23 @@ namespace Toy2
 					{
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(worldPos.x, worldPos.y, worldPos.z, 4, 4);
+							Nu3D::Particles::SpawnFromPreset(transform.pos.x, transform.pos.y, transform.pos.z, 4, 4);
 							++i;
 						} while (i < g_tickState[2]);
 					}
 
 					if (g_tickState[4])
-						Nu3D::Particles::SpawnFromPreset(worldPos.x, worldPos.y, worldPos.z, 70, 2);
+						Nu3D::Particles::SpawnFromPreset(transform.pos.x, transform.pos.y, transform.pos.z, 70, 2);
 
 					if (g_tickState[10])
-						Lighting::SpawnLight(worldPos.x, worldPos.y, worldPos.z, 49152, 16, -2);
+						Lighting::SpawnLight(transform.pos.x, transform.pos.y, transform.pos.z, 49152, 16, -2);
 
-					Renderer::LensFlare::RegisterLight(worldPos.x, worldPos.y, worldPos.z, 0, 128, 0, 32);
+					Renderer::LensFlare::RegisterLight(transform.pos.x, transform.pos.y, transform.pos.z, 0, 128, 0, 32);
 
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&worldPos, 25))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&transform, 25))
 					{
 						int16_t hitAngle =
-							Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - worldPos.x, g_buzzActor.posAngles.pos.z - worldPos.z);
+							Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - transform.pos.x, g_buzzActor.posAngles.pos.z - transform.pos.z);
 						Buzz::HandleDamage(hitAngle, 3);
 					}
 				}
@@ -379,8 +379,8 @@ namespace Toy2
 		void FatBloke(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
 		{
 			Toy2::Actor::Toy2Actor* actor = context->actor;
-			WorldPos position;
-			WorldPos displacement;
+			Transform position;
+			Transform displacement;
 
 			if (actor->unkShort4)
 			{
@@ -388,12 +388,12 @@ namespace Toy2
 				int32_t offsetX = Numerics::g_sinCosLUT[(yawAngle + 224) & 0xFFF];
 				int32_t offsetZ = Numerics::g_sinCosLUT[(yawAngle + 1248) & 0xFFF];
 
-				position.x = actor->pos.x;
-				position.y = actor->pos.y - 12288;
-				position.z = actor->pos.z;
+				position.pos.x = actor->pos.x;
+				position.pos.y = actor->pos.y - 12288;
+				position.pos.z = actor->pos.z;
 
 				int32_t angle =
-					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - position.x - offsetX, g_buzzActor.posAngles.pos.z - position.z - offsetZ)
+					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - position.pos.x - offsetX, g_buzzActor.posAngles.pos.z - position.pos.z - offsetZ)
 					& 0xFFF;
 
 				if (((angle - actor->yawAngle + 256) & 0xFFFu) > 0x200)
@@ -402,20 +402,20 @@ namespace Toy2
 				int32_t dirX = Numerics::g_sinCosLUT[angle] >> 3;
 				int32_t dirZ = Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 3;
 
-				displacement.x = 80 * dirX;
-				displacement.y = 0;
-				displacement.z = 80 * dirZ;
+				displacement.pos.x = 80 * dirX;
+				displacement.pos.y = 0;
+				displacement.pos.z = 80 * dirZ;
 				Nu3D::Collision::SweepAndSlide(&position, &displacement, 0x8000, 0, 256);
 
 				int32_t travelled;
 
 				if (abs(dirX) <= abs(dirZ))
-					travelled = displacement.z / dirZ;
+					travelled = displacement.pos.z / dirZ;
 				else
-					travelled = displacement.x / dirX;
+					travelled = displacement.pos.x / dirX;
 
 				Nu3D::Particles::ParticleInstance* particle =
-					Nu3D::Particles::SpawnInstance(offsetX + position.x, position.y, offsetZ + position.z, dirX, 0, dirZ, 0, 0, 0, 97);
+					Nu3D::Particles::SpawnInstance(offsetX + position.pos.x, position.pos.y, offsetZ + position.pos.z, dirX, 0, dirZ, 0, 0, 0, 97);
 
 				int32_t lifetime = 2 * abs(travelled) - 15;
 
@@ -431,7 +431,7 @@ namespace Toy2
 
 					do
 					{
-						Nu3D::Particles::SpawnFromPreset(position.x, position.y, position.z, 100, 15)->rotSpeed = *g_randDatBufferPtr - 128;
+						Nu3D::Particles::SpawnFromPreset(position.pos.x, position.pos.y, position.pos.z, 100, 15)->rotSpeed = *g_randDatBufferPtr - 128;
 						--count;
 						++g_randDatBufferPtr;
 					} while (count);
@@ -1578,7 +1578,7 @@ namespace Toy2
 			Nu3D::Particles::ParticleInstance* leftWheel;
 			Nu3D::Particles::ParticleInstance* rightWheel;
 			int32_t headOffset[4];
-			WorldPos origin;
+			Transform origin;
 
 			if (localForwardSpeed > 0)
 			{
@@ -1643,10 +1643,10 @@ namespace Toy2
 						{
 							AudioManager::PlaySoundEffect(2, &actor->pos);
 							memset(headOffset, 0, 12);
-							origin.x = actor->pos.x + (Numerics::g_sinCosLUT[actor->yawAngle] >> 2);
-							origin.y = actor->pos.y - 4096;
-							origin.z = actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] >> 2);
-							SpawnBeamShot(0, actor->yawAngle, 0, &origin, (WorldPos*)headOffset, 4, 0);
+							origin.pos.x = actor->pos.x + (Numerics::g_sinCosLUT[actor->yawAngle] >> 2);
+							origin.pos.y = actor->pos.y - 4096;
+							origin.pos.z = actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] >> 2);
+							SpawnBeamShot(0, actor->yawAngle, 0, &origin, (Transform*)headOffset, 4, 0);
 
 							if (actor->pos.y - 4096 < g_buzzActor.posAngles.pos.y)
 							{

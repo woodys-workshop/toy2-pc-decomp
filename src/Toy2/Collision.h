@@ -163,7 +163,7 @@ namespace Toy2
 		void BuildCollisionWorld(int32_t level, uint8_t** buffer, int32_t terrainNum);
 		int32_t ResolveSubstep(
 			Toy2::Collision::ResolvedVelocity* a1,
-			WorldPos* a2,
+			Transform* a2,
 			Vector3I* a3,
 			Toy2::Collision::BuzzCollisionState* a4,
 			uint16_t* a5,
@@ -172,7 +172,7 @@ namespace Toy2
 			int32_t a8);
 		int32_t ResolvePlatformFooting(
 			Toy2::Collision::ResolvedVelocity* resolvedVelocity,
-			WorldPos* worldPos,
+			Transform* transform,
 			Vector3I* velocity,
 			Toy2::Collision::BuzzCollisionState* collisionState);
 		void MarkPlatformAsMoving(int32_t platformIdx);

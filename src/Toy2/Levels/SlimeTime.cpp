@@ -87,7 +87,7 @@ namespace Toy2
 			int32_t v11;
 			int32_t v12;
 			int32_t v13;
-			WorldPos a1;
+			Transform a1;
 
 			AudioManager::PlaySoundEffect(103, 0);
 			g_unk52F9A8 = (g_unk52F9A8 - 1) & 1;
@@ -325,35 +325,35 @@ namespace Toy2
 					if (g_tickState[6] && g_unk52F9A0 < 550)
 					{
 						v8 = g_levelActors[0].yawAngle - 128;
-						a1.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128) & 0xFFF];
-						a1.y = g_levelActors[0].pos.y;
+						a1.pos.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128) & 0xFFF];
+						a1.pos.y = g_levelActors[0].pos.y;
 
-						a1.z = g_levelActors[0].pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128 + 1024) & 0xFFF];
+						a1.pos.z = g_levelActors[0].pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128 + 1024) & 0xFFF];
 
 						GroundHeight = Nu3D::Collision::GetGroundHeight(&a1, 0);
 
-						a1.y = GroundHeight;
+						a1.pos.y = GroundHeight;
 
 						if (GroundHeight != 0x80000000)
 						{
-							Nu3D::Particles::SpawnFromPreset(a1.x, GroundHeight, a1.z, 123, 2);
-							Nu3D::Particles::SpawnFromPreset(a1.x, a1.y, a1.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
+							Nu3D::Particles::SpawnFromPreset(a1.pos.x, GroundHeight, a1.pos.z, 123, 2);
+							Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
 							++g_randDatBufferPtr;
 						}
 
 						v10 = Numerics::g_sinCosLUT[(v8 + 1280) & 0xFFF];
 
-						a1.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(v8 + 256) & 0xFFF];
-						a1.y = g_levelActors[0].pos.y;
-						a1.z = g_levelActors[0].pos.z + 4 * v10;
+						a1.pos.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(v8 + 256) & 0xFFF];
+						a1.pos.y = g_levelActors[0].pos.y;
+						a1.pos.z = g_levelActors[0].pos.z + 4 * v10;
 
 						v11 = Nu3D::Collision::GetGroundHeight(&a1, 0);
-						a1.y = v11;
+						a1.pos.y = v11;
 
 						if (v11 != 0x80000000)
 						{
-							Nu3D::Particles::SpawnFromPreset(a1.x, v11, a1.z, 123, 2);
-							Nu3D::Particles::SpawnFromPreset(a1.x, a1.y, a1.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
+							Nu3D::Particles::SpawnFromPreset(a1.pos.x, v11, a1.pos.z, 123, 2);
+							Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
 							++g_randDatBufferPtr;
 						}
 
@@ -414,31 +414,31 @@ namespace Toy2
 			{
 				if (g_tickState[2])
 				{
-					a1.x = 500;
-					a1.y = -400;
-					a1.z = 0;
+					a1.pos.x = 500;
+					a1.pos.y = -400;
+					a1.pos.z = 0;
 
 					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.x, a1.y, a1.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
+					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
 
-					a1.x = -500;
+					a1.pos.x = -500;
 					++g_randDatBufferPtr;
-					a1.y = -400;
-					a1.z = 0;
+					a1.pos.y = -400;
+					a1.pos.z = 0;
 
 					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.x, a1.y, a1.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
+					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
 					++g_randDatBufferPtr;
 				}
 
 				if (g_levelActors[0].actorPhase <= 10 && g_tickState[7])
 				{
-					a1.x = 0;
-					a1.y = 0;
-					a1.z = -200;
+					a1.pos.x = 0;
+					a1.pos.y = 0;
+					a1.pos.z = -200;
 
 					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.x, a1.y, a1.z, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 				}
 			}

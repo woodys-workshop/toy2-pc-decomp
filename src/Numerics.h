@@ -48,18 +48,10 @@ struct AnglesWithRoll
 	int16_t unkRoll;
 };
 
-struct PosAndAngles
+struct Transform
 {
 	Vector3I pos;
 	Angles angles;
-};
-
-struct WorldPos
-{
-	int32_t x;
-	int32_t y;
-	int32_t z;
-	int32_t x2;
 };
 
 struct PointI

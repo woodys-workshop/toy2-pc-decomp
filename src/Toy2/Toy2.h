@@ -115,8 +115,8 @@ namespace Toy2
 		int32_t beamType,
 		int16_t aimYaw,
 		int16_t aimPitch,
-		WorldPos* origin,
-		WorldPos* headOffset,
+		Transform* origin,
+		Transform* headOffset,
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor);
 	int32_t ShowTokenSparkle();
@@ -167,7 +167,7 @@ namespace Toy2
 	extern int32_t g_grappleState;
 	extern int32_t g_grappleDistance;
 	extern int32_t g_grappleProgress;
-	extern WorldPos g_grappleTargetPos;
+	extern Transform g_grappleTargetPos;
 	extern int32_t g_discLauncherTimer;
 	extern int32_t g_discLauncherAmmo;
 	extern int32_t g_unk50A0BC;

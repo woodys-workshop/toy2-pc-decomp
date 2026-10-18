@@ -76,17 +76,17 @@ namespace Renderer
 		{
 			Vector3F outPoints;
 			Vector3F inPoints;
-			WorldPos posDiff;
-			WorldPos camPos;
+			Transform posDiff;
+			Transform camPos;
 
 			if (g_lensFlareCount < 8)
 			{
-				camPos.x = Toy2::Camera::g_activeCameraTransform.pos.x;
-				posDiff.x = 9 * (worldX - Toy2::Camera::g_activeCameraTransform.pos.x) / 10;
-				camPos.y = Toy2::Camera::g_activeCameraTransform.pos.y;
-				posDiff.y = 9 * (worldY - Toy2::Camera::g_activeCameraTransform.pos.y) / 10;
-				posDiff.z = 9 * (worldZ - Toy2::Camera::g_activeCameraTransform.pos.z) / 10;
-				camPos.z = Toy2::Camera::g_activeCameraTransform.pos.z;
+				camPos.pos.x = Toy2::Camera::g_activeCameraTransform.pos.x;
+				posDiff.pos.x = 9 * (worldX - Toy2::Camera::g_activeCameraTransform.pos.x) / 10;
+				camPos.pos.y = Toy2::Camera::g_activeCameraTransform.pos.y;
+				posDiff.pos.y = 9 * (worldY - Toy2::Camera::g_activeCameraTransform.pos.y) / 10;
+				posDiff.pos.z = 9 * (worldZ - Toy2::Camera::g_activeCameraTransform.pos.z) / 10;
+				camPos.pos.z = Toy2::Camera::g_activeCameraTransform.pos.z;
 
 				if (! Nu3D::Collision::SweepAndSlide(&camPos, &posDiff, 0x8000, 0, 1))
 				{

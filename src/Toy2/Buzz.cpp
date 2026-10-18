@@ -307,7 +307,7 @@ namespace Toy2
 			int32_t v16;
 			int32_t v17;
 			int32_t groundHeight;
-			WorldPos probePos;
+			Transform probePos;
 
 			do
 			{
@@ -419,9 +419,9 @@ namespace Toy2
 						}
 						else
 						{
-							probePos.y = g_buzzActor.posAngles.pos.y;
-							probePos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF] >> 2);
-							probePos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] >> 2);
+							probePos.pos.y = g_buzzActor.posAngles.pos.y;
+							probePos.pos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF] >> 2);
+							probePos.pos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] >> 2);
 
 							groundHeight = Nu3D::Collision::GetGroundHeight(&probePos, 0);
 
@@ -431,8 +431,8 @@ namespace Toy2
 								goto LABEL_38;
 							}
 
-							probePos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 2);
-							probePos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF] >> 2);
+							probePos.pos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 2);
+							probePos.pos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF] >> 2);
 
 							groundHeight = Nu3D::Collision::GetGroundHeight(&probePos, 0);
 
@@ -1460,7 +1460,7 @@ namespace Toy2
 		uint32_t FireGrapple()
 		{
 			int32_t dominantDist;
-			WorldPos direction;
+			Transform direction;
 
 			AudioManager::PlaySoundEffect(81, &g_buzzActor.posAngles.pos);
 
@@ -1469,42 +1469,42 @@ namespace Toy2
 			int32_t targetZ = Levels::g_recordData[59]->data[lockOnIdx].z;
 			int32_t targetY = Levels::g_recordData[59]->data[lockOnIdx].y;
 
-			g_grappleTargetPos.x = g_buzzActor.posAngles.pos.x;
-			direction.y = 32 * (targetY - 192) - (g_buzzActor.posAngles.pos.y - 11264);
-			g_grappleTargetPos.y = g_buzzActor.posAngles.pos.y - 11264;
-			g_grappleTargetPos.z = g_buzzActor.posAngles.pos.z;
+			g_grappleTargetPos.pos.x = g_buzzActor.posAngles.pos.x;
+			direction.pos.y = 32 * (targetY - 192) - (g_buzzActor.posAngles.pos.y - 11264);
+			g_grappleTargetPos.pos.y = g_buzzActor.posAngles.pos.y - 11264;
+			g_grappleTargetPos.pos.z = g_buzzActor.posAngles.pos.z;
 
-			direction.x = 32 * targetX - g_buzzActor.posAngles.pos.x;
-			direction.z = 32 * targetZ - g_buzzActor.posAngles.pos.z;
+			direction.pos.x = 32 * targetX - g_buzzActor.posAngles.pos.x;
+			direction.pos.z = 32 * targetZ - g_buzzActor.posAngles.pos.z;
 
 			g_grappleState = Nu3D::Collision::SweepAndSlide(&g_grappleTargetPos, &direction, 0x8000, 0, 256) != 0 ? 3 : 1;
 
-			g_grappleTargetPos.x += direction.x;
-			direction.x = (g_grappleTargetPos.x - g_unk50A0A0.x) >> 2;
-			g_grappleTargetPos.y += direction.y;
-			g_grappleTargetPos.z += direction.z;
+			g_grappleTargetPos.pos.x += direction.pos.x;
+			direction.pos.x = (g_grappleTargetPos.pos.x - g_unk50A0A0.x) >> 2;
+			g_grappleTargetPos.pos.y += direction.pos.y;
+			g_grappleTargetPos.pos.z += direction.pos.z;
 
-			direction.y = (g_grappleTargetPos.y - g_unk50A0A0.y) >> 2;
-			direction.z = (g_grappleTargetPos.z - g_unk50A0A0.z) >> 2;
+			direction.pos.y = (g_grappleTargetPos.pos.y - g_unk50A0A0.y) >> 2;
+			direction.pos.z = (g_grappleTargetPos.pos.z - g_unk50A0A0.z) >> 2;
 
 			Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
 
-			int32_t dominantVel = direction.x >> 1;
+			int32_t dominantVel = direction.pos.x >> 1;
 
-			if (abs(direction.x >> 1) <= abs(direction.y >> 1))
+			if (abs(direction.pos.x >> 1) <= abs(direction.pos.y >> 1))
 			{
-				dominantVel = direction.y >> 1;
-				dominantDist = g_grappleTargetPos.y - g_buzzActor.posAngles.pos.y + 5632;
+				dominantVel = direction.pos.y >> 1;
+				dominantDist = g_grappleTargetPos.pos.y - g_buzzActor.posAngles.pos.y + 5632;
 			}
 			else
 			{
-				dominantDist = g_grappleTargetPos.x - g_buzzActor.posAngles.pos.x;
+				dominantDist = g_grappleTargetPos.pos.x - g_buzzActor.posAngles.pos.x;
 			}
 
-			if (abs(dominantVel) <= abs(direction.z >> 1))
+			if (abs(dominantVel) <= abs(direction.pos.z >> 1))
 			{
-				dominantVel = direction.z >> 1;
-				dominantDist = g_grappleTargetPos.z - g_buzzActor.posAngles.pos.z;
+				dominantVel = direction.pos.z >> 1;
+				dominantDist = g_grappleTargetPos.pos.z - g_buzzActor.posAngles.pos.z;
 			}
 
 			if (! dominantVel)
@@ -1521,17 +1521,17 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00434990
-		void TickGunFire(PosAndAngles* muzzlePos)
+		void TickGunFire(Transform* muzzlePos)
 		{
 			int32_t chargeTimer;
 			int32_t holdTimer;
 			int32_t newChargeTimer;
 			int16_t yaw;
-			PosAndAngles* shotPos;
+			Transform* shotPos;
 			int32_t pitch;
 			int32_t autoAim;
-			WorldPos headOffset;
-			WorldPos origin;
+			Transform headOffset;
+			Transform origin;
 
 			if ((g_buzzActionState & 0xFBE3C) != 0)
 			{
@@ -1713,12 +1713,12 @@ namespace Toy2
 						yaw = muzzlePos->angles.yaw;
 					}
 
-					origin.x = shotPos->pos.x;
-					origin.y = shotPos->pos.y - 11264;
-					origin.z = shotPos->pos.z;
-					headOffset.x = g_unk50A0A0.x - shotPos->pos.x;
-					headOffset.z = g_unk50A0A0.z - shotPos->pos.z;
-					headOffset.y = g_unk50A0A0.y - (shotPos->pos.y - 11264);
+					origin.pos.x = shotPos->pos.x;
+					origin.pos.y = shotPos->pos.y - 11264;
+					origin.pos.z = shotPos->pos.z;
+					headOffset.pos.x = g_unk50A0A0.x - shotPos->pos.x;
+					headOffset.pos.z = g_unk50A0A0.z - shotPos->pos.z;
+					headOffset.pos.y = g_unk50A0A0.y - (shotPos->pos.y - 11264);
 
 					if (g_grappleTimer && Camera::g_cameraState >= 3 && Camera::g_unk50A540 && Camera::g_lockOnActorIdx >= 1000)
 					{
@@ -1747,7 +1747,7 @@ namespace Toy2
 							int16_t followUpPitch = (4 * *g_randDatBufferPtr - 512) & 0xFFF;
 							g_randDatBufferPtr += 2;
 
-							SpawnBeamShot(shotType - 1, followUpYaw & 0xFFF, followUpPitch, (WorldPos*)&beamShot->originPos, &headOffset, 4, 0);
+							SpawnBeamShot(shotType - 1, followUpYaw & 0xFFF, followUpPitch, (Transform*)&beamShot->originPos, &headOffset, 4, 0);
 							AudioManager::PlaySoundEffect(7, beamOrigin);
 						}
 					}
@@ -2536,18 +2536,18 @@ namespace Toy2
 		int32_t UpdateFloorHeight(Toy2::Buzz::Toy2BuzzActor* buzzActor)
 		{
 			int32_t triangleCount = Collision::g_candidateTriangleCount;
-			WorldPos worldPos;
+			Transform transform;
 
-			Nu3D::Collision::GatherTrianglesAtXZ((WorldPos*)buzzActor);
+			Nu3D::Collision::GatherTrianglesAtXZ(&buzzActor->posAngles);
 
-			worldPos.x = buzzActor->posAngles.pos.x;
-			worldPos.z = buzzActor->posAngles.pos.z;
-			worldPos.x2 = *(int32_t*)&buzzActor->posAngles.angles;
-			worldPos.y = buzzActor->posAngles.pos.y - 1024;
+			transform.pos.x = buzzActor->posAngles.pos.x;
+			transform.pos.z = buzzActor->posAngles.pos.z;
+			transform.angles = buzzActor->posAngles.angles;
+			transform.pos.y = buzzActor->posAngles.pos.y - 1024;
 
-			Nu3D::Collision::ResolveGroundCeiling(&worldPos, 0x10000);
+			Nu3D::Collision::ResolveGroundCeiling(&transform, 0x10000);
 
-			int32_t floorY = worldPos.y;
+			int32_t floorY = transform.pos.y;
 
 			Collision::g_unk72912C = -1;
 
@@ -2564,10 +2564,10 @@ namespace Toy2
 				{
 					buzzY = Toy2::g_buzzActor.posAngles.pos.y;
 
-					if (buzzY > worldPos.y + 512 && buzzY < worldPos.y + 24576)
+					if (buzzY > transform.pos.y + 512 && buzzY < transform.pos.y + 24576)
 					{
-						buzzY = worldPos.y - 448;
-						Toy2::g_buzzActor.posAngles.pos.y = worldPos.y - 448;
+						buzzY = transform.pos.y - 448;
+						Toy2::g_buzzActor.posAngles.pos.y = transform.pos.y - 448;
 
 						if (Collision::g_floorSlope.y >= (int16_t)0xE000)
 						{
@@ -2579,7 +2579,7 @@ namespace Toy2
 				else
 					buzzY = Toy2::g_buzzActor.posAngles.pos.y;
 
-				if (worldPos.y - buzzY < 512 && worldPos.y - buzzY > -1024 && Collision::g_floorSlope.y < (int16_t)0xE000)
+				if (transform.pos.y - buzzY < 512 && transform.pos.y - buzzY > -1024 && Collision::g_floorSlope.y < (int16_t)0xE000)
 				{
 					Platform::g_platformDescriptors[platformIdx].flags = flags | 0x12;
 					Collision::g_buzzCollisionStates[0].platformIdx = (int16_t)platformIdx;
@@ -2663,7 +2663,7 @@ namespace Toy2
 			Collision::CollisionTreeNode* node;
 			Collision::CollisionTriangle* triangle;
 			Collision::ResolvedVelocity resolvedVelocity;
-			WorldPos vectorAngles;
+			Transform vectorAngles;
 			int16_t stepCount;
 			Matrix3x3I16* rotation = (Matrix3x3I16*)&Collision::g_mathScratch[948];
 
@@ -4647,7 +4647,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004A5540
 		void TickGrapple()
 		{
-			WorldPos direction;
+			Transform direction;
 
 			if (! g_grappleState)
 				return;
@@ -4657,17 +4657,17 @@ namespace Toy2
 			if ((g_grappleState & 1) == 0)
 				goto LABEL_14;
 
-			g_buzzActor.facingAngle = Nu3D::Math::CartesianToFixedAngle(g_grappleTargetPos.x - g_unk50A0A0.x, g_grappleTargetPos.z - g_unk50A0A0.z);
+			g_buzzActor.facingAngle = Nu3D::Math::CartesianToFixedAngle(g_grappleTargetPos.pos.x - g_unk50A0A0.x, g_grappleTargetPos.pos.z - g_unk50A0A0.z);
 
 			g_grappleProgress += 2 * Renderer::g_frameDelta;
 
 			if (g_grappleProgress <= g_grappleDistance)
 			{
-				direction.x = g_grappleProgress * (g_grappleTargetPos.x - g_unk50A0A0.x) / g_grappleDistance;
-				direction.y = g_grappleProgress * (g_grappleTargetPos.y - g_unk50A0A0.y) / g_grappleDistance;
-				direction.z = g_grappleProgress * (g_grappleTargetPos.z - g_unk50A0A0.z) / g_grappleDistance;
+				direction.pos.x = g_grappleProgress * (g_grappleTargetPos.pos.x - g_unk50A0A0.x) / g_grappleDistance;
+				direction.pos.y = g_grappleProgress * (g_grappleTargetPos.pos.y - g_unk50A0A0.y) / g_grappleDistance;
+				direction.pos.z = g_grappleProgress * (g_grappleTargetPos.pos.z - g_unk50A0A0.z) / g_grappleDistance;
 
-				Renderer::Beam::QueueBeam(34, 30, 400, (WorldPos*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
+				Renderer::Beam::QueueBeam(34, 30, 400, (Transform*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
 
 			LABEL_14:
 				if (g_grappleState == 2)
@@ -4680,9 +4680,9 @@ namespace Toy2
 						g_buzzActor.actorFlags &= ~4;
 						g_grappleState = 0;
 
-						g_buzzActor.posAngles.pos.x = g_grappleTargetPos.x;
-						g_buzzActor.posAngles.pos.y = g_grappleTargetPos.y + 5632;
-						g_buzzActor.posAngles.pos.z = g_grappleTargetPos.z;
+						g_buzzActor.posAngles.pos.x = g_grappleTargetPos.pos.x;
+						g_buzzActor.posAngles.pos.y = g_grappleTargetPos.pos.y + 5632;
+						g_buzzActor.posAngles.pos.z = g_grappleTargetPos.pos.z;
 						g_buzzActor.velX = 0;
 						g_buzzActor.gravityVel = 0;
 						g_buzzActor.velForward = 0;
@@ -4691,23 +4691,23 @@ namespace Toy2
 					{
 						AudioManager::PlaySoundEffect(83, &g_buzzActor.posAngles.pos);
 
-						direction.x = g_grappleTargetPos.x - g_unk50A0A0.x;
-						direction.y = g_grappleTargetPos.y - g_unk50A0A0.y;
-						direction.z = g_grappleTargetPos.z - g_unk50A0A0.z;
+						direction.pos.x = g_grappleTargetPos.pos.x - g_unk50A0A0.x;
+						direction.pos.y = g_grappleTargetPos.pos.y - g_unk50A0A0.y;
+						direction.pos.z = g_grappleTargetPos.pos.z - g_unk50A0A0.z;
 
-						Renderer::Beam::QueueBeam(34, 30, 400, (WorldPos*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
+						Renderer::Beam::QueueBeam(34, 30, 400, (Transform*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
 
-						direction.y = (g_grappleTargetPos.y - g_buzzActor.posAngles.pos.y + 5632) >> 3;
-						direction.x = (g_grappleTargetPos.x - g_buzzActor.posAngles.pos.x) >> 3;
-						direction.z = (g_grappleTargetPos.z - g_buzzActor.posAngles.pos.z) >> 3;
+						direction.pos.y = (g_grappleTargetPos.pos.y - g_buzzActor.posAngles.pos.y + 5632) >> 3;
+						direction.pos.x = (g_grappleTargetPos.pos.x - g_buzzActor.posAngles.pos.x) >> 3;
+						direction.pos.z = (g_grappleTargetPos.pos.z - g_buzzActor.posAngles.pos.z) >> 3;
 
 						Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
 
 						if (g_grappleProgress >= 10)
 						{
-							g_buzzActor.velX = direction.x / 3;
-							g_buzzActor.gravityVel = direction.y / 3;
-							g_buzzActor.velForward = direction.z / 3;
+							g_buzzActor.velX = direction.pos.x / 3;
+							g_buzzActor.gravityVel = direction.pos.y / 3;
+							g_buzzActor.velForward = direction.pos.z / 3;
 						}
 
 						g_grappleProgress += Renderer::g_frameDelta;
@@ -4746,8 +4746,8 @@ namespace Toy2
 		void TickBeamShots()
 		{
 			int32_t lifeTimer;
-			WorldPos direction;
-			WorldPos originPos;
+			Transform direction;
+			Transform originPos;
 
 			BeamShot* beamShot = &g_beamShots[0];
 			int32_t index = 4;
@@ -4756,13 +4756,13 @@ namespace Toy2
 			{
 				if (beamShot->lifeTimer)
 				{
-					originPos.x = beamShot->originPos.x;
-					originPos.y = beamShot->originPos.y;
-					originPos.z = beamShot->originPos.z;
+					originPos.pos.x = beamShot->originPos.x;
+					originPos.pos.y = beamShot->originPos.y;
+					originPos.pos.z = beamShot->originPos.z;
 
-					direction.y = beamShot->headPos.y - originPos.y;
-					direction.z = beamShot->headPos.z - originPos.z;
-					direction.x = beamShot->headPos.x - originPos.x;
+					direction.pos.y = beamShot->headPos.y - originPos.pos.y;
+					direction.pos.z = beamShot->headPos.z - originPos.pos.z;
+					direction.pos.x = beamShot->headPos.x - originPos.pos.x;
 
 					lifeTimer = beamShot->lifeTimer * 4;
 

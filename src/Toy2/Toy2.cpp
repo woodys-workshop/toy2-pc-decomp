@@ -462,7 +462,7 @@ namespace Toy2
 	int32_t g_rocketBootsPickupY;
 
 	// GLOBAL: TOY2 0x00882940
-	WorldPos g_grappleTargetPos;
+	Transform g_grappleTargetPos;
 
 	// GLOBAL: TOY2 0x00830C94
 	int32_t g_unk830C94;
@@ -823,8 +823,8 @@ namespace Toy2
 			int32_t y;
 			int32_t z;
 			int32_t angleDiff;
-			WorldPos startPos;
-			WorldPos displacement;
+			Transform startPos;
+			Transform displacement;
 
 			int32_t frameDelta = Renderer::g_frameDelta;
 
@@ -890,26 +890,26 @@ namespace Toy2
 		LABEL_14:
 			if ((Camera::g_inCutscene & 1) == 0 && ! Camera::g_cameraState)
 			{
-				startPos.x = g_buzzActor.posAngles.pos.x;
+				startPos.pos.x = g_buzzActor.posAngles.pos.x;
 				Camera::g_activeCameraTransform.angles.yaw = (Camera::g_activeCameraTransform.angles.yaw + 8 * frameDelta) & 0xFFF;
-				startPos.y = g_buzzActor.posAngles.pos.y - 0x4000;
-				startPos.z = g_buzzActor.posAngles.pos.z;
+				startPos.pos.y = g_buzzActor.posAngles.pos.y - 0x4000;
+				startPos.pos.z = g_buzzActor.posAngles.pos.z;
 
-				displacement.x = -2 * Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw];
-				displacement.z = -2 * Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];
+				displacement.pos.x = -2 * Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw];
+				displacement.pos.z = -2 * Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];
 				g_devCamState = 0;
-				displacement.y = 0;
+				displacement.pos.y = 0;
 
 				Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 256);
 				frameDelta = Renderer::g_frameDelta;
 
-				x = displacement.x + startPos.x;
-				y = displacement.y + startPos.y;
-				z = displacement.z + startPos.z;
+				x = displacement.pos.x + startPos.pos.x;
+				y = displacement.pos.y + startPos.pos.y;
+				z = displacement.pos.z + startPos.pos.z;
 
-				startPos.x += displacement.x;
-				startPos.y += displacement.y;
-				startPos.z += displacement.z;
+				startPos.pos.x += displacement.pos.x;
+				startPos.pos.y += displacement.pos.y;
+				startPos.pos.z += displacement.pos.z;
 
 				goto LABEL_28;
 			}
@@ -922,9 +922,9 @@ namespace Toy2
 			Camera::g_activeCameraTransform.angles.yaw &= 0xFFF;
 			angleDiff = (Camera::g_activeCameraTransform.angles.yaw - g_unk830CB0.angles.yaw) & 0xFFF;
 
-			startPos.x = g_unk830CB0.pos.x;
-			startPos.y = g_unk830CB0.pos.y;
-			startPos.z = g_unk830CB0.pos.z;
+			startPos.pos.x = g_unk830CB0.pos.x;
+			startPos.pos.y = g_unk830CB0.pos.y;
+			startPos.pos.z = g_unk830CB0.pos.z;
 
 			if (angleDiff > 0x800)
 				angleDiff -= 4096;
@@ -8178,8 +8178,8 @@ namespace Toy2
 		int32_t beamType,
 		int16_t aimYaw,
 		int16_t aimPitch,
-		WorldPos* origin,
-		WorldPos* headOffset,
+		Transform* origin,
+		Transform* headOffset,
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor)
 	{
@@ -8211,8 +8211,8 @@ namespace Toy2
 				break;
 		}
 
-		WorldPos startPos;
-		WorldPos displacement;
+		Transform startPos;
+		Transform displacement;
 
 		if (autoAimActor)
 		{
@@ -8227,9 +8227,9 @@ namespace Toy2
 				{
 					if ((actor->actorFlags & 1) != 0 && (actor->creatureRam->defenseMode & 4) != 0 && actor->unkVar29 >= 0)
 					{
-						int32_t deltaZ = (actor->pos.z - origin->z) >> 5;
-						int32_t deltaY = (actor->pos.y - origin->y) >> 5;
-						int32_t deltaX = (actor->pos.x - origin->x) >> 5;
+						int32_t deltaZ = (actor->pos.z - origin->pos.z) >> 5;
+						int32_t deltaY = (actor->pos.y - origin->pos.y) >> 5;
+						int32_t deltaX = (actor->pos.x - origin->pos.x) >> 5;
 
 						if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < 0x1000000 && abs(deltaY) < 768)
 						{
@@ -8258,9 +8258,9 @@ namespace Toy2
 					int32_t cosFacing = Numerics::g_sinCosLUT[(targetYaw - 1024) & 0xFFF] >> 2;
 					int32_t attachZ = attachOffset[2];
 
-					int32_t aimDeltaX = (autoAimActor->pos.x + ((sinFacing * attachZ + cosFacing * attachOffset[0]) >> 12) - origin->x) >> 5;
-					int32_t aimDeltaY = (autoAimActor->pos.y + attachOffset[1] - origin->y) >> 5;
-					int32_t aimDeltaZ = (autoAimActor->pos.z + ((cosFacing * attachZ - sinFacing * attachOffset[0]) >> 12) - origin->z) >> 5;
+					int32_t aimDeltaX = (autoAimActor->pos.x + ((sinFacing * attachZ + cosFacing * attachOffset[0]) >> 12) - origin->pos.x) >> 5;
+					int32_t aimDeltaY = (autoAimActor->pos.y + attachOffset[1] - origin->pos.y) >> 5;
+					int32_t aimDeltaZ = (autoAimActor->pos.z + ((cosFacing * attachZ - sinFacing * attachOffset[0]) >> 12) - origin->pos.z) >> 5;
 
 					int32_t targetAngle = Nu3D::Math::CartesianToFixedAngle(aimDeltaX, aimDeltaZ);
 
@@ -8300,22 +8300,22 @@ namespace Toy2
 		int32_t offsetZ = rangeCos * Numerics::g_sinCosLUT[(aimYaw + 1024) & 0xFFF];
 		int32_t offsetY = 2 * range * Numerics::g_sinCosLUT[(aimPitch - 2048) & 0xFFF];
 
-		beamShot->headPos.x = headOffset->x + origin->x;
-		beamShot->headPos.y = origin->y + headOffset->y;
-		beamShot->headPos.z = origin->z + headOffset->z;
+		beamShot->headPos.x = headOffset->pos.x + origin->pos.x;
+		beamShot->headPos.y = origin->pos.y + headOffset->pos.y;
+		beamShot->headPos.z = origin->pos.z + headOffset->pos.z;
 
-		beamShot->originPos.x = (offsetX >> 13) + origin->x;
-		beamShot->originPos.y = offsetY + origin->y;
-		beamShot->originPos.z = (offsetZ >> 13) + origin->z;
+		beamShot->originPos.x = (offsetX >> 13) + origin->pos.x;
+		beamShot->originPos.y = offsetY + origin->pos.y;
+		beamShot->originPos.z = (offsetZ >> 13) + origin->pos.z;
 		beamShot->lifeTimer = 32;
 
-		startPos.x = origin->x;
-		startPos.y = origin->y;
-		startPos.z = origin->z;
+		startPos.pos.x = origin->pos.x;
+		startPos.pos.y = origin->pos.y;
+		startPos.pos.z = origin->pos.z;
 
-		displacement.x = beamShot->originPos.x - startPos.x;
-		displacement.y = beamShot->originPos.y - startPos.y;
-		displacement.z = beamShot->originPos.z - startPos.z;
+		displacement.pos.x = beamShot->originPos.x - startPos.pos.x;
+		displacement.pos.y = beamShot->originPos.y - startPos.pos.y;
+		displacement.pos.z = beamShot->originPos.z - startPos.pos.z;
 
 		if (beamType == 0)
 		{
@@ -8344,9 +8344,9 @@ namespace Toy2
 
 		if (hit)
 		{
-			beamShot->originPos.x = startPos.x + displacement.x;
-			beamShot->originPos.y = startPos.y + displacement.y;
-			beamShot->originPos.z = startPos.z + displacement.z;
+			beamShot->originPos.x = startPos.pos.x + displacement.pos.x;
+			beamShot->originPos.y = startPos.pos.y + displacement.pos.y;
+			beamShot->originPos.z = startPos.pos.z + displacement.pos.z;
 
 			if (beamType)
 			{
@@ -8389,15 +8389,15 @@ namespace Toy2
 			} while (sparkCount);
 		}
 
-		startPos.x = (beamShot->originPos.x - beamShot->headPos.x) >> 2;
-		startPos.y = (beamShot->originPos.y - beamShot->headPos.y) >> 2;
-		startPos.z = (beamShot->originPos.z - beamShot->headPos.z) >> 2;
+		startPos.pos.x = (beamShot->originPos.x - beamShot->headPos.x) >> 2;
+		startPos.pos.y = (beamShot->originPos.y - beamShot->headPos.y) >> 2;
+		startPos.pos.z = (beamShot->originPos.z - beamShot->headPos.z) >> 2;
 
 		Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&startPos, (Vector3I*)&startPos);
 
-		beamShot->velocity.y = startPos.y >> 1;
-		beamShot->velocity.z = startPos.z >> 1;
-		beamShot->velocity.x = startPos.x >> 1;
+		beamShot->velocity.y = startPos.pos.y >> 1;
+		beamShot->velocity.z = startPos.pos.z >> 1;
+		beamShot->velocity.x = startPos.pos.x >> 1;
 
 		int32_t dominantVel = beamShot->velocity.x;
 		int32_t dominantDist;

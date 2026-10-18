@@ -76,7 +76,7 @@ namespace Toy2
 		void CullActors(Nu3D::Camera::ActiveCameraTransform* cam);
 		void UpdateGravityBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor);
 		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement);
-		int32_t SweepSegmentVsActors(WorldPos* arg0, WorldPos* a2, int32_t a3);
+		int32_t SweepSegmentVsActors(Transform* arg0, Transform* a2, int32_t a3);
 
 		STATIC_ASSERT(sizeof(GameplayCameraState) == 0x34);
 		STATIC_ASSERT(sizeof(ScriptedCameraState) == 0x28);

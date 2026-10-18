@@ -15,7 +15,7 @@ namespace Toy2
 	{
 		struct Toy2BuzzActor
 		{
-			PosAndAngles posAngles;
+			Transform posAngles;
 			int16_t rollAngle;
 			int16_t primaryAnimIdx;
 			int16_t creatureId;

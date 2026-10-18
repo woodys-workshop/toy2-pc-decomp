@@ -357,7 +357,7 @@ namespace Toy2
 			cameraState->pos.z = buzzActor->posAngles.pos.z + ((1200 * Numerics::g_sinCosLUT[(yaw - 1024) & 0xFFF]) >> 9);
 			cameraState->pos.y = buzzActor->posAngles.pos.y;
 
-			int32_t groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)cameraState, 0);
+			int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)cameraState, 0);
 			cameraState->pos.y = groundHeight;
 
 			if (groundHeight == 0x80000000)
@@ -704,8 +704,8 @@ namespace Toy2
 		void VisorMode(Toy2::Camera::GameplayCameraState* state)
 		{
 			Vector3I lockOnPoint;
-			WorldPos startPos;
-			WorldPos displacement;
+			Transform startPos;
+			Transform displacement;
 			int32_t targetIdx;
 			int32_t candidateCount;
 			int32_t firstCandidate;
@@ -1227,9 +1227,9 @@ namespace Toy2
 				uint16_t pitch = state->angles.pitch;
 				int32_t cosPitch = Numerics::g_sinCosLUT[(1024 - pitch) & 0xFFF];
 
-				startPos.x = g_buzzActor.posAngles.pos.x;
-				startPos.y = g_buzzActor.posAngles.pos.y - 11264;
-				startPos.z = g_buzzActor.posAngles.pos.z;
+				startPos.pos.x = g_buzzActor.posAngles.pos.x;
+				startPos.pos.y = g_buzzActor.posAngles.pos.y - 11264;
+				startPos.pos.z = g_buzzActor.posAngles.pos.z;
 
 				uint16_t yaw = state->angles.yaw;
 
@@ -1237,9 +1237,9 @@ namespace Toy2
 
 				int32_t zScaled = cosPitch * Numerics::g_sinCosLUT[(yaw + 1024) & 0xFFF];
 
-				displacement.x = (cosPitch * Numerics::g_sinCosLUT[yaw & 0xFFF]) >> 13;
-				displacement.y = 8 * Numerics::g_sinCosLUT[(-2048 - pitch) & 0xFFF];
-				displacement.z = zScaled >> 13;
+				displacement.pos.x = (cosPitch * Numerics::g_sinCosLUT[yaw & 0xFFF]) >> 13;
+				displacement.pos.y = 8 * Numerics::g_sinCosLUT[(-2048 - pitch) & 0xFFF];
+				displacement.pos.z = zScaled >> 13;
 			}
 
 			{
@@ -1250,13 +1250,13 @@ namespace Toy2
 
 				if (g_unk50A538 == (Nu3D::Particles::ParticleInstance*)-1)
 				{
-					particle = Nu3D::Particles::SpawnFromPreset(startPos.x + displacement.x, startPos.y + displacement.y, startPos.z + displacement.z, 8, 5);
+					particle = Nu3D::Particles::SpawnFromPreset(startPos.pos.x + displacement.pos.x, startPos.pos.y + displacement.pos.y, startPos.pos.z + displacement.pos.z, 8, 5);
 					g_unk50A538 = particle;
 				}
 
-				particle->pos.x = startPos.x + displacement.x;
-				g_unk50A538->pos.y = startPos.y + displacement.y;
-				g_unk50A538->pos.z = startPos.z + displacement.z;
+				particle->pos.x = startPos.pos.x + displacement.pos.x;
+				g_unk50A538->pos.y = startPos.pos.y + displacement.pos.y;
+				g_unk50A538->pos.z = startPos.pos.z + displacement.pos.z;
 				g_unk50A538->lifetime = 10000;
 
 				if (hit > 1)
@@ -1383,9 +1383,9 @@ namespace Toy2
 			int32_t v84;
 			int32_t v94;
 			int32_t cameraPos[4];
-			WorldPos startPos;
-			WorldPos probePos;
-			WorldPos displacement;
+			Transform startPos;
+			Transform probePos;
+			Transform displacement;
 
 			if (Collision::IsMeshMoving() && g_buzzActor.collisionFlags)
 			{
@@ -1655,12 +1655,12 @@ namespace Toy2
 								cameraPos[2] = buzzZ;
 								PrepareCameraCollisionCandidates(cameraPos, v32, v100, v31, 2000);
 
-								startPos.x = cameraPos[0];
-								startPos.z = cameraPos[2];
-								startPos.y = cameraPos[1];
-								displacement.x = v32;
-								displacement.y = v27 + state->smoothedY - buzzY;
-								displacement.z = v31;
+								startPos.pos.x = cameraPos[0];
+								startPos.pos.z = cameraPos[2];
+								startPos.pos.y = cameraPos[1];
+								displacement.pos.x = v32;
+								displacement.pos.y = v27 + state->smoothedY - buzzY;
+								displacement.pos.z = v31;
 
 								if (g_unk50A534 >= 66)
 									v34 = 2840;
@@ -1672,8 +1672,8 @@ namespace Toy2
 									int32_t v35;
 
 									v35 = (int32_t)sqrt((
-										double)((displacement.y >> 5) * (displacement.y >> 5) + (displacement.x >> 5) * (displacement.x >> 5)
-												+ (displacement.z >> 5) * (displacement.z >> 5)));
+										double)((displacement.pos.y >> 5) * (displacement.pos.y >> 5) + (displacement.pos.x >> 5) * (displacement.pos.x >> 5)
+												+ (displacement.pos.z >> 5) * (displacement.pos.z >> 5)));
 									state->distance = v35;
 
 									if (v35 < 10)
@@ -1833,15 +1833,15 @@ namespace Toy2
 			v51 = Numerics::g_sinCosLUT[(v43 - 2048) & 0xFFF];
 			int32_t v103;
 			v103 = Numerics::g_sinCosLUT[(v43 + 1024) & 0xFFF] >> 3;
-			startPos.x = cameraPos[0] - v103;
-			startPos.y = cameraPos[1] - 3840;
+			startPos.pos.x = cameraPos[0] - v103;
+			startPos.pos.y = cameraPos[1] - 3840;
 			int32_t v104;
 			v104 = v51 >> 3;
 
-			startPos.z = cameraPos[2] - (v51 >> 3);
-			displacement.x = v50 - v103;
-			displacement.y = state->smoothedY - buzzY + v48 - 2048;
-			displacement.z = v49 - (v51 >> 3);
+			startPos.pos.z = cameraPos[2] - (v51 >> 3);
+			displacement.pos.x = v50 - v103;
+			displacement.pos.y = state->smoothedY - buzzY + v48 - 2048;
+			displacement.pos.z = v49 - (v51 >> 3);
 
 			if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, 200))
 			{
@@ -1850,19 +1850,19 @@ namespace Toy2
 				if (Collision::g_floorSlope.y > 12000)
 					probeFlags = 9;
 
-				startPos.x += displacement.x;
-				startPos.z += displacement.z;
+				startPos.pos.x += displacement.pos.x;
+				startPos.pos.z += displacement.pos.z;
 			}
 
-			probePos.x = v103 + cameraPos[0];
-			probePos.y = cameraPos[1] - 3840;
+			probePos.pos.x = v103 + cameraPos[0];
+			probePos.pos.y = cameraPos[1] - 3840;
 
-			displacement.x = v50 + v103;
-			probePos.z = v104 + cameraPos[2];
+			displacement.pos.x = v50 + v103;
+			probePos.pos.z = v104 + cameraPos[2];
 			int32_t v53;
 			v53 = state->smoothedY - buzzY;
-			displacement.z = v49 + v104;
-			displacement.y = v53 + v48 - 2048;
+			displacement.pos.z = v49 + v104;
+			displacement.pos.y = v53 + v48 - 2048;
 
 			if (Nu3D::Collision::SweepAndSlide(&probePos, &displacement, 0x8000, 1, 200))
 			{
@@ -1871,16 +1871,16 @@ namespace Toy2
 				if (Collision::g_floorSlope.y > 12000)
 					probeFlags |= 8;
 
-				probePos.x += displacement.x;
-				probePos.z += displacement.z;
+				probePos.pos.x += displacement.pos.x;
+				probePos.pos.z += displacement.pos.z;
 			}
 
-			startPos.x = cameraPos[0];
-			startPos.y = cameraPos[1] + 3072;
-			startPos.z = cameraPos[2];
-			displacement.x = v50;
-			displacement.y = v48 + state->smoothedY - buzzY;
-			displacement.z = v49;
+			startPos.pos.x = cameraPos[0];
+			startPos.pos.y = cameraPos[1] + 3072;
+			startPos.pos.z = cameraPos[2];
+			displacement.pos.x = v50;
+			displacement.pos.y = v48 + state->smoothedY - buzzY;
+			displacement.pos.z = v49;
 
 			int32_t v58;
 			v58 = probeFlags;
@@ -2112,14 +2112,14 @@ namespace Toy2
 			int32_t v71 = (v70 * Numerics::g_sinCosLUT[(v69 + 1024) & 0xFFF]) >> 14;
 			int32_t v72 = v70 * Numerics::g_sinCosLUT[(v69 - 2048) & 0xFFF];
 			int32_t v73 = v71 * Numerics::g_sinCosLUT[(state->orbitYaw + 1024) & 0xFFF];
-			displacement.x = (v71 * Numerics::g_sinCosLUT[state->orbitYaw & 0xFFF]) >> 9;
+			displacement.pos.x = (v71 * Numerics::g_sinCosLUT[state->orbitYaw & 0xFFF]) >> 9;
 
 			int32_t v74 = state->smoothedY;
 			v72 >>= 9;
-			displacement.y = v72;
-			state->targetPos.x = buzzX - displacement.x;
+			displacement.pos.y = v72;
+			state->targetPos.x = buzzX - displacement.pos.x;
 			state->targetPos.y = v74 + v72 - 0x2000;
-			displacement.z = v73 >> 9;
+			displacement.pos.z = v73 >> 9;
 			state->targetPos.z = buzzZ - (v73 >> 9);
 
 			if (! g_unk50A4E8)
@@ -2227,17 +2227,17 @@ namespace Toy2
 				cameraPos[0] = state->pos.x;
 				cameraPos[1] = state->pos.y;
 				cameraPos[2] = state->pos.z;
-				displacement.x = buzzX - state->pos.x;
-				displacement.y = buzzY - state->pos.y - 6144;
-				displacement.z = buzzZ - cameraPos[2];
+				displacement.pos.x = buzzX - state->pos.x;
+				displacement.pos.y = buzzY - state->pos.y - 6144;
+				displacement.pos.z = buzzZ - cameraPos[2];
 
-				if (Nu3D::Collision::SweepQuery(cameraPos, &displacement.x, 1, 1) == 1)
+				if (Nu3D::Collision::SweepQuery(cameraPos, &displacement.pos.x, 1, 1) == 1)
 				{
 					int32_t v97;
 
 					v97 = (int32_t)sqrt((
-						double)((displacement.y >> 5) * (displacement.y >> 5) + (displacement.x >> 5) * (displacement.x >> 5)
-								+ (displacement.z >> 5) * (displacement.z >> 5)));
+						double)((displacement.pos.y >> 5) * (displacement.pos.y >> 5) + (displacement.pos.x >> 5) * (displacement.pos.x >> 5)
+								+ (displacement.pos.z >> 5) * (displacement.pos.z >> 5)));
 					state->distance -= v97;
 
 					if (state->distance < 10)
@@ -2245,9 +2245,9 @@ namespace Toy2
 
 					if (v97 < 300)
 					{
-						state->pos.x += displacement.x;
-						state->pos.y = displacement.y + state->pos.y;
-						state->pos.z = displacement.z + state->pos.z;
+						state->pos.x += displacement.pos.x;
+						state->pos.y = displacement.pos.y + state->pos.y;
+						state->pos.z = displacement.pos.z + state->pos.z;
 					}
 
 					v92 = buzzY;
@@ -2446,9 +2446,9 @@ namespace Toy2
 			int32_t v4;
 			int32_t v5;
 			int32_t v7;
-			WorldPos displacement;
-			WorldPos startPos;
-			WorldPos probePos;
+			Transform displacement;
+			Transform startPos;
+			Transform probePos;
 
 			if (buzzActor->gravityVel > 0 && (Buzz::g_buzzActionState & 0xFFF7F) == 0)
 			{
@@ -2456,11 +2456,11 @@ namespace Toy2
 
 				if (buzzActor->floorYPos - y > 0x2000 && buzzActor->floorYPos != (int32_t)0x80000000)
 				{
-					probePos.y = y - 13824;
+					probePos.pos.y = y - 13824;
 					v4 = Numerics::g_sinCosLUT[buzzActor->posAngles.angles.yaw & 0xFFF] / 3;
 					v5 = Numerics::g_sinCosLUT[(buzzActor->posAngles.angles.yaw + 1024) & 0xFFF] / 3;
-					probePos.x = v4 + buzzActor->posAngles.pos.x;
-					probePos.z = v5 + buzzActor->posAngles.pos.z;
+					probePos.pos.x = v4 + buzzActor->posAngles.pos.x;
+					probePos.pos.z = v5 + buzzActor->posAngles.pos.z;
 
 					v7 = Nu3D::Collision::GetGroundHeight(&probePos, 0) - 200;
 
@@ -2468,20 +2468,20 @@ namespace Toy2
 					{
 						if (v7 < buzzActor->posAngles.pos.y - 13824 && v7 >= buzzActor->motionTargetPos.y - 13824)
 						{
-							startPos.y = buzzActor->posAngles.pos.y;
-							startPos.x = buzzActor->posAngles.pos.x - v4 / 4;
-							startPos.z = buzzActor->posAngles.pos.z - v5 / 4;
+							startPos.pos.y = buzzActor->posAngles.pos.y;
+							startPos.pos.x = buzzActor->posAngles.pos.x - v4 / 4;
+							startPos.pos.z = buzzActor->posAngles.pos.z - v5 / 4;
 
-							displacement.x = 0;
-							displacement.z = 0;
-							displacement.y = v7 - buzzActor->posAngles.pos.y;
+							displacement.pos.x = 0;
+							displacement.pos.z = 0;
+							displacement.pos.y = v7 - buzzActor->posAngles.pos.y;
 
 							if (! Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
 							{
-								startPos.y = v7 - 6000;
-								displacement.x = v4 + v4 / 3;
-								displacement.y = 0;
-								displacement.z = v5 + v5 / 3;
+								startPos.pos.y = v7 - 6000;
+								displacement.pos.x = v4 + v4 / 3;
+								displacement.pos.y = 0;
+								displacement.pos.z = v5 + v5 / 3;
 
 								if (! Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
 								{
@@ -2495,7 +2495,7 @@ namespace Toy2
 									Buzz::g_unk53C660 = 82;
 									Platform::g_unk559E80 = Collision::GetGroundContactIdx();
 
-									startPos.y = v7;
+									startPos.pos.y = v7;
 
 									if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
 										buzzActor->facingAngle =
@@ -2778,7 +2778,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A5870
-		int32_t SweepSegmentVsActors(WorldPos* arg0, WorldPos* a2, int32_t a3)
+		int32_t SweepSegmentVsActors(Transform* arg0, Transform* a2, int32_t a3)
 		{
 			Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
 			Toy2::Actor::Toy2Actor* hitActor = 0;
@@ -2794,9 +2794,9 @@ namespace Toy2
 			{
 				if ((actor->creatureRam->defenseMode & 4) != 0 && actor->damageCooldownTimer >= 0 && actor->unkVar29 >= 0)
 				{
-					int32_t endX = a2->x + arg0->x;
-					int32_t endY = a2->y + arg0->y;
-					int32_t endZ = a2->z + arg0->z;
+					int32_t endX = a2->pos.x + arg0->pos.x;
+					int32_t endY = a2->pos.y + arg0->pos.y;
+					int32_t endZ = a2->pos.z + arg0->pos.z;
 
 					int16_t* attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
 
@@ -2807,14 +2807,14 @@ namespace Toy2
 					int32_t centerY = actor->pos.y + attach[1];
 					int32_t centerZ = actor->pos.z + ((cosYaw * attach[2] - sinYaw * attach[0]) >> 12);
 
-					int32_t startToCenterZ = centerZ - arg0->z;
-					int32_t startToCenterX = centerX - arg0->x;
+					int32_t startToCenterZ = centerZ - arg0->pos.z;
+					int32_t startToCenterX = centerX - arg0->pos.x;
 
 					int32_t scaleX = attach[4];
 					int32_t scaleY = attach[5];
 					int32_t scaleZ = attach[6];
 
-					int32_t startScaledY = (scaleY * (centerY - arg0->y)) >> 8;
+					int32_t startScaledY = (scaleY * (centerY - arg0->pos.y)) >> 8;
 					int32_t startScaledX = (scaleX * ((sinYaw * startToCenterZ + cosYaw * startToCenterX) >> 12)) >> 8;
 					int32_t startScaledZ = (scaleZ * ((cosYaw * startToCenterZ - sinYaw * startToCenterX) >> 12)) >> 8;
 
@@ -2855,9 +2855,9 @@ namespace Toy2
 							hitActor = actor;
 							hit = 2;
 
-							a2->y = hitY;
-							a2->x = (cosYaw * hitX - sinYaw * hitZ) >> 7;
-							a2->z = (sinYaw * hitX + cosYaw * hitZ) >> 7;
+							a2->pos.y = hitY;
+							a2->pos.x = (cosYaw * hitX - sinYaw * hitZ) >> 7;
+							a2->pos.z = (sinYaw * hitX + cosYaw * hitZ) >> 7;
 						}
 					}
 				}

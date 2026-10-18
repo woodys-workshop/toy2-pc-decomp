@@ -19,7 +19,7 @@ namespace Toy2
 
 		extern RGB16 g_unk4F2F18[4];
 		extern char* g_unk4F2F30[5];
-		extern WorldPos g_laserPositions[2];
+		extern Transform g_laserPositions[2];
 		extern Levels::Type63* g_unk52FA80;
 		extern int32_t g_unk52FA84;
 		extern int32_t g_unk52FA90;

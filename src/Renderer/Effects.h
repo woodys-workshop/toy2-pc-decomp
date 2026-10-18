@@ -12,8 +12,8 @@ namespace Renderer
 			int32_t spriteSheetId;
 			int32_t halfWidth;
 			int32_t segmentLength;
-			WorldPos origin;
-			WorldPos direction;
+			Transform origin;
+			Transform direction;
 			int32_t tintB;
 			int32_t tintG;
 			int32_t tintR;
@@ -26,8 +26,8 @@ namespace Renderer
 			int32_t spriteSheet,
 			int32_t halfWidth,
 			int32_t segmentLength,
-			WorldPos* origin,
-			WorldPos* direction,
+			Transform* origin,
+			Transform* direction,
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR);
@@ -35,8 +35,8 @@ namespace Renderer
 			int32_t spriteSheet,
 			int32_t halfWidth,
 			int32_t segementLength,
-			WorldPos* origin,
-			WorldPos* direction,
+			Transform* origin,
+			Transform* direction,
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR);

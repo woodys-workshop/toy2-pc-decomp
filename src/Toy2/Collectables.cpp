@@ -107,11 +107,11 @@ namespace Toy2
 				{
 					do
 					{
-						WorldPos position;
+						Transform position;
 
-						position.x = 32 * lightRecord->data[i].x;
-						position.z = 32 * lightRecord->data[i].z;
-						position.y = 32 * (lightRecord->data[i].y - 10);
+						position.pos.x = 32 * lightRecord->data[i].x;
+						position.pos.z = 32 * lightRecord->data[i].z;
+						position.pos.y = 32 * (lightRecord->data[i].y - 10);
 
 						Levels::g_recordData[59]->data[i].y = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
 						lightRecord = Levels::g_recordData[59];
@@ -135,11 +135,11 @@ namespace Toy2
 				{
 					do
 					{
-						WorldPos position;
+						Transform position;
 
-						position.x = 32 * pickup->pos.x;
-						position.z = 32 * pickup->pos.z;
-						position.y = 32 * (pickup->pos.y - 10);
+						position.pos.x = 32 * pickup->pos.x;
+						position.pos.z = 32 * pickup->pos.z;
+						position.pos.y = 32 * (pickup->pos.y - 10);
 
 						int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
 
@@ -202,7 +202,7 @@ namespace Toy2
 
 						if (object)
 						{
-							WorldPos position;
+							Transform position;
 
 							table->pos.x = object[0];
 							table->pos.y = object[1];
@@ -210,9 +210,9 @@ namespace Toy2
 							table->props.linkId = objectIdx;
 							table->props.flags = (uint8_t)(*(int16_t*)(object + 3) >> 3);
 
-							position.x = 32 * table->pos.x;
-							position.z = 32 * table->pos.z;
-							position.y = 32 * (table->pos.y - 10);
+							position.pos.x = 32 * table->pos.x;
+							position.pos.z = 32 * table->pos.z;
+							position.pos.y = 32 * (table->pos.y - 10);
 
 							int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
 

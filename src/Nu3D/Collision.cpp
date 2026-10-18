@@ -125,11 +125,11 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00485940
-		void GatherTrianglesAtXZ(WorldPos* worldPos)
+		void GatherTrianglesAtXZ(Transform* transform)
 		{
-			int32_t x = worldPos->x;
-			int32_t y = worldPos->y;
-			int32_t z = worldPos->z;
+			int32_t x = transform->pos.x;
+			int32_t y = transform->pos.y;
+			int32_t z = transform->pos.z;
 
 			Toy2::Collision::CollisionCacheEntry* cache = (Toy2::Collision::CollisionCacheEntry*)Toy2::Collision::g_unk72871C;
 			Toy2::Collision::CollisionCacheEntry* entry;
@@ -288,8 +288,8 @@ namespace Nu3D
 				}
 
 				entry->lifetime = 8;
-				entry->x = worldPos->x;
-				entry->z = worldPos->z;
+				entry->x = transform->pos.x;
+				entry->z = transform->pos.z;
 
 				prevMesh = -1;
 
@@ -408,45 +408,45 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00486280
-		int32_t GetGroundHeight(WorldPos* worldPos, int32_t size)
+		int32_t GetGroundHeight(Transform* transform, int32_t size)
 		{
 			int32_t triangleCount = Toy2::Collision::g_candidateTriangleCount;
 
-			GatherTrianglesAtXZ(worldPos);
+			GatherTrianglesAtXZ(transform);
 
-			WorldPos groundPos = *worldPos;
+			Transform groundPos = *transform;
 
 			ResolveGroundCeiling(&groundPos, 0x10000);
 
 			if (size && Renderer::Shadows::g_shadowCount < 47)
-				Toy2::Shadow::QueueStretched(groundPos.x, groundPos.y, groundPos.z, size, worldPos->y);
+				Toy2::Shadow::QueueStretched(groundPos.pos.x, groundPos.pos.y, groundPos.pos.z, size, transform->pos.y);
 
 			Toy2::Collision::g_candidateTriangleCount = triangleCount;
 
-			return groundPos.y;
+			return groundPos.pos.y;
 		}
 
 		// FUNCTION: TOY2 0x00486310
-		int32_t GetGroundHeightEx(WorldPos* worldPos, int32_t size, int32_t headRoom)
+		int32_t GetGroundHeightEx(Transform* transform, int32_t size, int32_t headRoom)
 		{
 			int32_t triangleCount = Toy2::Collision::g_candidateTriangleCount;
 
-			GatherTrianglesAtXZ(worldPos);
+			GatherTrianglesAtXZ(transform);
 
-			WorldPos groundPos = *worldPos;
+			Transform groundPos = *transform;
 
 			ResolveGroundCeiling(&groundPos, headRoom);
 
 			if (size && Renderer::Shadows::g_shadowCount < 47)
-				Toy2::Shadow::QueueStretched(groundPos.x, groundPos.y, groundPos.z, size, worldPos->y);
+				Toy2::Shadow::QueueStretched(groundPos.pos.x, groundPos.pos.y, groundPos.pos.z, size, transform->pos.y);
 
 			Toy2::Collision::g_candidateTriangleCount = triangleCount;
 
-			return groundPos.y;
+			return groundPos.pos.y;
 		}
 
 		// FUNCTION: TOY2 0x00486520
-		int32_t ResolveGroundCeiling(WorldPos* worldPos, int32_t headRoom)
+		int32_t ResolveGroundCeiling(Transform* transform, int32_t headRoom)
 		{
 			int16_t* scratch = (int16_t*)Toy2::Collision::g_mathScratch;
 			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
@@ -492,8 +492,8 @@ namespace Nu3D
 
 					if (mesh->typeFlags == 8)
 					{
-						px = (worldPos->x - mesh->origin.x) >> 5;
-						pz = (worldPos->z - mesh->origin.z) >> 5;
+						px = (transform->pos.x - mesh->origin.x) >> 5;
+						pz = (transform->pos.z - mesh->origin.z) >> 5;
 
 						if (Toy2::Platform::g_platformDescriptors[mesh->platformIdx].flags & 8)
 						{
@@ -510,8 +510,8 @@ namespace Nu3D
 					}
 					else
 					{
-						px = (worldPos->x - mesh->origin.x) >> 5;
-						pz = (worldPos->z - mesh->origin.z) >> 5;
+						px = (transform->pos.x - mesh->origin.x) >> 5;
+						pz = (transform->pos.z - mesh->origin.z) >> 5;
 					}
 
 					prevMesh = meshIdx;
@@ -746,10 +746,10 @@ namespace Nu3D
 					}
 				}
 
-				if (surfaceY < worldPos->y)
+				if (surfaceY < transform->pos.y)
 				{
 					// above the position, the closest one is the ceiling
-					if (surfaceY >= ceilingY && surfaceY > worldPos->y - headRoom && (surfaceY != ceilingY || surfaceNormal[1] > scratch[7]))
+					if (surfaceY >= ceilingY && surfaceY > transform->pos.y - headRoom && (surfaceY != ceilingY || surfaceNormal[1] > scratch[7]))
 					{
 						scratch[6] = surfaceNormal[0];
 						scratch[7] = surfaceNormal[1];
@@ -772,7 +772,7 @@ namespace Nu3D
 			if (ceilingY != 0x80000000 && scratch[7] < 0)
 			{
 				Toy2::Collision::g_groundQueryResult = 1;
-				worldPos->y = ceilingY;
+				transform->pos.y = ceilingY;
 				Toy2::Collision::g_floorSlope.z = scratch[8];
 				Toy2::Collision::g_floorSlope.x = scratch[6];
 				Toy2::Collision::g_floorSlope.y = scratch[7];
@@ -787,13 +787,13 @@ namespace Nu3D
 				Toy2::Collision::g_floorSlope.y = scratch[1];
 				Toy2::Collision::g_groundQueryResult = 2;
 				Toy2::Collision::g_floorSlope.z = scratch[2];
-				worldPos->y = floorY;
+				transform->pos.y = floorY;
 
 				return 0;
 			}
 
 			Toy2::Collision::g_groundQueryResult = 3;
-			worldPos->y = 0x80000000;
+			transform->pos.y = 0x80000000;
 			Toy2::Collision::g_floorSlope.y = 4096;
 
 			return 0;
@@ -1493,7 +1493,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x0048C860
-		int32_t SweepAndSlide(WorldPos* startPos, WorldPos* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius)
+		int32_t SweepAndSlide(Transform* startPos, Transform* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius)
 		{
 			Toy2::Collision::CollisionCacheEntry* cameraEntry = (Toy2::Collision::CollisionCacheEntry*)Toy2::Collision::g_unk72871C + 8;
 			Toy2::Collision::CollisionMeshInstance* mesh;
@@ -1502,7 +1502,7 @@ namespace Nu3D
 			Matrix3x3I16* rotation = (Matrix3x3I16*)&Toy2::Collision::g_mathScratch[948];
 			int16_t* meshList = (int16_t*)Toy2::Collision::g_mathScratch;
 			Vector3I16 angles;
-			WorldPos result;
+			Transform result;
 			int32_t movement[3];
 			int32_t minX;
 			int32_t minY;
@@ -1564,41 +1564,41 @@ namespace Nu3D
 			Toy2::Collision::g_unk72D2AC = 0;
 			Toy2::Collision::g_unk7291D8 = 0;
 
-			movement[0] = displacement->x;
-			movement[1] = displacement->y;
-			movement[2] = displacement->z;
+			movement[0] = displacement->pos.x;
+			movement[1] = displacement->pos.y;
+			movement[2] = displacement->pos.z;
 
-			if (displacement->x < 0)
+			if (displacement->pos.x < 0)
 			{
-				minX = startPos->x + 2048;
-				extX = 4096 - displacement->x;
+				minX = startPos->pos.x + 2048;
+				extX = 4096 - displacement->pos.x;
 			}
 			else
 			{
-				minX = startPos->x + displacement->x + 2048;
-				extX = displacement->x + 4096;
+				minX = startPos->pos.x + displacement->pos.x + 2048;
+				extX = displacement->pos.x + 4096;
 			}
 
-			if (displacement->y >= 0)
+			if (displacement->pos.y >= 0)
 			{
-				minY = startPos->y + displacement->y + 2048;
-				extY = displacement->y + 4096;
+				minY = startPos->pos.y + displacement->pos.y + 2048;
+				extY = displacement->pos.y + 4096;
 			}
 			else
 			{
-				minY = startPos->y + 2048;
-				extY = 4096 - displacement->y;
+				minY = startPos->pos.y + 2048;
+				extY = 4096 - displacement->pos.y;
 			}
 
-			if (displacement->z >= 0)
+			if (displacement->pos.z >= 0)
 			{
-				minZ = startPos->z + displacement->z + 2048;
-				extZ = displacement->z + 4096;
+				minZ = startPos->pos.z + displacement->pos.z + 2048;
+				extZ = displacement->pos.z + 4096;
 			}
 			else
 			{
-				minZ = startPos->z + 2048;
-				extZ = 4096 - displacement->z;
+				minZ = startPos->pos.z + 2048;
+				extZ = 4096 - displacement->pos.z;
 			}
 
 			Toy2::Collision::g_candidateTriangleCount = 0;
@@ -1750,9 +1750,9 @@ namespace Nu3D
 				originY = mesh->origin.y;
 				originX = mesh->origin.x;
 				originZ = mesh->origin.z;
-				localZ = startPos->z;
-				localY = startPos->y;
-				localX = startPos->x;
+				localZ = startPos->pos.z;
+				localY = startPos->pos.y;
+				localX = startPos->pos.x;
 
 				if (((originZ - localZ) >> 6) * ((originZ - localZ) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6)
 						+ ((originX - localX) >> 6) * ((originX - localX) >> 6)
@@ -1776,9 +1776,9 @@ namespace Nu3D
 						originY = mesh->origin.y;
 						originX = mesh->origin.x;
 
-						localY = startPos->y - originY;
-						localZ = startPos->z - originZ;
-						localX = startPos->x - mesh->origin.x;
+						localY = startPos->pos.y - originY;
+						localZ = startPos->pos.z - originZ;
+						localX = startPos->pos.x - mesh->origin.x;
 
 						platformX = platformReach + mesh->origin.x + (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 4096;
 						platformY = platformReach + originY + (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 4096;
@@ -1786,9 +1786,9 @@ namespace Nu3D
 					}
 					else
 					{
-						platformX = startPos->x + platformReach;
-						platformY = startPos->y + platformReach;
-						platformZ = startPos->z;
+						platformX = startPos->pos.x + platformReach;
+						platformY = startPos->pos.y + platformReach;
+						platformZ = startPos->pos.z;
 					}
 
 					platformZ = platformReach + platformZ;
@@ -1920,11 +1920,11 @@ namespace Nu3D
 			{
 				memcpy(&result, startPos, sizeof(result));
 
-				hit = SweepAgainstCandidates(movement, &result.x, radius);
+				hit = SweepAgainstCandidates(movement, &result.pos.x, radius);
 
-				displacement->x = result.x - startPos->x;
-				displacement->y = result.y - startPos->y;
-				displacement->z = result.z - startPos->z;
+				displacement->pos.x = result.pos.x - startPos->pos.x;
+				displacement->pos.y = result.pos.y - startPos->pos.y;
+				displacement->pos.z = result.pos.z - startPos->pos.z;
 			}
 
 			return hit;

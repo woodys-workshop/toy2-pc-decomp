@@ -1417,7 +1417,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00482A00
 		int32_t ResolveSubstep(
 			Toy2::Collision::ResolvedVelocity* a1,
-			WorldPos* a2,
+			Transform* a2,
 			Vector3I* a3,
 			Toy2::Collision::BuzzCollisionState* a4,
 			uint16_t* a5,
@@ -1479,9 +1479,9 @@ namespace Toy2
 
 				if ((int16_t)*meshes != prevMesh)
 				{
-					x = a2->x;
-					y = a2->y;
-					z = a2->z;
+					x = a2->pos.x;
+					y = a2->pos.y;
+					z = a2->pos.z;
 					prevMesh = (int16_t)meshIdx;
 					mesh = &g_collisionMeshInstances[meshIdx];
 
@@ -1584,7 +1584,7 @@ namespace Toy2
 					hitAny = 1;
 			}
 
-			if (SweepWallSegments(&rayQuery, &a2->x, (uint32_t*)&velocity, a4->floorOffset) == 1)
+			if (SweepWallSegments(&rayQuery, &a2->pos.x, (uint32_t*)&velocity, a4->floorOffset) == 1)
 			{
 				hitFlags = -1;
 				rayQuery.hitFlags = -1;
@@ -1610,15 +1610,15 @@ namespace Toy2
 				scaledT1 = hitT1 >> 3;
 				g_unk72959C = (rayQuery.hitT0 - 32) >> 3;
 				g_unk729170 = scaledT1;
-				posX = a2->x;
+				posX = a2->pos.x;
 				rayQuery.hitT0 = (rayQuery.hitT0 - 32) >> 3;
 				hitT0 = rayQuery.hitT0;
 				rayQuery.hitT1 = scaledT1;
 				posY = velocity.y * hitT0;
-				a2->x = velocity.x * rayQuery.hitT0 / (rayQuery.hitT0 - scaledT1) + posX;
-				posZ = posY / (hitT0 - scaledT1) + a2->y;
-				a2->y = posZ;
-				a2->z += velocity.z * hitT0 / (hitT0 - scaledT1);
+				a2->pos.x = velocity.x * rayQuery.hitT0 / (rayQuery.hitT0 - scaledT1) + posX;
+				posZ = posY / (hitT0 - scaledT1) + a2->pos.y;
+				a2->pos.y = posZ;
+				a2->pos.z += velocity.z * hitT0 / (hitT0 - scaledT1);
 
 				if (a8)
 				{
@@ -1712,9 +1712,9 @@ namespace Toy2
 
 							mesh = &g_collisionMeshInstances[platform->meshInstanceId];
 
-							localZ = a2->z - mesh->origin.z;
-							localY = a2->y - mesh->origin.y;
-							localX = a2->x - mesh->origin.x;
+							localZ = a2->pos.z - mesh->origin.z;
+							localY = a2->pos.y - mesh->origin.y;
+							localX = a2->pos.x - mesh->origin.x;
 
 							posX = localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00;
 							velocity.x = posX / 4096;
@@ -1724,11 +1724,11 @@ namespace Toy2
 							platformVelY = a1->platformVel.y;
 
 							a1->platformVel.x += (uint16_t)mesh->origin.x
-								+ (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096 - (uint16_t)a2->x;
+								+ (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096 - (uint16_t)a2->pos.x;
 							a1->platformVel.y += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.y
-								+ (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096 - (uint16_t)a2->y;
+								+ (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096 - (uint16_t)a2->pos.y;
 							a1->platformVel.z += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.z
-								+ (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096 - (uint16_t)a2->z;
+								+ (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096 - (uint16_t)a2->pos.z;
 
 							if (platformVelY > a1->platformVel.y)
 								a1->platformVel.y = (a1->platformVel.y - platformVelY) / 8 + a1->platformVel.y + 32;
@@ -1902,9 +1902,9 @@ namespace Toy2
 			if (a8)
 				Platform::AdvancePartialMotion(100, 0, 0);
 
-			a2->x = velocity.x + a2->x;
-			a2->y += velocity.y;
-			a2->z = velocity.z + a2->z;
+			a2->pos.x = velocity.x + a2->pos.x;
+			a2->pos.y += velocity.y;
+			a2->pos.z = velocity.z + a2->pos.z;
 			a1->vel.x = 0;
 			a1->vel.y = 0;
 			a1->vel.z = 0;
@@ -1918,7 +1918,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00483EF0
 		int32_t ResolvePlatformFooting(
 			Toy2::Collision::ResolvedVelocity* resolvedVelocity,
-			WorldPos* worldPos,
+			Transform* transform,
 			Vector3I* velocity,
 			Toy2::Collision::BuzzCollisionState* collisionState)
 		{
@@ -1928,7 +1928,7 @@ namespace Toy2
 			Matrix3x3I16* rotation = (Matrix3x3I16*)&g_mathScratch[948];
 			Vector3I16 angles;
 			ResolvedVelocity substepVelocity;
-			WorldPos substepPos;
+			Transform substepPos;
 			Vector3I substepMove;
 			BuzzCollisionState substepState;
 			int16_t substepMesh;
@@ -2002,9 +2002,9 @@ namespace Toy2
 			substepMove.x = resolvedVelocity->platformVel.x + resolvedVelocity->vel.x;
 			substepMove.y = resolvedVelocity->vel.y + resolvedVelocity->platformVel.y;
 			substepMove.z = resolvedVelocity->vel.z + resolvedVelocity->platformVel.z;
-			substepPos.x = substepMove.x + worldPos->x;
-			y = substepMove.y + worldPos->y;
-			substepPos.z = substepMove.z + worldPos->z;
+			substepPos.pos.x = substepMove.x + transform->pos.x;
+			y = substepMove.y + transform->pos.y;
+			substepPos.pos.z = substepMove.z + transform->pos.z;
 
 			surfaceY = n1y;
 
@@ -2014,7 +2014,7 @@ namespace Toy2
 			substepVelocity.vel.y = -surfaceY >> 6;
 			substepMesh = collisionState->contactSurfaceIndex & 0x7FF;
 			substepTriangle = collisionState->contactSurfaceData;
-			substepPos.y = (surfaceY >> 8) + y;
+			substepPos.pos.y = (surfaceY >> 8) + y;
 			substepVelocity.vel.x = 0;
 			substepVelocity.vel.z = 0;
 			substepVelocity.platformVel.x = 0;
@@ -2027,15 +2027,15 @@ namespace Toy2
 			{
 				if ((substepState.contactSurfaceIndex & 0x4000) != 0)
 				{
-					resolvedVelocity->vel.x = (int16_t)(substepPos.x + (n2x >> 9) - (int16_t)worldPos->x - resolvedVelocity->platformVel.x);
-					resolvedVelocity->vel.y = (int16_t)(substepPos.y + (n2y >> 8) - (int16_t)worldPos->y - resolvedVelocity->platformVel.y);
-					resolvedVelocity->vel.z = (int16_t)(substepPos.z + (n2z >> 9) - resolvedVelocity->platformVel.z - (int16_t)worldPos->z);
+					resolvedVelocity->vel.x = (int16_t)(substepPos.pos.x + (n2x >> 9) - (int16_t)transform->pos.x - resolvedVelocity->platformVel.x);
+					resolvedVelocity->vel.y = (int16_t)(substepPos.pos.y + (n2y >> 8) - (int16_t)transform->pos.y - resolvedVelocity->platformVel.y);
+					resolvedVelocity->vel.z = (int16_t)(substepPos.pos.z + (n2z >> 9) - resolvedVelocity->platformVel.z - (int16_t)transform->pos.z);
 				}
 				else
 				{
-					resolvedVelocity->vel.x = (int16_t)(substepPos.x + (n1x >> 9) - (int16_t)worldPos->x - resolvedVelocity->platformVel.x);
-					resolvedVelocity->vel.y = (int16_t)(substepPos.y + (n1y >> 8) - (int16_t)worldPos->y - resolvedVelocity->platformVel.y);
-					resolvedVelocity->vel.z = (int16_t)(substepPos.z + ((n1z >> 9) - resolvedVelocity->platformVel.z) - (int16_t)worldPos->z);
+					resolvedVelocity->vel.x = (int16_t)(substepPos.pos.x + (n1x >> 9) - (int16_t)transform->pos.x - resolvedVelocity->platformVel.x);
+					resolvedVelocity->vel.y = (int16_t)(substepPos.pos.y + (n1y >> 8) - (int16_t)transform->pos.y - resolvedVelocity->platformVel.y);
+					resolvedVelocity->vel.z = (int16_t)(substepPos.pos.z + ((n1z >> 9) - resolvedVelocity->platformVel.z) - (int16_t)transform->pos.z);
 				}
 
 				return 1;

@@ -1083,7 +1083,7 @@ namespace Nu3D
 
 				if (particle->velX || particle->velZ || particle->groundHeightY == 0x80000000)
 				{
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)particle, 0);
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)particle, 0);
 					frameDelta = Renderer::g_frameDelta;
 					particle->groundHeightY = groundHeight;
 				}
@@ -1500,7 +1500,7 @@ namespace Nu3D
 					case 0x1C:
 						if (particle->unkByte1 != 0xC6)
 						{
-							value = Nu3D::Collision::GetGroundHeight((WorldPos*)particle, 100);
+							value = Nu3D::Collision::GetGroundHeight((Transform*)particle, 100);
 							particle->groundHeightY = value;
 
 							if (value != 0x80000000 && particle->pos.y + 32 * particle->height > value)
@@ -1794,7 +1794,7 @@ namespace Nu3D
 
 					case 0x2B:
 						particle->groundAlignRot = (2047 - (int16_t)particle->yawAngle) & 0xFFF;
-						value = Nu3D::Collision::GetGroundHeight((WorldPos*)particle, 0);
+						value = Nu3D::Collision::GetGroundHeight((Transform*)particle, 0);
 						particle->groundHeightY = value;
 
 						if (value != 0x80000000)
@@ -1807,7 +1807,7 @@ namespace Nu3D
 						goto LABEL_243;
 
 					case 0x2C:
-						value = Nu3D::Collision::GetGroundHeight((WorldPos*)particle, 0);
+						value = Nu3D::Collision::GetGroundHeight((Transform*)particle, 0);
 						value2 = particle->pos.y;
 						particle->groundHeightY = value;
 

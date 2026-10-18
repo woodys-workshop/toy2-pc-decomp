@@ -26,8 +26,8 @@ namespace Renderer
 			int32_t spriteSheet,
 			int32_t halfWidth,
 			int32_t segmentLength,
-			WorldPos* origin,
-			WorldPos* direction,
+			Transform* origin,
+			Transform* direction,
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR)
@@ -60,13 +60,13 @@ namespace Renderer
 
 			Nu3D::Math::GetPositionVector(&Nu3D::Camera::g_secondaryCamera.matrix, &vec2);
 
-			vec1.x = origin->x * 0.03125;
-			vec1.y = origin->y * 0.03125;
-			vec1.z = origin->z * 0.03125;
+			vec1.x = origin->pos.x * 0.03125;
+			vec1.y = origin->pos.y * 0.03125;
+			vec1.z = origin->pos.z * 0.03125;
 
-			vec3.x = direction->x * 0.03125;
-			vec3.y = direction->y * 0.03125;
-			vec3.z = direction->z * 0.03125;
+			vec3.x = direction->pos.x * 0.03125;
+			vec3.y = direction->pos.y * 0.03125;
+			vec3.z = direction->pos.z * 0.03125;
 
 			Nu3D::Math::VertexSubtract(&vec2, &vec2, &vec1);
 			Nu3D::Math::VertexCrossProduct(&vec4, &vec2, &vec3);
@@ -131,8 +131,8 @@ namespace Renderer
 			int32_t spriteSheet,
 			int32_t halfWidth,
 			int32_t segementLength,
-			WorldPos* origin,
-			WorldPos* direction,
+			Transform* origin,
+			Transform* direction,
 			uint8_t tintB,
 			uint8_t tintG,
 			uint8_t tintR)

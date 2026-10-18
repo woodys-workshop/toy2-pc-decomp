@@ -700,7 +700,7 @@ namespace Toy2
 				{
 					v33 = Nu3D::Particles::SpawnFromPreset(v31, v76, v32, 55, 19);
 					v33->pos.y = -16384;
-					v33->groundHeightY = Nu3D::Collision::GetGroundHeight((WorldPos*)v33, 0);
+					v33->groundHeightY = Nu3D::Collision::GetGroundHeight((Transform*)v33, 0);
 					v33->pos.y = v76;
 					v33->rotSpeed = *g_randDatBufferPtr++ - 128;
 
@@ -1393,7 +1393,7 @@ namespace Toy2
 			int32_t l_index;
 			Levels::Type63* l_data;
 			int32_t l_unk;
-			WorldPos l_pos;
+			Transform l_pos;
 
 			l_index = 0;
 			l_data = (Levels::Type63*)Levels::g_recordData[63]->data;
@@ -1404,9 +1404,9 @@ namespace Toy2
 				{
 					if (l_data->pos.y != 0x80000000 && l_data->props.linkId < 0x30u)
 					{
-						l_pos.x = 32 * l_data->pos.x;
-						l_pos.z = 32 * l_data->pos.z;
-						l_pos.y = 32 * (l_data->pos.y - 10);
+						l_pos.pos.x = 32 * l_data->pos.x;
+						l_pos.pos.z = 32 * l_data->pos.z;
+						l_pos.pos.y = 32 * (l_data->pos.y - 10);
 
 						l_unk = Nu3D::Collision::GetGroundHeightEx(&l_pos, 0, 0) >> 5;
 

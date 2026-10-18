@@ -537,7 +537,7 @@ namespace Toy2
 				{
 					Nu3D::Particles::ParticleInstance* particle =
 						Nu3D::Particles::SpawnInstance(actor->pos.x, actor->pos.y - 4096, actor->pos.z, 0, -2048, 0, 128, 0, 0, 61);
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)particle, 0);
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)particle, 0);
 					particle->groundHeightY = groundHeight;
 
 					if (groundHeight == 0x80000000)
@@ -1342,7 +1342,7 @@ namespace Toy2
 				{
 					int32_t snapY = frameDelta * (targetY - curY) / 64 + curY;
 					actor->pos.y -= 6400;
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
 					actor->pos.y = groundHeight;
 
 					if (groundHeight == 0x80000000)
@@ -1408,7 +1408,7 @@ namespace Toy2
 				else
 				{
 					actor->pos.y = newY - 6400;
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
 					actor->pos.y = groundHeight;
 
 					if (groundHeight == 0x80000000)

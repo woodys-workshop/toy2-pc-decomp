@@ -167,10 +167,10 @@ namespace Toy2
 			int32_t v72;
 			int32_t v73;
 			int32_t v74;
-			WorldPos a2;
+			Transform a2;
 			int32_t v76;
 			int32_t v77;
-			WorldPos pts[7];
+			Transform pts[7];
 
 			AudioManager::PlaySoundEffect(103, 0);
 
@@ -260,10 +260,10 @@ namespace Toy2
 				if (v18 >= 1572864)
 					v18 -= 0x180000;
 
-				pts[i].x = 0;
-				pts[i].y = 150;
+				pts[i].pos.x = 0;
+				pts[i].pos.y = 150;
 				v17 = (v17 + 683) & 0xFFF;
-				pts[i].z = 1450;
+				pts[i].pos.z = 1450;
 
 				Actor::ResolveBoneAttachmentPos((Vector3I*)&pts[i], &g_levelActors[i], 1);
 
@@ -272,7 +272,7 @@ namespace Toy2
 					Nu3D::Collision::GetGroundHeight(&pts[i], 150);
 					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&pts[i], 75) != 0)
 					{
-						v22 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - pts[i].x, g_buzzActor.posAngles.pos.z - pts[i].z);
+						v22 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - pts[i].pos.x, g_buzzActor.posAngles.pos.z - pts[i].pos.z);
 						Buzz::HandleDamage(v22, 1u);
 					}
 				}
@@ -469,10 +469,10 @@ namespace Toy2
 					if (Camera::g_cutsceneTimer != 0)
 					{
 						g_unk52FC00 = 200;
-						v35 = pts[v32].y;
-						v36 = pts[v32].z;
+						v35 = pts[v32].pos.y;
+						v36 = pts[v32].pos.z;
 
-						Camera::g_cutsceneFocusPos.x = pts[v32].x;
+						Camera::g_cutsceneFocusPos.x = pts[v32].pos.x;
 						Camera::g_cutsceneFocusPos.y = v35;
 						Camera::g_cutsceneFocusPos.z = v36;
 
@@ -513,25 +513,25 @@ namespace Toy2
 
 						if (Camera::g_cutsceneTimer > 185 && Camera::g_cutsceneTimer < 300 && g_tickState[2] != 0)
 						{
-							a2.x = 0;
-							a2.y = 400;
-							a2.z = 1200;
+							a2.pos.x = 0;
+							a2.pos.y = 400;
+							a2.pos.z = 1200;
 
 							Actor::ResolveBoneAttachmentPos((Vector3I*)&a2, &g_levelActors[v32], 4);
 
 							if (g_tickState[4] != 0)
-								Nu3D::Particles::SpawnFromPreset(a2.x, a2.y, a2.z, 17, 2);
+								Nu3D::Particles::SpawnFromPreset(a2.pos.x, a2.pos.y, a2.pos.z, 17, 2);
 							else
-								Nu3D::Particles::SpawnFromPreset(a2.x, a2.y, a2.z, 4, 4);
+								Nu3D::Particles::SpawnFromPreset(a2.pos.x, a2.pos.y, a2.pos.z, 4, 4);
 
 							v32 = g_unk52FBD4;
 						}
 
 						if (g_levelActors[v32].actorPhase == 1)
 						{
-							v44 = pts[v32].y;
-							v45 = pts[v32].x;
-							v46 = pts[v32].z;
+							v44 = pts[v32].pos.y;
+							v45 = pts[v32].pos.x;
+							v46 = pts[v32].pos.z;
 
 							v47 = g_unk52FBC4;
 							v48 = g_unk52FBC8;
@@ -680,14 +680,14 @@ namespace Toy2
 			{
 				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 400) != 0)
 				{
-					a2.x = 0;
-					a2.y = 0;
-					a2.z = -400;
+					a2.pos.x = 0;
+					a2.pos.y = 0;
+					a2.pos.z = -400;
 
 					Actor::ResolveBoneAttachmentPos((Vector3I*)&a2, g_levelActors, 0);
 
 					v58 = g_levelActors[0].yawAngle;
-					v59 = (Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - a2.x, g_buzzActor.posAngles.pos.z - a2.z) - v58) & 0xFFF;
+					v59 = (Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - a2.pos.x, g_buzzActor.posAngles.pos.z - a2.pos.z) - v58) & 0xFFF;
 
 					if (v59 > 0x800)
 						v59 -= 4095;
@@ -703,18 +703,18 @@ namespace Toy2
 					}
 
 					v60 = (v58 + v59) & 0xFFF;
-					pts[0].y = 96000;
+					pts[0].pos.y = 96000;
 
 					v61 = Numerics::g_sinCosLUT[(v60 + 1024) & 0xFFF];
-					pts[0].x = 4 * Numerics::g_sinCosLUT[v60];
-					pts[0].z = 4 * v61;
+					pts[0].pos.x = 4 * Numerics::g_sinCosLUT[v60];
+					pts[0].pos.z = 4 * v61;
 
 					Nu3D::Collision::SweepAndSlide(&a2, &pts[0], 0x8000, 0, 256);
 					Renderer::Beam::QueueBeam(9, 128, 400, &a2, &pts[0], 0, 0x80u, 0);
 
-					a2.x += pts[0].x;
-					a2.y += pts[0].y;
-					a2.z += pts[0].z;
+					a2.pos.x += pts[0].pos.x;
+					a2.pos.y += pts[0].pos.y;
+					a2.pos.z += pts[0].pos.z;
 
 					AudioManager::PlaySoundEffect(135, (Vector3I*)&a2);
 
@@ -724,18 +724,18 @@ namespace Toy2
 					{
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(a2.x, a2.y, a2.z, 4, 4);
+							Nu3D::Particles::SpawnFromPreset(a2.pos.x, a2.pos.y, a2.pos.z, 4, 4);
 							++v62;
 						} while (v62 < g_tickState[2]);
 					}
 
 					if (g_tickState[4] != 0)
-						Nu3D::Particles::SpawnFromPreset(a2.x, a2.y, a2.z, 70, 2);
+						Nu3D::Particles::SpawnFromPreset(a2.pos.x, a2.pos.y, a2.pos.z, 70, 2);
 
 					if (g_tickState[10] != 0)
-						Lighting::SpawnLight(a2.x, a2.y, a2.z, 49152, 16, -2);
+						Lighting::SpawnLight(a2.pos.x, a2.pos.y, a2.pos.z, 49152, 16, -2);
 
-					Renderer::LensFlare::RegisterLight(a2.x, a2.y, a2.z, 0, 128, 0, 64);
+					Renderer::LensFlare::RegisterLight(a2.pos.x, a2.pos.y, a2.pos.z, 0, 128, 0, 64);
 					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&a2, 30) != 0)
 					{
 						if (g_buzzActor.stunTimer == 0)
@@ -748,7 +748,7 @@ namespace Toy2
 							AudioManager::Preset::PlayOneShotSound(215, (Actor::Toy2Actor*)&g_buzzActor);
 						}
 
-						v63 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - a2.x, g_buzzActor.posAngles.pos.z - a2.z);
+						v63 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - a2.pos.x, g_buzzActor.posAngles.pos.z - a2.pos.z);
 
 						Buzz::HandleDamage(v63, 3u);
 					}

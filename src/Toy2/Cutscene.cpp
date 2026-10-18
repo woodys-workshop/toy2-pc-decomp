@@ -89,7 +89,7 @@ namespace Toy2
 											g_levelActors[script[1]].pos.x = 32 * record->data[script[2]].x;
 											g_levelActors[script[1]].pos.y = 32 * record->data[script[2]].y;
 											g_levelActors[script[1]].pos.z = 32 * record->data[script[2]].z;
-											g_levelActors[script[1]].pos.y = Nu3D::Collision::GetGroundHeight((WorldPos*)&g_levelActors[script[1]].pos, 0);
+											g_levelActors[script[1]].pos.y = Nu3D::Collision::GetGroundHeight((Transform*)&g_levelActors[script[1]].pos, 0);
 											g_levelActors[script[1]].velX = 0;
 											g_levelActors[script[1]].gravityVel = 0;
 											g_levelActors[script[1]].velForward = 0;
@@ -99,7 +99,7 @@ namespace Toy2
 											g_buzzActor.posAngles.pos.x = 32 * record->data[script[2]].x;
 											g_buzzActor.posAngles.pos.y = 32 * record->data[script[2]].y;
 											g_buzzActor.posAngles.pos.z = 32 * record->data[script[2]].z;
-											g_buzzActor.posAngles.pos.y = Nu3D::Collision::GetGroundHeight((WorldPos*)&g_buzzActor.posAngles.pos, 0);
+											g_buzzActor.posAngles.pos.y = Nu3D::Collision::GetGroundHeight(&g_buzzActor.posAngles, 0);
 											g_buzzActor.velX = 0;
 											g_buzzActor.gravityVel = 0;
 											g_buzzActor.velForward = 0;

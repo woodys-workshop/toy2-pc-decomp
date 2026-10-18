@@ -1180,7 +1180,7 @@ namespace Toy2
 				a2.z = v44 + Camera::g_activeCameraTransform.pos.z + 2 * v44 + ((*++g_randDatBufferPtr - 128) << 8);
 				++g_randDatBufferPtr;
 
-				l_groundHeight = Nu3D::Collision::GetGroundHeight((WorldPos*)&a2, 0);
+				l_groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&a2, 0);
 
 				if (l_groundHeight != 0x80000000)
 				{
