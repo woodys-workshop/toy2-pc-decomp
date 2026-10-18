@@ -132,47 +132,48 @@ namespace NGNLoader
 		NGNTextureData* cachedTextureData = GetTextureData(texParams, 0);
 
 		// If its already cached, return it
-		if (cachedTextureData)
-			return cachedTextureData->textureIndex;
-
-		NGNTextureCache* textureCache = AllocateTextureCache();
-
-		// Build a new entry if its new
-		if (textureCache)
+		if (! cachedTextureData)
 		{
-			memcpy(&textureCache->params, texParams, sizeof(textureCache->params));
+			NGNTextureCache* textureCache = AllocateTextureCache();
 
-			textureCache->params.rawTexStr = 0;
-
-			strcpy(textureCache->texName, texParams->rawTexStr);
-
-			NGNTextureData* textureData = AllocateTextureData();
-
-			if (textureData)
+			// Build a new entry if its new
+			if (textureCache)
 			{
-				textureData->isTex14 = texParams->isTex14;
-				textureData->color.r = texParams->color.r;
-				textureData->color.g = texParams->color.g;
-				textureData->color.b = texParams->color.b;
+				memcpy(&textureCache->params, texParams, sizeof(textureCache->params));
 
-				uint32_t isTex14 = texParams->isTex14;
-				strcpy(rawTexStrBuffer, texParams->rawTexStr);
+				textureCache->params.rawTexStr = 0;
 
-				int32_t flags;
+				strcpy(textureCache->texName, texParams->rawTexStr);
 
-				if ((isTex14 & 2) != 0)
-					flags = 1;
-				else
-					flags = 2 * (isTex14 & 4);
+				NGNTextureData* textureData = AllocateTextureData();
 
-				textureData->bmpDataNode = LoadLocalBmpTexture(rawTexStrBuffer, flags);
-				textureData->textureCacheIndex = textureCache->textureIndex;
+				if (textureData)
+				{
+					textureData->isTex14 = texParams->isTex14;
+					textureData->color.b = texParams->color.b;
+					textureData->color.g = texParams->color.g;
+					textureData->color.r = texParams->color.r;
 
-				return textureData->textureIndex;
+					strcpy(rawTexStrBuffer, texParams->rawTexStr);
+
+					int32_t flags;
+
+					if ((texParams->isTex14 & 2) != 0)
+						flags = 1;
+					else
+						flags = 2 * (texParams->isTex14 & 4);
+
+					textureData->bmpDataNode = LoadLocalBmpTexture(rawTexStrBuffer, flags);
+					textureData->textureCacheIndex = textureCache->textureIndex;
+
+					return textureData->textureIndex;
+				}
 			}
+
+			return 0;
 		}
 
-		return 0;
+		return cachedTextureData->textureIndex;
 	}
 
 	// FUNCTION: TOY2 0x004AC220
@@ -181,20 +182,10 @@ namespace NGNLoader
 	// FUNCTION: TOY2 0x004BC320
 	Nu3D::Portal::PortalState* AllocAreaPortal(NGNImage* ngnImage)
 	{
-		int32_t entryCount = ngnImage->portalEntryCount;
+		if (ngnImage->portalEntryCount < ngnImage->areaPortalCount && ngnImage->portalStatePool)
+			return &ngnImage->portalStatePool[ngnImage->portalEntryCount++];
 
-		if (entryCount >= ngnImage->areaPortalCount)
-			return 0;
-
-		Nu3D::Portal::PortalState* pool = ngnImage->portalStatePool;
-
-		if (! pool)
-			return 0;
-
-		Nu3D::Portal::PortalState* newAlloc = &pool[entryCount];
-		ngnImage->portalEntryCount = entryCount + 1;
-
-		return newAlloc;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004BC2C0
@@ -436,7 +427,7 @@ namespace NGNLoader
 
 		if (patchCount > 0)
 		{
-			while (1)
+			do
 			{
 				Nu3D::Patch* patch;
 
@@ -500,7 +491,7 @@ namespace NGNLoader
 
 					do
 					{
-						*indexData = *sourceIndices;
+						*(int32_t*)indexData = *sourceIndices;
 						indexData += 2;
 						++sourceIndices;
 						--maxIndices;
@@ -518,13 +509,10 @@ namespace NGNLoader
 				}
 
 				++patchIndex;
-
-				if (patchIndex >= patchCount)
-					return patchIndex;
-			}
+			} while (patchIndex < patchCount);
 		}
 
-		return 0;
+		return patchIndex;
 	}
 
 	// FUNCTION: TOY2 0x004CA420
@@ -839,20 +827,23 @@ namespace NGNLoader
 
 		fread(&portalCount, sizeof(int32_t), 1, stream);
 
-		if (! portalCount)
-			return;
-
-		AllocPools(ngnImage, portalCount, 4000);
-
-		for (int32_t index = 0; index < portalCount; ++index)
+		do
 		{
-			fread(&portalId, sizeof(int32_t), 1, stream);
-			fread(&sourceAreaIdx, sizeof(int32_t), 1, stream);
-			fread(&targetAreaIdx, sizeof(int32_t), 1, stream);
+			if (! portalCount)
+				break;
 
-			Nu3D::Portal::AreaPortal::CalculateBoundingSphere(ngnImage->areaPortals[portalId]);
-			InsertPortal(ngnImage, sourceAreaIdx, targetAreaIdx, ngnImage->areaPortals[portalId]);
-		}
+			AllocPools(ngnImage, portalCount, 4000);
+
+			for (int32_t index = 0; index < portalCount; ++index)
+			{
+				fread(&portalId, sizeof(int32_t), 1, stream);
+				fread(&sourceAreaIdx, sizeof(int32_t), 1, stream);
+				fread(&targetAreaIdx, sizeof(int32_t), 1, stream);
+
+				Nu3D::Portal::AreaPortal::CalculateBoundingSphere(ngnImage->areaPortals[portalId]);
+				InsertPortal(ngnImage, sourceAreaIdx, targetAreaIdx, ngnImage->areaPortals[portalId]);
+			}
+		} while (0);
 	}
 
 	// FUNCTION: TOY2 0x004C3BE0
@@ -1152,9 +1143,11 @@ namespace NGNLoader
 		// the original never initialises the colour (it is whatever was on the stack), at runtime it is always black,
 		// which is what keeps the reflection overlay faint, so use that to be deterministic
 		RGBColor color;
+#ifdef APPLY_FIXES
 		color.r = 0.0;
 		color.g = 0.0;
 		color.b = 0.0;
+#endif
 
 		Nu3D::g_tex14Version1 = Nu3D::Material::CreateFromColor(&color);
 
@@ -1222,27 +1215,22 @@ namespace NGNLoader
 	{
 		int32_t count = 0;
 
-		Nu3D::Link::DynamicScaler** scalers = ngnImage->dynamicScalers;
-
-		while (*scalers)
+		while (ngnImage->dynamicScalers[count])
 		{
 			if (count >= 2)
 				break;
 
-			int32_t shapeCount = ngnImage->shapeCounts[count];
+			int32_t i = 0;
 
-			if (shapeCount > 0)
+			if (ngnImage->shapeCounts[count] > 0)
 			{
-				int32_t i = 0;
-
 				do
 				{
-					Nu3D::Portal::AreaPortal::BuildScalerEntry(ngnImage, (*scalers)[i].areaIndex, &(*scalers)[i]);
+					Nu3D::Portal::AreaPortal::BuildScalerEntry(ngnImage, ngnImage->dynamicScalers[count][i].areaIndex, &ngnImage->dynamicScalers[count][i]);
 					++i;
-				} while (i < shapeCount);
+				} while (i < ngnImage->shapeCounts[count]);
 			}
 
-			++scalers;
 			++count;
 		}
 	}
@@ -1453,9 +1441,9 @@ namespace NGNLoader
 	}
 
 	// FUNCTION: TOY2 0x004CE2C0
-	int32_t GetTextureDataIndex(uint32_t textureIndex)
+	int32_t GetTextureDataIndex(int32_t textureIndex)
 	{
-		if (g_ngnImage && textureIndex < 64)
+		if (g_ngnImage && textureIndex >= 0 && textureIndex < 64)
 			return g_ngnImage->textureEntries[textureIndex].textureDataIndex;
 		else
 			return 0;
@@ -1533,13 +1521,14 @@ namespace NGNLoader
 		{
 			result->next = list->next;
 			result = g_textureData.freeList;
+			list->next = result;
 		}
 		else
 		{
 			g_textureData.activeList = list->next;
+			list->next = g_textureData.freeList;
 		}
 
-		list->next = g_textureData.freeList;
 		g_textureData.freeList = list;
 
 		return result;

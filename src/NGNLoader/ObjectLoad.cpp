@@ -909,7 +909,7 @@ namespace NGNLoader
 		}
 
 		// FUNCTION: TOY2 0x004CB940
-		Nu3D::Material* GetCurrentMatByIndex(uint32_t index)
+		Nu3D::Material* GetCurrentMatByIndex(int32_t index)
 		{
 			if (index >= g_curMaterialCount || index < 0)
 				return 0;

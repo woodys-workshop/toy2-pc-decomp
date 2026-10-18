@@ -16,6 +16,6 @@ namespace NGNLoader
 		int32_t ExtractShapeMaterials(FILE* stream);
 		int32_t ExtractShapeVertices(FILE* stream);
 		Nu3D::Primitive* ExtractShapeData(FILE* stream);
-		Nu3D::Material* GetCurrentMatByIndex(uint32_t index);
+		Nu3D::Material* GetCurrentMatByIndex(int32_t index);
 	}
 }
