@@ -915,4 +915,186 @@
 // LIBRARY: TOY2 0x004DBCBA
 // __fltin
 
+// CRT variables the library functions above refer to
+
+// GLOBAL: TOY2 0x004DF000
+// ___xc_a
+
+// GLOBAL: TOY2 0x004DF00C
+// ___xc_z
+
+// GLOBAL: TOY2 0x004DF010
+// ___xi_a
+
+// GLOBAL: TOY2 0x004DF020
+// ___xi_z
+
+// GLOBAL: TOY2 0x00508E2C
+// __FPinit
+
+// GLOBAL: TOY2 0x00508E60
+// ___app_type
+
+// GLOBAL: TOY2 0x00508E80
+// __cfltcvt_tab
+
+// GLOBAL: TOY2 0x00508EA8
+// __pctype
+
+// GLOBAL: TOY2 0x005090B4
+// ___mb_cur_max
+
+// GLOBAL: TOY2 0x005090B8
+// ___decimal_point
+
+// GLOBAL: TOY2 0x005090D0
+// __sys_errlist
+
+// GLOBAL: TOY2 0x00509180
+// __sys_nerr
+
+// GLOBAL: TOY2 0x00509398
+// ___badioinfo
+
+// GLOBAL: TOY2 0x00509418
+// __First_FPE_Indx
+
+// GLOBAL: TOY2 0x0050941C
+// __Num_FPE
+
+// GLOBAL: TOY2 0x00509424
+// __fpecode
+
+// GLOBAL: TOY2 0x00509428
+// __NLG_Destination
+
+// GLOBAL: TOY2 0x00509500
+// _iob
+
+// GLOBAL: TOY2 0x00509780
+// __aexit_rtn
+
+// GLOBAL: TOY2 0x00509AF8
+// __pow10pos
+
+// GLOBAL: TOY2 0x00509C58
+// __pow10neg
+
+// GLOBAL: TOY2 0x00B62430
+// __adjust_fdiv
+
+// GLOBAL: TOY2 0x00B62438
+// errno
+
+// GLOBAL: TOY2 0x00B6243C
+// __doserrno
+
+// GLOBAL: TOY2 0x00B62440
+// __umaskval
+
+// GLOBAL: TOY2 0x00B62454
+// ___argc
+
+// GLOBAL: TOY2 0x00B62458
+// ___argv
+
+// GLOBAL: TOY2 0x00B62460
+// __environ
+
+// GLOBAL: TOY2 0x00B62470
+// __pgmptr
+
+// GLOBAL: TOY2 0x00B62478
+// __exitflag
+
+// GLOBAL: TOY2 0x00B624AC
+// __aenvptr
+
+// GLOBAL: TOY2 0x00B624B4
+// ___error_mode
+
+// GLOBAL: TOY2 0x00B624CC
+// ___lc_handle
+
+// GLOBAL: TOY2 0x00B624E4
+// ___lc_codepage
+
+// GLOBAL: TOY2 0x00B624EC
+// __newmode
+
+// GLOBAL: TOY2 0x00B624F0
+// ?_pnhHeap@@3P6AHI@ZA
+
+// GLOBAL: TOY2 0x00B624F4
+// __stdbuf
+
+// GLOBAL: TOY2 0x00B624FC
+// __pxcptinfoptrs
+
+// GLOBAL: TOY2 0x00B62608
+// __adbgmsg
+
+// GLOBAL: TOY2 0x00B62640
+// __cflush
+
+// GLOBAL: TOY2 0x00B62648
+// __commode
+
+// GLOBAL: TOY2 0x00B62660
+// __fmode
+
+// GLOBAL: TOY2 0x00E4D9A8
+// ___mbcodepage
+
+// GLOBAL: TOY2 0x00E4D9BC
+// ___ismbcodepage
+
+// GLOBAL: TOY2 0x00E4DBC8
+// ___piob
+
+// GLOBAL: TOY2 0x00E4EBE0
+// __nstream
+
+// GLOBAL: TOY2 0x00E4EC00
+// ___pioinfo
+
+// GLOBAL: TOY2 0x00E4ED00
+// __nhandle
+
+// GLOBAL: TOY2 0x00E4ED04
+// ___sbh_sizeHeaderList
+
+// GLOBAL: TOY2 0x00E4ED08
+// ___sbh_indGroupDefer
+
+// GLOBAL: TOY2 0x00E4ED0C
+// ___sbh_pHeaderScan
+
+// GLOBAL: TOY2 0x00E4ED10
+// ___sbh_pHeaderDefer
+
+// GLOBAL: TOY2 0x00E4ED14
+// ___sbh_cntHeaderList
+
+// GLOBAL: TOY2 0x00E4ED18
+// ___sbh_pHeaderList
+
+// GLOBAL: TOY2 0x00E4ED1C
+// __crtheap
+
+// GLOBAL: TOY2 0x00E4ED20
+// __acmdln
+
+// GLOBAL: TOY2 0x00E4ED24
+// ___env_initialized
+
+// GLOBAL: TOY2 0x00E4ED28
+// ___mbctype_initialized
+
+// GLOBAL: TOY2 0x00E4ED2C
+// ___onexitend
+
+// GLOBAL: TOY2 0x00E4ED30
+// ___onexitbegin
+
 #endif
