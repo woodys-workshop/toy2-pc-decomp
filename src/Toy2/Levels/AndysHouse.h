@@ -9,7 +9,7 @@ namespace Toy2
 	namespace AndysHouse
 	{
 		extern int16_t g_unk4F0EDC[6];
-		extern Collectables::TokenTableEntry g_unk4F0EE8[10];
+		extern Collectables::TokenTableEntry g_tutorialHints[10];
 		extern int16_t g_unk4F0F90[24];
 		extern int32_t g_sparkPathIndex;
 		extern int32_t g_sparkPresetIndex;

@@ -9,10 +9,10 @@ namespace Toy2
 	{
 		struct TokenTableEntry
 		{
-			int32_t unkVar0;
-			int32_t unkVar1;
+			int32_t linkId;
+			int32_t recordType;
 			const char* text;
-			int32_t unkVar3;
+			int32_t yaw;
 		};
 
 		struct PickupSlot

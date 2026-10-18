@@ -27,43 +27,65 @@ namespace Toy2
 		// GLOBAL: TOY2 0x004F0EDC
 		int16_t g_unk4F0EDC[6] = { 57, 58, 59, 60, 48, 0 };
 
+		// clang-format off
 		// GLOBAL: TOY2 0x004F0EE8
-		Collectables::TokenTableEntry g_unk4F0EE8[10] = {
-			{ 67,
-			  31,
-			  "you can change camera mode using the pause menu. active camera will always try and turn to view buzz from behind. passive camera will not turn. "
-			  "the "
-			  "camera left and right buttons turn the ^camera^ in ^passive^ mode and turn ^buzz^ in ^active^ mode.",
+		Collectables::TokenTableEntry g_tutorialHints[10] = {
+			// camera modes
+			{ 67, 31,
+			  "you can change camera mode using the pause menu. active camera will always try and turn to view buzz from behind. "
+			  "passive camera will not turn. "
+			  "the camera left and right buttons turn the ^camera^ in ^passive^ mode and turn ^buzz^ in ^active^ mode.",
 			  2048 },
-			{ 62, 32, "if you jump at a horizontal bar you will swing around it. press jump when you have left the bar to jump farther and higher.", 2048 },
-			{ 63,
-			  33,
-			  "you can foot ^stomp^ where you see the ^stomp^ icon by pressing jump and then pressing ^spin^ while you are in the air. this will activate "
-			  "switches "
-			  "and catapults and will also act as an attack.",
+
+			// horizontal bars
+			{ 62, 32,
+			  "if you jump at a horizontal bar you will swing around it. press jump when you have left the bar to jump farther and higher.",
+			  2048 },
+
+			// foot stomp
+			{ 63, 33,
+			  "you can foot ^stomp^ where you see the ^stomp^ icon by pressing jump and then pressing ^spin^ while you are in the air. "
+			  "this will activate switches and catapults and will also act as an attack.",
 			  2435 },
-			{ 64, 34, "if you see the ^push^ icon you can run into the object and push it out of the way. ", 2048 },
-			{ 68, 35, "if you press the jump button once and then press it again you can do an extended jump. try it to reach the open drawer.", 727 },
-			{ 65,
-			  36,
-			  "you can grab onto poles. when you are holding on you can push up and down to move up and down the pole. you can press left and right to turn on "
-			  "the "
-			  "pole. press jump to let go of the pole.",
+
+			// pushing objects
+			{ 64, 34,
+			  "if you see the ^push^ icon you can run into the object and push it out of the way. ",
+			  2048 },
+
+			// extended jump
+			{ 68, 35,
+			  "if you press the jump button once and then press it again you can do an extended jump. try it to reach the open drawer.",
+			  727 },
+
+			// poles
+			{ 65, 36,
+			  "you can grab onto poles. when you are holding on you can push up and down to move up and down the pole. "
+			  "you can press left and right to turn on the pole. press jump to let go of the pole.",
 			  226 },
-			{ 69, 37, "you can jump onto zip lines to slide down them. press jump to let go of the line.", 48 },
-			{ 66,
-			  38,
-			  "you can target your laser by using your visor view. press the visor toggle button to activate the view. then press the target lock button to "
-			  "swap "
-			  "between visible targets, then press fire to use your laser. use it to shoot the catches holding up the side of the crib.",
+
+			// zip lines
+			{ 69, 37,
+			  "you can jump onto zip lines to slide down them. press jump to let go of the line.",
+			  48 },
+
+			// laser targeting
+			{ 66, 38,
+			  "you can target your laser by using your visor view. press the visor toggle button to activate the view. "
+			  "then press the target lock button to swap between visible targets, then press fire to use your laser. "
+			  "use it to shoot the catches holding up the side of the crib.",
 			  3072 },
-			{ 71,
-			  40,
-			  "if you press the fire button you can attack with your laser. if you press the spin button you can attack with your spin attack. hold down the "
-			  "button to charge up the attack. your spin attack can deflect objects that are fired at you.",
+
+			// laser and spin attacks
+			{ 71, 40,
+			  "if you press the fire button you can attack with your laser. if you press the spin button you can attack with your spin attack. "
+			  "hold down the button to charge up the attack. your spin attack can deflect objects that are fired at you.",
 			  0 },
+
+			// terminator
 			{ -1, 0, 0, 0 },
 		};
+		// clang-format on
 
 		// GLOBAL: TOY2 0x004F0F90
 		int16_t g_unk4F0F90[24] = { 1, 5, 1, 2, 6, 2, 3, 7, 3, 4, 1, 4, 7, 3, 7, 8, 4, 8, 0, 0, 0, -1, 0, 0 };
@@ -71,9 +93,8 @@ namespace Toy2
 		// GLOBAL: TOY2 0x004F0EB8
 		int32_t g_unk4F0EB8[9] = { 754088, 168579, -550789, 733672, 168579, -550789, 754088, 168579, -530053 };
 
-		// the hints of the actor in the kitchen, one for every token
 		// GLOBAL: TOY2 0x004F0F7C
-		char* g_unk4F0F7C[5] = {
+		char* g_tokenHints[5] = {
 			"^hamm^ is sitting on the sofa in the living room.",
 			"^bo peep^ has lost her sheep. she is on the table in the ^kitchen^.",
 			"^r.c. car^ is waiting to race you around the garage. he is through the hole in the door downstairs.",
@@ -194,18 +215,18 @@ namespace Toy2
 		int32_t g_potatoHeadBlitAngle;
 
 		// FUNCTION: TOY2 0x00417380
-		void Method2(int16_t a1, int32_t linkId, Vector3I* v1, int16_t a4, int32_t a5)
+		void AnimateBobbingPlatform(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t roll, int32_t platformId)
 		{
-			if (Nu3D::Math::IsWithinDistance(v1, &g_buzzActor.posAngles.pos, 640))
+			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640))
 			{
-				int32_t phase = a1 & 0x1FFF;
+				int32_t phase = cycleTime & 0x1FFF;
 				int16_t angle;
 
 				if (phase >= 0x800)
 				{
-					if ((a1 & 0x1FFF) >= 0x1000)
+					if ((cycleTime & 0x1FFF) >= 0x1000)
 					{
-						if ((a1 & 0x1FFF) >= 0x1800)
+						if ((cycleTime & 0x1FFF) >= 0x1800)
 						{
 							int32_t i = 0;
 
@@ -213,7 +234,7 @@ namespace Toy2
 							{
 								do
 								{
-									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(v1->x - 14336, v1->y + 4096, v1->z, 24, 13);
+									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x - 14336, pos->y + 4096, pos->z, 24, 13);
 									particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
 									particle->rotSpeed = *g_randDatBufferPtr - 128;
 									++i;
@@ -225,10 +246,10 @@ namespace Toy2
 						}
 						else
 						{
-							if ((phase - (Renderer::g_frameDelta << 6)) < 5120 && (a1 & 0x1FFF) >= 0x1400)
+							if ((phase - (Renderer::g_frameDelta << 6)) < 5120 && (cycleTime & 0x1FFF) >= 0x1400)
 							{
-								Collision::MarkPlatformAsMoving(a5);
-								AudioManager::PlaySoundEffect(37, v1);
+								Collision::MarkPlatformAsMoving(platformId);
+								AudioManager::PlaySoundEffect(37, pos);
 							}
 
 							angle = 6144 - phase;
@@ -241,36 +262,36 @@ namespace Toy2
 				}
 				else
 				{
-					if ((phase - (Renderer::g_frameDelta << 6)) < 1024 && (a1 & 0x1FFF) >= 0x400)
-						Platform::DisableCollision(a5);
+					if ((phase - (Renderer::g_frameDelta << 6)) < 1024 && (cycleTime & 0x1FFF) >= 0x400)
+						Platform::DisableCollision(platformId);
 
 					angle = phase;
 				}
 
-				Nu3D::Link::SetRotationRelative8bit(linkId, 0, 0, a4 & 0xFFF);
-				Nu3D::Link::SetPositionRawAndCommit(linkId, v1->x >> 5, (v1->y >> 5) - (Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 6) + 256, v1->z >> 5);
+				Nu3D::Link::SetRotationRelative8bit(linkId, 0, 0, roll & 0xFFF);
+				Nu3D::Link::SetPositionRawAndCommit(linkId, pos->x >> 5, (pos->y >> 5) - (Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 6) + 256, pos->z >> 5);
 			}
 		}
 
 		// FUNCTION: TOY2 0x00417510
-		void Method1(int16_t a1, int32_t linkId, Vector3I* v1, int16_t a4)
+		void AnimateStretchingObject(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t yaw)
 		{
-			if (Nu3D::Math::IsWithinDistance(v1, &g_buzzActor.posAngles.pos, 640) != 0)
+			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640) != 0)
 			{
-				int32_t phase = a1 & 0x1FFF;
+				int32_t phase = cycleTime & 0x1FFF;
 				int16_t angle;
 
 				if (phase >= 0x800)
 				{
-					if ((a1 & 0x1FFF) >= 0x1000)
+					if ((cycleTime & 0x1FFF) >= 0x1000)
 					{
-						if ((a1 & 0x1FFF) >= 0x1800)
+						if ((cycleTime & 0x1FFF) >= 0x1800)
 						{
 							if ((phase - (Renderer::g_frameDelta << 6)) < 6144)
 							{
-								Nu3D::Particles::SpawnFromPreset(v1->x, v1->y + 18432, v1->z, 25, 2);
-								Nu3D::Particles::SpawnFromPreset(v1->x, v1->y + 24576, v1->z, 26, 2);
-								AudioManager::PlaySoundEffect(36, v1);
+								Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 18432, pos->z, 25, 2);
+								Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 26, 2);
+								AudioManager::PlaySoundEffect(36, pos);
 							}
 
 							angle = 0;
@@ -280,7 +301,7 @@ namespace Toy2
 							{
 								do
 								{
-									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(v1->x, v1->y + 24576, v1->z, 24, 9);
+									Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos->x, pos->y + 24576, pos->z, 24, 9);
 									particle->groundAlignRot = 16 * *g_randDatBufferPtr++;
 									particle->rotSpeed = *g_randDatBufferPtr - 128;
 									++i;
@@ -300,10 +321,10 @@ namespace Toy2
 				}
 				else
 				{
-					angle = a1 & 0x1FFF;
+					angle = cycleTime & 0x1FFF;
 				}
 
-				Nu3D::Link::SetRotationRelative8bit(linkId, 0, a4 & 0xFFF, 0);
+				Nu3D::Link::SetRotationRelative8bit(linkId, 0, yaw & 0xFFF, 0);
 				Nu3D::Link::SetScaleFromFixedOffsets(linkId, 4096, (Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 3) + 3072, 4096);
 			}
 		}
@@ -429,13 +450,8 @@ namespace Toy2
 
 			if (! g_link21Scale)
 			{
-				if (g_buzzActor.posAngles.pos.z < -321858u
-					&& g_buzzActor.posAngles.pos.z > -361602u
-					&& g_buzzActor.posAngles.pos.x < 314294
-					&& g_buzzActor.posAngles.pos.x > 287606
-					&& g_buzzActor.posAngles.pos.y < 18432
-					&& g_buzzActor.posAngles.pos.y > 0
-					&& g_buzzActor.unkShort40)
+				if (g_buzzActor.posAngles.pos.z < -321858u && g_buzzActor.posAngles.pos.z > -361602u && g_buzzActor.posAngles.pos.x < 314294
+					&& g_buzzActor.posAngles.pos.x > 287606 && g_buzzActor.posAngles.pos.y < 18432 && g_buzzActor.posAngles.pos.y > 0 && g_buzzActor.unkShort40)
 				{
 					Collision::MarkPlatformAsMoving(8);
 					g_link21Scale = 8;
@@ -627,17 +643,18 @@ namespace Toy2
 				g_unk52F4F4 = (g_unk52F4F4 + (soundTime << 8)) & 0xFFF;
 				g_unk52F568 = (g_unk52F568 + (soundTime << 6)) & 0x1FFF;
 
-				Method1(g_unk52F568, 9, (Vector3I*)g_unk52F538, g_unk52F4F4);
-				Method1(g_unk52F568 + 2730, 17, (Vector3I*)g_unk52F548, g_unk52F4F4 + 512);
-				Method1(g_unk52F568 + 5461, 18, (Vector3I*)g_unk52F558, g_unk52F4F4 + 1024);
+				AnimateStretchingObject(g_unk52F568, 9, (Vector3I*)g_unk52F538, g_unk52F4F4);
+				AnimateStretchingObject(g_unk52F568 + 2730, 17, (Vector3I*)g_unk52F548, g_unk52F4F4 + 512);
+				AnimateStretchingObject(g_unk52F568 + 5461, 18, (Vector3I*)g_unk52F558, g_unk52F4F4 + 1024);
 
-				Method2(
+				AnimateBobbingPlatform(
 					g_unk52F588 = (g_unk52F588 + (Renderer::g_frameDelta << 6)) & 0x1FFF,
 					10,
 					(Vector3I*)g_unk52F508,
 					g_unk52F5A4 = (g_unk52F5A4 + (Renderer::g_frameDelta << 7)) & 0xFFF,
 					12);
-				Method2(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
+					
+				AnimateBobbingPlatform(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
 
 				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0
 					&& ((g_levelActors[29].actorFlags &= ~Actor::ACTOR_PLAYER_TRIGGER), Collectables::g_pickupSlots[2].state != 2) && ! g_unk52F2F8)
@@ -801,7 +818,7 @@ namespace Toy2
 				Actor::CollectQuestReward(30, 29, 3600, 1760, 0);
 			}
 
-			Actor::RotatingHint(35, 39, g_unk4F0F7C);
+			Actor::RotatingHint(35, 39, g_tokenHints);
 
 			// the attic, the fight against the tin robot
 			if (g_curSectorCopy1 == 5)

@@ -250,12 +250,12 @@ namespace Toy2
 				if (firstValue < 0)
 					break;
 
-				entry->unkVar0 = firstValue;
-				entry->unkVar1 = *result;
+				entry->linkId = firstValue;
+				entry->recordType = *result;
 				result++;
 				entry->text = (const char*)*result;
 				result++;
-				entry->unkVar3 = *result;
+				entry->yaw = *result;
 				result++;
 
 				entry++;
@@ -303,7 +303,7 @@ namespace Toy2
 
 				do
 				{
-					if (entry->unkVar0 == linkId)
+					if (entry->linkId == linkId)
 						break;
 
 					entry++;
@@ -317,7 +317,7 @@ namespace Toy2
 				Camera::g_unk50A294 = g_tokenScript;
 				Camera::g_unk50A134 = 0;
 				char* text = (char*)g_tokenTable[index].text;
-				int32_t recordIdx = g_tokenTable[index].unkVar1;
+				int32_t recordIdx = g_tokenTable[index].recordType;
 
 				Camera::g_unk50A53C = 0;
 				Camera::g_unk50A144 = 0;
@@ -353,7 +353,7 @@ namespace Toy2
 					Dialogue::g_unk50A518 = 0;
 				}
 
-				g_buzzActor.posAngles.angles.yaw = (int16_t)g_tokenTable[index].unkVar3;
+				g_buzzActor.posAngles.angles.yaw = (int16_t)g_tokenTable[index].yaw;
 				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
 				Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
 			}

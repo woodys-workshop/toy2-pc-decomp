@@ -7484,7 +7484,7 @@ namespace Toy2
 		{
 			case 1:
 				Collectables::Init(AndysHouse::g_unk4F0EDC, 72);
-				Collectables::LoadTokenTable((int32_t*)AndysHouse::g_unk4F0EE8);
+				Collectables::LoadTokenTable((int32_t*)AndysHouse::g_tutorialHints);
 				Collectables::Activate(3, 1);
 				MoveableObject::InitTable(AndysHouse::g_unk4F0F90);
 
