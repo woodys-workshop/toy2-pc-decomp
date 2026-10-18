@@ -38,11 +38,11 @@ namespace Toy2
 		extern Vector3I g_liftPos;
 		extern int32_t g_liftMaxY;
 		extern int32_t g_unk52F530;
-		extern int32_t g_unk52F538[4];
-		extern int32_t g_unk52F548[4];
-		extern int32_t g_unk52F558[4];
-		extern int32_t g_unk52F508[4];
-		extern int32_t g_unk52F518[4];
+		extern Transform g_link9Pos;
+		extern Transform g_link17Pos;
+		extern Transform g_link18Pos;
+		extern Transform g_link10Pos;
+		extern Transform g_link16Pos;
 		extern int32_t g_tinRobotFlashTimer;
 		extern int32_t g_tinRobotFlash;
 

@@ -128,10 +128,10 @@ namespace Toy2
 		int32_t g_liftVelocity;
 
 		// GLOBAL: TOY2 0x0052F508
-		int32_t g_unk52F508[4];
+		Transform g_link10Pos;
 
 		// GLOBAL: TOY2 0x0052F518
-		int32_t g_unk52F518[4];
+		Transform g_link16Pos;
 
 		// GLOBAL: TOY2 0x0052F528
 		int32_t g_raceCarPathIndex;
@@ -143,13 +143,13 @@ namespace Toy2
 		int32_t g_unk52F530;
 
 		// GLOBAL: TOY2 0x0052F538
-		int32_t g_unk52F538[4];
+		Transform g_link9Pos;
 
 		// GLOBAL: TOY2 0x0052F548
-		int32_t g_unk52F548[4];
+		Transform g_link17Pos;
 
 		// GLOBAL: TOY2 0x0052F558
-		int32_t g_unk52F558[4];
+		Transform g_link18Pos;
 
 		// GLOBAL: TOY2 0x0052F568
 		int32_t g_unk52F568;
@@ -632,18 +632,18 @@ namespace Toy2
 				g_unk52F4F4 = (g_unk52F4F4 + (soundTime << 8)) & 0xFFF;
 				g_unk52F568 = (g_unk52F568 + (soundTime << 6)) & 0x1FFF;
 
-				AnimateStretchingObject(g_unk52F568, 9, (Vector3I*)g_unk52F538, g_unk52F4F4);
-				AnimateStretchingObject(g_unk52F568 + 2730, 17, (Vector3I*)g_unk52F548, g_unk52F4F4 + 512);
-				AnimateStretchingObject(g_unk52F568 + 5461, 18, (Vector3I*)g_unk52F558, g_unk52F4F4 + 1024);
+				AnimateStretchingObject(g_unk52F568, 9, &g_link9Pos.pos, g_unk52F4F4);
+				AnimateStretchingObject(g_unk52F568 + 2730, 17, &g_link17Pos.pos, g_unk52F4F4 + 512);
+				AnimateStretchingObject(g_unk52F568 + 5461, 18, &g_link18Pos.pos, g_unk52F4F4 + 1024);
 
 				AnimateBobbingPlatform(
 					g_unk52F588 = (g_unk52F588 + (Renderer::g_frameDelta << 6)) & 0x1FFF,
 					10,
-					(Vector3I*)g_unk52F508,
+					&g_link10Pos.pos,
 					g_unk52F5A4 = (g_unk52F5A4 + (Renderer::g_frameDelta << 7)) & 0xFFF,
 					12);
 
-				AnimateBobbingPlatform(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
+				AnimateBobbingPlatform(g_unk52F588 + 4096, 16, &g_link16Pos.pos, g_unk52F5A4 + 512, 13);
 
 				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0
 					&& ((g_levelActors[29].actorFlags &= ~Actor::ACTOR_PLAYER_TRIGGER), Collectables::g_pickupSlots[2].state != 2) && ! g_unk52F2F8)

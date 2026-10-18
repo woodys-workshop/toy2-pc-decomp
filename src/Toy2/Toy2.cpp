@@ -7525,11 +7525,11 @@ namespace Toy2
 				AndysHouse::g_liftMaxY = AndysHouse::g_liftPos.y + 47104;
 				AndysHouse::g_unk52F530 = Levels::g_recordData[61]->data[16].y - AndysHouse::g_liftPos.y;
 
-				Nu3D::Link::GetCurrentPosFixed(9, (Vector3I*)AndysHouse::g_unk52F538);
-				Nu3D::Link::GetCurrentPosFixed(17, (Vector3I*)AndysHouse::g_unk52F548);
-				Nu3D::Link::GetCurrentPosFixed(18, (Vector3I*)AndysHouse::g_unk52F558);
-				Nu3D::Link::GetCurrentPosFixed(10, (Vector3I*)AndysHouse::g_unk52F508);
-				Nu3D::Link::GetCurrentPosFixed(16, (Vector3I*)AndysHouse::g_unk52F518);
+				Nu3D::Link::GetCurrentPosFixed(9, &AndysHouse::g_link9Pos.pos);
+				Nu3D::Link::GetCurrentPosFixed(17, &AndysHouse::g_link17Pos.pos);
+				Nu3D::Link::GetCurrentPosFixed(18, &AndysHouse::g_link18Pos.pos);
+				Nu3D::Link::GetCurrentPosFixed(10, &AndysHouse::g_link10Pos.pos);
+				Nu3D::Link::GetCurrentPosFixed(16, &AndysHouse::g_link16Pos.pos);
 				Nu3D::Link::SetScaleFromFixedOffsets(21, 0, 4096, 4096);
 				Nu3D::Link::SnapToOtherLinkUsingScale(22, 21);
 
