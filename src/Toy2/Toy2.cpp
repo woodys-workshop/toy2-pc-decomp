@@ -143,16 +143,13 @@ namespace Toy2
 	int32_t g_unused2;
 
 	// GLOBAL: TOY2 0x0072EFD8
-	int32_t g_pastInitialBoot;
+	int16_t g_pastInitialBoot;
 
 	// GLOBAL: TOY2 0x0052ADB4
 	int32_t g_attractModeInputTimer;
 
 	// GLOBAL: TOY2 0x0052C83C
 	int32_t g_curDemoLevel;
-
-	// GLOBAL: TOY2 0x0052B7DC
-	int16_t g_levelTransition;
 
 	// GLOBAL: TOY2 0x0052AD94
 	int32_t g_demoMode;
@@ -5242,9 +5239,15 @@ namespace Toy2
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x0049D910
+	// FUNCTION: TOY2 0x0049D910 [MATCHED]
 	int32_t Run(int32_t argCount, char** argList)
 	{
+		int32_t levelIdx;
+		int32_t demoLevelIndex;
+		int16_t levelTransition;
+		int32_t movie17Status;
+		int32_t levelMovieStatus;
+
 		g_returnedToTitle = 0;
 
 		g_unused1 = 2;
@@ -5267,10 +5270,11 @@ namespace Toy2
 
 		AudioManager::SetVolumesProcessed(8, 8);
 
-		int32_t enteredLevelIdx;
-		int32_t levelIdxCache = g_levelFileIndex;
-
 	LBL_RESTART_GAME:
+
+		levelIdx = g_levelFileIndex;
+
+	LBL_RESTART_GAME_CACHED:
 
 		g_demoMode = 0;
 		g_mainMenuState = 0;
@@ -5282,7 +5286,7 @@ namespace Toy2
 		Levels::InitLevelPlay(0);
 		ScreenDispatcher(10);
 
-		g_levelFileIndex = levelIdxCache;
+		g_levelFileIndex = levelIdx;
 
 		if (! PlayMovieWithTransition(2, 0) && ! PlayMovieWithTransition(0, 0) && ! PlayMovieWithTransition(1, 0))
 			UnlockAndPlayMovie(0, 0, 1);
@@ -5303,7 +5307,7 @@ namespace Toy2
 
 		while (true)
 		{
-			int32_t savedLevelFileIndex = g_levelFileIndex;
+			levelIdx = g_levelFileIndex;
 			g_levelFileIndex = 0;
 			Levels::g_levelLoadConfig = 1084;
 
@@ -5311,57 +5315,12 @@ namespace Toy2
 			Levels::InitLevelPlay(0);
 			ScreenDispatcher(2);
 
-			g_levelFileIndex = savedLevelFileIndex;
+			g_levelFileIndex = levelIdx;
 
 			switch (g_mainMenuState)
 			{
 				case 0:
 					g_demoMode = 1;
-					goto LBL_DEMO_MODE;
-
-				case 1:
-					g_demoMode = 0;
-					goto LBL_DEMO_MODE;
-
-				case 2: // Options Screen
-					g_levelFileIndex = 0;
-					Levels::g_levelLoadConfig = 1212;
-
-					Renderer::SetVirtualRatioTo54();
-					Levels::InitLevelPlay(0);
-					ScreenDispatcher(9);
-
-					g_levelFileIndex = enteredLevelIdx;
-					g_mainMenuState = -1;
-					continue;
-
-				case 3: // Save Screen
-					if (ShowSaveScreen())
-						g_saveLoaded = 1;
-
-					g_mainMenuState = -1;
-					continue;
-
-				case 4: // Movie Viewer
-					ShowMovieViewer();
-					g_mainMenuState = -1;
-					continue;
-
-				case 8:
-					g_levelFileIndex = 0;
-					Levels::g_levelLoadConfig = 1084;
-
-					Renderer::SetVirtualRatioTo54();
-					Levels::InitLevelPlay(0);
-					ScreenDispatcher(8);
-
-					g_levelFileIndex = enteredLevelIdx;
-					g_mainMenuState = 0;
-					goto LBL_RESTART_MENU_STATE;
-
-				case 9:
-					Nullsub5();
-					return 0;
 
 				default:
 
@@ -5398,21 +5357,63 @@ namespace Toy2
 
 						LoadPathBin();
 
-						int32_t levelIdxCache = g_levelIndex;
-
+						demoLevelIndex = g_levelIndex;
 						g_demoPathWriteIdx = -2;
 						g_demoInputRunLength = 0;
 
 						SaveManager::InitProgressData(&SaveManager::g_save0Data);
 						SaveManager::LoadProgressData(&SaveManager::g_save0Data);
 
-						g_levelIndex = levelIdxCache;
+						g_levelIndex = demoLevelIndex;
 					}
 
-					if (! g_demoMode && g_attractModeTimer < 0)
-						goto LBL_SHOW_LEVEL_SELECT;
+					if (! g_demoMode)
+						goto LBL_ATTRACT_CHECK;
 
 					break;
+
+				case 1:
+					g_demoMode = 0;
+					goto LBL_DEMO_MODE;
+
+				case 2: // Options Screen
+					g_levelFileIndex = 0;
+					Levels::g_levelLoadConfig = 1212;
+
+					Renderer::SetVirtualRatioTo54();
+					Levels::InitLevelPlay(0);
+					ScreenDispatcher(9);
+
+					g_levelFileIndex = levelIdx;
+					g_mainMenuState = -1;
+					goto LBL_REDO_MENU_LOOP;
+
+				case 3: // Save Screen
+					if (ShowSaveScreen())
+						g_saveLoaded = 1;
+
+					g_mainMenuState = -1;
+					goto LBL_REDO_MENU_LOOP;
+
+				case 4: // Movie Viewer
+					ShowMovieViewer();
+					g_mainMenuState = -1;
+					goto LBL_REDO_MENU_LOOP;
+
+				case 8:
+					g_levelFileIndex = 0;
+					Levels::g_levelLoadConfig = 1084;
+
+					Renderer::SetVirtualRatioTo54();
+					Levels::InitLevelPlay(0);
+					ScreenDispatcher(8);
+
+					g_levelFileIndex = levelIdx;
+					g_mainMenuState = 0;
+					goto LBL_RESTART_MENU_STATE;
+
+				case 9:
+					goto LBL_EXIT;
 			}
 
 			break;
@@ -5451,26 +5452,30 @@ namespace Toy2
 					if (g_demoMode)
 						Renderer::g_frameDelta = 2; // Half frame rate in demo mode
 
-					if (g_isPaused)
-						Game::PauseLoop();
-					else
+					if (! g_isPaused)
 						Game::MainLoop();
+					else
+						Game::PauseLoop();
 				}
 
 				AudioManager::FlushSoundVoices();
+				levelTransition = g_levelTransition;
 
 				if (g_levelTransition != 2)
+				{
 					AudioManager::StopAndWait();
+					levelTransition = g_levelTransition;
+				}
 
 				if (g_quitToTitleFlag)
 				{
-					if (g_levelTransition == 2)
+					if (levelTransition == 2)
 						AudioManager::StopAndWait();
 
 					goto LBL_RESTART_MENU_STATE;
 				}
 
-				if (g_levelTransition != 2)
+				if (levelTransition != 2)
 					break;
 
 				if (! g_buzzActor.lives)
@@ -5482,133 +5487,128 @@ namespace Toy2
 				Buzz::Respawn();
 			}
 
-			if (g_levelTransition == 3 || g_levelTransition == 4)
+			if (levelTransition == 3 || levelTransition == 4)
 			{
 				if (g_attractModeTimer >= 0)
 					break;
 
-				if (g_levelTransition != 3)
+				if (levelTransition != 3)
 					goto LBL_RESTART_MENU_STATE;
-
-				levelIdxCache = g_levelFileIndex;
 
 				goto LBL_RESTART_GAME;
 			}
 
-			enteredLevelIdx = g_levelFileIndex;
+			levelIdx = g_levelFileIndex;
 
-			if (g_levelTransition != 5)
+			if (levelTransition == 5)
 			{
-				if (g_levelTransition != 1)
+				if (g_buzzActor.health < 0)
 				{
-					if (g_attractModeTimer >= 0)
-						break;
-
-					goto LBL_SHOW_LEVEL_SELECT;
-				}
-
-				goto LBL_SHOW_LEVEL_RESULTS;
-			}
-
-			if (g_buzzActor.health < 0)
-			{
-				if (! g_buzzActor.lives)
-				{
-				LBL_GAME_OVER:
-
-					levelIdxCache = g_levelFileIndex;
-
-					g_levelFileIndex = 0;
-					Levels::g_levelLoadConfig = 1148;
-
-					Renderer::SetVirtualRatioTo54();
-
-					Levels::InitLevelPlay(0);
-					ScreenDispatcher(5);
-
-					g_levelFileIndex = levelIdxCache;
-
-					if (g_attractModeTimer >= 0)
-						break;
-
-					goto LBL_RESTART_GAME;
-				}
-
-				--g_buzzActor.lives;
-			}
-
-			if (g_attractModeTimer >= 0)
-				break;
-
-			if (g_levelFileIndex % 3)
-			{
-				g_levelTransition = 1;
-
-			LBL_SHOW_LEVEL_RESULTS:
-
-				if (g_levelFileIndex % 3)
-				{
-					g_levelFileIndex = 0;
-					Levels::g_levelLoadConfig = 1148;
-
-					Renderer::SetVirtualRatioTo54();
-					Levels::InitLevelPlay(0);
-					ScreenDispatcher(4);
-					g_levelFileIndex = enteredLevelIdx;
-
-					if (g_attractModeTimer >= 0)
-						break;
-
-					int32_t movie17Status = SaveManager::g_save0Data.moviesUnlocked[17];
-
-					if (SaveManager::g_curLevelTokenData != SaveManager::g_save0Data.tokens[g_levelFileConversion[g_levelIndex]]
-						&& (ComputeTokenProgress() & 0xFF0000) == 0x320000)
+					if (! g_buzzActor.lives)
 					{
-						SaveManager::g_save0Data.moviesUnlocked[17] = 1;
-					}
+					LBL_GAME_OVER:
 
-					ShowPostGameSaveMenu();
-
-					if (! movie17Status && SaveManager::g_save0Data.moviesUnlocked[17])
-						UnlockAndPlayMovie(17, 16, 1);
-				}
-				else
-				{
-					ShowActClearScreen();
-
-					int32_t levelMovieStatus = SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1];
-
-					SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1] = 1;
-
-					if (g_levelFileIndex == 15)
-						SaveManager::g_save0Data.moviesUnlocked[18] = 1;
-
-					ShowPostGameSaveMenu();
-
-					if (! levelMovieStatus)
-						UnlockAndPlayMovie(g_levelIndex + 1, 30, 1);
-
-					if (g_levelFileIndex == 15)
-					{
-						UnlockAndPlayMovie(18, 31, 1);
-						levelIdxCache = g_levelFileIndex;
+						levelIdx = g_levelFileIndex;
 
 						g_levelFileIndex = 0;
-						Levels::g_levelLoadConfig = 1276;
+						Levels::g_levelLoadConfig = 1148;
 
 						Renderer::SetVirtualRatioTo54();
-						Levels::InitLevelPlay(0);
-						ScreenDispatcher(11); // Show credits
 
-						goto LBL_RESTART_GAME;
+						Levels::InitLevelPlay(0);
+						ScreenDispatcher(5);
+
+						g_levelFileIndex = levelIdx;
+
+						if (g_attractModeTimer >= 0)
+							break;
+
+						goto LBL_RESTART_GAME_CACHED;
 					}
+
+					--g_buzzActor.lives;
+				}
+
+				if (g_attractModeTimer >= 0)
+					break;
+
+				if (! (levelIdx % 3))
+					goto LBL_LEVEL_END;
+
+				g_levelTransition = 1;
+			}
+			else if (levelTransition != 1)
+			{
+				goto LBL_LEVEL_END;
+			}
+
+			if (levelIdx % 3)
+			{
+				g_levelFileIndex = 0;
+				Levels::g_levelLoadConfig = 1148;
+
+				Renderer::SetVirtualRatioTo54();
+				Levels::InitLevelPlay(0);
+				ScreenDispatcher(4);
+				g_levelFileIndex = levelIdx;
+
+				if (g_attractModeTimer >= 0)
+					break;
+
+				movie17Status = SaveManager::g_save0Data.moviesUnlocked[17];
+
+				if (SaveManager::g_curLevelTokenData != SaveManager::g_save0Data.tokens[g_levelFileConversion[g_levelIndex]]
+					&& (ComputeTokenProgress() & 0xFF0000) == 0x320000)
+				{
+					SaveManager::g_save0Data.moviesUnlocked[17] = 1;
+				}
+
+				ShowPostGameSaveMenu();
+
+				if (! movie17Status && SaveManager::g_save0Data.moviesUnlocked[17])
+					UnlockAndPlayMovie(17, 16, 1);
+			}
+			else
+			{
+				ShowActClearScreen();
+
+				levelMovieStatus = SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1];
+
+				SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1] = 1;
+
+				if (g_levelFileIndex == 15)
+					SaveManager::g_save0Data.moviesUnlocked[18] = 1;
+
+				ShowPostGameSaveMenu();
+
+				if (! levelMovieStatus)
+					UnlockAndPlayMovie(g_levelIndex + 1, 30, 1);
+
+				if (g_levelFileIndex == 15)
+				{
+					UnlockAndPlayMovie(18, 31, 1);
+					levelIdx = g_levelFileIndex;
+
+					g_levelFileIndex = 0;
+					Levels::g_levelLoadConfig = 1276;
+
+					Renderer::SetVirtualRatioTo54();
+					Levels::InitLevelPlay(0);
+					ScreenDispatcher(11); // Show credits
+
+					goto LBL_RESTART_GAME_CACHED;
 				}
 			}
+
+		LBL_LEVEL_END:
 
 			if (g_attractModeTimer >= 0)
 				break;
 
-		LBL_SHOW_LEVEL_SELECT:
+		LBL_ATTRACT_CHECK:
+
+			if (g_attractModeTimer >= 0)
+				continue;
 
 			g_mainMenuState = 0;
 			g_saveLoaded = 1;
@@ -5628,6 +5628,8 @@ namespace Toy2
 				UnlockAndPlayMovie(16, 0, 0);
 			}
 		}
+
+	LBL_EXIT:
 
 		Nullsub5();
 

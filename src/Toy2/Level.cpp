@@ -10,6 +10,9 @@
 
 namespace Toy2
 {
+	// GLOBAL: TOY2 0x0052B7DC
+	int16_t g_levelTransition;
+
 	namespace Level
 	{
 		// GLOBAL: TOY2 0x00830E28
