@@ -41,7 +41,9 @@ namespace Toy2
 	namespace AlsPenthouse
 	{
 		// GLOBAL: TOY2 0x004F3E00
-		int16_t g_unk4F3E00[48] = { 2, 0, 7, 0, 10, 0, 1, 1, 8, 1, 5, 1, 9, 1, 6, 0, 3, 0, 6, 0, 1, 0, 4, 0, 0, 0, 1, 0, 3, 1, 12, 0, 11, 0, 4, 1, 11, 1, 2, 1, 10, 1, 9, 1, 11, 1, 8, 0 };
+		int16_t g_unk4F3E00[48] = {
+			2, 0, 7, 0, 10, 0, 1, 1, 8, 1, 5, 1, 9, 1, 6, 0, 3, 0, 6, 0, 1, 0, 4, 0, 0, 0, 1, 0, 3, 1, 12, 0, 11, 0, 4, 1, 11, 1, 2, 1, 10, 1, 9, 1, 11, 1, 8, 0
+		};
 
 		// GLOBAL: TOY2 0x004F3E74
 		int32_t g_unk4F3E74[24] = { 50, 59, 66, 73, 51, 60, 67, 74, 58, 65, 72, 79, 52, 61, 68, 75, 53, 62, 69, 76, 54, 63, 70, 77 };
@@ -51,23 +53,19 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x004F3F04
 		char* g_unk4F3F04[5] = {
-				"^hamm^ is in the ^bathroom^! you can reach the ^bathroom^ through a hidden vent. look out for any ^locks^ that you can shoot!",
-				"^jesse^ has lost her critters. she is on the ^kitchen table^.",
-				"^bullseye^ has a ^challenge^ for you. he is in the entrance hall.",
-				"you can get to the token on top of the ^train bed^ if you solve the train puzzle. you need to get the train to stop on the dead end track. you can change the track points using the yellow switches.",
-				"the ^gunslinger^ boss is in the woody's roundup set in the ^trophy room^."
-				};
+			"^hamm^ is in the ^bathroom^! you can reach the ^bathroom^ through a hidden vent. look out for any ^locks^ that you can shoot!",
+			"^jesse^ has lost her critters. she is on the ^kitchen table^.",
+			"^bullseye^ has a ^challenge^ for you. he is in the entrance hall.",
+			"you can get to the token on top of the ^train bed^ if you solve the train puzzle. you need to get the train to stop on the dead end track. you "
+			"can change the track points using the yellow switches.",
+			"the ^gunslinger^ boss is in the woody's roundup set in the ^trophy room^."
+		};
 
 		// GLOBAL: TOY2 0x004F3F48
 		SwitchEntry g_unk4F3F48[7] = {
-				{ 1, 36, 17, 84, -350, 0, 0 },
-				{ 2, 37, 18, 84, 0, 0, 0 },
-				{ 4, 31, 12, 86, 175, 0, 0 },
-				{ 8, 32, 13, 86, 350, 0, 0 },
-				{ 16, 33, 14, 86, 0, 0, 0 },
-				{ 32, 34, 15, 85, 0, 0, -350 },
-				{ 64, 35, 16, 85, 0, 0, 0 }
-				};
+			{ 1, 36, 17, 84, -350, 0, 0 }, { 2, 37, 18, 84, 0, 0, 0 },	   { 4, 31, 12, 86, 175, 0, 0 }, { 8, 32, 13, 86, 350, 0, 0 },
+			{ 16, 33, 14, 86, 0, 0, 0 },   { 32, 34, 15, 85, 0, 0, -350 }, { 64, 35, 16, 85, 0, 0, 0 }
+		};
 
 		// GLOBAL: TOY2 0x004F3FAC
 		uint8_t g_unk4F3FAC[8] = { 7, 1, 8, 2, 6, 3, 9, 4 };
@@ -271,11 +269,7 @@ namespace Toy2
 					Nu3D::Link::SetScaleFromFixedOffsets(g_unk4F3F48[i].linkA, 0, 0, 0);
 					Nu3D::Link::SetScaleFromFixedOffsets(g_unk4F3F48[i].linkB, 0, 0, 0);
 					g_unk52FD14 &= -1 - g_unk4F3F48[i].mask;
-					Nu3D::Link::SetRotationRelative8bit(
-						g_unk4F3F48[i].rotLinkId,
-						g_unk4F3F48[i].rotX,
-						g_unk4F3F48[i].rotY,
-						g_unk4F3F48[i].rotZ);
+					Nu3D::Link::SetRotationRelative8bit(g_unk4F3F48[i].rotLinkId, g_unk4F3F48[i].rotX, g_unk4F3F48[i].rotY, g_unk4F3F48[i].rotZ);
 				}
 
 				++i;
@@ -520,7 +514,7 @@ namespace Toy2
 		void Method8()
 		{
 			int16_t v0;
-			Levels::RecordData *v1;
+			Levels::RecordData* v1;
 			int32_t v3;
 			int32_t v4;
 			int32_t v5;
@@ -529,7 +523,7 @@ namespace Toy2
 			int32_t v8;
 			int32_t v9;
 			int32_t v10;
-			uint8_t *v11;
+			uint8_t* v11;
 			bool v12;
 			int32_t v13;
 			Vector3I a1;
@@ -539,9 +533,7 @@ namespace Toy2
 			{
 				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_unk52FD98, 48))
 				{
-					v0 = Nu3D::Math::CartesianToFixedAngle(
-								g_buzzActor.posAngles.pos.x - g_unk52FD98.x,
-								g_buzzActor.posAngles.pos.z - g_unk52FD98.z);
+					v0 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - g_unk52FD98.x, g_buzzActor.posAngles.pos.z - g_unk52FD98.z);
 					Buzz::HandleDamage(v0, 1u);
 					g_unk52FDF0 = 16;
 					if (g_unk52FDB4 > 40)
@@ -616,7 +608,8 @@ namespace Toy2
 							g_unk52FD98.y - 0x4000,
 							g_unk52FD98.z - (Numerics::g_sinCosLUT[g_unk52FD0C & 0xFFF] >> 2),
 							17,
-							27)->rotSpeed = *g_randDatBufferPtr - 128;
+							27)
+							->rotSpeed = *g_randDatBufferPtr - 128;
 						v11 = g_randDatBufferPtr + 1;
 						v12 = (g_unk52FDB4 - (int32_t)Renderer::g_frameDelta) <= 0;
 						++g_randDatBufferPtr;
@@ -660,7 +653,7 @@ namespace Toy2
 		int32_t Method6(int32_t a1)
 		{
 			int32_t v1;
-			uint8_t *v2;
+			uint8_t* v2;
 			int32_t v3;
 			int32_t result;
 			Vector3I a2;
@@ -683,7 +676,7 @@ namespace Toy2
 				}
 				if ((v1 & g_unk52FD3C) != 0)
 				{
-		LABEL_6:
+				LABEL_6:
 					if ((v1 & a1) == 0)
 					{
 						Platform::GetOrigin(v2[0], &a2);
@@ -771,9 +764,7 @@ namespace Toy2
 			{
 				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v1, 50))
 				{
-					v4 = Nu3D::Math::CartesianToFixedAngle(
-								g_buzzActor.posAngles.pos.x - p_v1.x,
-								g_buzzActor.posAngles.pos.z - p_v1.z);
+					v4 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - p_v1.x, g_buzzActor.posAngles.pos.z - p_v1.z);
 					if ((g_unk52FD48 & a4) != 0)
 						Buzz::HandleDamage(v4, 1u);
 					else
@@ -862,9 +853,9 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00429910
 		void Method3()
 		{
-			uint8_t *v0;
-			int32_t *v1;
-			int32_t *v2;
+			uint8_t* v0;
+			int32_t* v1;
+			int32_t* v2;
 			int32_t v3;
 			int32_t v4;
 			int32_t v5;
@@ -1037,7 +1028,7 @@ namespace Toy2
 			if (v10 < -2048)
 			{
 				v10 = -2048;
-		LABEL_28:
+			LABEL_28:
 				v12.y = v10;
 				goto LABEL_29;
 			}
@@ -1056,13 +1047,13 @@ namespace Toy2
 			int32_t v0;
 			int32_t v1;
 			int32_t v3;
-			uint8_t *v4;
+			uint8_t* v4;
 			int32_t v5;
 			uint8_t v6;
 			int32_t v7;
 			bool v8;
 			int32_t v9;
-			uint8_t *v10;
+			uint8_t* v10;
 			int32_t v11;
 			int32_t v12;
 			int16_t v13;
@@ -1087,7 +1078,7 @@ namespace Toy2
 			int32_t v35;
 			int32_t v36;
 			int32_t v37;
-			Levels::RecordData *v38;
+			Levels::RecordData* v38;
 			int32_t v40;
 			int32_t v41;
 			int32_t v42;
@@ -1149,7 +1140,7 @@ namespace Toy2
 				v0 = g_unk52FDFC;
 				if (g_unk52FDFC < g_unk52FD30)
 				{
-		LABEL_11:
+				LABEL_11:
 					v0 = v1;
 					g_unk52FDFC = v1;
 				}
@@ -1243,7 +1234,7 @@ namespace Toy2
 			{
 				g_unk52FDAC = 0;
 				Nu3D::Link::SetScaleFromFixedOffsets(91, 0, 0, 0);
-		LABEL_38:
+			LABEL_38:
 				v12 = g_unk52FDAC;
 				goto LABEL_39;
 			}
@@ -1365,9 +1356,7 @@ namespace Toy2
 			if (g_unk52FD8C > 1000)
 				g_unk52FD8C -= 1300;
 
-			if (g_buzzActor.collisionFlags
-				&& (Platform::GetFlags(12) & 3) == 2
-				&& ((int16_t*)Platform::GetContactFace32(12))[2] < -12288)
+			if (g_buzzActor.collisionFlags && (Platform::GetFlags(12) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(12))[2] < -12288)
 			{
 				Levels::Method3(13, 1);
 
@@ -1465,7 +1454,14 @@ namespace Toy2
 					else
 					{
 						AudioManager::Preset::PlayOneShotSound2(179, &g_levelActors[1]);
-						Dialogue::Begin(1, 17, "howdy buzz! all my ^critters^ have escaped! if you can find all ^five^ of them and come and see me, i will give you a pizza planet ^token^.", -1, 0, -1);
+						Dialogue::Begin(
+							1,
+							17,
+							"howdy buzz! all my ^critters^ have escaped! if you can find all ^five^ of them and come and see me, i will give you a pizza "
+							"planet ^token^.",
+							-1,
+							0,
+							-1);
 					}
 				}
 			}
@@ -1480,7 +1476,7 @@ namespace Toy2
 					{
 						if (g_unk52F2F8 != 3)
 						{
-							AudioManager::PlaySoundEffect(145, &g_levelActors[2].pos);
+							AudioManager::PlaySoundEffect(145, &g_levelActors[2].transform.pos);
 							Dialogue::Begin(2, 18, "well done! you found all of my horseshoes! here is your pizza planet ^token^!", -1, 0, 2);
 							g_unk52F2F8 = 3;
 							goto LABEL_107;
@@ -1488,20 +1484,25 @@ namespace Toy2
 					}
 					else
 					{
-						AudioManager::PlaySoundEffect(145, &g_levelActors[2].pos);
+						AudioManager::PlaySoundEffect(145, &g_levelActors[2].transform.pos);
 						Dialogue::Begin(2, 18, "quick! you need to find more horseshoes!", -1, 0, -1);
 					}
 				}
 				else
 				{
-					AudioManager::PlaySoundEffect(145, &g_levelActors[2].pos);
+					AudioManager::PlaySoundEffect(145, &g_levelActors[2].transform.pos);
 
 					v27 = 0;
 
-					Dialogue::Begin(2, 18, "howdy buzz! if you can bring me ^five^ horseshoes before you run out of time, i will give you a pizza planet ^token^.", -1, 0, -1);
+					Dialogue::Begin(
+						2,
+						18,
+						"howdy buzz! if you can bring me ^five^ horseshoes before you run out of time, i will give you a pizza planet ^token^.",
+						-1,
+						0,
+						-1);
 					g_unk830D4C = 0;
 					g_unk52F2F8 = 1;
-
 
 					do
 					{
@@ -1538,7 +1539,6 @@ namespace Toy2
 				v29 = 0;
 				g_unk52AD64 = 100;
 				g_unk52F2F8 = 0;
-
 
 				do
 				{
@@ -1580,7 +1580,7 @@ namespace Toy2
 					v33 = -386992;
 					v34 = -356895;
 					v35 = -384;
-		LABEL_114:
+				LABEL_114:
 
 					v54 = *g_randDatBufferPtr++ - 128;
 					Nu3D::Particles::SpawnInstance(v33, 100264, v34, v32, -2048, v35, 0, 0, v54, 76);
@@ -1598,8 +1598,7 @@ namespace Toy2
 
 			if (! g_unk52FD40)
 			{
-				if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -726990, -656078, -241532, -177452)
-					&& g_buzzActor.posAngles.pos.y < 128072)
+				if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -726990, -656078, -241532, -177452) && g_buzzActor.posAngles.pos.y < 128072)
 				{
 					g_unk52FD40 = 1;
 					Dialogue::Begin(11, 16, "ha ha ha ha ... defeat the ^gunslinger^ boss to get a pizza planet ^token^!", -1, 0, -1);
@@ -1673,15 +1672,15 @@ namespace Toy2
 					v42 = 32 * v38->data[v55].x;
 
 					if (((Camera::g_activeCameraTransform.pos.x - v42) >> 8) * ((Camera::g_activeCameraTransform.pos.x - v42) >> 8)
-						+ ((Camera::g_activeCameraTransform.pos.z - v41) >> 8) * ((Camera::g_activeCameraTransform.pos.z - v41) >> 8)
-						+ ((Camera::g_activeCameraTransform.pos.y - v40) >> 8) * ((Camera::g_activeCameraTransform.pos.y - v40) >> 8) < 1000000)
+							+ ((Camera::g_activeCameraTransform.pos.z - v41) >> 8) * ((Camera::g_activeCameraTransform.pos.z - v41) >> 8)
+							+ ((Camera::g_activeCameraTransform.pos.y - v40) >> 8) * ((Camera::g_activeCameraTransform.pos.y - v40) >> 8)
+						< 1000000)
 					{
 						Renderer::LensFlare::RegisterLight(v42, v40, v41, 32, 32, 32, 128);
 
 						v43 = g_buzzActor.posAngles.pos.x - v42;
 						v44 = ((g_buzzActor.posAngles.pos.z - v41) >> 8) * ((g_buzzActor.posAngles.pos.z - v41) >> 8)
-								+ ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8)
-								* ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8);
+							+ ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8);
 
 						v45 = (v43 >> 8) * (v43 >> 8);
 
@@ -1710,7 +1709,7 @@ namespace Toy2
 				}
 				else
 				{
-		LABEL_147:
+				LABEL_147:
 					Lighting::g_dynamicLights[1].lifetime = 0;
 				}
 			}
@@ -1721,27 +1720,27 @@ namespace Toy2
 				g_unk52FDA8 = (g_unk52FDA8 + 8 * (int32_t)Renderer::g_frameDelta) & 0xFFF;
 			}
 
-			if ((g_levelActors[31].actorFlags & 2) != 0
-				&& g_levelActors[31].pos.y > MoveableObject::g_moveableObjects[1].pos.y - 15360)
+			if ((g_levelActors[31].actorFlags & 2) != 0 && g_levelActors[31].transform.pos.y > MoveableObject::g_moveableObjects[1].pos.y - 15360)
 			{
-				v49 = (MoveableObject::g_moveableObjects[1].pos.z - g_levelActors[31].pos.z) >> 5;
-				if (((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].pos.x) >> 5)
-					* ((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].pos.x) >> 5)
-					+ v49 * v49 < 490000)
+				v49 = (MoveableObject::g_moveableObjects[1].pos.z - g_levelActors[31].transform.pos.z) >> 5;
+				if (((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].transform.pos.x)
+					 >> 5) * ((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].transform.pos.x) >> 5)
+						+ v49 * v49
+					< 490000)
 				{
-					if (g_levelActors[31].pos.y >= MoveableObject::g_moveableObjects[1].pos.y - 13312)
+					if (g_levelActors[31].transform.pos.y >= MoveableObject::g_moveableObjects[1].pos.y - 13312)
 					{
-						v50 = Nu3D::Math::CartesianToFixedAngle((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].pos.x) >> 5, v49)
-								& 0xFFF;
+						v50 = Nu3D::Math::CartesianToFixedAngle((MoveableObject::g_moveableObjects[1].pos.x - g_levelActors[31].transform.pos.x) >> 5, v49)
+							& 0xFFF;
 
 						v51 = Numerics::g_sinCosLUT[(v50 + 1024) & 0xFFF];
 
-						g_levelActors[31].pos.x = MoveableObject::g_moveableObjects[1].pos.x - ((700 * Numerics::g_sinCosLUT[v50]) >> 9);
-						g_levelActors[31].pos.z = MoveableObject::g_moveableObjects[1].pos.z - ((700 * v51) >> 9);
+						g_levelActors[31].transform.pos.x = MoveableObject::g_moveableObjects[1].pos.x - ((700 * Numerics::g_sinCosLUT[v50]) >> 9);
+						g_levelActors[31].transform.pos.z = MoveableObject::g_moveableObjects[1].pos.z - ((700 * v51) >> 9);
 					}
 					else
 					{
-						g_levelActors[31].pos.y = MoveableObject::g_moveableObjects[1].pos.y - 15360;
+						g_levelActors[31].transform.pos.y = MoveableObject::g_moveableObjects[1].pos.y - 15360;
 					}
 				}
 			}

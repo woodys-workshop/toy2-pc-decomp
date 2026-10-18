@@ -952,9 +952,9 @@ namespace Toy2
 			int16_t initActorFlags;
 
 			actor->creatureId = creatureRam->creatureId;
-			actor->pos.x = 32 * creatureRam->pos.x;
-			actor->pos.y = 32 * creatureRam->pos.y;
-			actor->pos.z = 32 * creatureRam->pos.z;
+			actor->transform.pos.x = 32 * creatureRam->pos.x;
+			actor->transform.pos.y = 32 * creatureRam->pos.y;
+			actor->transform.pos.z = 32 * creatureRam->pos.z;
 			actor->movementData = Actor::g_movementData[creatureRam->movCtrl];
 			actor->actorPhase = creatureRam->entCtrl.actorPhase;
 
@@ -970,12 +970,12 @@ namespace Toy2
 					initActorFlags += Actor::ACTOR_NO_DESPAWN;
 			}
 
-			int32_t actorPosX = actor->pos.x;
-			int32_t actorPosZ = actor->pos.z;
+			int32_t actorPosX = actor->transform.pos.x;
+			int32_t actorPosZ = actor->transform.pos.z;
 			actor->actorFlags = initActorFlags;
 			actor->unkShort2 = creatureRam->entCtrl.unkByte;
 
-			int32_t actorPosY = actor->pos.y;
+			int32_t actorPosY = actor->transform.pos.y;
 
 			bool flag = actor->unkShort2 == 100;
 
@@ -989,11 +989,11 @@ namespace Toy2
 			if (flag)
 				actor->unkShort2 = 1800;
 
-			actor->pitchAngle = 0;
+			actor->transform.angles.pitch = 0;
 
 			int16_t initialFacingAngle = 16 * creatureRam->initialFacingAngle;
 
-			actor->yawAngle = initialFacingAngle;
+			actor->transform.angles.yaw = initialFacingAngle;
 			actor->rollAngle = 0;
 			actor->targetYaw = initialFacingAngle;
 			actor->velX = 0;
@@ -1210,9 +1210,9 @@ namespace Toy2
 
 				do
 				{
-					int32_t deltaZ = (actor->pos.z + actor->boundingOffset.z - buzzZ) >> 5;
-					int32_t deltaY = (actor->pos.y + actor->boundingOffset.y - buzzY) >> 5;
-					int32_t deltaX = (actor->pos.x + actor->boundingOffset.x - buzzX) >> 5;
+					int32_t deltaZ = (actor->transform.pos.z + actor->boundingOffset.z - buzzZ) >> 5;
+					int32_t deltaY = (actor->transform.pos.y + actor->boundingOffset.y - buzzY) >> 5;
+					int32_t deltaX = (actor->transform.pos.x + actor->boundingOffset.x - buzzX) >> 5;
 
 					// rough test with the bounding sphere of the actor
 					if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ
@@ -1220,24 +1220,24 @@ namespace Toy2
 						&& actor->damageCooldownTimer >= 0)
 					{
 						int16_t* attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
-						int32_t sinYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 2048) & 0xFFF] >> 2;
-						int32_t cosYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 1024) & 0xFFF] >> 2;
+						int32_t sinYaw = Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 2048) & 0xFFF] >> 2;
+						int32_t cosYaw = Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1024) & 0xFFF] >> 2;
 
 						int32_t attachX = attach[0];
-						int32_t relX = actor->pos.x + ((sinYaw * attach[2] + cosYaw * attachX) >> 12) - buzzX;
-						int32_t relZ = actor->pos.z + ((cosYaw * attach[2] - sinYaw * attachX) >> 12) - buzzZ;
+						int32_t relX = actor->transform.pos.x + ((sinYaw * attach[2] + cosYaw * attachX) >> 12) - buzzX;
+						int32_t relZ = actor->transform.pos.z + ((cosYaw * attach[2] - sinYaw * attachX) >> 12) - buzzZ;
 
 						// the ellipsoid of the actor, Buzz must be inside of it
 						int32_t scaledX = attach[4] * ((relX * cosYaw + relZ * sinYaw) >> 12);
 						int32_t scaledZ = (attach[6] * ((relZ * cosYaw - relX * sinYaw) >> 12)) >> 13;
-						int32_t scaledY = (attach[5] * (actor->pos.y + attach[1] - buzzY)) >> 13;
+						int32_t scaledY = (attach[5] * (actor->transform.pos.y + attach[1] - buzzY)) >> 13;
 
 						if (scaledY * scaledY + (scaledX >> 13) * (scaledX >> 13) + scaledZ * scaledZ
 								< (ellipsoidRadius + attach[7]) * (ellipsoidRadius + attach[7])
 							&& (actor->actorFlags & Actor::ACTOR_DEATH_DAMAGE) != 0)
 						{
-							int32_t angle =
-								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - actor->pos.x, g_buzzActor.posAngles.pos.z - actor->pos.z);
+							int32_t angle = Nu3D::Math::CartesianToFixedAngle(
+								g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z);
 
 							actor->actorFlags |= 0x200;
 
@@ -1313,9 +1313,9 @@ namespace Toy2
 						}
 						else
 						{
-							int32_t dz = (Camera::g_activeCameraTransform.pos.z - actor->boundingOffset.z - actor->pos.z) >> 8;
-							int32_t dx = (Camera::g_activeCameraTransform.pos.x - actor->boundingOffset.x - actor->pos.x) >> 8;
-							int32_t dy = (Camera::g_activeCameraTransform.pos.y - actor->boundingOffset.y - actor->pos.y) >> 8;
+							int32_t dz = (Camera::g_activeCameraTransform.pos.z - actor->boundingOffset.z - actor->transform.pos.z) >> 8;
+							int32_t dx = (Camera::g_activeCameraTransform.pos.x - actor->boundingOffset.x - actor->transform.pos.x) >> 8;
+							int32_t dy = (Camera::g_activeCameraTransform.pos.y - actor->boundingOffset.y - actor->transform.pos.y) >> 8;
 
 							distSq = dx * dx + dy * dy + dz * dz;
 						}
@@ -1418,9 +1418,9 @@ namespace Toy2
 						if (g_tickState[4] && curUnkVar29 < -1)
 						{
 							int16_t* attachOffset = (int16_t*)curActor->unkVar34;
-							int32_t spawnX = curActor->pos.x + attachOffset[0] + 32 * (*g_randDatBufferPtr++ - 128);
-							int32_t spawnY = curActor->pos.y + attachOffset[1] + 32 * (*g_randDatBufferPtr++ - 128);
-							int32_t spawnZ = curActor->pos.z + attachOffset[2] + 32 * (*g_randDatBufferPtr++ - 128);
+							int32_t spawnX = curActor->transform.pos.x + attachOffset[0] + 32 * (*g_randDatBufferPtr++ - 128);
+							int32_t spawnY = curActor->transform.pos.y + attachOffset[1] + 32 * (*g_randDatBufferPtr++ - 128);
+							int32_t spawnZ = curActor->transform.pos.z + attachOffset[2] + 32 * (*g_randDatBufferPtr++ - 128);
 
 							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 37, 1)->rotSpeed = *g_randDatBufferPtr - 128;
 							++g_randDatBufferPtr;
@@ -6075,8 +6075,8 @@ namespace Toy2
 		ElevatorHop::g_unk52FC3C = 4096;
 		ElevatorHop::g_unk52FCF4 = ElevatorHop::g_unk4F3688;
 		ElevatorHop::g_unk52FCF0 = ElevatorHop::g_unk4F36DC;
-		g_levelActors[8].pos.x += 0x10000;
-		return g_levelActors[8].pos.x;
+		g_levelActors[8].transform.pos.x += 0x10000;
+		return g_levelActors[8].transform.pos.x;
 	}
 
 	// FUNCTION: TOY2 0x0042E600
@@ -8227,9 +8227,9 @@ namespace Toy2
 				{
 					if ((actor->actorFlags & 1) != 0 && (actor->creatureRam->defenseMode & 4) != 0 && actor->unkVar29 >= 0)
 					{
-						int32_t deltaZ = (actor->pos.z - origin->pos.z) >> 5;
-						int32_t deltaY = (actor->pos.y - origin->pos.y) >> 5;
-						int32_t deltaX = (actor->pos.x - origin->pos.x) >> 5;
+						int32_t deltaZ = (actor->transform.pos.z - origin->pos.z) >> 5;
+						int32_t deltaY = (actor->transform.pos.y - origin->pos.y) >> 5;
+						int32_t deltaX = (actor->transform.pos.x - origin->pos.x) >> 5;
 
 						if (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < 0x1000000 && abs(deltaY) < 768)
 						{
@@ -8252,15 +8252,15 @@ namespace Toy2
 
 				if (bestAngleDiff != 0x7FFFFFFF)
 				{
-					int16_t targetYaw = autoAimActor->yawAngle;
+					int16_t targetYaw = autoAimActor->transform.angles.yaw;
 					int32_t sinFacing = Numerics::g_sinCosLUT[(targetYaw - 2048) & 0xFFF] >> 2;
 					int16_t* attachOffset = (int16_t*)(autoAimActor->unkVar34 + 16 * autoAimActor->primaryAnimIdx);
 					int32_t cosFacing = Numerics::g_sinCosLUT[(targetYaw - 1024) & 0xFFF] >> 2;
 					int32_t attachZ = attachOffset[2];
 
-					int32_t aimDeltaX = (autoAimActor->pos.x + ((sinFacing * attachZ + cosFacing * attachOffset[0]) >> 12) - origin->pos.x) >> 5;
-					int32_t aimDeltaY = (autoAimActor->pos.y + attachOffset[1] - origin->pos.y) >> 5;
-					int32_t aimDeltaZ = (autoAimActor->pos.z + ((cosFacing * attachZ - sinFacing * attachOffset[0]) >> 12) - origin->pos.z) >> 5;
+					int32_t aimDeltaX = (autoAimActor->transform.pos.x + ((sinFacing * attachZ + cosFacing * attachOffset[0]) >> 12) - origin->pos.x) >> 5;
+					int32_t aimDeltaY = (autoAimActor->transform.pos.y + attachOffset[1] - origin->pos.y) >> 5;
+					int32_t aimDeltaZ = (autoAimActor->transform.pos.z + ((cosFacing * attachZ - sinFacing * attachOffset[0]) >> 12) - origin->pos.z) >> 5;
 
 					int32_t targetAngle = Nu3D::Math::CartesianToFixedAngle(aimDeltaX, aimDeltaZ);
 

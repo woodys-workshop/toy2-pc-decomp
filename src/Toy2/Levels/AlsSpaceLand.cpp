@@ -268,7 +268,8 @@ namespace Toy2
 				do
 				{
 					v21 = &g_laserPositions[v14];
-					Nu3D::Particles::SpawnFromPreset(g_laserPositions[laserIndex].pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 4, 4)
+					Nu3D::Particles::SpawnFromPreset(
+						g_laserPositions[laserIndex].pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 4, 4)
 						->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					--v20;
 					++g_randDatBufferPtr;
@@ -277,13 +278,15 @@ namespace Toy2
 				if (laserIndex)
 					Lighting::SpawnLight(v21->pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 30960, 16, v21->pos.x);
 				else
-					Lighting::SpawnLight(g_laserPositions[0].pos.x, g_laserPositions[0].pos.y, g_laserPositions[0].pos.z, 15728640, 16, g_laserPositions[0].pos.z);
+					Lighting::SpawnLight(
+						g_laserPositions[0].pos.x, g_laserPositions[0].pos.y, g_laserPositions[0].pos.z, 15728640, 16, g_laserPositions[0].pos.z);
 
 				AudioManager::PlaySoundEffect(7, (Vector3I*)&g_laserPositions[v14]);
 
 				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&g_laserPositions[v14], 25))
 				{
-					v22 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - v21->pos.x, g_buzzActor.posAngles.pos.z - g_laserPositions[laserIndex].pos.z);
+					v22 = Nu3D::Math::CartesianToFixedAngle(
+						g_buzzActor.posAngles.pos.x - v21->pos.x, g_buzzActor.posAngles.pos.z - g_laserPositions[laserIndex].pos.z);
 
 					Buzz::HandleDamage(v22, 2u);
 				}
@@ -449,7 +452,7 @@ namespace Toy2
 				if (g_unk52F2F8 == 2)
 				{
 					AudioManager::g_pitchArray[0] = v6 + 2048;
-					AudioManager::PlaySoundEffect(126, &g_levelActors[1].pos);
+					AudioManager::PlaySoundEffect(126, &g_levelActors[1].transform.pos);
 					v5 = (int32_t)Renderer::g_frameDelta;
 				}
 
@@ -480,12 +483,12 @@ namespace Toy2
 
 			v14 = (Numerics::g_sinCosLUT[g_unk52FA84] >> 2) + ((v4 * (v7->data[v9 + 1].y - v7->data[v9].y)) >> 11);
 
-			g_levelActors[1].pos.x = 32 * v7->data[v9].x + ((v4 * (v7->data[v9 + 1].x - v7->data[v9].x)) >> 11);
-			g_levelActors[1].pos.y = v14 + 32 * v7->data[v9].y;
-			g_levelActors[1].pos.z = ((v4 * (z - v10)) >> 11) + 32 * v7->data[v9].z;
+			g_levelActors[1].transform.pos.x = 32 * v7->data[v9].x + ((v4 * (v7->data[v9 + 1].x - v7->data[v9].x)) >> 11);
+			g_levelActors[1].transform.pos.y = v14 + 32 * v7->data[v9].y;
+			g_levelActors[1].transform.pos.z = ((v4 * (z - v10)) >> 11) + 32 * v7->data[v9].z;
 
-			g_levelActors[1].motionTargetPos = g_levelActors[1].pos;
-			g_levelActors[1].boundary = g_levelActors[1].pos;
+			g_levelActors[1].motionTargetPos = g_levelActors[1].transform.pos;
+			g_levelActors[1].boundary = g_levelActors[1].transform.pos;
 
 			g_unk52FA84 = (g_unk52FA84 + 32 * v5) & 0xFFF;
 

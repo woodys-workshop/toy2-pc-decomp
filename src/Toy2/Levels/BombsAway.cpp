@@ -160,12 +160,12 @@ namespace Toy2
 			g_unk52F750 &= 0xFFFu;
 			g_unk52F74C = (g_unk52F74C + 63 * (int32_t)Renderer::g_frameDelta) & 0xFFF;
 
-			if (! g_unk52F754 && Nu3D::Math::IsWithinDistanceXZ(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 380))
+			if (! g_unk52F754 && Nu3D::Math::IsWithinDistanceXZ(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 380))
 			{
 				g_unk52F754 = 1;
-				g_levelActors[0].pos.y -= 11000;
-				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 300, 16);
-				g_levelActors[0].pos.y += 11000;
+				g_levelActors[0].transform.pos.y -= 11000;
+				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 300, 16);
+				g_levelActors[0].transform.pos.y += 11000;
 				AudioManager::PlayMusicLooping(g_levelIndex);
 			}
 
@@ -174,7 +174,7 @@ namespace Toy2
 				if (Camera::g_cutsceneTimer < 240)
 				{
 					if (g_unk52F70C >= 240)
-						AudioManager::PlaySoundEffect(70, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(70, &g_levelActors[0].transform.pos);
 
 					v0 = 1;
 				}
@@ -182,7 +182,7 @@ namespace Toy2
 				if (Camera::g_cutsceneTimer < 150)
 				{
 					if (g_unk52F70C >= 150)
-						AudioManager::PlaySoundEffect(-4, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(-4, &g_levelActors[0].transform.pos);
 
 					g_unk52F704 += (int32_t)Renderer::g_frameDelta * (g_unk52F704 - g_unk52F75C) / -32;
 				}
@@ -206,10 +206,10 @@ namespace Toy2
 					AudioManager::Preset::PlayOneShotSound(209, (Actor::Toy2Actor*)&g_buzzActor);
 				}
 
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 50))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 50))
 				{
 					v1 = Nu3D::Math::CartesianToFixedAngle(
-						g_buzzActor.posAngles.pos.x - g_levelActors[0].pos.x, g_buzzActor.posAngles.pos.z - g_levelActors[0].pos.z);
+						g_buzzActor.posAngles.pos.x - g_levelActors[0].transform.pos.x, g_buzzActor.posAngles.pos.z - g_levelActors[0].transform.pos.z);
 
 					Buzz::HandleDamage(v1 & 0xFFF, 3u);
 				}
@@ -253,31 +253,31 @@ namespace Toy2
 
 						g_levelActors[0].unkShort1 = 0;
 						g_unk52F754 = 1000;
-						g_levelActors[0].pos.y -= 11000;
+						g_levelActors[0].transform.pos.y -= 11000;
 						g_buzzActor.posAngles.pos.x += 10000;
 						g_buzzActor.posAngles.pos.z += 10000;
 
-						Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 420, 16);
+						Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 420, 16);
 
 						g_levelActors[0].actorFlags &= 0xFE7Fu;
 						g_buzzActor.posAngles.pos.z -= 10000;
-						g_levelActors[0].pos.y += 11000;
+						g_levelActors[0].transform.pos.y += 11000;
 						g_buzzActor.posAngles.pos.x -= 10000;
 
-						g_unk52F6F4 = g_levelActors[0].pos.y - 12000;
+						g_unk52F6F4 = g_levelActors[0].transform.pos.y - 12000;
 						SaveManager::g_save0Data.tokens[g_levelFileIndex] = 128;
 						goto LABEL_56;
 					}
 
 					*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode = 4;
 
-					g_levelActors[0].pos.y -= 14000;
+					g_levelActors[0].transform.pos.y -= 14000;
 					g_levelActors[0].movementData = Actor::g_movementData[14] + 79;
 					g_levelActors[0].unkShort1 = 0;
 
-					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, g_unk52F758, 16);
+					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, g_unk52F758, 16);
 
-					g_levelActors[0].pos.y += 14000;
+					g_levelActors[0].transform.pos.y += 14000;
 					g_levelActors[0].velX = 0;
 					g_levelActors[0].gravityVel = 0;
 					g_levelActors[0].velForward = 0;
@@ -290,7 +290,7 @@ namespace Toy2
 			LABEL_36:
 
 				if (*(uint8_t*)&g_levelActors[0].creatureRam->defenseMode == 4)
-					Camera::g_cutsceneFocusPos.y = g_levelActors[0].pos.y - (2 * g_unk52F704 + 10000);
+					Camera::g_cutsceneFocusPos.y = g_levelActors[0].transform.pos.y - (2 * g_unk52F704 + 10000);
 
 				v4 = g_unk52F6F0;
 
@@ -307,7 +307,7 @@ namespace Toy2
 
 					if (g_unk52F70C >= 120)
 					{
-						AudioManager::PlaySoundEffect(-4, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(-4, &g_levelActors[0].transform.pos);
 						v2 = g_unk52F75C;
 						v4 = g_unk52F6F0;
 					}
@@ -339,10 +339,19 @@ namespace Toy2
 					if (g_levelActors[0].unkShort4 == 1)
 					{
 						Nu3D::Particles::SpawnInstance(
-							g_levelActors[0].pos.x, g_levelActors[0].pos.y - 10000, g_levelActors[0].pos.z, 0, -2, 0, 4 * g_levelActors[0].yawAngle, 0, 128, 63)
+							g_levelActors[0].transform.pos.x,
+							g_levelActors[0].transform.pos.y - 10000,
+							g_levelActors[0].transform.pos.z,
+							0,
+							-2,
+							0,
+							4 * g_levelActors[0].transform.angles.yaw,
+							0,
+							128,
+							63)
 							->pitchAngle = 0;
 
-						AudioManager::PlaySoundEffect(13, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(13, &g_levelActors[0].transform.pos);
 						unkShort4 = g_levelActors[0].unkShort4;
 					}
 
@@ -360,10 +369,10 @@ namespace Toy2
 
 			if (g_unk52F754 == 1000)
 			{
-				Camera::g_cutsceneFocusPos.y = g_levelActors[0].pos.y - 11000;
+				Camera::g_cutsceneFocusPos.y = g_levelActors[0].transform.pos.y - 11000;
 				v0 = 1;
-				Camera::g_cutsceneFocusPos.x = g_levelActors[0].pos.x;
-				Camera::g_cutsceneFocusPos.z = g_levelActors[0].pos.z;
+				Camera::g_cutsceneFocusPos.x = g_levelActors[0].transform.pos.x;
+				Camera::g_cutsceneFocusPos.z = g_levelActors[0].transform.pos.z;
 
 				if (Camera::g_cutsceneTimer >= 180)
 					goto LABEL_64;
@@ -371,9 +380,9 @@ namespace Toy2
 				g_unk52F754 = 1001;
 				g_unk52F6FC = -3072;
 
-				g_levelActors[0].pos.y += 9000;
+				g_levelActors[0].transform.pos.y += 9000;
 				Actor::Kill(g_levelActors, 1u);
-				g_levelActors[0].pos.y -= 9000;
+				g_levelActors[0].transform.pos.y -= 9000;
 
 				v7 = g_unk52F754 <= 1000;
 			}
@@ -381,7 +390,7 @@ namespace Toy2
 			if (! v7)
 			{
 				v8 = 96 * (int32_t)Renderer::g_frameDelta + g_unk52F6FC;
-				v7 = v8 + g_unk52F6F4 <= g_levelActors[0].pos.y - 2000;
+				v7 = v8 + g_unk52F6F4 <= g_levelActors[0].transform.pos.y - 2000;
 
 				Camera::g_cutsceneFocusPos.y += 128;
 				g_unk52F6FC = v8;
@@ -390,13 +399,13 @@ namespace Toy2
 				if (! v7)
 				{
 					g_unk52F6FC = -(v8 >> 1);
-					g_unk52F6F4 = g_levelActors[0].pos.y - 2000;
+					g_unk52F6F4 = g_levelActors[0].transform.pos.y - 2000;
 
 					if (abs(g_unk52F6FC) > 128)
-						AudioManager::PlaySoundEffect(69, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(69, &g_levelActors[0].transform.pos);
 				}
 
-				Nu3D::Link::SetPositionRawAndCommit(0, g_levelActors[0].pos.x >> 5, g_unk52F6F4 >> 5, g_levelActors[0].pos.z >> 5);
+				Nu3D::Link::SetPositionRawAndCommit(0, g_levelActors[0].transform.pos.x >> 5, g_unk52F6F4 >> 5, g_levelActors[0].transform.pos.z >> 5);
 
 				goto LABEL_67;
 			}
@@ -412,7 +421,7 @@ namespace Toy2
 			}
 
 			Nu3D::Link::SetRotationRelative8bit(
-				0, Numerics::g_sinCosLUT[v9 & 0xFFF] >> 8, g_levelActors[0].yawAngle, Numerics::g_sinCosLUT[(v9 >> 1) & 0xFFF] >> 8);
+				0, Numerics::g_sinCosLUT[v9 & 0xFFF] >> 8, g_levelActors[0].transform.angles.yaw, Numerics::g_sinCosLUT[(v9 >> 1) & 0xFFF] >> 8);
 
 			a1.x = 0;
 			a1.y = -700;
@@ -446,13 +455,13 @@ namespace Toy2
 
 			if (g_tickState[6] && v0)
 			{
-				a1.x = g_levelActors[0].pos.x;
-				a1.y = g_levelActors[0].pos.y - 10000;
-				a1.z = g_levelActors[0].pos.z;
+				a1.x = g_levelActors[0].transform.pos.x;
+				a1.y = g_levelActors[0].transform.pos.y - 10000;
+				a1.z = g_levelActors[0].transform.pos.z;
 
 				Nu3D::Particles::SpawnFromPreset(
 
-					g_levelActors[0].pos.x, g_levelActors[0].pos.y - 10000, g_levelActors[0].pos.z, 65, 20)
+					g_levelActors[0].transform.pos.x, g_levelActors[0].transform.pos.y - 10000, g_levelActors[0].transform.pos.z, 65, 20)
 					->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
 
 				v10 = g_unk52F754;
@@ -502,9 +511,9 @@ namespace Toy2
 
 			if (g_unk52F754 >= 999)
 			{
-				Camera::g_unk50A118.x = g_levelActors[0].pos.x;
-				Camera::g_unk50A118.y = g_levelActors[0].pos.y - 10000;
-				Camera::g_unk50A118.z = g_levelActors[0].pos.z;
+				Camera::g_unk50A118.x = g_levelActors[0].transform.pos.x;
+				Camera::g_unk50A118.y = g_levelActors[0].transform.pos.y - 10000;
+				Camera::g_unk50A118.z = g_levelActors[0].transform.pos.z;
 			}
 
 			a1.x = 13453;

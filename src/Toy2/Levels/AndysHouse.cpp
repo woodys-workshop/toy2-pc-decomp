@@ -263,7 +263,8 @@ namespace Toy2
 				}
 
 				Nu3D::Link::SetRotationRelative8bit(linkId, 0, 0, roll & 0xFFF);
-				Nu3D::Link::SetPositionRawAndCommit(linkId, pos->x >> 5, (pos->y >> 5) - (Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 6) + 256, pos->z >> 5);
+				Nu3D::Link::SetPositionRawAndCommit(
+					linkId, pos->x >> 5, (pos->y >> 5) - (Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 6) + 256, pos->z >> 5);
 			}
 		}
 
@@ -338,7 +339,7 @@ namespace Toy2
 					{
 						g_levelActors[0].rollAngle = 1792;
 						g_unk52F574 /= -2;
-						AudioManager::PlaySoundEffect(50, &g_levelActors[0].pos);
+						AudioManager::PlaySoundEffect(50, &g_levelActors[0].transform.pos);
 
 						if (g_unk52F574 > -8)
 							g_levelActors[0].actorPhase = 80;
@@ -355,7 +356,7 @@ namespace Toy2
 					{
 						g_levelActors[2].rollAngle = 2304;
 						g_unk52F570 /= -2;
-						AudioManager::PlaySoundEffect(50, &g_levelActors[2].pos);
+						AudioManager::PlaySoundEffect(50, &g_levelActors[2].transform.pos);
 
 						if (g_unk52F570 > -8)
 							g_levelActors[2].actorPhase = 80;
@@ -641,7 +642,7 @@ namespace Toy2
 					(Vector3I*)g_unk52F508,
 					g_unk52F5A4 = (g_unk52F5A4 + (Renderer::g_frameDelta << 7)) & 0xFFF,
 					12);
-					
+
 				AnimateBobbingPlatform(g_unk52F588 + 4096, 16, (Vector3I*)g_unk52F518, g_unk52F5A4 + 512, 13);
 
 				if ((g_levelActors[29].actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0
@@ -711,10 +712,11 @@ namespace Toy2
 					}
 
 					// the RC car drives along the path
-					int32_t pointDeltaX = Levels::g_recordData[30]->data[g_raceCarPathIndex].x - (g_levelActors[29].pos.x >> 5);
+					int32_t pointDeltaX = Levels::g_recordData[30]->data[g_raceCarPathIndex].x - (g_levelActors[29].transform.pos.x >> 5);
 					int32_t* pointZ = &Levels::g_recordData[30]->data[g_raceCarPathIndex].z;
 
-					if ((*pointZ - (g_levelActors[29].pos.z >> 5)) * (*pointZ - (g_levelActors[29].pos.z >> 5)) + pointDeltaX * pointDeltaX < 360000)
+					if ((*pointZ - (g_levelActors[29].transform.pos.z >> 5)) * (*pointZ - (g_levelActors[29].transform.pos.z >> 5)) + pointDeltaX * pointDeltaX
+						< 360000)
 					{
 						g_levelActors[29].boundary.x = 32 * Levels::g_recordData[30]->data[g_raceCarPathIndex].x;
 						g_levelActors[29].boundary.z = 32 * *pointZ;
@@ -729,7 +731,7 @@ namespace Toy2
 								++g_raceCarLaps;
 							}
 						}
-						else if ((uint32_t)g_levelActors[29].pos.z > (uint32_t)-106496)
+						else if ((uint32_t)g_levelActors[29].transform.pos.z > (uint32_t)-106496)
 						{
 							if (g_unk52F2F8 == 2 && g_unk52AD64 < 3)
 								g_unk52F2F8 = 3;
@@ -822,8 +824,8 @@ namespace Toy2
 					g_unk830D44 = 180;
 				}
 
-				if (g_levelActors[8].pos.y > -187921)
-					g_levelActors[8].pos.y = -187921;
+				if (g_levelActors[8].transform.pos.y > -187921)
+					g_levelActors[8].transform.pos.y = -187921;
 			}
 
 			// the room of mr. potato head

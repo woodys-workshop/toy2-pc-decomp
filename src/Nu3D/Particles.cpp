@@ -980,14 +980,14 @@ namespace Nu3D
 							if (! targetActor->actorPhase || targetActor->unkVar29 < 0)
 								particle->lifetime = 1;
 
-							value = targetActor->pos.x + attach[0] - particle->pos.x;
+							value = targetActor->transform.pos.x + attach[0] - particle->pos.x;
 							value2 = attach[1] - particle->pos.y;
 							value3 = attach[2];
 
 							lifetime = particle->lifetime;
 							dirX = value >> 5;
-							dirY = (targetActor->pos.y + value2) >> 5;
-							dirZ = (targetActor->pos.z + value3 - particle->pos.z) >> 5;
+							dirY = (targetActor->transform.pos.y + value2) >> 5;
+							dirZ = (targetActor->transform.pos.z + value3 - particle->pos.z) >> 5;
 
 							if (lifetime >= 32)
 								value = 3 * (lifetime & 0xF) + 2;
@@ -1533,12 +1533,12 @@ namespace Nu3D
 
 						targetActor = (Toy2::Actor::Toy2Actor*)particle->velY;
 						attach = (int16_t*)(targetActor->unkVar34 + 16 * targetActor->primaryAnimIdx);
-						value = targetActor->pos.z;
+						value = targetActor->transform.pos.z;
 
 						value2 = attach[1];
-						value3 = targetActor->pos.x + attach[0] - particle->pos.x;
+						value3 = targetActor->transform.pos.x + attach[0] - particle->pos.x;
 						dirZ = (value + attach[2] - particle->pos.z) >> 5;
-						dirY = (targetActor->pos.y + value2 - particle->pos.y) >> 5;
+						dirY = (targetActor->transform.pos.y + value2 - particle->pos.y) >> 5;
 
 						dirX = value3 >> 5;
 
@@ -1546,7 +1546,7 @@ namespace Nu3D
 						{
 							if ((uint8_t)targetActor->creatureRam->defenseMode == 4)
 							{
-								hitAngle = Nu3D::Math::CartesianToFixedAngle(targetActor->pos.x - particle->pos.x, value - particle->pos.z);
+								hitAngle = Nu3D::Math::CartesianToFixedAngle(targetActor->transform.pos.x - particle->pos.x, value - particle->pos.z);
 								((uint8_t*)&particle->renderFlags)[0] &= 0xF5;
 								hitAngle += 2048;
 								offset = (hitAngle + 1024) & 0xFFF;

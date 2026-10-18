@@ -209,12 +209,12 @@ namespace Toy2
 
 			if ((g_levelActors[actorIndex].actorFlags & 2) != 0)
 			{
-				y = g_levelActors[actorIndex].pos.y;
+				y = g_levelActors[actorIndex].transform.pos.y;
 
 				if (y > MoveableObject::g_moveableObjects[1].pos.y - 36864)
 				{
-					v3 = (MoveableObject::g_moveableObjects[objectId].pos.x - g_levelActors[actorIndex].pos.x) >> 5;
-					v4 = (MoveableObject::g_moveableObjects[objectId].pos.z - g_levelActors[actorIndex].pos.z) >> 5;
+					v3 = (MoveableObject::g_moveableObjects[objectId].pos.x - g_levelActors[actorIndex].transform.pos.x) >> 5;
+					v4 = (MoveableObject::g_moveableObjects[objectId].pos.z - g_levelActors[actorIndex].transform.pos.z) >> 5;
 
 					if (v3 * v3 + v4 * v4 < 490000)
 					{
@@ -222,17 +222,18 @@ namespace Toy2
 						if (y >= v5 - 34816)
 						{
 							v6 = Nu3D::Math::CartesianToFixedAngle(
-									 v3, (MoveableObject::g_moveableObjects[objectId].pos.z - g_levelActors[actorIndex].pos.z) >> 5)
+									 v3, (MoveableObject::g_moveableObjects[objectId].pos.z - g_levelActors[actorIndex].transform.pos.z) >> 5)
 								& 0xFFF;
 
 							v7 = Numerics::g_sinCosLUT[(v6 + 1024) & 0xFFF];
 
-							g_levelActors[actorIndex].pos.x = MoveableObject::g_moveableObjects[objectId].pos.x - ((700 * Numerics::g_sinCosLUT[v6]) >> 9);
-							g_levelActors[actorIndex].pos.z = MoveableObject::g_moveableObjects[objectId].pos.z - ((700 * v7) >> 9);
+							g_levelActors[actorIndex].transform.pos.x =
+								MoveableObject::g_moveableObjects[objectId].pos.x - ((700 * Numerics::g_sinCosLUT[v6]) >> 9);
+							g_levelActors[actorIndex].transform.pos.z = MoveableObject::g_moveableObjects[objectId].pos.z - ((700 * v7) >> 9);
 						}
 						else
 						{
-							g_levelActors[actorIndex].pos.y = v5 - 36864;
+							g_levelActors[actorIndex].transform.pos.y = v5 - 36864;
 						}
 					}
 				}
@@ -782,29 +783,29 @@ namespace Toy2
 				}
 			}
 
-			x = g_levelActors[10].pos.x;
-			if (g_levelActors[10].pos.x < -499087)
+			x = g_levelActors[10].transform.pos.x;
+			if (g_levelActors[10].transform.pos.x < -499087)
 			{
 				x = -499087;
-				g_levelActors[10].pos.x = -499087;
+				g_levelActors[10].transform.pos.x = -499087;
 			}
 
-			v17 = g_levelActors[11].pos.x;
-			if (g_levelActors[11].pos.x < -499087)
+			v17 = g_levelActors[11].transform.pos.x;
+			if (g_levelActors[11].transform.pos.x < -499087)
 			{
 				v17 = -499087;
-				g_levelActors[11].pos.x = -499087;
+				g_levelActors[11].transform.pos.x = -499087;
 			}
 
-			z = g_levelActors[10].pos.z;
-			if (g_levelActors[10].pos.z < -14536)
+			z = g_levelActors[10].transform.pos.z;
+			if (g_levelActors[10].transform.pos.z < -14536)
 			{
 				z = -14536;
-				g_levelActors[10].pos.z = -14536;
+				g_levelActors[10].transform.pos.z = -14536;
 			}
 
-			if (g_levelActors[11].pos.z < -14536)
-				g_levelActors[11].pos.z = -14536;
+			if (g_levelActors[11].transform.pos.z < -14536)
+				g_levelActors[11].transform.pos.z = -14536;
 
 			if (MoveableObject::g_moveableObjects[0].pos.z >= 44544)
 			{
@@ -812,22 +813,23 @@ namespace Toy2
 				{
 					z = MoveableObject::g_moveableObjects[0].pos.z - 38912;
 					g_levelActors[10].velForward = -2304;
-					g_levelActors[10].pos.z = MoveableObject::g_moveableObjects[0].pos.z - 38912;
+					g_levelActors[10].transform.pos.z = MoveableObject::g_moveableObjects[0].pos.z - 38912;
 				}
 
-				if (g_levelActors[11].pos.z > MoveableObject::g_moveableObjects[0].pos.z - 38912 && v17 > MoveableObject::g_moveableObjects[0].pos.x - 18432)
+				if (g_levelActors[11].transform.pos.z > MoveableObject::g_moveableObjects[0].pos.z - 38912
+					&& v17 > MoveableObject::g_moveableObjects[0].pos.x - 18432)
 				{
-					g_levelActors[11].pos.z = MoveableObject::g_moveableObjects[0].pos.z - 38912;
+					g_levelActors[11].transform.pos.z = MoveableObject::g_moveableObjects[0].pos.z - 38912;
 					g_levelActors[11].velForward = -2304;
 				}
 			}
 			else
 			{
 				if (x > MoveableObject::g_moveableObjects[0].pos.x - 18432)
-					g_levelActors[10].pos.x = MoveableObject::g_moveableObjects[0].pos.x - 18432;
+					g_levelActors[10].transform.pos.x = MoveableObject::g_moveableObjects[0].pos.x - 18432;
 
 				if (v17 > MoveableObject::g_moveableObjects[0].pos.x - 18432)
-					g_levelActors[11].pos.x = MoveableObject::g_moveableObjects[0].pos.x - 18432;
+					g_levelActors[11].transform.pos.x = MoveableObject::g_moveableObjects[0].pos.x - 18432;
 			}
 
 			if ((g_levelActors[10].actorFlags & 1) != 0)
@@ -853,7 +855,7 @@ namespace Toy2
 				}
 			}
 
-			if (g_levelActors[11].actorPhase > 0 && g_unk52F9E0 && (g_levelActors[11].pos.z > 290816 || (actorFlags & 1) == 0))
+			if (g_levelActors[11].actorPhase > 0 && g_unk52F9E0 && (g_levelActors[11].transform.pos.z > 290816 || (actorFlags & 1) == 0))
 			{
 				g_unk52F9E0 = 0;
 
@@ -869,7 +871,7 @@ namespace Toy2
 
 				if (g_collectionCount >= 0)
 				{
-					AudioManager::PlaySoundEffect(118, &g_levelActors[12].pos);
+					AudioManager::PlaySoundEffect(118, &g_levelActors[12].transform.pos);
 
 					if (g_collectionCount == 5)
 					{
@@ -895,7 +897,7 @@ namespace Toy2
 
 				if (g_unk52F2F8)
 				{
-					AudioManager::PlaySoundEffect(114, &g_levelActors[13].pos);
+					AudioManager::PlaySoundEffect(114, &g_levelActors[13].transform.pos);
 					Dialogue::Begin(13, 8, "hurry up, buzz! the ^egg^ is still hatching!", -1, 0, -1);
 				}
 				else
@@ -903,7 +905,7 @@ namespace Toy2
 					if (g_unk52FA1C == 2)
 						goto LABEL_194;
 
-					AudioManager::PlaySoundEffect(114, &g_levelActors[13].pos);
+					AudioManager::PlaySoundEffect(114, &g_levelActors[13].transform.pos);
 					g_unk52F2F8 = 1;
 					g_unk52FA10 = 0x4000;
 
@@ -1081,8 +1083,8 @@ namespace Toy2
 			Method1(20, 1);
 			Method1(21, 1);
 
-			if (g_levelActors[27].pos.y < g_levelActors[27].boundary.y)
-				g_levelActors[27].pos.y = g_levelActors[27].boundary.y;
+			if (g_levelActors[27].transform.pos.y < g_levelActors[27].boundary.y)
+				g_levelActors[27].transform.pos.y = g_levelActors[27].boundary.y;
 
 			if (g_rocketBootsDuration && g_buzzActor.posAngles.pos.y < -50176 && g_buzzActor.posAngles.pos.y > -53248 && g_buzzActor.collisionFlags)
 			{

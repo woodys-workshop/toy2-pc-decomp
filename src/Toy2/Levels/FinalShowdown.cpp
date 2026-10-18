@@ -339,69 +339,73 @@ namespace Toy2
 
 			if (! v4)
 			{
-				z = g_levelActors[0].pos.z;
-				v6 = g_levelActors[1].pos.z;
-				x = g_levelActors[1].pos.x;
+				z = g_levelActors[0].transform.pos.z;
+				v6 = g_levelActors[1].transform.pos.z;
+				x = g_levelActors[1].transform.pos.x;
 
-				if (((g_levelActors[0].pos.x - g_levelActors[1].pos.x) >> 5) * ((g_levelActors[0].pos.x - g_levelActors[1].pos.x) >> 5)
-						+ ((g_levelActors[0].pos.y - g_levelActors[1].pos.y) >> 5) * ((g_levelActors[0].pos.y - g_levelActors[1].pos.y) >> 5)
-						+ ((g_levelActors[0].pos.z - g_levelActors[1].pos.z) >> 5) * ((g_levelActors[0].pos.z - g_levelActors[1].pos.z) >> 5)
+				if (((g_levelActors[0].transform.pos.x - g_levelActors[1].transform.pos.x)
+					 >> 5) * ((g_levelActors[0].transform.pos.x - g_levelActors[1].transform.pos.x) >> 5)
+						+ ((g_levelActors[0].transform.pos.y - g_levelActors[1].transform.pos.y) >> 5)
+							* ((g_levelActors[0].transform.pos.y - g_levelActors[1].transform.pos.y) >> 5)
+						+ ((g_levelActors[0].transform.pos.z - g_levelActors[1].transform.pos.z) >> 5)
+							* ((g_levelActors[0].transform.pos.z - g_levelActors[1].transform.pos.z) >> 5)
 					>= 0x40000)
 				{
-					y = g_levelActors[1].pos.y;
-					v9 = g_levelActors[0].pos.x;
+					y = g_levelActors[1].transform.pos.y;
+					v9 = g_levelActors[0].transform.pos.x;
 				}
 				else
 				{
 					v8 = Nu3D::Math::CartesianToFixedAngle(
-							 (g_levelActors[0].pos.x - g_levelActors[1].pos.x) >> 5, (g_levelActors[0].pos.z - g_levelActors[1].pos.z) >> 5)
+							 (g_levelActors[0].transform.pos.x - g_levelActors[1].transform.pos.x) >> 5,
+							 (g_levelActors[0].transform.pos.z - g_levelActors[1].transform.pos.z) >> 5)
 						& 0xFFF;
 
-					v9 = g_levelActors[0].pos.x;
-					z = g_levelActors[0].pos.z;
-					y = g_levelActors[1].pos.y;
+					v9 = g_levelActors[0].transform.pos.x;
+					z = g_levelActors[0].transform.pos.z;
+					y = g_levelActors[1].transform.pos.y;
 
-					x = g_levelActors[0].pos.x - (Numerics::g_sinCosLUT[v8] << 9 >> 9);
+					x = g_levelActors[0].transform.pos.x - (Numerics::g_sinCosLUT[v8] << 9 >> 9);
 					v11 = Numerics::g_sinCosLUT[(v8 + 1024) & 0xFFF] << 9 >> 9;
-					g_levelActors[1].pos.x = x;
-					v6 = g_levelActors[0].pos.z - v11;
+					g_levelActors[1].transform.pos.x = x;
+					v6 = g_levelActors[0].transform.pos.z - v11;
 
-					g_levelActors[1].pos.z = g_levelActors[0].pos.z - v11;
+					g_levelActors[1].transform.pos.z = g_levelActors[0].transform.pos.z - v11;
 				}
 
-				v12 = g_levelActors[2].pos.x;
-				p_x = (x - g_levelActors[2].pos.x) >> 5;
-				v13 = (y - g_levelActors[2].pos.y) >> 5;
-				v14 = g_levelActors[2].pos.z;
-				p_y = (v6 - g_levelActors[2].pos.z) >> 5;
+				v12 = g_levelActors[2].transform.pos.x;
+				p_x = (x - g_levelActors[2].transform.pos.x) >> 5;
+				v13 = (y - g_levelActors[2].transform.pos.y) >> 5;
+				v14 = g_levelActors[2].transform.pos.z;
+				p_y = (v6 - g_levelActors[2].transform.pos.z) >> 5;
 
 				if (p_x * p_x + v13 * v13 + p_y * p_y >= 0x40000)
 				{
-					v16 = g_levelActors[0].pos.y;
+					v16 = g_levelActors[0].transform.pos.y;
 				}
 				else
 				{
 					v15 = Nu3D::Math::CartesianToFixedAngle(p_x, p_y) & 0xFFF;
-					z = g_levelActors[0].pos.z;
-					v9 = g_levelActors[0].pos.x;
+					z = g_levelActors[0].transform.pos.z;
+					v9 = g_levelActors[0].transform.pos.x;
 
-					v12 = g_levelActors[1].pos.x - (Numerics::g_sinCosLUT[v15] << 9 >> 9);
-					v14 = g_levelActors[1].pos.z - (Numerics::g_sinCosLUT[(v15 + 1024) & 0xFFF] << 9 >> 9);
-					v16 = g_levelActors[0].pos.y;
+					v12 = g_levelActors[1].transform.pos.x - (Numerics::g_sinCosLUT[v15] << 9 >> 9);
+					v14 = g_levelActors[1].transform.pos.z - (Numerics::g_sinCosLUT[(v15 + 1024) & 0xFFF] << 9 >> 9);
+					v16 = g_levelActors[0].transform.pos.y;
 
-					g_levelActors[2].pos.x = v12;
-					g_levelActors[2].pos.z = v14;
+					g_levelActors[2].transform.pos.x = v12;
+					g_levelActors[2].transform.pos.z = v14;
 				}
 
 				v17 = (z - v14) >> 5;
 				v18 = (v9 - v12) >> 5;
 
-				if (v18 * v18 + ((v16 - g_levelActors[2].pos.y) >> 5) * ((v16 - g_levelActors[2].pos.y) >> 5) + v17 * v17 < 0x40000)
+				if (v18 * v18 + ((v16 - g_levelActors[2].transform.pos.y) >> 5) * ((v16 - g_levelActors[2].transform.pos.y) >> 5) + v17 * v17 < 0x40000)
 				{
 					v19 = Nu3D::Math::CartesianToFixedAngle(v18, v17) & 0xFFF;
-					v20 = g_levelActors[0].pos.z - (Numerics::g_sinCosLUT[(v19 + 1024) & 0xFFF] << 9 >> 9);
-					g_levelActors[2].pos.x = g_levelActors[0].pos.x - (Numerics::g_sinCosLUT[v19] << 9 >> 9);
-					g_levelActors[2].pos.z = v20;
+					v20 = g_levelActors[0].transform.pos.z - (Numerics::g_sinCosLUT[(v19 + 1024) & 0xFFF] << 9 >> 9);
+					g_levelActors[2].transform.pos.x = g_levelActors[0].transform.pos.x - (Numerics::g_sinCosLUT[v19] << 9 >> 9);
+					g_levelActors[2].transform.pos.z = v20;
 				}
 			}
 
@@ -466,7 +470,7 @@ namespace Toy2
 			if (g_unk530064 == 3)
 			{
 				g_unk530064 = 4;
-				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[g_unk52FFF4].pos, 120, 32);
+				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[g_unk52FFF4].transform.pos, 120, 32);
 				Camera::g_cutsceneFocusPos.y -= 0x2000;
 				Camera::g_cutsceneEyePos.y -= 0x8000;
 			}
@@ -476,25 +480,25 @@ namespace Toy2
 				if (Camera::g_cutsceneTimer)
 					goto LABEL_74;
 
-				g_levelActors[3].yawAngle = 1024;
+				g_levelActors[3].transform.angles.yaw = 1024;
 				g_levelActors[3].targetYaw = 1024;
-				g_levelActors[4].yawAngle = 1024;
+				g_levelActors[4].transform.angles.yaw = 1024;
 				SaveManager::g_save0Data.tokens[g_levelFileIndex] = 0x80;
 				g_levelActors[4].targetYaw = 1024;
 
 				g_unk530064 = 5;
-				g_levelActors[3].pos.x = -320736;
-				g_levelActors[3].pos.y = -48256;
-				g_levelActors[3].pos.z = 5344;
-				g_levelActors[4].pos.x = -289092;
-				g_levelActors[4].pos.y = -46720;
-				g_levelActors[4].pos.z = -7146;
+				g_levelActors[3].transform.pos.x = -320736;
+				g_levelActors[3].transform.pos.y = -48256;
+				g_levelActors[3].transform.pos.z = 5344;
+				g_levelActors[4].transform.pos.x = -289092;
+				g_levelActors[4].transform.pos.y = -46720;
+				g_levelActors[4].transform.pos.z = -7146;
 				g_levelActors[3].actorPhase = 1;
 				g_levelActors[4].actorPhase = 1;
 				g_levelActors[3].motionTargetPos.y = -48256;
 				g_levelActors[4].motionTargetPos.y = -46720;
 
-				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[4].pos, 300, 64);
+				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[4].transform.pos, 300, 64);
 
 				Camera::g_cutsceneFocusPos.y -= 0x2000;
 				Camera::g_cutsceneEyePos.x = Camera::g_cutsceneFocusPos.x + 12288;
@@ -559,14 +563,14 @@ namespace Toy2
 				} while (v30 + 1 < Levels::g_recordData[0]->recordCount);
 			}
 
-			if (g_levelActors[0].pos.x < -179670 && g_levelActors[0].velX < 0)
-				g_levelActors[0].pos.x = -179670;
+			if (g_levelActors[0].transform.pos.x < -179670 && g_levelActors[0].velX < 0)
+				g_levelActors[0].transform.pos.x = -179670;
 
-			if (g_levelActors[1].pos.x < -179670 && g_levelActors[1].velX < 0)
-				g_levelActors[1].pos.x = -179670;
+			if (g_levelActors[1].transform.pos.x < -179670 && g_levelActors[1].velX < 0)
+				g_levelActors[1].transform.pos.x = -179670;
 
-			if (g_levelActors[2].pos.x < -179670 && g_levelActors[2].velX < 0)
-				g_levelActors[2].pos.x = -179670;
+			if (g_levelActors[2].transform.pos.x < -179670 && g_levelActors[2].velX < 0)
+				g_levelActors[2].transform.pos.x = -179670;
 
 			if (p_xa >= 0x10000)
 			{

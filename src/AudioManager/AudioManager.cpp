@@ -2606,10 +2606,10 @@ namespace AudioManager
 	// FUNCTION: TOY2 0x0049E910
 	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::Actor::Toy2Actor* actor)
 	{
-		Toy2::g_soundSequencePlayers[7].pos.x = actor->pos.x;
-		Toy2::g_soundSequencePlayers[7].pos.y = actor->pos.y;
+		Toy2::g_soundSequencePlayers[7].pos.x = actor->transform.pos.x;
+		Toy2::g_soundSequencePlayers[7].pos.y = actor->transform.pos.y;
 
-		int32_t z = actor->pos.z;
+		int32_t z = actor->transform.pos.z;
 
 		Toy2::g_soundSequencePlayers[7].countdown = 0;
 		Toy2::g_soundSequencePlayers[7].pos.z = z;
@@ -2843,7 +2843,7 @@ namespace AudioManager
 				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
 				g_soundEffectPresets[soundIndex].pitch,
 				g_soundEffectPresets[soundIndex].volume,
-				&owner->pos);
+				&owner->transform.pos);
 		}
 
 		// FUNCTION: TOY2 0x0049EA90
@@ -2854,7 +2854,7 @@ namespace AudioManager
 				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
 				g_soundEffectPresets[soundIndex].pitch,
 				g_soundEffectPresets[soundIndex].volume,
-				&owner->pos);
+				&owner->transform.pos);
 		}
 	}
 }

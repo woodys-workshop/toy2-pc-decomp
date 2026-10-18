@@ -86,10 +86,10 @@ namespace Toy2
 									case 1:
 										if (script[1] >= 0)
 										{
-											g_levelActors[script[1]].pos.x = 32 * record->data[script[2]].x;
-											g_levelActors[script[1]].pos.y = 32 * record->data[script[2]].y;
-											g_levelActors[script[1]].pos.z = 32 * record->data[script[2]].z;
-											g_levelActors[script[1]].pos.y = Nu3D::Collision::GetGroundHeight((Transform*)&g_levelActors[script[1]].pos, 0);
+											g_levelActors[script[1]].transform.pos.x = 32 * record->data[script[2]].x;
+											g_levelActors[script[1]].transform.pos.y = 32 * record->data[script[2]].y;
+											g_levelActors[script[1]].transform.pos.z = 32 * record->data[script[2]].z;
+											g_levelActors[script[1]].transform.pos.y = Nu3D::Collision::GetGroundHeight(&g_levelActors[script[1]].transform, 0);
 											g_levelActors[script[1]].velX = 0;
 											g_levelActors[script[1]].gravityVel = 0;
 											g_levelActors[script[1]].velForward = 0;
@@ -128,7 +128,7 @@ namespace Toy2
 											g_levelActors[script[1]].creatureRam->initialFacingAngle = script[2] >> 4;
 
 											eyeIdx = Camera::g_unk50A4BC;
-											g_levelActors[Camera::g_unk50A294[1]].yawAngle = Camera::g_unk50A294[2];
+											g_levelActors[Camera::g_unk50A294[1]].transform.angles.yaw = Camera::g_unk50A294[2];
 
 											int32_t actorIdx = Camera::g_unk50A294[1];
 											int32_t yaw = Camera::g_unk50A294[2];

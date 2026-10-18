@@ -535,8 +535,8 @@ namespace Toy2
 
 				if ((actor->actorFlags & ACTOR_NO_DESPAWN) == 0)
 				{
-					Nu3D::Particles::ParticleInstance* particle =
-						Nu3D::Particles::SpawnInstance(actor->pos.x, actor->pos.y - 4096, actor->pos.z, 0, -2048, 0, 128, 0, 0, 61);
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
+						actor->transform.pos.x, actor->transform.pos.y - 4096, actor->transform.pos.z, 0, -2048, 0, 128, 0, 0, 61);
 					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)particle, 0);
 					particle->groundHeightY = groundHeight;
 
@@ -572,14 +572,14 @@ namespace Toy2
 						break;
 					case 15:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0x20, 0x20, 0x20, 0x2000);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0x20, 0x20, 0x20, 0x2000);
 						burstSound = 1;
 						break;
 					case 16:
 					case 25:
 						actor->unkVar29 = -1;
 						burstCount = 6;
-						AudioManager::PlaySoundEffect(-2, &actor->pos);
+						AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 						spawnBurst = 1;
 						break;
 					case 20:
@@ -596,7 +596,7 @@ namespace Toy2
 						break;
 					case 22:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0x80, 0, 0, 20480);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0x80, 0, 0, 20480);
 						burstSound = 1;
 						break;
 					case 24:
@@ -616,12 +616,12 @@ namespace Toy2
 						break;
 					case 31:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0, 0, 0x80, 12288);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0, 0, 0x80, 12288);
 						burstSound = 1;
 						break;
 					case 32:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0, 0x80, 0, 12288);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0, 0x80, 0, 12288);
 						burstSound = 1;
 						break;
 					case 33:
@@ -633,19 +633,19 @@ namespace Toy2
 					case 41:
 						actor->unkVar29 = -1;
 						burstCount = -5;
-						AudioManager::PlaySoundEffect(89, &actor->pos);
+						AudioManager::PlaySoundEffect(89, &actor->transform.pos);
 						spawnBurst = 1;
 						break;
 					case 48:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0x80, 0, 0, 0);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0x80, 0, 0, 0);
 						burstSound = 1;
 						break;
 					case 54:
 						actor->unkVar29 = -1;
-						Particles::SpawnBurstRingAtPoint(&actor->pos, 0, 0, 0x80, 20480);
+						Particles::SpawnBurstRingAtPoint(&actor->transform.pos, 0, 0, 0x80, 20480);
 						burstCount = 6;
-						AudioManager::PlaySoundEffect(-2, &actor->pos);
+						AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 						spawnBurst = 1;
 						break;
 					default:
@@ -654,14 +654,14 @@ namespace Toy2
 				}
 
 				if (burstSound)
-					AudioManager::PlaySoundEffect(-2, &actor->pos);
+					AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 
 				if (spawnBurst)
 				{
 					int16_t* attachOffset = (int16_t*)actor->unkVar34;
-					int32_t spawnX = actor->pos.x + attachOffset[0];
-					int32_t spawnY = actor->pos.y + attachOffset[1];
-					int32_t spawnZ = actor->pos.z + attachOffset[2];
+					int32_t spawnX = actor->transform.pos.x + attachOffset[0];
+					int32_t spawnY = actor->transform.pos.y + attachOffset[1];
+					int32_t spawnZ = actor->transform.pos.z + attachOffset[2];
 
 					if (burstCount <= 0)
 					{
@@ -688,7 +688,7 @@ namespace Toy2
 							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 17, 4);
 						}
 
-						AudioManager::PlaySoundEffect(10, &actor->pos);
+						AudioManager::PlaySoundEffect(10, &actor->transform.pos);
 					}
 					else
 					{
@@ -703,7 +703,7 @@ namespace Toy2
 						} while (! last);
 
 						Lighting::SpawnLight(spawnX, spawnY, spawnZ, 0xF08000, 32, (int32_t)actor);
-						AudioManager::PlaySoundEffect(10, &actor->pos);
+						AudioManager::PlaySoundEffect(10, &actor->transform.pos);
 					}
 				}
 			}
@@ -929,8 +929,8 @@ namespace Toy2
 							movementData += 2;
 							break;
 						case 16: {
-							int32_t diffX = (actor->pos.x - g_buzzActor.posAngles.pos.x) >> 5;
-							int32_t diffZ = (actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5;
+							int32_t diffX = (actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5;
+							int32_t diffZ = (actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5;
 							int16_t range = movementData[1];
 
 							scriptFlag = diffX * diffX + diffZ * diffZ < range * range;
@@ -958,8 +958,8 @@ namespace Toy2
 							break;
 						}
 						case 18: {
-							int32_t diffX = (actor->pos.x - actor->motionTargetPos.x) >> 5;
-							int32_t diffZ = (actor->pos.z - actor->motionTargetPos.z) >> 5;
+							int32_t diffX = (actor->transform.pos.x - actor->motionTargetPos.x) >> 5;
+							int32_t diffZ = (actor->transform.pos.z - actor->motionTargetPos.z) >> 5;
 							int16_t range = movementData[1];
 
 							scriptFlag = diffX * diffX + diffZ * diffZ < range * range;
@@ -987,14 +987,14 @@ namespace Toy2
 							movementData += 3;
 							break;
 						case 23:
-							AudioManager::PlaySoundEffect((int16_t)movementData[1], &actor->pos);
+							AudioManager::PlaySoundEffect((int16_t)movementData[1], &actor->transform.pos);
 							movementData += 2;
 							break;
 						case 24: {
 							int32_t divisor = -(int16_t)movementData[1] >> 5;
 
-							actor->velX = (actor->motionTargetPos.x - actor->pos.x) / divisor;
-							actor->velForward = (actor->motionTargetPos.z - actor->pos.z) / divisor;
+							actor->velX = (actor->motionTargetPos.x - actor->transform.pos.x) / divisor;
+							actor->velForward = (actor->motionTargetPos.z - actor->transform.pos.z) / divisor;
 
 							actor->actorFlags |= ACTOR_VEL_CLAMP_OVERRIDE;
 							actor->gravityVel = (int16_t)movementData[1];
@@ -1007,7 +1007,8 @@ namespace Toy2
 
 							if (mode == 1)
 							{
-								angle = Nu3D::Math::CartesianToFixedAngle(actor->pos.x - actor->motionTargetPos.x, actor->pos.z - actor->motionTargetPos.z);
+								angle = Nu3D::Math::CartesianToFixedAngle(
+									actor->transform.pos.x - actor->motionTargetPos.x, actor->transform.pos.z - actor->motionTargetPos.z);
 							}
 							else
 							{
@@ -1017,8 +1018,8 @@ namespace Toy2
 									break;
 								}
 
-								angle =
-									Nu3D::Math::CartesianToFixedAngle(actor->pos.x - g_buzzActor.posAngles.pos.x, actor->pos.z - g_buzzActor.posAngles.pos.z);
+								angle = Nu3D::Math::CartesianToFixedAngle(
+									actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z);
 							}
 
 							actor->targetYaw = (angle - 2048) & 0xFFF;
@@ -1053,7 +1054,8 @@ namespace Toy2
 							break;
 						case 31: {
 							int32_t angle =
-								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - actor->pos.x, g_buzzActor.posAngles.pos.z - actor->pos.z)
+								Nu3D::Math::CartesianToFixedAngle(
+									g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z)
 								& 0xFFF;
 							int32_t scale = (int16_t)movementData[1];
 
@@ -1063,9 +1065,9 @@ namespace Toy2
 								scale = 1;
 							}
 
-							actor->motionTargetPos.x = actor->pos.x + scale * Numerics::g_sinCosLUT[angle];
+							actor->motionTargetPos.x = actor->transform.pos.x + scale * Numerics::g_sinCosLUT[angle];
 							movementData += 2;
-							actor->motionTargetPos.z = actor->pos.z + scale * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
+							actor->motionTargetPos.z = actor->transform.pos.z + scale * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
 							break;
 						}
 						case 33:
@@ -1078,11 +1080,12 @@ namespace Toy2
 							break;
 						case 35: {
 							int32_t angle =
-								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - actor->pos.x, g_buzzActor.posAngles.pos.z - actor->pos.z)
+								Nu3D::Math::CartesianToFixedAngle(
+									g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z)
 								& 0xFFF;
 
-							actor->motionTargetPos.x = actor->pos.x - (int16_t)movementData[1] * Numerics::g_sinCosLUT[angle];
-							actor->motionTargetPos.z = actor->pos.z - (int16_t)movementData[1] * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
+							actor->motionTargetPos.x = actor->transform.pos.x - (int16_t)movementData[1] * Numerics::g_sinCosLUT[angle];
+							actor->motionTargetPos.z = actor->transform.pos.z - (int16_t)movementData[1] * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
 							movementData += 2;
 							break;
 						}
@@ -1114,7 +1117,9 @@ namespace Toy2
 					break;
 				case 32:
 					actor->targetYaw =
-						(Nu3D::Math::CartesianToFixedAngle(actor->pos.x - g_buzzActor.posAngles.pos.x, actor->pos.z - g_buzzActor.posAngles.pos.z) - 2048)
+						(Nu3D::Math::CartesianToFixedAngle(
+							 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+						 - 2048)
 						& 0xFFF;
 					break;
 			}
@@ -1174,7 +1179,7 @@ namespace Toy2
 						break;
 				}
 
-				if (abs(actor->pos.y - g_buzzActor.posAngles.pos.y) >= 0x10000)
+				if (abs(actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >= 0x10000)
 				{
 					targetY = actor->boundary.y;
 				}
@@ -1190,22 +1195,23 @@ namespace Toy2
 
 				if (pushRadius)
 				{
-					int32_t diffX = (actor->pos.x - targetX) >> 5;
-					int32_t diffZ = (actor->pos.z - targetZ) >> 5;
+					int32_t diffX = (actor->transform.pos.x - targetX) >> 5;
+					int32_t diffZ = (actor->transform.pos.z - targetZ) >> 5;
 
 					if (diffZ * diffZ + diffX * diffX < pushRadius * pushRadius)
 					{
 						int32_t pushAngle = Nu3D::Math::CartesianToFixedAngle(diffX, diffZ);
 
-						actor->pos.x -= (actor->pos.x - ((pushRadius * Numerics::g_sinCosLUT[pushAngle & 0xFFF]) >> 9) - targetX) >> 4;
-						actor->pos.z -= (actor->pos.z - ((pushRadius * Numerics::g_sinCosLUT[(pushAngle + 1024) & 0xFFF]) >> 9) - targetZ) >> 4;
+						actor->transform.pos.x -= (actor->transform.pos.x - ((pushRadius * Numerics::g_sinCosLUT[pushAngle & 0xFFF]) >> 9) - targetX) >> 4;
+						actor->transform.pos.z -=
+							(actor->transform.pos.z - ((pushRadius * Numerics::g_sinCosLUT[(pushAngle + 1024) & 0xFFF]) >> 9) - targetZ) >> 4;
 					}
 				}
 			}
 
-			int32_t yaw = actor->yawAngle;
+			int32_t yaw = actor->transform.angles.yaw;
 			int32_t sinYaw = Numerics::g_sinCosLUT[-yaw & 0xFFF] >> 2;
-			int32_t cosYaw = Numerics::g_sinCosLUT[(1024 - actor->yawAngle) & 0xFFF] >> 2;
+			int32_t cosYaw = Numerics::g_sinCosLUT[(1024 - actor->transform.angles.yaw) & 0xFFF] >> 2;
 
 			int32_t frameDelta = Renderer::g_frameDelta;
 
@@ -1249,7 +1255,7 @@ namespace Toy2
 			{
 				if (actor->creatureRam->rotSpeed)
 				{
-					actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(actor->pos.x - targetX, actor->pos.z - targetZ) - 2048) & 0xFFF;
+					actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(actor->transform.pos.x - targetX, actor->transform.pos.z - targetZ) - 2048) & 0xFFF;
 					frameDelta = Renderer::g_frameDelta;
 				}
 
@@ -1266,12 +1272,12 @@ namespace Toy2
 				updateFlags = ACTOR_UPDATE_MOVING;
 			}
 
-			int32_t yawDiff = (actor->targetYaw - actor->yawAngle) & 0xFFF;
+			int32_t yawDiff = (actor->targetYaw - actor->transform.angles.yaw) & 0xFFF;
 
 			if (yawDiff >= 0x800)
 				yawDiff -= 4096;
 
-			actor->yawAngle = (actor->yawAngle + (yawDiff * frameDelta * actor->creatureRam->rotSpeed) / 128) & 0xFFF;
+			actor->transform.angles.yaw = (actor->transform.angles.yaw + (yawDiff * frameDelta * actor->creatureRam->rotSpeed) / 128) & 0xFFF;
 
 			int32_t sinMove = Numerics::g_sinCosLUT[yaw] >> 2;
 			int32_t cosMove = Numerics::g_sinCosLUT[(yaw + 1024) & 0xFFF] >> 2;
@@ -1283,8 +1289,8 @@ namespace Toy2
 
 			if (creatureRam->speedTarget)
 			{
-				actor->pos.x += Renderer::g_frameDelta * moveX;
-				actor->pos.z += Renderer::g_frameDelta * moveZ;
+				actor->transform.pos.x += Renderer::g_frameDelta * moveX;
+				actor->transform.pos.z += Renderer::g_frameDelta * moveZ;
 			}
 			else
 			{
@@ -1294,8 +1300,8 @@ namespace Toy2
 				actor->velForward = 0;
 			}
 
-			int32_t localX = actor->pos.x - actor->boundary.x;
-			int32_t localZ = actor->pos.z - actor->boundary.z;
+			int32_t localX = actor->transform.pos.x - actor->boundary.x;
+			int32_t localZ = actor->transform.pos.z - actor->boundary.z;
 			int32_t clampX = (cosBound * localX - sinBound * localZ) >> 12;
 			int32_t clampZ = (cosBound * localZ + sinBound * localX) >> 12;
 			int32_t clamped = 0;
@@ -1322,57 +1328,57 @@ namespace Toy2
 			{
 				if (clamped)
 				{
-					actor->pos.x = actor->boundary.x + ((cosBound * clampX + sinBound * clampZ) >> 12);
-					actor->pos.z = actor->boundary.z + ((cosBound * clampZ - sinBound * clampX) >> 12);
+					actor->transform.pos.x = actor->boundary.x + ((cosBound * clampX + sinBound * clampZ) >> 12);
+					actor->transform.pos.z = actor->boundary.z + ((cosBound * clampZ - sinBound * clampX) >> 12);
 				}
 			}
 			else
 			{
 				clampZ = -256 * creatureRam->boundHalfZ;
 
-				actor->pos.x = actor->boundary.x + ((cosBound * clampX + sinBound * clampZ) >> 12);
-				actor->pos.z = actor->boundary.z + ((cosBound * clampZ - sinBound * clampX) >> 12);
+				actor->transform.pos.x = actor->boundary.x + ((cosBound * clampX + sinBound * clampZ) >> 12);
+				actor->transform.pos.z = actor->boundary.z + ((cosBound * clampZ - sinBound * clampX) >> 12);
 			}
 
-			int32_t curY = actor->pos.y;
+			int32_t curY = actor->transform.pos.y;
 
 			if ((actor->actorFlags & ACTOR_FLOOR_SNAP) != 0)
 			{
 				if ((actor->actorFlags & ACTOR_STUNNED) == 0 || (actor->actorFlags & ACTOR_OOB_SPECIAL_MOVE) != 0)
 				{
 					int32_t snapY = frameDelta * (targetY - curY) / 64 + curY;
-					actor->pos.y -= 6400;
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
-					actor->pos.y = groundHeight;
+					actor->transform.pos.y -= 6400;
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight(&actor->transform, g_unk4E05F0[actor->creatureId - 1]);
+					actor->transform.pos.y = groundHeight;
 
 					if (groundHeight == 0x80000000)
-						actor->pos.y = snapY;
+						actor->transform.pos.y = snapY;
 
-					if (actor->pos.y <= snapY)
+					if (actor->transform.pos.y <= snapY)
 					{
-						int32_t fall = (actor->pos.y - snapY) >> 2;
+						int32_t fall = (actor->transform.pos.y - snapY) >> 2;
 
 						if (fall < -1024)
 							fall = -1024;
 
-						actor->pos.y = snapY + fall * Renderer::g_frameDelta;
+						actor->transform.pos.y = snapY + fall * Renderer::g_frameDelta;
 					}
 					else
 					{
-						actor->pos.y = snapY;
+						actor->transform.pos.y = snapY;
 					}
 				}
 				else
 				{
-					actor->pos.y = actor->motionTargetPos.y;
+					actor->transform.pos.y = actor->motionTargetPos.y;
 
 					if (Renderer::Shadows::g_shadowCount < 47)
 					{
 						int32_t recordIdx = Renderer::Shadows::g_shadowCount;
 						int16_t newCount = Renderer::Shadows::g_shadowCount + 1;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->pos.x;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->transform.pos.x;
 						Renderer::Shadows::g_shadowRecords[recordIdx].groundY = actor->motionTargetPos.y;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->pos.z;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->transform.pos.z;
 
 						Renderer::Shadows::g_shadowCount = newCount;
 						Renderer::Shadows::g_shadowRecords[recordIdx].size = g_unk4E05F0[actor->creatureId - 1];
@@ -1387,34 +1393,34 @@ namespace Toy2
 					actor->gravityVel = 2048;
 
 				int32_t newY = curY + Renderer::g_frameDelta * actor->gravityVel;
-				actor->pos.y = newY;
+				actor->transform.pos.y = newY;
 				int32_t fallY = newY;
 
 				if ((actor->actorFlags & ACTOR_STUNNED) != 0)
 				{
-					actor->pos.y = actor->motionTargetPos.y;
+					actor->transform.pos.y = actor->motionTargetPos.y;
 
 					if (Renderer::Shadows::g_shadowCount < 47)
 					{
 						int32_t recordIdx = Renderer::Shadows::g_shadowCount;
 						int16_t newCount = Renderer::Shadows::g_shadowCount + 1;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->pos.x;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->transform.pos.x;
 						Renderer::Shadows::g_shadowRecords[recordIdx].groundY = actor->motionTargetPos.y;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->pos.z;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->transform.pos.z;
 						Renderer::Shadows::g_shadowCount = newCount;
 						Renderer::Shadows::g_shadowRecords[recordIdx].size = g_unk4E05F0[actor->creatureId - 1];
 					}
 				}
 				else
 				{
-					actor->pos.y = newY - 6400;
-					int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)&actor->pos, g_unk4E05F0[actor->creatureId - 1]);
-					actor->pos.y = groundHeight;
+					actor->transform.pos.y = newY - 6400;
+					int32_t groundHeight = Nu3D::Collision::GetGroundHeight(&actor->transform, g_unk4E05F0[actor->creatureId - 1]);
+					actor->transform.pos.y = groundHeight;
 
 					if (groundHeight == 0x80000000)
 					{
 						fallY = curY;
-						actor->pos.y = actor->lastValidYPosition;
+						actor->transform.pos.y = actor->lastValidYPosition;
 					}
 					else
 					{
@@ -1422,11 +1428,11 @@ namespace Toy2
 					}
 				}
 
-				int32_t groundY = actor->pos.y;
+				int32_t groundY = actor->transform.pos.y;
 
 				if (fallY <= groundY - 512)
 				{
-					actor->pos.y = fallY;
+					actor->transform.pos.y = fallY;
 				}
 				else
 				{
@@ -1457,7 +1463,7 @@ namespace Toy2
 						if (fall < -1024)
 							fall = -1024;
 
-						actor->pos.y = fallY + fall * Renderer::g_frameDelta;
+						actor->transform.pos.y = fallY + fall * Renderer::g_frameDelta;
 					}
 
 					actor->gravityVel = 0;
@@ -1570,7 +1576,7 @@ namespace Toy2
 						if (actor->actorPhase < 100)
 						{
 							actor->actorPhase -= g_hitStructs[hitType].unkShort3;
-							AudioManager::PlaySoundEffect(9, &actor->pos);
+							AudioManager::PlaySoundEffect(9, &actor->transform.pos);
 						}
 
 						if (actor->actorPhase <= 0)
@@ -1616,8 +1622,8 @@ namespace Toy2
 			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];
 			Matrix3x3I16* matrix = (Matrix3x3I16*)angles;
 
-			angles->angles.pitch = actor->pitchAngle;
-			angles->angles.yaw = actor->yawAngle + 2048;
+			angles->angles.pitch = actor->transform.angles.pitch;
+			angles->angles.yaw = actor->transform.angles.yaw + 2048;
 			angles->roll = actor->rollAngle;
 			Nu3D::Math::EulerToRotationMatrix(angles, matrix);
 
@@ -1646,9 +1652,9 @@ namespace Toy2
 			int32_t boneY = bone->translation.y;
 			int32_t boneZ = bone->translation.z;
 
-			int32_t posX = actor->pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
-			int32_t posY = actor->pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
-			int32_t posZ = actor->pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
+			int32_t posX = actor->transform.pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
+			int32_t posY = actor->transform.pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
+			int32_t posZ = actor->transform.pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
 
 			Nu3D::ViewMatrix::Helper1(matrix, &bone->rotation, matrix);
 
@@ -1681,9 +1687,9 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0049F460
 		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ)
 		{
-			if (actor->pos.x > minX && actor->pos.x < maxX)
+			if (actor->transform.pos.x > minX && actor->transform.pos.x < maxX)
 			{
-				int32_t zPos = actor->pos.z;
+				int32_t zPos = actor->transform.pos.z;
 
 				if (zPos > minZ && zPos < maxZ)
 					return 1;
@@ -1712,7 +1718,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[172].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[172].pitch,
 						AudioManager::g_soundEffectPresets[172].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 				}
 			}
 
@@ -1735,7 +1741,7 @@ namespace Toy2
 							AudioManager::g_soundEffectPresets[173].soundBufferIndex - 1,
 							AudioManager::g_soundEffectPresets[173].pitch,
 							AudioManager::g_soundEffectPresets[173].volume,
-							&actor->pos);
+							&actor->transform.pos);
 
 						Dialogue::Begin(
 							actorIdx,
@@ -1752,7 +1758,7 @@ namespace Toy2
 							AudioManager::g_soundEffectPresets[174].soundBufferIndex - 1,
 							AudioManager::g_soundEffectPresets[174].pitch,
 							AudioManager::g_soundEffectPresets[174].volume,
-							&actor->pos);
+							&actor->transform.pos);
 
 						Gadget::g_unk830D1C = 1;
 						Dialogue::Begin(actorIdx, recordIdx, "well done buzz! here is your pizza planet ^token^.", camAngle, camAngleValue, pickupSlotIdx);
@@ -1781,7 +1787,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[170].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[170].pitch,
 						AudioManager::g_soundEffectPresets[170].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 				}
 			}
 
@@ -1807,7 +1813,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[171].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[171].pitch,
 						AudioManager::g_soundEffectPresets[171].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 
 					int32_t hintIdx = Gadget::g_unk830D24;
 
@@ -1862,7 +1868,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[175].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[175].pitch,
 						AudioManager::g_soundEffectPresets[175].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 				}
 			}
 
@@ -1889,7 +1895,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[176].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[176].pitch,
 						AudioManager::g_soundEffectPresets[176].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 
 					foundPiece = Gadget::g_unk830D48 < 0;
 				}
@@ -1901,7 +1907,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[177].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[177].pitch,
 						AudioManager::g_soundEffectPresets[177].volume,
-						&g_levelActors[actorIdx].pos);
+						&g_levelActors[actorIdx].transform.pos);
 
 					ShowModelNode(9, -Gadget::g_unk830D48);
 
@@ -1970,7 +1976,7 @@ namespace Toy2
 						AudioManager::g_soundEffectPresets[soundIdx].soundBufferIndex - 1,
 						AudioManager::g_soundEffectPresets[soundIdx].pitch,
 						AudioManager::g_soundEffectPresets[soundIdx].volume,
-						&g_levelActors[actorId].pos);
+						&g_levelActors[actorId].transform.pos);
 				}
 			}
 		}

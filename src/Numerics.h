@@ -37,8 +37,8 @@ struct Vector3I16
 
 struct Angles
 {
-	uint16_t pitch;
-	uint16_t yaw;
+	int16_t pitch;
+	int16_t yaw;
 };
 
 struct AnglesWithRoll

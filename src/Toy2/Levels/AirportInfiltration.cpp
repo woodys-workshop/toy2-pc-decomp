@@ -540,7 +540,7 @@ namespace Toy2
 					{
 						if (g_unk52F2F8 != 3)
 						{
-							AudioManager::PlaySoundEffect(183, &g_levelActors[5].pos);
+							AudioManager::PlaySoundEffect(183, &g_levelActors[5].transform.pos);
 							Dialogue::Begin(5, 30, "well done! you have found all of my weights! here is your pizza planet ^token^!", -1, 0, 2);
 							g_unk52F2F8 = 3;
 							goto LABEL_75;
@@ -553,7 +553,7 @@ namespace Toy2
 				}
 				else
 				{
-					AudioManager::PlaySoundEffect(182, &g_levelActors[5].pos);
+					AudioManager::PlaySoundEffect(182, &g_levelActors[5].transform.pos);
 					Dialogue::Begin(
 						5, 30, "hi buzz! if you can bring me ^five^ weights before you run out of time, i will give you a pizza planet ^token^.", -1, 0, -1);
 					g_unk830D4C = 0;
@@ -599,7 +599,7 @@ namespace Toy2
 			v16 = g_unk52FF1C;
 			if (! g_unk52FF1C)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[32].pos, 300) && g_buzzActor.posAngles.pos.y < -222734
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[32].transform.pos, 300) && g_buzzActor.posAngles.pos.y < -222734
 					&& g_buzzActor.collisionFlags)
 				{
 					g_unk52FF1C = 1;

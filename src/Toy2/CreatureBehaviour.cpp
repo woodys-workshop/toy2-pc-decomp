@@ -62,7 +62,7 @@ namespace Toy2
 			actor->rollAngle -= (int32_t)Renderer::g_frameDelta * (localStrafeSpeed + actor->rollAngle) / 16;
 
 			if (! playerSideNegative)
-				AudioManager::PlaySoundEffect(44, &actor->pos);
+				AudioManager::PlaySoundEffect(44, &actor->transform.pos);
 
 			if ((context->targetFlags & 1) != 0)
 			{
@@ -80,12 +80,12 @@ namespace Toy2
 
 					if (previousTimer > 182 && actor->unkShort4 <= 182)
 					{
-						int32_t yawAngle = actor->yawAngle;
+						int32_t yawAngle = actor->transform.angles.yaw;
 
 						Nu3D::Particles::SpawnInstance(
-							actor->pos.x + (Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] >> 2),
-							actor->pos.y,
-							actor->pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 2),
+							actor->transform.pos.x + (Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] >> 2),
+							actor->transform.pos.y,
+							actor->transform.pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 2),
 							Numerics::g_sinCosLUT[yawAngle] >> 4,
 							-512,
 							Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] >> 4,
@@ -93,17 +93,17 @@ namespace Toy2
 							0,
 							128,
 							38);
-						AudioManager::PlaySoundEffect(13, &actor->pos);
+						AudioManager::PlaySoundEffect(13, &actor->transform.pos);
 					}
 
 					if (previousTimer > 166 && actor->unkShort4 <= 166)
 					{
-						int32_t yawAngle = actor->yawAngle;
+						int32_t yawAngle = actor->transform.angles.yaw;
 
 						Nu3D::Particles::SpawnInstance(
-							actor->pos.x + (Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF] >> 2),
-							actor->pos.y,
-							actor->pos.z + (Numerics::g_sinCosLUT[yawAngle & 0xFFF] >> 2),
+							actor->transform.pos.x + (Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF] >> 2),
+							actor->transform.pos.y,
+							actor->transform.pos.z + (Numerics::g_sinCosLUT[yawAngle & 0xFFF] >> 2),
 							Numerics::g_sinCosLUT[yawAngle] >> 4,
 							-512,
 							Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] >> 4,
@@ -111,7 +111,7 @@ namespace Toy2
 							0,
 							128,
 							38);
-						AudioManager::PlaySoundEffect(13, &actor->pos);
+						AudioManager::PlaySoundEffect(13, &actor->transform.pos);
 					}
 
 					if (previousTimer > 136 && actor->unkShort4 <= 136)
@@ -123,7 +123,7 @@ namespace Toy2
 				}
 				else
 				{
-					int32_t angle = actor->yawAngle + 512;
+					int32_t angle = actor->transform.angles.yaw + 512;
 					actor->unkShort4 = 360;
 
 					if (*g_randDatBufferPtr++ < 0x80u)
@@ -169,14 +169,14 @@ namespace Toy2
 			}
 
 			if (g_tickState[8] && actor->creatureRam->speedNoTarget == 0xFF)
-				AudioManager::PlaySoundEffect(66, &actor->pos);
+				AudioManager::PlaySoundEffect(66, &actor->transform.pos);
 
 			int16_t localForwardSpeed = context->localForwardSpeed;
 
 			if (localForwardSpeed > 0)
 			{
 				AudioManager::g_pitchArray[0] = 4 * localForwardSpeed;
-				AudioManager::PlaySoundEffect(65, &actor->pos);
+				AudioManager::PlaySoundEffect(65, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 1) == 1 && actor->unkVar29 >= 0 && context->localForwardSpeed > 256)
@@ -184,15 +184,15 @@ namespace Toy2
 				if (g_tickState[4])
 				{
 					Nu3D::Particles::SpawnFromPreset(
-						actor->pos.x + ((3 * Numerics::g_sinCosLUT[(actor->yawAngle + 1952) & 0xFFF]) >> 2),
-						actor->pos.y - 4096,
-						actor->pos.z + ((3 * Numerics::g_sinCosLUT[(actor->yawAngle - 1120) & 0xFFF]) >> 2),
+						actor->transform.pos.x + ((3 * Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1952) & 0xFFF]) >> 2),
+						actor->transform.pos.y - 4096,
+						actor->transform.pos.z + ((3 * Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1120) & 0xFFF]) >> 2),
 						39,
 						2);
 					Nu3D::Particles::SpawnFromPreset(
-						actor->pos.x + ((3 * Numerics::g_sinCosLUT[(actor->yawAngle - 1952) & 0xFFF]) >> 2),
-						actor->pos.y - 4096,
-						actor->pos.z + ((3 * Numerics::g_sinCosLUT[(actor->yawAngle - 928) & 0xFFF]) >> 2),
+						actor->transform.pos.x + ((3 * Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1952) & 0xFFF]) >> 2),
+						actor->transform.pos.y - 4096,
+						actor->transform.pos.z + ((3 * Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 928) & 0xFFF]) >> 2),
 						39,
 						2);
 				}
@@ -221,7 +221,7 @@ namespace Toy2
 			actor->rollAngle -= (int32_t)Renderer::g_frameDelta * (localStrafeSpeed + actor->rollAngle) / 16;
 
 			if (! playerSideNegative)
-				AudioManager::PlaySoundEffect(91, &actor->pos);
+				AudioManager::PlaySoundEffect(91, &actor->transform.pos);
 
 			if ((context->targetFlags & 1) != 0)
 			{
@@ -229,7 +229,7 @@ namespace Toy2
 
 				if (actor->unkShort4 < 0)
 				{
-					int32_t angle = actor->yawAngle + 512;
+					int32_t angle = actor->transform.angles.yaw + 512;
 					actor->unkShort4 = 360;
 
 					if (*g_randDatBufferPtr++ < 0x80u)
@@ -249,8 +249,8 @@ namespace Toy2
 					Toy2::Actor::ResolveBoneAttachmentPos((Vector3I*)&transform, actor, 0);
 
 					displacement.pos.y = 96000;
-					displacement.pos.x = 4 * Numerics::g_sinCosLUT[actor->yawAngle & 0xFFF];
-					displacement.pos.z = 4 * Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF];
+					displacement.pos.x = 4 * Numerics::g_sinCosLUT[actor->transform.angles.yaw & 0xFFF];
+					displacement.pos.z = 4 * Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF];
 					Nu3D::Collision::SweepAndSlide(&transform, &displacement, 0x8000, 0, 256);
 					Renderer::Beam::QueueBeam(9, 32, 400, &transform, &displacement, 0, 0x80, 0);
 
@@ -329,10 +329,10 @@ namespace Toy2
 			Vector3I particlePos;
 
 			if (actor->unkVar29 >= 0)
-				AudioManager::PlaySoundEffect(93, &actor->pos);
+				AudioManager::PlaySoundEffect(93, &actor->transform.pos);
 
 			if ((actor->actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0 && actor->actorPhase == 1)
-				Actor::HandleDamage(actor, (actor->yawAngle - 2048) & 0xFFF, 1);
+				Actor::HandleDamage(actor, (actor->transform.angles.yaw - 2048) & 0xFFF, 1);
 
 			if (actor->unkShort4)
 			{
@@ -343,13 +343,13 @@ namespace Toy2
 				if (actor[-1].creatureId != Actor::CREATURE_3_BOX)
 					actorBefore = actor - 2;
 
-				actor->boundary.y = actorBefore->pos.y - 20480;
-				actor->pos.x = actorBefore->pos.x;
-				actor->pos.y = actorBefore->pos.y;
-				actor->pos.z = actorBefore->pos.z;
-				actor->motionTargetPos.x = actorBefore->pos.x;
-				actor->motionTargetPos.y = actorBefore->pos.y - 20480;
-				actor->motionTargetPos.z = actorBefore->pos.z;
+				actor->boundary.y = actorBefore->transform.pos.y - 20480;
+				actor->transform.pos.x = actorBefore->transform.pos.x;
+				actor->transform.pos.y = actorBefore->transform.pos.y;
+				actor->transform.pos.z = actorBefore->transform.pos.z;
+				actor->motionTargetPos.x = actorBefore->transform.pos.x;
+				actor->motionTargetPos.y = actorBefore->transform.pos.y - 20480;
+				actor->motionTargetPos.z = actorBefore->transform.pos.z;
 			}
 
 			if (g_tickState[8])
@@ -384,20 +384,21 @@ namespace Toy2
 
 			if (actor->unkShort4)
 			{
-				int16_t yawAngle = actor->yawAngle;
+				int16_t yawAngle = actor->transform.angles.yaw;
 				int32_t offsetX = Numerics::g_sinCosLUT[(yawAngle + 224) & 0xFFF];
 				int32_t offsetZ = Numerics::g_sinCosLUT[(yawAngle + 1248) & 0xFFF];
 
-				position.pos.x = actor->pos.x;
-				position.pos.y = actor->pos.y - 12288;
-				position.pos.z = actor->pos.z;
+				position.pos.x = actor->transform.pos.x;
+				position.pos.y = actor->transform.pos.y - 12288;
+				position.pos.z = actor->transform.pos.z;
 
 				int32_t angle =
-					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - position.pos.x - offsetX, g_buzzActor.posAngles.pos.z - position.pos.z - offsetZ)
+					Nu3D::Math::CartesianToFixedAngle(
+						g_buzzActor.posAngles.pos.x - position.pos.x - offsetX, g_buzzActor.posAngles.pos.z - position.pos.z - offsetZ)
 					& 0xFFF;
 
-				if (((angle - actor->yawAngle + 256) & 0xFFFu) > 0x200)
-					angle = actor->yawAngle;
+				if (((angle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
+					angle = actor->transform.angles.yaw;
 
 				int32_t dirX = Numerics::g_sinCosLUT[angle] >> 3;
 				int32_t dirZ = Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 3;
@@ -423,7 +424,7 @@ namespace Toy2
 					lifetime = 1;
 
 				particle->lifetime = lifetime;
-				AudioManager::PlaySoundEffect(86, &actor->pos);
+				AudioManager::PlaySoundEffect(86, &actor->transform.pos);
 
 				if ((actor->actorFlags & 1) != 0)
 				{
@@ -450,12 +451,12 @@ namespace Toy2
 			if (timer != actor->actorPhase)
 			{
 				if (timer)
-					AudioManager::PlaySoundEffect(88, &actor->pos);
+					AudioManager::PlaySoundEffect(88, &actor->transform.pos);
 
 				actor->unkShort4 = actor->actorPhase;
 			}
 
-			AudioManager::PlaySoundEffect(87, &actor->pos);
+			AudioManager::PlaySoundEffect(87, &actor->transform.pos);
 			actor->primaryAnimIdx = (context->targetFlags & 1) != 0;
 		}
 
@@ -467,8 +468,8 @@ namespace Toy2
 			if ((actor->actorFlags & Toy2::Actor::ACTOR_PLAYER_TRIGGER) != 0)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(32, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(32, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -530,9 +531,9 @@ namespace Toy2
 						*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 						unkVar34 = (int16_t*)actor->unkVar34;
 						actor->actorFlags &= ~0x100;
-						spawnX = actor->pos.x + unkVar34[0];
-						spawnY = actor->pos.y + unkVar34[1];
-						spawnZ = actor->pos.z + unkVar34[2];
+						spawnX = actor->transform.pos.x + unkVar34[0];
+						spawnY = actor->transform.pos.y + unkVar34[1];
+						spawnZ = actor->transform.pos.z + unkVar34[2];
 
 						do
 						{
@@ -542,7 +543,7 @@ namespace Toy2
 						} while (count);
 
 						Lighting::SpawnLight(spawnX, spawnY, spawnZ, 0xF08000, 32, (int32_t)actor);
-						AudioManager::PlaySoundEffect(-2, &actor->pos);
+						AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 						AndysHouse::g_inTinRobotFight = 3;
 					}
 
@@ -579,10 +580,10 @@ namespace Toy2
 				if ((actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
 					Collectables::Activate(4, 0);
 
-				int32_t yawAngle = actor->yawAngle;
-				int32_t trailX = actor->pos.x + 2 * Numerics::g_sinCosLUT[yawAngle] / 3;
-				int32_t trailY = actor->pos.y - 20480;
-				int32_t trailZ = actor->pos.z + 2 * Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] / 3;
+				int32_t yawAngle = actor->transform.angles.yaw;
+				int32_t trailX = actor->transform.pos.x + 2 * Numerics::g_sinCosLUT[yawAngle] / 3;
+				int32_t trailY = actor->transform.pos.y - 20480;
+				int32_t trailZ = actor->transform.pos.z + 2 * Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF] / 3;
 
 				if (g_tickState[7])
 				{
@@ -612,7 +613,7 @@ namespace Toy2
 				if (AndysHouse::g_inTinRobotFight)
 				{
 					if (AndysHouse::g_inTinRobotFight == 2)
-						Camera::g_unk50A118 = actor->pos;
+						Camera::g_unk50A118 = actor->transform.pos;
 				}
 				else if (g_buzzActor.unkShort40 && g_buzzActor.posAngles.pos.y < -179566)
 				{
@@ -641,7 +642,7 @@ namespace Toy2
 
 		LABEL_46:
 			if (actor->actorPhase >= 10 && pitch > 512)
-				AudioManager::PlaySoundEffect(53, &actor->pos);
+				AudioManager::PlaySoundEffect(53, &actor->transform.pos);
 		}
 
 		// FUNCTION: TOY2 0x00416F30
@@ -656,7 +657,7 @@ namespace Toy2
 			if (context->localForwardSpeed > 0)
 			{
 				AudioManager::g_pitchArray[2] = 4 * context->localForwardSpeed + 2048;
-				AudioManager::PlaySoundEffect(55, &actor->pos);
+				AudioManager::PlaySoundEffect(55, &actor->transform.pos);
 			}
 
 			if (g_unk52F2F8 >= 2)
@@ -715,24 +716,24 @@ namespace Toy2
 				if (g_tickState[4] && (state == 1 || abs(context->localStrafeSpeed) > 0x200))
 				{
 					Nu3D::Particles::SpawnFromPreset(
-						(Numerics::g_sinCosLUT[(actor->yawAngle + 1664) & 0xFFF] >> 1) + actor->pos.x,
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 1408) & 0xFFF] >> 1),
+						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1408) & 0xFFF] >> 1),
 						42,
 						10)
 						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					Nu3D::Particles::SpawnFromPreset(
-						(Numerics::g_sinCosLUT[(actor->yawAngle - 1664) & 0xFFF] >> 1) + actor->pos.x,
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 640) & 0xFFF] >> 1),
+						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 640) & 0xFFF] >> 1),
 						42,
 						10)
 						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
-					AudioManager::PlaySoundEffect(54, &actor->pos);
+					AudioManager::PlaySoundEffect(54, &actor->transform.pos);
 				}
 			}
 		}
@@ -747,15 +748,15 @@ namespace Toy2
 				if (g_tickState[10])
 				{
 					if (! (*g_randDatBufferPtr++ & 3))
-						AudioManager::PlaySoundEffect(72, &actor->pos);
+						AudioManager::PlaySoundEffect(72, &actor->transform.pos);
 				}
 
 				if ((actor->actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0)
 				{
 					++g_collectionCount;
-					Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
+					Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
 					Actor::Kill(actor, 2);
-					AudioManager::PlaySoundEffect(73, &actor->pos);
+					AudioManager::PlaySoundEffect(73, &actor->transform.pos);
 				}
 
 				actor->unkShort4 -= Renderer::g_frameDelta;
@@ -771,7 +772,16 @@ namespace Toy2
 						g_randDatBufferPtr += 3;
 
 						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
-							actor->pos.x, actor->pos.y - 4096, actor->pos.z, 4 * velocity, -3072, velocity, 96, 0, 4 * velocity, 121);
+							actor->transform.pos.x,
+							actor->transform.pos.y - 4096,
+							actor->transform.pos.z,
+							4 * velocity,
+							-3072,
+							velocity,
+							96,
+							0,
+							4 * velocity,
+							121);
 
 						AudioManager::PlaySoundEffect(96, &particle->pos);
 					}
@@ -791,7 +801,7 @@ namespace Toy2
 			if (context->localForwardSpeed > 0)
 			{
 				AudioManager::g_pitchArray[2] = 4 * context->localForwardSpeed + 2048;
-				AudioManager::PlaySoundEffect(55, &actor->pos);
+				AudioManager::PlaySoundEffect(55, &actor->transform.pos);
 			}
 
 			if (g_unk52F2F8 >= 2)
@@ -850,24 +860,24 @@ namespace Toy2
 				if (g_tickState[4] && (state == 1 || abs(context->localStrafeSpeed) > 0x200))
 				{
 					Nu3D::Particles::SpawnFromPreset(
-						(Numerics::g_sinCosLUT[(actor->yawAngle + 1664) & 0xFFF] >> 1) + actor->pos.x,
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 1408) & 0xFFF] >> 1),
+						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1408) & 0xFFF] >> 1),
 						42,
 						10)
 						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					Nu3D::Particles::SpawnFromPreset(
-						(Numerics::g_sinCosLUT[(actor->yawAngle - 1664) & 0xFFF] >> 1) + actor->pos.x,
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle - 640) & 0xFFF] >> 1),
+						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 640) & 0xFFF] >> 1),
 						42,
 						10)
 						->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
-					AudioManager::PlaySoundEffect(54, &actor->pos);
+					AudioManager::PlaySoundEffect(54, &actor->transform.pos);
 				}
 			}
 		}
@@ -909,7 +919,9 @@ namespace Toy2
 
 			AndysNeighborhood::g_zKiteYawPhase = (AndysNeighborhood::g_zKiteYawPhase + (Renderer::g_frameDelta << 6)) & 0xFFF;
 			actor->targetYaw =
-				(Nu3D::Math::CartesianToFixedAngle(actor->pos.x - g_buzzActor.posAngles.pos.x, actor->pos.z - g_buzzActor.posAngles.pos.z) - 2048) & 0xFFF;
+				(Nu3D::Math::CartesianToFixedAngle(actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+				 - 2048)
+				& 0xFFF;
 
 			if (AndysNeighborhood::g_unk52F664 == 2)
 			{
@@ -918,7 +930,7 @@ namespace Toy2
 				if (g_buzzActor.posAngles.pos.y <= -466944)
 				{
 					g_hudWidgetTimers[7] = 90;
-					Camera::g_unk50A118 = actor->pos;
+					Camera::g_unk50A118 = actor->transform.pos;
 					forceReturn = 0;
 				}
 				else
@@ -944,17 +956,17 @@ namespace Toy2
 						actor->unkShort1 = 0;
 
 						if (AndysNeighborhood::g_zKitePhase > 0)
-							AudioManager::PlaySoundEffect(152, &actor->pos);
+							AudioManager::PlaySoundEffect(152, &actor->transform.pos);
 					}
 
-					int32_t yawAccum = actor->yawAngle;
+					int32_t yawAccum = actor->transform.angles.yaw;
 					actor->motionTargetPos.y = Numerics::g_sinCosLUT[AndysNeighborhood::g_zKiteYawPhase] + buzzYPos - 40960;
 					AndysNeighborhood::g_unk52F65C = yawAccum;
 					actor->unkShort4 -= Renderer::g_frameDelta;
 
 					if (actor->unkShort4 < 0)
 					{
-						yawAngle = actor->yawAngle;
+						yawAngle = actor->transform.angles.yaw;
 						actor->unkShort4 = 120;
 						vel = yawAngle + 512;
 
@@ -977,11 +989,11 @@ namespace Toy2
 
 					yawSpinSpeed = 264 - 20 * actor->actorPhase;
 					AudioManager::g_pitchArray[0] = 16 * yawSpinSpeed;
-					AudioManager::PlaySoundEffect(60, &actor->pos);
+					AudioManager::PlaySoundEffect(60, &actor->transform.pos);
 
 					AndysNeighborhood::g_unk52F65C = (AndysNeighborhood::g_unk52F65C + yawSpinSpeed * Renderer::g_frameDelta) & 0xFFF;
 
-					actor->yawAngle = AndysNeighborhood::g_unk52F65C;
+					actor->transform.angles.yaw = AndysNeighborhood::g_unk52F65C;
 
 					targetYaw = actor->targetYaw;
 					actor->velX = Numerics::g_sinCosLUT[targetYaw] >> 5;
@@ -990,11 +1002,11 @@ namespace Toy2
 			}
 			else
 			{
-				actor->pos.y = (Numerics::g_sinCosLUT[AndysNeighborhood::g_zKiteYawPhase] >> 3) - 507904;
+				actor->transform.pos.y = (Numerics::g_sinCosLUT[AndysNeighborhood::g_zKiteYawPhase] >> 3) - 507904;
 			}
 
-			if (actor->pos.y > -475565)
-				actor->pos.y = -475565;
+			if (actor->transform.pos.y > -475565)
+				actor->transform.pos.y = -475565;
 		}
 
 		// FUNCTION: TOY2 0x00418CE0
@@ -1008,21 +1020,22 @@ namespace Toy2
 			int32_t spawnX;
 			int32_t spawnZ;
 
-			AudioManager::PlaySoundEffect(75, &actor->pos);
+			AudioManager::PlaySoundEffect(75, &actor->transform.pos);
 
 			if ((actor->actorFlags & Actor::ACTOR_CUTSCENE_MOVE) != 0)
 			{
 				if (g_tickState[9])
 				{
-					Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y, actor->pos.z, 49, 2)->groundAlignRot = 16 * *g_randDatBufferPtr;
+					Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y, actor->transform.pos.z, 49, 2)->groundAlignRot =
+						16 * *g_randDatBufferPtr;
 					++g_randDatBufferPtr;
 				}
 
-				int16_t yawAngle = actor->yawAngle;
+				int16_t yawAngle = actor->transform.angles.yaw;
 
 				index = 0;
-				spawnX = actor->pos.x + Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF];
-				spawnZ = actor->pos.z + Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF];
+				spawnX = actor->transform.pos.x + Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF];
+				spawnZ = actor->transform.pos.z + Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF];
 
 				if (g_tickState[2])
 				{
@@ -1030,7 +1043,7 @@ namespace Toy2
 
 					do
 					{
-						angle = (actor->yawAngle + 6 * *rand + 1280) & 0xFFF;
+						angle = (actor->transform.angles.yaw + 6 * *rand + 1280) & 0xFFF;
 
 						g_randDatBufferPtr = rand + 1;
 						randByte = rand[1];
@@ -1038,7 +1051,7 @@ namespace Toy2
 
 						Nu3D::Particles::SpawnInstance(
 							spawnX,
-							actor->pos.y,
+							actor->transform.pos.y,
 							spawnZ,
 							Numerics::g_sinCosLUT[angle] >> 4,
 							randByte - 3072,
@@ -1084,17 +1097,17 @@ namespace Toy2
 			Nu3D::Particles::ParticleInstance* particle;
 
 			ConstructionYard::g_unk52F798 = (ConstructionYard::g_unk52F798 - 1) & 1;
-			AudioManager::PlaySoundEffect(153, &actor->pos);
+			AudioManager::PlaySoundEffect(153, &actor->transform.pos);
 
 			if ((actor->actorFlags & 0x200) != 0)
 			{
 				actor->actorFlags &= 0xFDFF;
-				AudioManager::PlaySoundEffect(154, &actor->pos);
+				AudioManager::PlaySoundEffect(154, &actor->transform.pos);
 			}
 
-			if (Camera::g_unk50A510 || ! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 300))
+			if (Camera::g_unk50A510 || ! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300))
 			{
-				if (Camera::g_unk50A510 < 20 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 100))
+				if (Camera::g_unk50A510 < 20 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 100))
 					Camera::g_unk50A510 = 40;
 			}
 			else
@@ -1136,7 +1149,7 @@ namespace Toy2
 			else
 				*(uint8_t*)&actor->creatureRam->defenseMode = 5;
 
-			x = actor->pos.x;
+			x = actor->transform.pos.x;
 			cell = 0;
 			v5 = ConstructionYard::g_unk4F1CCC;
 
@@ -1150,11 +1163,11 @@ namespace Toy2
 			} while (v5 < &ConstructionYard::g_unk4F1CCC[4]);
 
 			v6 = ConstructionYard::g_unk4F1CDC;
-			actorZ = actor->pos.z;
+			actorZ = actor->transform.pos.z;
 
 			do
 			{
-				if (actor->pos.z < *v6)
+				if (actor->transform.pos.z < *v6)
 					break;
 
 				++v6;
@@ -1169,9 +1182,9 @@ namespace Toy2
 					v8 = ConstructionYard::g_unk4F1CEC[v7];
 
 					if (x >= ConstructionYard::g_unk4F1CEC[v7 + 1] - (ConstructionYard::g_unk4F1CEC[v7 + 1] - v8) / 2)
-						actor->pos.x = ConstructionYard::g_unk4F1CEC[v7 + 1];
+						actor->transform.pos.x = ConstructionYard::g_unk4F1CEC[v7 + 1];
 					else
-						actor->pos.x = v8;
+						actor->transform.pos.x = v8;
 
 					cell &= ~1u;
 				}
@@ -1182,9 +1195,9 @@ namespace Toy2
 					v10 = ConstructionYard::g_unk4F1CFC[v9];
 
 					if (actorZ >= ConstructionYard::g_unk4F1CFC[v9 + 1] - (ConstructionYard::g_unk4F1CFC[v9 + 1] - v10) / 2)
-						actor->pos.z = ConstructionYard::g_unk4F1CFC[v9 + 1];
+						actor->transform.pos.z = ConstructionYard::g_unk4F1CFC[v9 + 1];
 					else
-						actor->pos.z = v10;
+						actor->transform.pos.z = v10;
 
 					cell &= ~0x10u;
 				}
@@ -1192,19 +1205,19 @@ namespace Toy2
 
 			ConstructionYard::g_unk52F7CC = cell;
 
-			if ((uint32_t)actor->pos.y > 0xFFF63C20u)
-				actor->pos.y = -639968;
+			if ((uint32_t)actor->transform.pos.y > 0xFFF63C20u)
+				actor->transform.pos.y = -639968;
 
 			if (ConstructionYard::g_unk52F804 < 3 && g_tickState[4])
-				Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y, actor->pos.z, 4, 9)->lifetime = 32;
+				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y, actor->transform.pos.z, 4, 9)->lifetime = 32;
 
 			if (ConstructionYard::g_unk52F804 == 2 && g_buzzActor.posAngles.pos.y < -515621)
 			{
 				if (g_tickState[10])
 				{
-					spawnX = actor->pos.x;
-					spawnY = actor->pos.y;
-					spawnZ = actor->pos.z;
+					spawnX = actor->transform.pos.x;
+					spawnY = actor->transform.pos.y;
+					spawnZ = actor->transform.pos.z;
 
 					char randomBits = *g_randDatBufferPtr & 3;
 					++g_randDatBufferPtr;
@@ -1257,14 +1270,14 @@ namespace Toy2
 			if (actor->unkShort4 <= 0)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 90;
-				AudioManager::PlaySoundEffect(107, &actor->pos);
+				AudioManager::PlaySoundEffect(107, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(108, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(108, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -1288,7 +1301,7 @@ namespace Toy2
 			if ((actor->actorFlags & 0x200) != 0)
 			{
 				actor->actorFlags &= 0xFDFF;
-				AudioManager::PlaySoundEffect(161, &actor->pos);
+				AudioManager::PlaySoundEffect(161, &actor->transform.pos);
 				flash = AlleysAndGullies::g_unk52F8FC;
 			}
 
@@ -1337,14 +1350,14 @@ namespace Toy2
 			if (actor->actorPhase == 102 && actor->unkShort4 <= 0)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 60;
-				AudioManager::PlaySoundEffect(162, &actor->pos);
+				AudioManager::PlaySoundEffect(162, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(162, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(162, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -1368,9 +1381,9 @@ namespace Toy2
 					spawnPos.x,
 					spawnPos.y,
 					spawnPos.z,
-					Numerics::g_sinCosLUT[actor->yawAngle] >> 2,
+					Numerics::g_sinCosLUT[actor->transform.angles.yaw] >> 2,
 					-3072,
-					Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] >> 2,
+					Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 2,
 					128,
 					0,
 					0,
@@ -1405,14 +1418,14 @@ namespace Toy2
 				AlsToyBarn::g_unk52FA2C = actor->actorPhase;
 				AlsToyBarn::g_unk52FA50 = 60;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
-				AudioManager::PlaySoundEffect(121, &actor->pos);
+				AudioManager::PlaySoundEffect(121, &actor->transform.pos);
 			}
 
 			if (actor->unkShort4)
 			{
 				if (g_curSectorCopy1 == 4)
 				{
-					yawAngle = actor->yawAngle;
+					yawAngle = actor->transform.angles.yaw;
 					randValue = *g_randDatBufferPtr;
 					bonePos.x = 20;
 					bonePos.y = -600;
@@ -1422,7 +1435,7 @@ namespace Toy2
 					velX = Numerics::g_sinCosLUT[angle] >> 3;
 					velZ = Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 3;
 					Actor::ResolveBoneAttachmentPos(&bonePos, actor, 1);
-					AudioManager::PlaySoundEffect(120, &actor->pos);
+					AudioManager::PlaySoundEffect(120, &actor->transform.pos);
 					randValue = *g_randDatBufferPtr;
 					g_randDatBufferPtr += 2;
 					particle = Nu3D::Particles::SpawnInstance(bonePos.x, bonePos.y, bonePos.z, velX, randValue + 512, velZ, 0, 0, randValue - 128, 85);
@@ -1473,9 +1486,9 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				unkVar34 = (int16_t*)actor->unkVar34;
 				actor->actorFlags &= ~0x100;
-				spawnX = actor->pos.x + unkVar34[0];
-				spawnY = actor->pos.y + unkVar34[1];
-				spawnZ = actor->pos.z + unkVar34[2];
+				spawnX = actor->transform.pos.x + unkVar34[0];
+				spawnY = actor->transform.pos.y + unkVar34[1];
+				spawnZ = actor->transform.pos.z + unkVar34[2];
 
 				do
 				{
@@ -1485,7 +1498,7 @@ namespace Toy2
 				} while (count);
 
 				Lighting::SpawnLight(spawnX, spawnY, spawnZ, 15761408, 32, (int32_t)actor);
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				AlsToyBarn::g_unk52FA14 = 3;
 				g_unk52B7E0 = 0;
 			}
@@ -1496,21 +1509,21 @@ namespace Toy2
 
 			if (g_curSectorCopy1 == 4)
 			{
-				yawAngle = actor->yawAngle;
+				yawAngle = actor->transform.angles.yaw;
 				velX = Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF] >> 2;
 				velZ = Numerics::g_sinCosLUT[yawAngle & 0xFFF] >> 2;
 
 				if (AlsToyBarn::g_unk52FA20)
 				{
-					fireX = velX + actor->pos.x;
-					fireY = actor->pos.y - 7424;
-					fireZ = velZ + actor->pos.z;
+					fireX = velX + actor->transform.pos.x;
+					fireY = actor->transform.pos.y - 7424;
+					fireZ = velZ + actor->transform.pos.z;
 				}
 				else
 				{
-					fireX = actor->pos.x - 3 * velX;
-					fireY = actor->pos.y - 1024;
-					fireZ = actor->pos.z - 3 * velZ;
+					fireX = actor->transform.pos.x - 3 * velX;
+					fireY = actor->transform.pos.y - 1024;
+					fireZ = actor->transform.pos.z - 3 * velZ;
 				}
 
 				if (g_tickState[7])
@@ -1549,14 +1562,14 @@ namespace Toy2
 			if (actor->unkShort4 <= 0)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 60;
-				AudioManager::PlaySoundEffect(119, &actor->pos);
+				AudioManager::PlaySoundEffect(119, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(119, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(119, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -1583,7 +1596,7 @@ namespace Toy2
 			if (localForwardSpeed > 0)
 			{
 				AudioManager::g_pitchArray[0] = 4 * localForwardSpeed + 2048;
-				AudioManager::PlaySoundEffect(127, &actor->pos);
+				AudioManager::PlaySoundEffect(127, &actor->transform.pos);
 			}
 
 			if (g_curSectorCopy2 != 5)
@@ -1641,21 +1654,21 @@ namespace Toy2
 					{
 						if (g_tickState[8])
 						{
-							AudioManager::PlaySoundEffect(2, &actor->pos);
+							AudioManager::PlaySoundEffect(2, &actor->transform.pos);
 							memset(headOffset, 0, 12);
-							origin.pos.x = actor->pos.x + (Numerics::g_sinCosLUT[actor->yawAngle] >> 2);
-							origin.pos.y = actor->pos.y - 4096;
-							origin.pos.z = actor->pos.z + (Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] >> 2);
-							SpawnBeamShot(0, actor->yawAngle, 0, &origin, (Transform*)headOffset, 4, 0);
+							origin.pos.x = actor->transform.pos.x + (Numerics::g_sinCosLUT[actor->transform.angles.yaw] >> 2);
+							origin.pos.y = actor->transform.pos.y - 4096;
+							origin.pos.z = actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 2);
+							SpawnBeamShot(0, actor->transform.angles.yaw, 0, &origin, (Transform*)headOffset, 4, 0);
 
-							if (actor->pos.y - 4096 < g_buzzActor.posAngles.pos.y)
+							if (actor->transform.pos.y - 4096 < g_buzzActor.posAngles.pos.y)
 							{
-								if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 512))
+								if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 512))
 								{
 									hitAngle = Nu3D::Math::CartesianToFixedAngle(
-										g_buzzActor.posAngles.pos.x - actor->pos.x, g_buzzActor.posAngles.pos.z - actor->pos.z);
+										g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z);
 
-									if (((hitAngle - actor->yawAngle + 32) & 0xFFFu) < 0x40)
+									if (((hitAngle - actor->transform.angles.yaw + 32) & 0xFFFu) < 0x40)
 									{
 										Buzz::HandleDamage(hitAngle, 2);
 										Lighting::SpawnLight(
@@ -1681,7 +1694,7 @@ namespace Toy2
 				if (g_curSectorCopy2 == 5)
 				{
 					g_hudWidgetTimers[7] = 90;
-					Camera::g_unk50A118 = actor->pos;
+					Camera::g_unk50A118 = actor->transform.pos;
 					AlsSpaceLand::g_unk52FB7C -= Renderer::g_frameDelta;
 
 					if (AlsSpaceLand::g_unk52FB7C <= 0)
@@ -1695,13 +1708,13 @@ namespace Toy2
 
 				if (actor->unkShort4 < 0)
 				{
-					AudioManager::PlaySoundEffect(76, &actor->pos);
-					int32_t yawAngle = actor->yawAngle;
-					int32_t actorZ = actor->pos.z;
+					AudioManager::PlaySoundEffect(76, &actor->transform.pos);
+					int32_t yawAngle = actor->transform.angles.yaw;
+					int32_t actorZ = actor->transform.pos.z;
 					actor->unkShort4 = 400;
 					Nu3D::Particles::SpawnInstance(
-						actor->pos.x + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 2),
-						actor->pos.y - 0x2000,
+						actor->transform.pos.x + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 2),
+						actor->transform.pos.y - 0x2000,
 						actorZ + (Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF] >> 2),
 						0,
 						-2,
@@ -1721,9 +1734,9 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				unkVar34 = (int16_t*)actor->unkVar34;
 				actor->actorFlags &= ~0x100;
-				spawnX = actor->pos.x + unkVar34[0];
-				spawnY = actor->pos.y + unkVar34[1];
-				spawnZ = actor->pos.z + unkVar34[2];
+				spawnX = actor->transform.pos.x + unkVar34[0];
+				spawnY = actor->transform.pos.y + unkVar34[1];
+				spawnZ = actor->transform.pos.z + unkVar34[2];
 
 				do
 				{
@@ -1733,7 +1746,7 @@ namespace Toy2
 				} while (count);
 
 				Lighting::SpawnLight(spawnX, spawnY, spawnZ, 15761408, 32, (int32_t)actor);
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				AlsSpaceLand::g_unk52FAE0 = 3;
 				g_unk52B7E0 = 0;
 			}
@@ -1758,9 +1771,9 @@ namespace Toy2
 				}
 
 				leftWheel = Nu3D::Particles::SpawnFromPreset(
-					(Numerics::g_sinCosLUT[(actor->yawAngle + 1664) & 0xFFF] >> 1) + actor->pos.x,
-					actor->pos.y - 2048,
-					(Numerics::g_sinCosLUT[(actor->yawAngle - 1408) & 0xFFF] >> 1) + actor->pos.z,
+					(Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+					actor->transform.pos.y - 2048,
+					(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1408) & 0xFFF] >> 1) + actor->transform.pos.z,
 					42,
 					10);
 				leftWheel->rotSpeed = *g_randDatBufferPtr++ - 128;
@@ -1772,9 +1785,9 @@ namespace Toy2
 				}
 
 				rightWheel = Nu3D::Particles::SpawnFromPreset(
-					(Numerics::g_sinCosLUT[(actor->yawAngle - 1664) & 0xFFF] >> 1) + actor->pos.x,
-					actor->pos.y - 2048,
-					(Numerics::g_sinCosLUT[(actor->yawAngle - 640) & 0xFFF] >> 1) + actor->pos.z,
+					(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
+					actor->transform.pos.y - 2048,
+					(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 640) & 0xFFF] >> 1) + actor->transform.pos.z,
 					42,
 					10);
 				rightWheel->rotSpeed = *g_randDatBufferPtr++ - 128;
@@ -1785,7 +1798,7 @@ namespace Toy2
 					rightWheel->velZ = 256;
 				}
 
-				AudioManager::PlaySoundEffect(54, &actor->pos);
+				AudioManager::PlaySoundEffect(54, &actor->transform.pos);
 			}
 		LABEL_46:
 			if (actor->primaryAnimIdx == 2)
@@ -1793,9 +1806,9 @@ namespace Toy2
 				if (g_tickState[7])
 				{
 					Nu3D::Particles::SpawnFromPreset(
-						actor->pos.x - Numerics::g_sinCosLUT[actor->yawAngle] / 3,
-						actor->pos.y - 0x2000,
-						actor->pos.z - Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] / 3,
+						actor->transform.pos.x - Numerics::g_sinCosLUT[actor->transform.angles.yaw] / 3,
+						actor->transform.pos.y - 0x2000,
+						actor->transform.pos.z - Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] / 3,
 						17,
 						10)
 						->rotSpeed = *g_randDatBufferPtr - 128;
@@ -1814,14 +1827,14 @@ namespace Toy2
 			if (actor->unkShort4 <= 0)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 300;
-				AudioManager::PlaySoundEffect(128, &actor->pos);
+				AudioManager::PlaySoundEffect(128, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(184, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(184, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -1842,7 +1855,7 @@ namespace Toy2
 				ElevatorHop::g_unk52FCF8 = actor->actorPhase;
 				ElevatorHop::g_unk52FCE0 = 60;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
-				AudioManager::PlaySoundEffect(138, &actor->pos);
+				AudioManager::PlaySoundEffect(138, &actor->transform.pos);
 				flash = ElevatorHop::g_unk52FC20;
 			}
 
@@ -1899,20 +1912,21 @@ namespace Toy2
 								spawnPos.x,
 								spawnPos.y,
 								spawnPos.z,
-								Numerics::g_sinCosLUT[actor->yawAngle] >> 2,
+								Numerics::g_sinCosLUT[actor->transform.angles.yaw] >> 2,
 								-1024,
-								Numerics::g_sinCosLUT[(actor->yawAngle + 1024) & 0xFFF] >> 2,
+								Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 2,
 								64,
 								0,
 								0,
 								119);
-							AudioManager::PlaySoundEffect(137, &actor->pos);
+							AudioManager::PlaySoundEffect(137, &actor->transform.pos);
 						}
 						else
 						{
 							rotSpeed = *g_randDatBufferPtr++ - 128;
-							Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->yawAngle, 0, rotSpeed, 89)->pitchAngle = 0;
-							AudioManager::PlaySoundEffect(139, &actor->pos);
+							Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->transform.angles.yaw, 0, rotSpeed, 89)
+								->pitchAngle = 0;
+							AudioManager::PlaySoundEffect(139, &actor->transform.pos);
 						}
 					}
 				}
@@ -1926,7 +1940,7 @@ namespace Toy2
 
 					if (isAnim1)
 					{
-						AudioManager::PlaySoundEffect(136, &actor->pos);
+						AudioManager::PlaySoundEffect(136, &actor->transform.pos);
 						Actor::SetAnimation(actor, 2, 2);
 					}
 				}
@@ -1938,7 +1952,7 @@ namespace Toy2
 
 					if (isAnim2)
 					{
-						AudioManager::PlaySoundEffect(136, &actor->pos);
+						AudioManager::PlaySoundEffect(136, &actor->transform.pos);
 						Actor::SetAnimation(actor, 1, 1);
 					}
 				}
@@ -1971,21 +1985,21 @@ namespace Toy2
 				if (actor->unkShort4 <= 0)
 				{
 					actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 90;
-					AudioManager::PlaySoundEffect(142, &actor->pos);
+					AudioManager::PlaySoundEffect(142, &actor->transform.pos);
 				}
 			}
 
 			if (actor->creatureRam->latSpeedNoTarget <= 0x7Fu)
 			{
-				actor->pitchAngle = 3072;
+				actor->transform.angles.pitch = 3072;
 				actor->rollAngle = 2048;
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(142, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(142, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -2007,7 +2021,7 @@ namespace Toy2
 				AlsPenthouse::g_unk52FD2C = actor->actorPhase;
 				AlsPenthouse::g_unk52FD10 = 60;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
-				AudioManager::PlaySoundEffect(165, &actor->pos);
+				AudioManager::PlaySoundEffect(165, &actor->transform.pos);
 				flash = AlsPenthouse::g_unk52FD70;
 			}
 
@@ -2056,7 +2070,7 @@ namespace Toy2
 					memset(&spawnPos, 0, sizeof(spawnPos));
 					Actor::ResolveBoneAttachmentPos(&spawnPos, actor, 15);
 					actor->unkShort4 = 10;
-					AudioManager::PlaySoundEffect(147, &actor->pos);
+					AudioManager::PlaySoundEffect(147, &actor->transform.pos);
 				}
 
 				actor->unkShort4 -= Renderer::g_frameDelta;
@@ -2071,13 +2085,13 @@ namespace Toy2
 					memset(&spawnPos, 0, sizeof(spawnPos));
 					Actor::ResolveBoneAttachmentPos(&spawnPos, actor, 16);
 					actor->unkShort4 = 0;
-					AudioManager::PlaySoundEffect(148, &actor->pos);
+					AudioManager::PlaySoundEffect(148, &actor->transform.pos);
 				}
 
 				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - spawnPos.x, g_buzzActor.posAngles.pos.z - spawnPos.z) & 0xFFF;
 
-				if (((yawAngle - actor->yawAngle + 256) & 0xFFFu) > 0x200)
-					yawAngle = actor->yawAngle;
+				if (((yawAngle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
+					yawAngle = actor->transform.angles.yaw;
 
 				Nu3D::Particles::SpawnInstance(
 					spawnPos.x,
@@ -2117,7 +2131,7 @@ namespace Toy2
 				actor->movementData = Actor::g_movementData[33] + 52;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= ~0x100;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				AlsPenthouse::g_unk52FD40 = 3;
 				g_unk52B7E0 = 0;
 				actor->unkShort1 = 0;
@@ -2125,7 +2139,7 @@ namespace Toy2
 
 			if (AlsPenthouse::g_unk52FD40 >= 2)
 			{
-				if (actor->pos.z >= -374000)
+				if (actor->transform.pos.z >= -374000)
 				{
 					actor->boundary.x = -689568;
 					actor->boundary.z = -278464;
@@ -2143,8 +2157,8 @@ namespace Toy2
 
 			if (AlsPenthouse::g_unk52FD40 == 200)
 			{
-				actor->pos.x = actor->boundary.x;
-				actor->pos.z = actor->boundary.z;
+				actor->transform.pos.x = actor->boundary.x;
+				actor->transform.pos.z = actor->boundary.z;
 			}
 		}
 
@@ -2158,14 +2172,14 @@ namespace Toy2
 			if (actor->unkShort4 <= 0)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 60;
-				AudioManager::PlaySoundEffect(150, &actor->pos);
+				AudioManager::PlaySoundEffect(150, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(150, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(150, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -2232,7 +2246,7 @@ namespace Toy2
 		LABEL_11:
 			if ((l_actor->targetFlags & 1) != 0)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 200))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 200))
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
@@ -2262,12 +2276,12 @@ namespace Toy2
 
 				if (AirportInfiltration::g_unk52FEE8 <= 0)
 				{
-					yawAngle = actor->yawAngle;
+					yawAngle = actor->transform.angles.yaw;
 					cosValue = Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF];
 					Nu3D::Particles::SpawnInstance(
-						actor->pos.x + (cosValue >> 3),
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 3),
+						actor->transform.pos.x + (cosValue >> 3),
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 3),
 						Numerics::g_sinCosLUT[yawAngle] >> 2,
 						0,
 						cosValue >> 2,
@@ -2275,7 +2289,7 @@ namespace Toy2
 						(2047 - yawAngle) & 0xFFF,
 						0,
 						104);
-					AudioManager::PlaySoundEffect(166, &actor->pos);
+					AudioManager::PlaySoundEffect(166, &actor->transform.pos);
 					AirportInfiltration::g_unk52FEE8 = 0;
 				}
 			}
@@ -2292,7 +2306,7 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= 0xFEF7;
 				actor->unkShort1 = 0;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				AirportInfiltration::g_unk52FF1C = 3;
 				g_unk52B7E0 = 0;
 				AirportInfiltration::g_unk52FEE8 = 0;
@@ -2310,14 +2324,14 @@ namespace Toy2
 			if (actor->unkShort4 <= 0 && actor->actorPhase == 102)
 			{
 				actor->unkShort4 = (*g_randDatBufferPtr++ & 0x7F) + 90;
-				AudioManager::PlaySoundEffect(107, &actor->pos);
+				AudioManager::PlaySoundEffect(107, &actor->transform.pos);
 			}
 
 			if ((actor->actorFlags & 0x200) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(108, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(108, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -2362,7 +2376,8 @@ namespace Toy2
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
 		LABEL_9:
-			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 200) && actor->primaryAnimIdx == 1)
+			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 200)
+				&& actor->primaryAnimIdx == 1)
 			{
 				Actor::SetAnimation(actor, 3, 24);
 				throwTimer = 63;
@@ -2393,9 +2408,9 @@ namespace Toy2
 					spawnPos.y = -150;
 					spawnPos.z = -50;
 					Actor::ResolveBoneAttachmentPos(&spawnPos, actor, 4);
-					Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->yawAngle, 0, 0, 102)->pitchAngle = -1;
+					Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->transform.angles.yaw, 0, 0, 102)->pitchAngle = -1;
 					TarmacTrouble::g_unk52FFE8 = 0;
-					AudioManager::PlaySoundEffect(167, &actor->pos);
+					AudioManager::PlaySoundEffect(167, &actor->transform.pos);
 				}
 			}
 
@@ -2411,7 +2426,7 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= 0xFEF7;
 				actor->unkShort1 = 0;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				TarmacTrouble::g_unk52FFAC = 3;
 				g_unk52B7E0 = 0;
 				TarmacTrouble::g_unk52FFE8 = 0;
@@ -2427,8 +2442,8 @@ namespace Toy2
 			if ((actor->actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0 && actor->actorPhase == 102)
 			{
 				++g_collectionCount;
-				Particles::SpawnCollectSparkle(actor->pos.x, actor->pos.y - 0x2000, actor->pos.z, 50);
-				AudioManager::PlaySoundEffect(31, &actor->pos);
+				Particles::SpawnCollectSparkle(actor->transform.pos.x, actor->transform.pos.y - 0x2000, actor->transform.pos.z, 50);
+				AudioManager::PlaySoundEffect(31, &actor->transform.pos);
 				Actor::Kill(actor, 2);
 			}
 		}
@@ -2473,7 +2488,8 @@ namespace Toy2
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
 		LABEL_9:
-			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 300) && actor->primaryAnimIdx == 1)
+			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300)
+				&& actor->primaryAnimIdx == 1)
 			{
 				Actor::SetAnimation(actor, 3, 24);
 				throwTimer = 63;
@@ -2504,9 +2520,9 @@ namespace Toy2
 					spawnPos.y = -150;
 					spawnPos.z = -50;
 					Actor::ResolveBoneAttachmentPos(&spawnPos, actor, 4);
-					Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->yawAngle, 0, 0, 102)->pitchAngle = -1;
+					Nu3D::Particles::SpawnInstance(spawnPos.x, spawnPos.y, spawnPos.z, 0, -2, 0, 4 * actor->transform.angles.yaw, 0, 0, 102)->pitchAngle = -1;
 					FinalShowdown::g_unk530060 = 0;
-					AudioManager::PlaySoundEffect(167, &actor->pos);
+					AudioManager::PlaySoundEffect(167, &actor->transform.pos);
 				}
 			}
 
@@ -2516,7 +2532,7 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= 0xFEF7;
 				actor->unkShort1 = 0;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				FinalShowdown::g_unk530008 = 3;
 
 				if (++FinalShowdown::g_unk530064 == 3)
@@ -2544,7 +2560,7 @@ namespace Toy2
 				FinalShowdown::g_unk530030 = actor->actorPhase;
 				FinalShowdown::g_unk530020 = 60;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
-				AudioManager::PlaySoundEffect(193, &actor->pos);
+				AudioManager::PlaySoundEffect(193, &actor->transform.pos);
 				flash = FinalShowdown::g_unk530050;
 			}
 
@@ -2600,11 +2616,11 @@ namespace Toy2
 					actor->unkShort4 = 0;
 				}
 
-				AudioManager::PlaySoundEffect(86, &actor->pos);
+				AudioManager::PlaySoundEffect(86, &actor->transform.pos);
 				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - spawnPos.x, g_buzzActor.posAngles.pos.z - spawnPos.z) & 0xFFF;
 
-				if (((yawAngle - actor->yawAngle + 256) & 0xFFFu) > 0x200)
-					yawAngle = actor->yawAngle;
+				if (((yawAngle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
+					yawAngle = actor->transform.angles.yaw;
 
 				Nu3D::Particles::SpawnInstance(
 					spawnPos.x,
@@ -2636,7 +2652,7 @@ namespace Toy2
 				actor->movementData = Actor::g_movementData[33] + 52;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= ~0x100;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				FinalShowdown::g_unk530004 = 3;
 
 				if (++FinalShowdown::g_unk530064 == 3)
@@ -2713,7 +2729,7 @@ namespace Toy2
 		LABEL_13:
 			if ((l_actor->targetFlags & 1) != 0)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->pos, 300))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300))
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
@@ -2743,12 +2759,12 @@ namespace Toy2
 
 				if (FinalShowdown::g_unk53005C <= 0)
 				{
-					yawAngle = actor->yawAngle;
+					yawAngle = actor->transform.angles.yaw;
 					cosValue = Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF];
 					Nu3D::Particles::SpawnInstance(
-						actor->pos.x + (cosValue >> 3),
-						actor->pos.y - 2048,
-						actor->pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 3),
+						actor->transform.pos.x + (cosValue >> 3),
+						actor->transform.pos.y - 2048,
+						actor->transform.pos.z + (Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF] >> 3),
 						Numerics::g_sinCosLUT[yawAngle] >> 2,
 						0,
 						cosValue >> 2,
@@ -2757,7 +2773,7 @@ namespace Toy2
 						0,
 						104);
 					FinalShowdown::g_unk53005C = 0;
-					AudioManager::PlaySoundEffect(166, &actor->pos);
+					AudioManager::PlaySoundEffect(166, &actor->transform.pos);
 				}
 			}
 
@@ -2767,7 +2783,7 @@ namespace Toy2
 				*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				actor->actorFlags &= 0xFEF7;
 				actor->unkShort1 = 0;
-				AudioManager::PlaySoundEffect(-2, &actor->pos);
+				AudioManager::PlaySoundEffect(-2, &actor->transform.pos);
 				FinalShowdown::g_unk53000C = 3;
 
 				if (++FinalShowdown::g_unk530064 == 3)

@@ -117,9 +117,7 @@ namespace Toy2
 
 			typedef void (*ActorBehaviourFn)(ActorBehaviourContext* ctx);
 
-			Vector3I pos;
-			int16_t pitchAngle;
-			int16_t yawAngle;
+			Transform transform;
 			int16_t rollAngle;
 			int16_t primaryAnimIdx;
 			int16_t creatureId;

@@ -1390,11 +1390,12 @@ namespace Toy2
 							{
 								if (actor->unkVar29 >= 0 && (actor->actorFlags & (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_VISIBLE_ACTIVE)) == 3)
 								{
-									int32_t deltaX = (actor->pos.x - g_buzzActor.posAngles.pos.x) >> 5;
-									int32_t deltaYSq =
-										((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5) * ((actor->pos.y - g_buzzActor.posAngles.pos.y) >> 5);
+									int32_t deltaX = (actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5;
+									int32_t deltaYSq = ((actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >> 5)
+										* ((actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >> 5);
 									int32_t distance = deltaX * deltaX + deltaYSq
-										+ ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->pos.z - g_buzzActor.posAngles.pos.z) >> 5);
+										+ ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5)
+											* ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5);
 
 									if (closestDist > distance)
 									{
@@ -1780,7 +1781,7 @@ namespace Toy2
 				if (actor->unkWord15 == 1 || actor->unkWord15 == 2 || (int16_t)actor->lastValidYPosition == 8)
 				{
 					g_groundSlamTicker = 1;
-					AudioManager::PlaySoundEffect(23, &actor->pos);
+					AudioManager::PlaySoundEffect(23, &actor->transform.pos);
 				}
 			}
 
@@ -1817,8 +1818,8 @@ namespace Toy2
 			{
 				g_groundSlamTicker = -40;
 				Camera::g_unk50A510 = 40;
-				Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y - 1024, actor->pos.z, 18, 11);
-				Nu3D::Particles::SpawnFromPreset(actor->pos.x, actor->pos.y - 1024, actor->pos.z, 19, 12);
+				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y - 1024, actor->transform.pos.z, 18, 11);
+				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y - 1024, actor->transform.pos.z, 19, 12);
 				AudioManager::PlaySoundEffect(15, &g_buzzActor.posAngles.pos);
 
 				return 0;
@@ -4058,7 +4059,7 @@ namespace Toy2
 			g_unk53C5DC = 0;
 		}
 
-		// FUNCTION: TOY2 0x004A28F0
+		// FUNCTION: TOY2 0x004A28F0 [MATCHED]
 		void UpdateRespawnAnchor()
 		{
 			g_buzzActor.actorFlags &= ~8;

@@ -355,17 +355,17 @@ namespace Toy2
 								Nu3D::Math::MatrixApplyScale(&matrix1, &offset);
 						}
 
-						Nu3D::Math::MatrixRotatePitch(&matrix1, 16 * selectedActor->pitchAngle);
-						Nu3D::Math::MatrixRotateYaw(&matrix1, 16 * (selectedActor->yawAngle + 2048));
+						Nu3D::Math::MatrixRotatePitch(&matrix1, 16 * selectedActor->transform.angles.pitch);
+						Nu3D::Math::MatrixRotateYaw(&matrix1, 16 * (selectedActor->transform.angles.yaw + 2048));
 						Nu3D::Math::MatrixRotateRoll(&matrix1, 16 * selectedActor->rollAngle);
 
-						Nu3D::Math::MatrixRotatePitch(&matrix2, 16 * selectedActor->pitchAngle);
-						Nu3D::Math::MatrixRotateYaw(&matrix2, 16 * (selectedActor->yawAngle + 2048));
+						Nu3D::Math::MatrixRotatePitch(&matrix2, 16 * selectedActor->transform.angles.pitch);
+						Nu3D::Math::MatrixRotateYaw(&matrix2, 16 * (selectedActor->transform.angles.yaw + 2048));
 						Nu3D::Math::MatrixRotateRoll(&matrix2, 16 * selectedActor->rollAngle);
 
-						offset.x = (float)(selectedActor->pos.x * 0.03125);
-						offset.y = (float)(selectedActor->pos.y * 0.03125);
-						offset.z = (float)(selectedActor->pos.z * 0.03125);
+						offset.x = (float)(selectedActor->transform.pos.x * 0.03125);
+						offset.y = (float)(selectedActor->transform.pos.y * 0.03125);
+						offset.z = (float)(selectedActor->transform.pos.z * 0.03125);
 						Nu3D::Math::AddWorldSpaceTransform(&matrix2, &offset);
 						offset.y = v22 + offset.y;
 						Nu3D::Math::AddWorldSpaceTransform(&matrix1, &offset);

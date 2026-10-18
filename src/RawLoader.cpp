@@ -98,7 +98,7 @@ namespace RawLoader
 		accum = (accum >> 8) & 1;
 		carry &= 0xFF;
 
-		if (!carry)
+		if (! carry)
 		{
 			carry = *src++;
 			carry = accum + 2 * carry;
@@ -106,13 +106,13 @@ namespace RawLoader
 			accum = scratch;
 		}
 
-		if (!accum)
+		if (! accum)
 		{
 			carry *= 2;
 			length = (carry >> 8) & 1;
 			carry &= 0xFF;
 
-			if (!carry)
+			if (! carry)
 			{
 				accum = *src++;
 				carry = length + 2 * accum;
@@ -125,14 +125,14 @@ namespace RawLoader
 			carry = (accum >> 8) & 1;
 			accum &= 0xFF;
 
-			if (!accum)
+			if (! accum)
 			{
 				accum = *src++;
 				accum = carry + 2 * accum;
 				carry = (accum >> 8) & 1;
 			}
 
-			if (!carry)
+			if (! carry)
 				goto L3A1;
 
 			accum *= 2;
@@ -140,7 +140,7 @@ namespace RawLoader
 			carry = (accum >> 8) & 1;
 			accum &= 0xFF;
 
-			if (!accum)
+			if (! accum)
 			{
 				accum = *src++;
 				accum = carry + 2 * accum;
@@ -160,7 +160,7 @@ namespace RawLoader
 			carry = (accum >> 8) & 1;
 			accum &= 0xFF;
 
-			if (!accum)
+			if (! accum)
 			{
 				accum = *src++;
 				accum = carry + 2 * accum;
@@ -213,14 +213,14 @@ namespace RawLoader
 		carry = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = carry + 2 * accum;
 			carry = (accum >> 8) & 1;
 		}
 
-		if (!carry)
+		if (! carry)
 			goto L4A4;
 
 		accum *= 2;
@@ -228,7 +228,7 @@ namespace RawLoader
 		carry = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = carry + 2 * accum;
@@ -236,18 +236,18 @@ namespace RawLoader
 			carry = scratch;
 		}
 
-		if (!carry)
+		if (! carry)
 			goto L3A1;
 
 		length = *src++;
 
-		if (!length)
+		if (! length)
 		{
 			accum *= 2;
 			carry = (accum >> 8) & 1;
 			accum &= 0xFF;
 
-			if (!accum)
+			if (! accum)
 			{
 				accum = *src++;
 				accum = carry + 2 * accum;
@@ -267,7 +267,7 @@ namespace RawLoader
 		carry = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = carry + 2 * accum;
@@ -275,14 +275,14 @@ namespace RawLoader
 			carry = scratch;
 		}
 
-		if (!carry)
+		if (! carry)
 			goto L4A4;
 
 		accum *= 2;
 		carry = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = carry + 2 * accum;
@@ -294,7 +294,7 @@ namespace RawLoader
 		carry = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = carry + 2 * accum;
@@ -307,7 +307,7 @@ namespace RawLoader
 			carry = (tmpAccum >> 8) & 1;
 			tmpAccum &= 0xFF;
 
-			if (!tmpAccum)
+			if (! tmpAccum)
 			{
 				accum = *src++;
 				tmpAccum = carry + 2 * accum;
@@ -322,7 +322,7 @@ namespace RawLoader
 			carry = (carry >> 8) & 1;
 			accum &= 0xFF;
 
-			if (!accum)
+			if (! accum)
 			{
 				accum = *src++;
 				accum = carry + 2 * accum;
@@ -344,7 +344,7 @@ namespace RawLoader
 		tmpAccum = (accum >> 8) & 1;
 		accum &= 0xFF;
 
-		if (!accum)
+		if (! accum)
 		{
 			accum = *src++;
 			accum = tmpAccum + 2 * accum;
@@ -429,7 +429,6 @@ namespace RawLoader
 			goto L1A0;
 		}
 	}
-
 
 	// FUNCTION: TOY2 0x00452310
 	void LoadPacketData(char* fileName)

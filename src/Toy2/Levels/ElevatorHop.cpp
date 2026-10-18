@@ -254,9 +254,9 @@ namespace Toy2
 			{
 				if (g_levelActors[i].creatureRam->latSpeedNoTarget <= 127u)
 				{
-					v1 = g_levelActors[i].pos.z - g_levelActors[i].boundary.z;
-					g_levelActors[i].pos.z = g_levelActors[i].pos.y + g_levelActors[i].boundary.z - g_levelActors[i].boundary.y;
-					g_levelActors[i].pos.y = v1 + g_levelActors[i].boundary.y;
+					v1 = g_levelActors[i].transform.pos.z - g_levelActors[i].boundary.z;
+					g_levelActors[i].transform.pos.z = g_levelActors[i].transform.pos.y + g_levelActors[i].boundary.z - g_levelActors[i].boundary.y;
+					g_levelActors[i].transform.pos.y = v1 + g_levelActors[i].boundary.y;
 				}
 				++i;
 			} while (i < 6);

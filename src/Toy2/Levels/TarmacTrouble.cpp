@@ -823,13 +823,13 @@ namespace Toy2
 
 			Nu3D::Link::GetCurrentPosFixed(0, &p_v2);
 			g_levelActors[43].boundary = p_v2;
-			g_levelActors[43].pos.x = p_v2.x;
+			g_levelActors[43].transform.pos.x = p_v2.x;
 			v8 = g_unk52FFAC;
-			g_levelActors[43].pos.z = p_v2.z;
+			g_levelActors[43].transform.pos.z = p_v2.z;
 
 			if (! g_unk52FFAC)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[46].pos, 300))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[46].transform.pos, 300))
 				{
 					g_unk52FFAC = 1;
 					Dialogue::Begin(46, 1, "ha ha ha ha ... defeat the ^blacksmith^ boss to get a pizza planet ^token^!", -1, 0, -1);

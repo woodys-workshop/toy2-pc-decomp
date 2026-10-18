@@ -666,7 +666,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004037E0
 		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag)
 		{
-			int16_t yawAngle = actor->yawAngle;
+			int16_t yawAngle = actor->transform.angles.yaw;
 
 			int16_t angleOffset = yawAngle - 2048;
 			int32_t cosYaw = Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF];
@@ -681,17 +681,17 @@ namespace Toy2
 
 			if (flag == -1)
 			{
-				pos->x = rotatedX + actor->pos.x;
-				pos->y = actor->pos.y + lockOnOffset->y;
-				pos->z = rotatedZ + actor->pos.z;
+				pos->x = rotatedX + actor->transform.pos.x;
+				pos->y = actor->transform.pos.y + lockOnOffset->y;
+				pos->z = rotatedZ + actor->transform.pos.z;
 
 				return 0;
 			}
 
-			pos->x = (rotatedX + actor->pos.x - g_gameplayCameraState.pos.x) >> 5;
-			int32_t y = (actor->pos.y + lockOnOffset->y - g_gameplayCameraState.pos.y) >> 5;
+			pos->x = (rotatedX + actor->transform.pos.x - g_gameplayCameraState.pos.x) >> 5;
+			int32_t y = (actor->transform.pos.y + lockOnOffset->y - g_gameplayCameraState.pos.y) >> 5;
 			pos->y = y;
-			int32_t z = (rotatedZ + actor->pos.z - g_gameplayCameraState.pos.z) >> 5;
+			int32_t z = (rotatedZ + actor->transform.pos.z - g_gameplayCameraState.pos.z) >> 5;
 			pos->z = z;
 
 			if (flag == 0)
@@ -1250,7 +1250,8 @@ namespace Toy2
 
 				if (g_unk50A538 == (Nu3D::Particles::ParticleInstance*)-1)
 				{
-					particle = Nu3D::Particles::SpawnFromPreset(startPos.pos.x + displacement.pos.x, startPos.pos.y + displacement.pos.y, startPos.pos.z + displacement.pos.z, 8, 5);
+					particle = Nu3D::Particles::SpawnFromPreset(
+						startPos.pos.x + displacement.pos.x, startPos.pos.y + displacement.pos.y, startPos.pos.z + displacement.pos.z, 8, 5);
 					g_unk50A538 = particle;
 				}
 
@@ -2555,17 +2556,17 @@ namespace Toy2
 
 						if (areaIndex >= 0 && Nu3D::Portal::IsAreaVisible(areaIndex))
 						{
-							int32_t zDiff = cam->pos.z - curActor->pos.z;
-							int32_t yDiff = cam->pos.y - curActor->pos.y;
-							int32_t xDiff = cam->pos.x - curActor->pos.x;
+							int32_t zDiff = cam->pos.z - curActor->transform.pos.z;
+							int32_t yDiff = cam->pos.y - curActor->transform.pos.y;
+							int32_t xDiff = cam->pos.x - curActor->transform.pos.x;
 
 							if ((xDiff >> 5) * (xDiff >> 5) + (yDiff >> 5) * (yDiff >> 5) + (zDiff >> 5) * (zDiff >> 5) < visibilitySquare + flagAdd)
 							{
 								Vector3F point;
 
-								point.x = (float)(curActor->pos.x / 32);
-								point.y = (float)(curActor->pos.y / 32);
-								point.z = (float)(curActor->pos.z / 32);
+								point.x = (float)(curActor->transform.pos.x / 32);
+								point.y = (float)(curActor->transform.pos.y / 32);
+								point.z = (float)(curActor->transform.pos.z / 32);
 								float distance = (float)curActor->boundingSphereRadius;
 
 								if ((Nu3D::Frustum::TestSphereAllPlanes(&point, distance) & 0x55555555) == 0)
@@ -2800,12 +2801,12 @@ namespace Toy2
 
 					int16_t* attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
 
-					int32_t cosYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 1024) & 0xFFF] >> 2;
-					int32_t sinYaw = Numerics::g_sinCosLUT[(actor->yawAngle - 2048) & 0xFFF] >> 2;
+					int32_t cosYaw = Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1024) & 0xFFF] >> 2;
+					int32_t sinYaw = Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 2048) & 0xFFF] >> 2;
 
-					int32_t centerX = actor->pos.x + ((sinYaw * attach[2] + cosYaw * attach[0]) >> 12);
-					int32_t centerY = actor->pos.y + attach[1];
-					int32_t centerZ = actor->pos.z + ((cosYaw * attach[2] - sinYaw * attach[0]) >> 12);
+					int32_t centerX = actor->transform.pos.x + ((sinYaw * attach[2] + cosYaw * attach[0]) >> 12);
+					int32_t centerY = actor->transform.pos.y + attach[1];
+					int32_t centerZ = actor->transform.pos.z + ((cosYaw * attach[2] - sinYaw * attach[0]) >> 12);
 
 					int32_t startToCenterZ = centerZ - arg0->pos.z;
 					int32_t startToCenterX = centerX - arg0->pos.x;

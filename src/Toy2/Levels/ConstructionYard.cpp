@@ -960,7 +960,7 @@ namespace Toy2
 			Platform::GetOrigin(0, &p_v1);
 
 			v20 = g_unk52F7D8;
-			g_levelActors[5].pos = p_v1;
+			g_levelActors[5].transform.pos = p_v1;
 
 			if (g_unk52F7D8 <= 0)
 			{
@@ -1351,7 +1351,7 @@ namespace Toy2
 				if (! g_buzzActor.collisionFlags || g_buzzActor.posAngles.pos.y >= -638917)
 					goto LABEL_188;
 
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[24].pos, 300))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[24].transform.pos, 300))
 				{
 					g_unk52F804 = 1;
 					Dialogue::Begin(

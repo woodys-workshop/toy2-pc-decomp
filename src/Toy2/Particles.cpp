@@ -91,9 +91,9 @@ namespace Toy2
 				int32_t velY = *g_randDatBufferPtr++ - 128;
 
 				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
-					((xFactor * (ringSin / 4)) >> 14) + actor->pos.x,
-					actor->pos.y + ringCos / 4 - yOffset,
-					actor->pos.z + (-(zFactor * (ringSin / 4)) >> 14),
+					((xFactor * (ringSin / 4)) >> 14) + actor->transform.pos.x,
+					actor->transform.pos.y + ringCos / 4 - yOffset,
+					actor->transform.pos.z + (-(zFactor * (ringSin / 4)) >> 14),
 					(xFactor * (ringSin / 4)) >> 17,
 					((ringCos / 4) >> 3) - 1024,
 					-(zFactor * (ringSin / 4)) >> 17,
@@ -111,8 +111,8 @@ namespace Toy2
 				particle->colourB = b;
 			} while (lutIdx < 4095);
 
-			Nu3D::Particles::SpawnInstance(actor->pos.x, actor->pos.y - yOffset, actor->pos.z, 0, -1024, 0, 64, 0, 0, 126);
-			Nu3D::Particles::SpawnInstance(actor->pos.x, actor->pos.y - yOffset, actor->pos.z, 0, -1024, 0, 64, 0, 0, 127);
+			Nu3D::Particles::SpawnInstance(actor->transform.pos.x, actor->transform.pos.y - yOffset, actor->transform.pos.z, 0, -1024, 0, 64, 0, 0, 126);
+			Nu3D::Particles::SpawnInstance(actor->transform.pos.x, actor->transform.pos.y - yOffset, actor->transform.pos.z, 0, -1024, 0, 64, 0, 0, 127);
 		}
 	}
 }

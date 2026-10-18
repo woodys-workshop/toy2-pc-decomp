@@ -101,19 +101,19 @@ namespace Toy2
 				if (g_levelActors[0].actorPhase > 10)
 				{
 					g_unk52F990 = 120;
-					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 120, 16);
+					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 120, 16);
 				}
 				else
 				{
 					g_unk52F990 = 300;
-					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 300, 16);
+					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 300, 16);
 
-					g_levelActors[0].motionTargetPos.z = g_levelActors[0].pos.z;
-					Camera::g_cutsceneEyePos.z = g_levelActors[0].pos.z;
-					g_levelActors[0].motionTargetPos.x = g_levelActors[0].pos.x;
+					g_levelActors[0].motionTargetPos.z = g_levelActors[0].transform.pos.z;
+					Camera::g_cutsceneEyePos.z = g_levelActors[0].transform.pos.z;
+					g_levelActors[0].motionTargetPos.x = g_levelActors[0].transform.pos.x;
 
-					Camera::g_cutsceneEyePos.x = g_levelActors[0].pos.x;
-					Camera::g_cutsceneEyePos.y = g_levelActors[0].pos.y - 20480;
+					Camera::g_cutsceneEyePos.x = g_levelActors[0].transform.pos.x;
+					Camera::g_cutsceneEyePos.y = g_levelActors[0].transform.pos.y - 20480;
 					g_unk52F9A4 = 3;
 					SaveManager::g_save0Data.tokens[g_levelFileIndex] = 128;
 				}
@@ -133,7 +133,7 @@ namespace Toy2
 
 			if (g_levelActors[0].creatureId)
 			{
-				Camera::g_cutsceneFocusPos = g_levelActors[0].pos;
+				Camera::g_cutsceneFocusPos = g_levelActors[0].transform.pos;
 
 				if (v0 < 90)
 					AudioManager::PlaySoundEffect(102, &Camera::g_cutsceneFocusPos);
@@ -181,12 +181,12 @@ namespace Toy2
 				AudioManager::PlayMusicLooping(g_levelIndex);
 				g_unk52F9A4 = 1;
 
-				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 300, 16);
-				Camera::g_cutsceneEyePos.x = g_levelActors[0].pos.x - 294912;
+				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 300, 16);
+				Camera::g_cutsceneEyePos.x = g_levelActors[0].transform.pos.x - 294912;
 
 				v2 = (int32_t)Renderer::g_frameDelta;
-				Camera::g_cutsceneEyePos.y = g_levelActors[0].pos.y - 0x8000;
-				Camera::g_cutsceneEyePos.z = g_levelActors[0].pos.z;
+				Camera::g_cutsceneEyePos.y = g_levelActors[0].transform.pos.y - 0x8000;
+				Camera::g_cutsceneEyePos.z = g_levelActors[0].transform.pos.z;
 			}
 
 			v3 = g_unk52F9A4;
@@ -195,13 +195,13 @@ namespace Toy2
 			{
 				if (! g_unk52F990)
 				{
-					AudioManager::PlaySoundEffect(97, &g_levelActors[0].pos);
+					AudioManager::PlaySoundEffect(97, &g_levelActors[0].transform.pos);
 					v2 = (int32_t)Renderer::g_frameDelta;
 				}
 
 				if (! g_unk52F9B0)
 				{
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 400))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 400))
 					{
 						v4 = (g_unk52F9B4 - Camera::g_activeCameraTransform.angles.yaw) & 0xFFF;
 
@@ -211,7 +211,7 @@ namespace Toy2
 						if (abs((int32_t)v4) > 64)
 						{
 							v13 = (*g_randDatBufferPtr++ & 1) + 98;
-							AudioManager::PlaySoundEffect(v13, &g_levelActors[0].pos);
+							AudioManager::PlaySoundEffect(v13, &g_levelActors[0].transform.pos);
 							g_unk52F9B0 = 100;
 						}
 
@@ -249,7 +249,7 @@ namespace Toy2
 				v7 = (20 * v6 + 1024) & 0xFFF;
 				*(uint16_t*)&v7 = Numerics::g_sinCosLUT[v7];
 				g_levelActors[0].rollAngle = ((v7 >> 3) - 2048) & 0xFFF;
-				g_levelActors[0].pos.x += -2048 * v2;
+				g_levelActors[0].transform.pos.x += -2048 * v2;
 
 				if (! Camera::g_cutsceneTimer)
 				{
@@ -257,7 +257,7 @@ namespace Toy2
 					g_unk52F9A4 = 2;
 				}
 
-				Camera::g_cutsceneFocusPos.x = g_levelActors[0].pos.x;
+				Camera::g_cutsceneFocusPos.x = g_levelActors[0].transform.pos.x;
 				Camera::g_cutsceneEyePos.y += 304 * v2;
 
 				if (Camera::g_cutsceneTimer >= 180)
@@ -276,15 +276,15 @@ namespace Toy2
 					g_unk52F9B8 = -g_unk52F9B8;
 				}
 
-				Camera::g_unk50A118 = g_levelActors[0].pos;
+				Camera::g_unk50A118 = g_levelActors[0].transform.pos;
 
 				if (g_tickState[11] && ! g_unk52F990)
 				{
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 400))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 400))
 						Nu3D::Particles::SpawnInstance(
-							g_levelActors[0].pos.x,
-							g_levelActors[0].pos.y,
-							g_levelActors[0].pos.z,
+							g_levelActors[0].transform.pos.x,
+							g_levelActors[0].transform.pos.y,
+							g_levelActors[0].transform.pos.z,
 							2 * g_levelActors[0].velX,
 							0,
 							2 * g_levelActors[0].velForward,
@@ -324,11 +324,11 @@ namespace Toy2
 
 					if (g_tickState[6] && g_unk52F9A0 < 550)
 					{
-						v8 = g_levelActors[0].yawAngle - 128;
-						a1.pos.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128) & 0xFFF];
-						a1.pos.y = g_levelActors[0].pos.y;
+						v8 = g_levelActors[0].transform.angles.yaw - 128;
+						a1.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128) & 0xFFF];
+						a1.pos.y = g_levelActors[0].transform.pos.y;
 
-						a1.pos.z = g_levelActors[0].pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].yawAngle - 128 + 1024) & 0xFFF];
+						a1.pos.z = g_levelActors[0].transform.pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128 + 1024) & 0xFFF];
 
 						GroundHeight = Nu3D::Collision::GetGroundHeight(&a1, 0);
 
@@ -343,9 +343,9 @@ namespace Toy2
 
 						v10 = Numerics::g_sinCosLUT[(v8 + 1280) & 0xFFF];
 
-						a1.pos.x = g_levelActors[0].pos.x + 4 * Numerics::g_sinCosLUT[(v8 + 256) & 0xFFF];
-						a1.pos.y = g_levelActors[0].pos.y;
-						a1.pos.z = g_levelActors[0].pos.z + 4 * v10;
+						a1.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(v8 + 256) & 0xFFF];
+						a1.pos.y = g_levelActors[0].transform.pos.y;
+						a1.pos.z = g_levelActors[0].transform.pos.z + 4 * v10;
 
 						v11 = Nu3D::Collision::GetGroundHeight(&a1, 0);
 						a1.pos.y = v11;
@@ -369,7 +369,7 @@ namespace Toy2
 			if (v3 == 3)
 			{
 				g_levelActors[0].motionTargetPos.y -= 640 * v2;
-				g_levelActors[0].pos.y -= 640 * v2;
+				g_levelActors[0].transform.pos.y -= 640 * v2;
 				Camera::g_cutsceneEyePos.y += -128 * v2;
 
 				if (g_levelActors[0].actorPhase <= 10 && v5 < 120)
@@ -397,11 +397,11 @@ namespace Toy2
 					g_levelActors[0].rollAngle = ((v2 << 6) + g_levelActors[0].rollAngle) & 0xFFF;
 
 					if (v3 == 3)
-						g_levelActors[0].pitchAngle = (36 * v2 + g_levelActors[0].pitchAngle) & 0xFFF;
+						g_levelActors[0].transform.angles.pitch = (36 * v2 + g_levelActors[0].transform.angles.pitch) & 0xFFF;
 				}
 				else
 				{
-					v12 = (g_levelActors[0].yawAngle - (uint16_t)(g_levelActors[0].targetYaw)) & 0xFFF;
+					v12 = (g_levelActors[0].transform.angles.yaw - (uint16_t)(g_levelActors[0].targetYaw)) & 0xFFF;
 
 					if (v12 > 0x800)
 						v12 -= 4096;

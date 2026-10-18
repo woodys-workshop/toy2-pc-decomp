@@ -174,10 +174,10 @@ namespace Toy2
 
 			AudioManager::PlaySoundEffect(103, 0);
 
-			x = g_levelActors[0].pos.x;
-			z = g_levelActors[0].pos.z;
-			v2 = g_levelActors[0].pos.x >> 5;
-			v3 = g_levelActors[0].pos.z >> 5;
+			x = g_levelActors[0].transform.pos.x;
+			z = g_levelActors[0].transform.pos.z;
+			v2 = g_levelActors[0].transform.pos.x >> 5;
+			v3 = g_levelActors[0].transform.pos.z >> 5;
 
 			v4 = g_unk52FC04 < 3 ? 4200 : 5000;
 
@@ -186,8 +186,8 @@ namespace Toy2
 				v5 = Nu3D::Math::CartesianToFixedAngle(v2, v3) & 0xFFF;
 				x = (v4 * Numerics::g_sinCosLUT[v5]) >> 9;
 				z = (v4 * Numerics::g_sinCosLUT[(v5 + 1024) & 0xFFF]) >> 9;
-				g_levelActors[0].pos.x = x;
-				g_levelActors[0].pos.z = z;
+				g_levelActors[0].transform.pos.x = x;
+				g_levelActors[0].transform.pos.z = z;
 			}
 
 			if (g_unk52FBF4 > 0)
@@ -205,12 +205,12 @@ namespace Toy2
 					g_levelActors[v9].velX = 0;
 					g_levelActors[v9].velForward = 0;
 
-					z = g_levelActors[0].pos.z;
-					x = g_levelActors[0].pos.x;
+					z = g_levelActors[0].transform.pos.z;
+					x = g_levelActors[0].transform.pos.x;
 				}
 
-				v10 = g_levelActors[v6].pos.x >> 5;
-				v11 = g_levelActors[v6].pos.z >> 5;
+				v10 = g_levelActors[v6].transform.pos.x >> 5;
+				v11 = g_levelActors[v6].transform.pos.z >> 5;
 
 				if (v10 * v10 + v11 * v11 > 31360000)
 				{
@@ -218,25 +218,25 @@ namespace Toy2
 					v7 = g_unk52FBC4;
 					v13 = g_unk52FBC8;
 
-					g_levelActors[v13].pos.x = (5600 * Numerics::g_sinCosLUT[v12]) >> 9;
-					g_levelActors[v13].pos.z = (5600 * Numerics::g_sinCosLUT[(v12 + 1024) & 0xFFF]) >> 9;
+					g_levelActors[v13].transform.pos.x = (5600 * Numerics::g_sinCosLUT[v12]) >> 9;
+					g_levelActors[v13].transform.pos.z = (5600 * Numerics::g_sinCosLUT[(v12 + 1024) & 0xFFF]) >> 9;
 
-					z = g_levelActors[0].pos.z;
-					x = g_levelActors[0].pos.x;
+					z = g_levelActors[0].transform.pos.z;
+					x = g_levelActors[0].transform.pos.x;
 				}
 
-				v14 = g_levelActors[v7].pos.x >> 5;
+				v14 = g_levelActors[v7].transform.pos.x >> 5;
 
-				if (v14 * v14 + (g_levelActors[v7].pos.z >> 5) * (g_levelActors[v7].pos.z >> 5) > 31360000)
+				if (v14 * v14 + (g_levelActors[v7].transform.pos.z >> 5) * (g_levelActors[v7].transform.pos.z >> 5) > 31360000)
 				{
-					v15 = Nu3D::Math::CartesianToFixedAngle(v14, g_levelActors[v7].pos.z >> 5) & 0xFFF;
+					v15 = Nu3D::Math::CartesianToFixedAngle(v14, g_levelActors[v7].transform.pos.z >> 5) & 0xFFF;
 					v16 = g_unk52FBC4;
 
-					g_levelActors[v16].pos.x = (5600 * Numerics::g_sinCosLUT[v15]) >> 9;
-					g_levelActors[v16].pos.z = (5600 * Numerics::g_sinCosLUT[(v15 + 1024) & 0xFFF]) >> 9;
+					g_levelActors[v16].transform.pos.x = (5600 * Numerics::g_sinCosLUT[v15]) >> 9;
+					g_levelActors[v16].transform.pos.z = (5600 * Numerics::g_sinCosLUT[(v15 + 1024) & 0xFFF]) >> 9;
 
-					z = g_levelActors[0].pos.z;
-					x = g_levelActors[0].pos.x;
+					z = g_levelActors[0].transform.pos.z;
+					x = g_levelActors[0].transform.pos.x;
 				}
 			}
 
@@ -247,9 +247,9 @@ namespace Toy2
 			v76 = z;
 			for (i = 1; i <= 6; ++i)
 			{
-				g_levelActors[i].pos.x = v77;
-				g_levelActors[i].pos.z = v76;
-				g_levelActors[i].yawAngle = (int16_t)v17;
+				g_levelActors[i].transform.pos.x = v77;
+				g_levelActors[i].transform.pos.z = v76;
+				g_levelActors[i].transform.angles.yaw = (int16_t)v17;
 				g_levelActors[i].targetYaw = v17;
 
 				if (g_levelActors[i].primaryAnimIdx == 0)
@@ -283,7 +283,7 @@ namespace Toy2
 
 			for (i = 0; i <= 6; ++i)
 			{
-				g_levelActors[i].pos.y = v24;
+				g_levelActors[i].transform.pos.y = v24;
 				g_levelActors[i].motionTargetPos.y = v24;
 			}
 
@@ -300,7 +300,7 @@ namespace Toy2
 
 			if (g_levelActors[0].actorPhase != 0 && g_levelActors[0].actorPhase != g_unk52FBB8 && g_unk52FC04 < 4)
 			{
-				AudioManager::PlaySoundEffect(131, &g_levelActors[0].pos);
+				AudioManager::PlaySoundEffect(131, &g_levelActors[0].transform.pos);
 
 				if (g_unk52FBD4 >= 6)
 				{
@@ -329,7 +329,7 @@ namespace Toy2
 				{
 					g_levelActors[0].creatureRam->speedTarget = 0;
 					g_unk52FBC0 = 600;
-					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 360, 16);
+					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 360, 16);
 				}
 				else
 				{
@@ -338,7 +338,7 @@ namespace Toy2
 
 				if (g_levelActors[0].actorPhase <= 10)
 				{
-					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 240, 16);
+					Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 240, 16);
 					v31 = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1280) & 0xFFF];
 
 					Camera::g_cutsceneEyePos.x = Camera::g_cutsceneFocusPos.x + 4 * Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 256) & 0xFFF];
@@ -411,7 +411,7 @@ namespace Toy2
 				g_unk52FC04 = 1;
 				g_unk52FBCC = -229376;
 
-				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].pos, 360, 16);
+				Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 360, 16);
 
 				Camera::g_cutsceneEyePos.x = g_buzzActor.posAngles.pos.x;
 				Camera::g_cutsceneEyePos.y = g_buzzActor.posAngles.pos.y - 0x8000;
@@ -435,7 +435,7 @@ namespace Toy2
 					}
 				}
 
-				Camera::g_cutsceneFocusPos = g_levelActors[0].pos;
+				Camera::g_cutsceneFocusPos = g_levelActors[0].transform.pos;
 				Camera::g_cutsceneEyePos.y += -128 * (int32_t)Renderer::g_frameDelta;
 
 				if (g_unk52FBCC < -32768)
@@ -476,7 +476,7 @@ namespace Toy2
 						Camera::g_cutsceneFocusPos.y = v35;
 						Camera::g_cutsceneFocusPos.z = v36;
 
-						yawAngle = g_levelActors[v32].yawAngle;
+						yawAngle = g_levelActors[v32].transform.angles.yaw;
 
 						Camera::g_cutsceneEyePos.y = v35;
 						v38 = Numerics::g_sinCosLUT[(yawAngle + 1024) & 0xFFF];
@@ -507,7 +507,7 @@ namespace Toy2
 							g_levelActors[v40].unkVar13 = 0;
 							g_levelActors[v40].unkVar13_ = (int16_t)0x8000;
 
-							AudioManager::PlaySoundEffect(134, &g_levelActors[v41].pos);
+							AudioManager::PlaySoundEffect(134, &g_levelActors[v41].transform.pos);
 							v32 = g_unk52FBD4;
 						}
 
@@ -536,18 +536,18 @@ namespace Toy2
 							v47 = g_unk52FBC4;
 							v48 = g_unk52FBC8;
 
-							g_levelActors[v48].pos.x = v45;
-							g_levelActors[v48].pos.y = v44 + 4096;
-							g_levelActors[v48].pos.z = v46;
+							g_levelActors[v48].transform.pos.x = v45;
+							g_levelActors[v48].transform.pos.y = v44 + 4096;
+							g_levelActors[v48].transform.pos.z = v46;
 							g_levelActors[v48].velX = 0;
 							g_levelActors[v48].gravityVel = 0;
 							g_levelActors[v48].velForward = 0;
 
 							v49 = v47;
 
-							g_levelActors[v49].pos.x = v45;
-							g_levelActors[v49].pos.y = v44 + 4096;
-							g_levelActors[v49].pos.z = v46;
+							g_levelActors[v49].transform.pos.x = v45;
+							g_levelActors[v49].transform.pos.y = v44 + 4096;
+							g_levelActors[v49].transform.pos.z = v46;
 							g_levelActors[v49].velX = 0;
 							g_levelActors[v49].gravityVel = 0;
 							g_levelActors[v49].velForward = 0;
@@ -599,7 +599,7 @@ namespace Toy2
 			}
 		LABEL_92:
 
-			IsWithinDistance = Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 200);
+			IsWithinDistance = Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 200);
 
 			v55 = g_unk52FC04;
 
@@ -678,7 +678,7 @@ namespace Toy2
 
 			if (v57 == 0)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].pos, 400) != 0)
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 400) != 0)
 				{
 					a2.pos.x = 0;
 					a2.pos.y = 0;
@@ -686,7 +686,7 @@ namespace Toy2
 
 					Actor::ResolveBoneAttachmentPos((Vector3I*)&a2, g_levelActors, 0);
 
-					v58 = g_levelActors[0].yawAngle;
+					v58 = g_levelActors[0].transform.angles.yaw;
 					v59 = (Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - a2.pos.x, g_buzzActor.posAngles.pos.z - a2.pos.z) - v58) & 0xFFF;
 
 					if (v59 > 0x800)
@@ -740,7 +740,7 @@ namespace Toy2
 					{
 						if (g_buzzActor.stunTimer == 0)
 						{
-							AudioManager::PlaySoundEffect(132, &g_levelActors[0].pos);
+							AudioManager::PlaySoundEffect(132, &g_levelActors[0].transform.pos);
 
 							if (g_unk52FBFC == 0)
 								g_unk52FBFC = 1200;
@@ -820,15 +820,15 @@ namespace Toy2
 					if (v68)
 						v70 = 0x7FFFFFFF;
 					else
-						v70 = ((Camera::g_activeCameraTransform.pos.x - g_levelActors[v65].pos.x) >> 8)
-								* ((Camera::g_activeCameraTransform.pos.x - g_levelActors[v65].pos.x) >> 8)
-							+ ((Camera::g_activeCameraTransform.pos.z - g_levelActors[v65].pos.z) >> 8)
-								* ((Camera::g_activeCameraTransform.pos.z - g_levelActors[v65].pos.z) >> 8);
+						v70 = ((Camera::g_activeCameraTransform.pos.x - g_levelActors[v65].transform.pos.x) >> 8)
+								* ((Camera::g_activeCameraTransform.pos.x - g_levelActors[v65].transform.pos.x) >> 8)
+							+ ((Camera::g_activeCameraTransform.pos.z - g_levelActors[v65].transform.pos.z) >> 8)
+								* ((Camera::g_activeCameraTransform.pos.z - g_levelActors[v65].transform.pos.z) >> 8);
 
 					if (g_levelActors[v66].actorPhase > 0)
 					{
-						v71 = (Camera::g_activeCameraTransform.pos.x - g_levelActors[v66].pos.x) >> 8;
-						v72 = (Camera::g_activeCameraTransform.pos.z - g_levelActors[v66].pos.z) >> 8;
+						v71 = (Camera::g_activeCameraTransform.pos.x - g_levelActors[v66].transform.pos.x) >> 8;
+						v72 = (Camera::g_activeCameraTransform.pos.z - g_levelActors[v66].transform.pos.z) >> 8;
 					}
 					else
 					{
@@ -853,17 +853,17 @@ namespace Toy2
 
 				if (v73 != 0)
 				{
-					v69 = g_levelActors[v73].pos.z;
-					v74 = g_levelActors[v73].pos.y - 0x2000;
-					Camera::g_unk50A118.x = g_levelActors[v73].pos.x;
+					v69 = g_levelActors[v73].transform.pos.z;
+					v74 = g_levelActors[v73].transform.pos.y - 0x2000;
+					Camera::g_unk50A118.x = g_levelActors[v73].transform.pos.x;
 					Camera::g_unk50A118.y = v74;
 					goto LABEL_151;
 				}
 			LABEL_150:
 
-				v69 = g_levelActors[0].pos.z;
-				Camera::g_unk50A118.x = g_levelActors[0].pos.x;
-				Camera::g_unk50A118.y = g_levelActors[0].pos.y - 0x4000;
+				v69 = g_levelActors[0].transform.pos.z;
+				Camera::g_unk50A118.x = g_levelActors[0].transform.pos.x;
+				Camera::g_unk50A118.y = g_levelActors[0].transform.pos.y - 0x4000;
 			LABEL_151:
 				Camera::g_unk50A118.z = v69;
 			}

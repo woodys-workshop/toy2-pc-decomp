@@ -215,12 +215,12 @@ namespace Toy2
 			{
 				do
 				{
-					rope->velocities[i].x =
-						((rope->points[i + 1].pos.x - scratch[i].pos.x) >> 5) + ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4) + 30 * rope->velocities[i].x / 32;
-					rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4)
-						+ ((rope->points[i + 1].pos.y - scratch[i].pos.y) >> 5);
-					rope->velocities[i].z =
-						30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4) + ((rope->points[i + 1].pos.z - scratch[i].pos.z) >> 5);
+					rope->velocities[i].x = ((rope->points[i + 1].pos.x - scratch[i].pos.x) >> 5) + ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4)
+						+ 30 * rope->velocities[i].x / 32;
+					rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32
+						+ ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4) + ((rope->points[i + 1].pos.y - scratch[i].pos.y) >> 5);
+					rope->velocities[i].z = 30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4)
+						+ ((rope->points[i + 1].pos.z - scratch[i].pos.z) >> 5);
 
 					++i;
 				} while (i < rope->pointCount - 1);

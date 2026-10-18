@@ -1724,11 +1724,14 @@ namespace Toy2
 							platformVelY = a1->platformVel.y;
 
 							a1->platformVel.x += (uint16_t)mesh->origin.x
-								+ (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096 - (uint16_t)a2->pos.x;
+								+ (velocity.x * nextRotation->m00 + velocity.y * nextRotation->m01 + posZ / 4096 * nextRotation->m02) / 4096
+								- (uint16_t)a2->pos.x;
 							a1->platformVel.y += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.y
-								+ (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096 - (uint16_t)a2->pos.y;
+								+ (velocity.x * nextRotation->m10 + velocity.y * nextRotation->m11 + posZ / 4096 * nextRotation->m12) / 4096
+								- (uint16_t)a2->pos.y;
 							a1->platformVel.z += (uint16_t)g_collisionMeshInstances[platform->meshInstanceId].origin.z
-								+ (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096 - (uint16_t)a2->pos.z;
+								+ (velocity.x * nextRotation->m20 + velocity.y * nextRotation->m21 + posZ / 4096 * nextRotation->m22) / 4096
+								- (uint16_t)a2->pos.z;
 
 							if (platformVelY > a1->platformVel.y)
 								a1->platformVel.y = (a1->platformVel.y - platformVelY) / 8 + a1->platformVel.y + 32;
