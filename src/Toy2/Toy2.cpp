@@ -5321,60 +5321,11 @@ namespace Toy2
 			{
 				case 0:
 					g_demoMode = 1;
-
-				default:
-
-				LBL_DEMO_MODE:
-					g_mainMenuState = 0;
-
-					if (g_demoMode == 1)
-					{
-						switch (g_curDemoLevel)
-						{
-							case 0:
-								g_levelIndex = 0;
-								break;
-							case 1:
-								g_levelIndex = 3;
-								break;
-							case 2:
-								g_levelIndex = 7;
-								break;
-							case 3:
-								g_levelIndex = 10;
-								break;
-							case 4:
-								g_levelIndex = 13;
-								break;
-							default:
-								break;
-						}
-
-						if (++g_curDemoLevel > 4)
-							g_curDemoLevel = 0;
-
-						g_levelFileIndex = g_levelFileConversion[g_levelIndex];
-
-						LoadPathBin();
-
-						demoLevelIndex = g_levelIndex;
-						g_demoPathWriteIdx = -2;
-						g_demoInputRunLength = 0;
-
-						SaveManager::InitProgressData(&SaveManager::g_save0Data);
-						SaveManager::LoadProgressData(&SaveManager::g_save0Data);
-
-						g_levelIndex = demoLevelIndex;
-					}
-
-					if (! g_demoMode)
-						goto LBL_ATTRACT_CHECK;
-
 					break;
 
 				case 1:
 					g_demoMode = 0;
-					goto LBL_DEMO_MODE;
+					break;
 
 				case 2: // Options Screen
 					g_levelFileIndex = 0;
@@ -5415,6 +5366,51 @@ namespace Toy2
 				case 9:
 					goto LBL_EXIT;
 			}
+
+			g_mainMenuState = 0;
+
+			if (g_demoMode == 1)
+			{
+				switch (g_curDemoLevel)
+				{
+					case 0:
+						g_levelIndex = 0;
+						break;
+					case 1:
+						g_levelIndex = 3;
+						break;
+					case 2:
+						g_levelIndex = 7;
+						break;
+					case 3:
+						g_levelIndex = 10;
+						break;
+					case 4:
+						g_levelIndex = 13;
+						break;
+					default:
+						break;
+				}
+
+				if (++g_curDemoLevel > 4)
+					g_curDemoLevel = 0;
+
+				g_levelFileIndex = g_levelFileConversion[g_levelIndex];
+
+				LoadPathBin();
+
+				demoLevelIndex = g_levelIndex;
+				g_demoPathWriteIdx = -2;
+				g_demoInputRunLength = 0;
+
+				SaveManager::InitProgressData(&SaveManager::g_save0Data);
+				SaveManager::LoadProgressData(&SaveManager::g_save0Data);
+
+				g_levelIndex = demoLevelIndex;
+			}
+
+			if (! g_demoMode)
+				goto LBL_ATTRACT_CHECK;
 
 			break;
 		}
@@ -5532,75 +5528,77 @@ namespace Toy2
 				if (g_attractModeTimer >= 0)
 					break;
 
-				if (! (levelIdx % 3))
-					goto LBL_LEVEL_END;
-
-				g_levelTransition = 1;
-			}
-			else if (levelTransition != 1)
-			{
-				goto LBL_LEVEL_END;
-			}
-
-			if (levelIdx % 3)
-			{
-				g_levelFileIndex = 0;
-				Levels::g_levelLoadConfig = 1148;
-
-				Renderer::SetVirtualRatioTo54();
-				Levels::InitLevelPlay(0);
-				ScreenDispatcher(4);
-				g_levelFileIndex = levelIdx;
-
-				if (g_attractModeTimer >= 0)
-					break;
-
-				movie17Status = SaveManager::g_save0Data.moviesUnlocked[17];
-
-				if (SaveManager::g_curLevelTokenData != SaveManager::g_save0Data.tokens[g_levelFileConversion[g_levelIndex]]
-					&& (ComputeTokenProgress() & 0xFF0000) == 0x320000)
+				if (levelIdx % 3)
 				{
-					SaveManager::g_save0Data.moviesUnlocked[17] = 1;
+					g_levelTransition = 1;
+					levelTransition = 1;
 				}
-
-				ShowPostGameSaveMenu();
-
-				if (! movie17Status && SaveManager::g_save0Data.moviesUnlocked[17])
-					UnlockAndPlayMovie(17, 16, 1);
-			}
-			else
-			{
-				ShowActClearScreen();
-
-				levelMovieStatus = SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1];
-
-				SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1] = 1;
-
-				if (g_levelFileIndex == 15)
-					SaveManager::g_save0Data.moviesUnlocked[18] = 1;
-
-				ShowPostGameSaveMenu();
-
-				if (! levelMovieStatus)
-					UnlockAndPlayMovie(g_levelIndex + 1, 30, 1);
-
-				if (g_levelFileIndex == 15)
+				else
 				{
-					UnlockAndPlayMovie(18, 31, 1);
-					levelIdx = g_levelFileIndex;
+					levelTransition = 0;
+				}
+			}
 
+			if (levelTransition == 1)
+			{
+				if (levelIdx % 3)
+				{
 					g_levelFileIndex = 0;
-					Levels::g_levelLoadConfig = 1276;
+					Levels::g_levelLoadConfig = 1148;
 
 					Renderer::SetVirtualRatioTo54();
 					Levels::InitLevelPlay(0);
-					ScreenDispatcher(11); // Show credits
+					ScreenDispatcher(4);
+					g_levelFileIndex = levelIdx;
 
-					goto LBL_RESTART_GAME_CACHED;
+					if (g_attractModeTimer >= 0)
+						break;
+
+					movie17Status = SaveManager::g_save0Data.moviesUnlocked[17];
+
+					if (SaveManager::g_curLevelTokenData != SaveManager::g_save0Data.tokens[g_levelFileConversion[g_levelIndex]]
+						&& (ComputeTokenProgress() & 0xFF0000) == 0x320000)
+					{
+						SaveManager::g_save0Data.moviesUnlocked[17] = 1;
+					}
+
+					ShowPostGameSaveMenu();
+
+					if (! movie17Status && SaveManager::g_save0Data.moviesUnlocked[17])
+						UnlockAndPlayMovie(17, 16, 1);
+				}
+				else
+				{
+					ShowActClearScreen();
+
+					levelMovieStatus = SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1];
+
+					SaveManager::g_save0Data.moviesUnlocked[g_levelIndex + 1] = 1;
+
+					if (g_levelFileIndex == 15)
+						SaveManager::g_save0Data.moviesUnlocked[18] = 1;
+
+					ShowPostGameSaveMenu();
+
+					if (! levelMovieStatus)
+						UnlockAndPlayMovie(g_levelIndex + 1, 30, 1);
+
+					if (g_levelFileIndex == 15)
+					{
+						UnlockAndPlayMovie(18, 31, 1);
+						levelIdx = g_levelFileIndex;
+
+						g_levelFileIndex = 0;
+						Levels::g_levelLoadConfig = 1276;
+
+						Renderer::SetVirtualRatioTo54();
+						Levels::InitLevelPlay(0);
+						ScreenDispatcher(11); // Show credits
+
+						goto LBL_RESTART_GAME_CACHED;
+					}
 				}
 			}
-
-		LBL_LEVEL_END:
 
 			if (g_attractModeTimer >= 0)
 				break;
