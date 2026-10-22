@@ -40,6 +40,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x004F4668
 		Vector3I g_unk4F4668[5] = { { 0, 0, 500 }, { 500, 0, 0 }, { 0, 0, -1280 }, { -1280, 0, 0 }, { 0, -1280, 0 } };
 
+		// GLOBAL: TOY2 0x004F46A4
+		int16_t g_unk4F46A4[4] = { 8, 11, 0, -1 };
+
 		// GLOBAL: TOY2 0x004F46AC
 		char* g_unk4F46AC[5] = {
 			"^hamm^ is on the shelf at the end of the x-ray room.",
@@ -48,6 +51,9 @@ namespace Toy2
 			"you can get to the ^token^ on top of the broken plane using the ^hover boots^. mr. potato head has them near the stack of luggage.",
 			"the ^prospector^ boss is on the conveyor belt at the top of the luggage stack. you need the ^hover boots^ to reach him."
 		};
+
+		// GLOBAL: TOY2 0x004F46C0
+		int16_t g_unk4F46C0[6] = { 49, 50, 52, 48, 51, 0 };
 
 		// GLOBAL: TOY2 0x0052FE38
 		int32_t g_unk52FE38;
@@ -60,6 +66,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FEEC
 		HiddenCollectible g_unk52FEEC[5];
+
+		// GLOBAL: TOY2 0x0052FF14
+		int32_t g_unk52FF14;
 
 		// GLOBAL: TOY2 0x0052FF18
 		int32_t g_unk52FF18;
@@ -93,6 +102,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FF3C
 		int32_t g_unk52FF3C;
+
+		// GLOBAL: TOY2 0x0052FF40
+		int32_t g_unk52FF40;
 
 		// GLOBAL: TOY2 0x0052FF44
 		int32_t g_unk52FF44;

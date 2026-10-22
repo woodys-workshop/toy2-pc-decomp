@@ -14,3 +14,5 @@ void Nullsub6();
 void Nullsub8();
 void Nullsub11();
 void Nullsub12();
+void Nullsub9();
+void Nullsub10();

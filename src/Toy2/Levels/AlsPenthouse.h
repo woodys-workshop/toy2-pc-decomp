@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include "Toy2/Collectables.h"
 
 namespace Toy2
 {
@@ -41,15 +42,19 @@ namespace Toy2
 		extern int32_t g_unk52FD70;
 
 		extern int16_t g_unk4F3E00[48];
+		extern int16_t g_unk4F3E60[10];
 		extern int32_t g_unk4F3E74[24];
 		extern int32_t g_unk4F3ED4[12];
 		extern char* g_unk4F3F04[5];
+		extern int16_t g_unk4F3F18[6];
+		extern Collectables::TokenTableEntry g_unk4F3F24[3];
 		extern SwitchEntry g_unk4F3F48[7];
 		extern uint8_t g_unk4F3FAC[8];
 		extern uint8_t g_unk4F3FB4[24];
 		extern uint8_t g_unk4F3FCC[16];
 		extern uint8_t g_unk4F3FDC[12];
 		extern int32_t g_unk4F3FE8[15];
+		extern uint8_t g_unk4F4024[33];
 		extern int32_t g_unk52FD08;
 		extern int32_t g_unk52FD0C;
 		extern int32_t g_unk52FD14;
@@ -58,6 +63,7 @@ namespace Toy2
 		extern int32_t g_unk52FD20;
 		extern int32_t g_unk52FD28;
 		extern int32_t g_unk52FD30;
+		extern int32_t g_unk52FD34;
 		extern int32_t g_unk52FD38;
 		extern int32_t g_unk52FD3C;
 		extern int32_t g_unk52FD44;

@@ -38,6 +38,9 @@ namespace Toy2
 {
 	namespace AlsSpaceLand
 	{
+		// GLOBAL: TOY2 0x004F2F0C
+		int16_t g_unk4F2F0C[6] = { 49, 51, 50, 53, 52, 0 };
+
 		// GLOBAL: TOY2 0x004F2F18
 		RGB16 g_unk4F2F18[4] = { { 128, 0, 0 }, { 0, 128, 0 }, { 128, 0, 0 }, { 0, 64, 128 } };
 
@@ -49,6 +52,9 @@ namespace Toy2
 			"there is a ^token^ in the claw machine next to you. stomp the button to grab the ^token^.",
 			"the ^buzz lightyear buggy^ boss is in a room that can only be reached by climbing the space ^mobile^ in the central area."
 		};
+
+		// GLOBAL: TOY2 0x004F2F44
+		int16_t g_unk4F2F44[10] = { 0, 0, 1, 15, 3, 2, 19, 4, 3, -1 };
 
 		// GLOBAL: TOY2 0x0052FA60
 		Transform g_laserPositions[2];
@@ -102,7 +108,7 @@ namespace Toy2
 		int32_t g_unk52FB1C;
 
 		// GLOBAL: TOY2 0x0052FB20
-		int32_t g_unk52FB20[16];
+		int32_t g_unk52FB20[18];
 
 		// GLOBAL: TOY2 0x0052FB60
 		int32_t g_unk52FB60;

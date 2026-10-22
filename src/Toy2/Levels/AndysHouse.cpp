@@ -321,11 +321,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00417680 [MATCHED]
 		void Interactions()
 		{
-			// $TODO: the original frame is 4 bytes larger than its locals need (sub esp, 0x1c), the padding member keeps the size
-			struct PosBuf : Vector3I
-			{
-				int32_t w;
-			} pos;
+			Transform transform;
 
 			if (g_curSectorCopy1 == 1)
 			{
@@ -405,19 +401,19 @@ namespace Toy2
 					if (timer <= 0)
 						g_unk52F56C = -1;
 
-					Nu3D::Link::GetCurrentPosFixed(19, &pos);
-					if (pos.y > 72704 && g_unk52F57C > 0)
+					Nu3D::Link::GetCurrentPosFixed(19, &transform.pos);
+					if (transform.pos.y > 72704 && g_unk52F57C > 0)
 						g_unk52F57C /= -2;
 
-					pos.y += g_unk52F57C * Renderer::g_frameDelta;
-					Nu3D::Link::SetPositionRawAndCommit(19, pos.x >> 5, pos.y >> 5, pos.z >> 5);
-					Nu3D::Link::GetCurrentPosFixed(20, &pos);
-					pos.y += Renderer::g_frameDelta * g_unk52F57C;
+					transform.pos.y += g_unk52F57C * Renderer::g_frameDelta;
+					Nu3D::Link::SetPositionRawAndCommit(19, transform.pos.x >> 5, transform.pos.y >> 5, transform.pos.z >> 5);
+					Nu3D::Link::GetCurrentPosFixed(20, &transform.pos);
+					transform.pos.y += Renderer::g_frameDelta * g_unk52F57C;
 
-					Nu3D::Link::SetPositionRawAndCommit(20, pos.x >> 5, pos.y >> 5, pos.z >> 5);
-					Nu3D::Link::GetCurrentPosFixed(26, &pos);
-					pos.y = Renderer::g_frameDelta * g_unk52F57C + 4 * pos.y;
-					Nu3D::Link::SetPositionRawAndCommit(26, pos.x >> 5, pos.y >> 7, pos.z >> 5);
+					Nu3D::Link::SetPositionRawAndCommit(20, transform.pos.x >> 5, transform.pos.y >> 5, transform.pos.z >> 5);
+					Nu3D::Link::GetCurrentPosFixed(26, &transform.pos);
+					transform.pos.y = Renderer::g_frameDelta * g_unk52F57C + 4 * transform.pos.y;
+					Nu3D::Link::SetPositionRawAndCommit(26, transform.pos.x >> 5, transform.pos.y >> 7, transform.pos.z >> 5);
 				}
 			}
 
@@ -464,11 +460,11 @@ namespace Toy2
 			// the garage
 			if (g_curSectorCopy1 == 4)
 			{
-				pos.x = 736794;
-				pos.y = 157472;
-				pos.z = -529601;
+				transform.pos.x = 736794;
+				transform.pos.y = 157472;
+				transform.pos.z = -529601;
 
-				if (Nu3D::Math::IsWithinDistance(&pos, &g_buzzActor.posAngles.pos, 640))
+				if (Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.posAngles.pos, 640))
 				{
 					if (g_tickState[11])
 					{
@@ -529,11 +525,11 @@ namespace Toy2
 					}
 				}
 
-				pos.x = 750812;
-				pos.y = 147262;
-				pos.z = -418634;
+				transform.pos.x = 750812;
+				transform.pos.y = 147262;
+				transform.pos.z = -418634;
 
-				int32_t withinDistance = Nu3D::Math::IsWithinDistance(&pos, &g_buzzActor.posAngles.pos, 640);
+				int32_t withinDistance = Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.posAngles.pos, 640);
 
 				if (withinDistance)
 				{
@@ -542,7 +538,7 @@ namespace Toy2
 
 					if (g_tickState[8])
 					{
-						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(pos.x, pos.y, pos.z, 17, 10);
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(transform.pos.x, transform.pos.y, transform.pos.z, 17, 10);
 						particle->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
 						++g_randDatBufferPtr;
 					}

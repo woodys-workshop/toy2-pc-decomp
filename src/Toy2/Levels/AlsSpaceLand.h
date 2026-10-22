@@ -17,8 +17,10 @@ namespace Toy2
 		extern int32_t g_unk52FB7C;
 		extern int32_t g_unk52FB9C;
 
+		extern int16_t g_unk4F2F0C[6];
 		extern RGB16 g_unk4F2F18[4];
 		extern char* g_unk4F2F30[5];
+		extern int16_t g_unk4F2F44[10];
 		extern Transform g_laserPositions[2];
 		extern Levels::Type63* g_unk52FA80;
 		extern int32_t g_unk52FA84;
@@ -36,7 +38,7 @@ namespace Toy2
 		extern Vector3I g_tokenPos;
 		extern int32_t g_clawInitialized;
 		extern int32_t g_unk52FB1C;
-		extern int32_t g_unk52FB20[16];
+		extern int32_t g_unk52FB20[18];
 		extern int32_t g_unk52FB60;
 		extern int32_t g_unk52FB64;
 		extern int32_t g_unk52FB68;

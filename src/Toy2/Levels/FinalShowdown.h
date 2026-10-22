@@ -30,6 +30,7 @@ namespace Toy2
 		extern int32_t g_unk52FFF0;
 		extern int32_t g_unk52FFF8;
 		extern int32_t g_unk530000;
+		extern int32_t g_unk530010;
 		extern int32_t g_unk530014;
 		extern int32_t g_unk530024;
 		extern int32_t g_unk530048;

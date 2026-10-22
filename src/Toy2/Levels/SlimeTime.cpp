@@ -61,6 +61,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052F9A8
 		int32_t g_unk52F9A8;
 
+		// GLOBAL: TOY2 0x0052F9AC
+		int32_t g_unk52F9AC;
+
 		// GLOBAL: TOY2 0x0052F9B0
 		int32_t g_unk52F9B0;
 

@@ -43,6 +43,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x004F1508
 		int16_t g_unk4F1508[8] = { 0, 1, 3, 2, 3, 1, 0, 2 };
 
+		// GLOBAL: TOY2 0x004F1518
+		int16_t g_unk4F1518[8] = { -2, 2, 4, -2, 11, 20, -1, 0 };
+
 		// GLOBAL: TOY2 0x004F1528
 		char* g_unk4F1528[5] = {
 			"^hamm^ is on the first branch of the ^tree^. climb the ^swing set^ to get to him.",
@@ -53,6 +56,16 @@ namespace Toy2
 			"the ^kite boss^ is at the top of the tree. hey buzz, you can find a rope on the way up! jump onto it and it will fall to the ground. that way you "
 			"can quickly get back into the tree."
 		};
+
+		// GLOBAL: TOY2 0x004F153C
+		// the original table has no terminator and runs into the collectable table that follows it
+		Collectables::TokenTableEntry g_unk4F153C[2] = {
+			{ 70, 12, "the soldier will surrender if you quickly ^stomp^ on the ^molehills^ that he is near.", 2048 },
+			{ -1, 0, 0, 0 }
+		};
+
+		// GLOBAL: TOY2 0x004F154C
+		int16_t g_unk4F154C[6] = { 51, 49, 50, 48, 52, 0 };
 
 		// GLOBAL: TOY2 0x0052F5DC
 		int32_t g_unk52F5DC;
@@ -75,6 +88,9 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052F5F8
 		Vector3I g_unk52F5F8;
 
+		// GLOBAL: TOY2 0x0052F608
+		int16_t g_unk52F608[2];
+
 		// GLOBAL: TOY2 0x0052F60C
 		int16_t g_unk52F60C[2];
 
@@ -95,6 +111,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052F628
 		Vector3I g_unk52F628;
+
+		// GLOBAL: TOY2 0x0052F638
+		int16_t g_unk52F638[2];
 
 		// GLOBAL: TOY2 0x0052F640
 		int32_t g_unk52F640;
@@ -167,6 +186,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052F6E4
 		int32_t g_unk52F6E4;
+
+		// GLOBAL: TOY2 0x0052F6E8
+		int32_t g_unk52F6E8;
 
 		// GLOBAL: TOY2 0x0052F63C
 		int32_t g_unk52F63C;

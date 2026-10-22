@@ -23,14 +23,18 @@ namespace Toy2
 		extern int32_t g_unk52FF2C;
 		extern int32_t g_unk52FF30;
 		extern int32_t g_unk52FF3C;
+		extern int32_t g_unk52FF40;
 		extern int32_t g_unk52FF44;
 
 		extern Vector3I g_unk4F4668[5];
 		extern char* g_unk4F46AC[5];
+		extern int16_t g_unk4F46A4[4];
+		extern int16_t g_unk4F46C0[6];
 		extern int32_t g_unk52FE38;
 		extern int32_t g_unk52FE3C;
 		extern int32_t g_unk52FE40;
 		extern HiddenCollectible g_unk52FEEC[5];
+		extern int32_t g_unk52FF14;
 		extern int32_t g_unk52FF18;
 		extern int32_t g_unk52FF20;
 		extern int32_t g_unk52FF24;

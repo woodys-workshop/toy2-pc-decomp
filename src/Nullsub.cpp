@@ -29,3 +29,9 @@ void Nullsub11() {}
 
 // FUNCTION: TOY2 0x00430960
 void Nullsub12() {}
+
+// FUNCTION: TOY2 0x00430930
+void Nullsub9() {}
+
+// FUNCTION: TOY2 0x00430950
+void Nullsub10() {}

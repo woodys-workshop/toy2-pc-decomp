@@ -7479,7 +7479,6 @@ namespace Toy2
 	// FUNCTION: TOY2 0x004A1A50
 	void InitialiseLevelVariables(int32_t levelIndex)
 	{
-		// FUNCTION IS WIP: only the setup for level 1 (Andy's House) is ported, the other levels do nothing yet
 		switch (levelIndex)
 		{
 			case 1:
@@ -7538,6 +7537,410 @@ namespace Toy2
 
 				AndysHouse::g_tinRobotFlashTimer = 0;
 				AndysHouse::g_tinRobotFlash = 0;
+				break;
+
+			case 2:
+				Collectables::Init(AndysNeighborhood::g_unk4F154C, 65);
+				Collectables::Activate(3, 1);
+				MoveableObject::InitTable(AndysNeighborhood::g_unk4F1518);
+				Collectables::LoadTokenTable((int32_t*)AndysNeighborhood::g_unk4F153C);
+				Buzz::g_underwaterYLevel = 17408;
+				Buzz::g_unk830D30 = 17408;
+				g_underwaterTintBlue = 80;
+				g_underwaterTintGreen = 96;
+				g_underwaterTintRed = 128;
+				Platform::SetRotationAngles(0, 0, 2401, 0);
+				Platform::SetRotationAngles(1, 0, 2890, 0);
+				g_levelActors[26].actorFlags |= Actor::ACTOR_NO_DESPAWN;
+				g_levelActors[4].unkShort4 = 100;
+				AndysNeighborhood::g_zKitePhase = g_levelActors[26].actorPhase;
+				AndysNeighborhood::g_zKiteYawPhase = 0;
+				AndysNeighborhood::g_zKiteRollPhase = 0;
+				AndysNeighborhood::g_unk52F65C = 0;
+				AndysNeighborhood::g_unk52F664 = 0;
+				AndysNeighborhood::g_zKiteFlashTimer = 0;
+				AndysNeighborhood::g_unk52F63C = 0;
+				AndysNeighborhood::g_unk52F6DC = 0;
+				AndysNeighborhood::g_unk52F6E0 = 0;
+				g_unk52F2F8 = 0;
+				AndysNeighborhood::g_unk52F668 = 0;
+				AndysNeighborhood::g_unk52F620 = 0;
+				g_unk52AD64 = 0;
+				AndysNeighborhood::g_unk52F660 = 0;
+				AndysNeighborhood::g_unk52F5E0 = 0;
+				AndysNeighborhood::g_unk52F6B0 = 0;
+				AndysNeighborhood::g_unk52F6E4 = 0;
+				AndysNeighborhood::g_unk52F678 = 1;
+				AndysNeighborhood::g_unk52F6B4 = 4095;
+				AndysNeighborhood::g_unk52F674[0] = 0;
+				AndysNeighborhood::g_unk52F690 = 0;
+				AndysNeighborhood::g_unk52F60C[0] = 0;
+				AndysNeighborhood::g_unk52F6C8 = 4096;
+				AndysNeighborhood::g_unk52F6CC = 4096;
+				AndysNeighborhood::g_unk52F618 = 0;
+				AndysNeighborhood::g_unk52F614 = 0;
+				AndysNeighborhood::g_unk52F6D8 = 3072;
+				AndysNeighborhood::g_unk52F66C = 0;
+				AndysNeighborhood::g_unk52F610 = 0;
+				AndysNeighborhood::g_unk52F5F0 = 750;
+				AndysNeighborhood::g_unk52F5E4 = 0;
+				AndysNeighborhood::g_unk52F5EC = 0;
+				AndysNeighborhood::g_unk52F640 = 0;
+				AndysNeighborhood::g_unk52F5DC = 0;
+				AndysNeighborhood::g_unk52F6D4 = 0;
+				AndysNeighborhood::g_unk52F61C = 0;
+				AndysNeighborhood::g_unk52F5E8 = 0;
+				AndysNeighborhood::g_unk52F6D0 = 0;
+				AndysNeighborhood::g_unk52F638[0] = 0;
+				AndysNeighborhood::g_unk52F658 = 0;
+				AndysNeighborhood::g_unk52F6E8 = 0;
+				Nu3D::Link::SetRotationRelative8bit(5, 0, 0, 750);
+				Nu3D::Link::GetCurrentPosFixed(6, &AndysNeighborhood::g_unk52F648);
+				Platform::DisableCollision(5);
+				Platform::DisableCollision(4);
+				Platform::DisableCollision(12);
+				Platform::AddFlags(7, 256);
+				Platform::SetOrigin(7, AndysNeighborhood::g_unk52F648.x, AndysNeighborhood::g_unk52F648.y, AndysNeighborhood::g_unk52F648.z);
+				Nu3D::Link::SetScaleFromFixedOffsets(21, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(32, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(33, 0, 0, 0);
+				Nu3D::Link::GetCurrentPosFixed(25, &AndysNeighborhood::g_unk52F680);
+				AndysNeighborhood::g_unk52F608[0] = 280;
+				Nu3D::Link::SetScaleFromFixedOffsets(27, 4096, 280, 4096);
+				Levels::g_recordData[61]->data[0].y = AndysNeighborhood::g_unk52F680.y;
+				AndysNeighborhood::g_unk52F6A8 = 0;
+				AndysNeighborhood::g_unk52F6C4 = 0;
+				KiteTail::Init(&g_levelActors[26].transform.pos, 16, 4096, 0, 96);
+				break;
+			case 3:
+				MoveableObject::InitTable(0);
+				Collectables::Init(0, 0);
+				Weather::Init();
+				BombsAway::g_unk52F75C = 4096;
+				BombsAway::g_unk52F6F0 = 4096;
+				BombsAway::g_unk52F730 = g_levelActors[0].actorPhase;
+				BombsAway::g_unk52F758 = 180;
+				BombsAway::g_unk52F718 = 180;
+				BombsAway::g_unk52F71C = 180;
+				BombsAway::g_unk52F70C = Camera::g_cutsceneTimer;
+				g_levelActors[0].actorFlags |= 0x800u;
+				g_levelActors[0].transform.angles.yaw = 2048;
+				g_levelActors[0].targetYaw = 2048;
+				BombsAway::g_unk52F704 = 1;
+				BombsAway::g_unk52F754 = 0;
+				BombsAway::g_unk52F714 = 0;
+				BombsAway::g_unk52F6F8 = 0;
+				BombsAway::g_unk52F6F4 = 0;
+				BombsAway::g_unk52F6FC = 0;
+				BombsAway::g_unk52F724 = 0;
+				BombsAway::g_unk52F720 = 0;
+				BombsAway::g_unk52F710 = 0;
+				BombsAway::g_unk52F748 = 0;
+				BombsAway::g_unk52F750 = 0;
+				BombsAway::g_unk52F74C = 0;
+				BombsAway::g_unk52F708 = 200;
+				BombsAway::g_unk52F700 = 20000;
+				g_levelActors[0].unkShort4 = 0;
+				g_levelActors[0].transform.pos.z += 0x10000;
+				g_levelActors[0].actorTint.r = 0x2000;
+				g_levelActors[0].actorTint.g = 0x2000;
+				g_levelActors[0].actorTint.b = 0x2000;
+				g_levelActors[0].unkVar10 = 1000;
+				Nu3D::Link::SetScaleFromFixedOffsets(50, 0, 0, 0);
+				BombsAway::g_unk52F72C = Levels::g_recordData[63]->data[0].y;
+				Levels::g_recordData[63]->data[0].y = 0x80000000;
+				BombsAway::g_unk52F6F4 = g_levelActors[0].transform.pos.y - 11000;
+				Nu3D::Link::SetPositionRawAndCommit(
+					0, g_levelActors[0].transform.pos.x >> 5, g_levelActors[0].transform.pos.y - 11000, g_levelActors[0].transform.pos.z >> 5);
+				Nu3D::Link::SetScaleFromFixedOffsets(0, 5000, 5000, 5000);
+				break;
+			case 4:
+				ConstructionYard::Init();
+				break;
+			case 5:
+				AlleysAndGullies::Init();
+				break;
+			case 6:
+				MoveableObject::InitTable(0);
+				Collectables::Init(0, 0);
+				g_levelActors[0].actorFlags |= Actor::ACTOR_NO_DESPAWN;
+				SlimeTime::g_unk52F98C = g_levelActors[0].actorPhase;
+				SlimeTime::g_unk52F9A4 = 0;
+				g_levelActors[0].transform.pos.x += 0x80000;
+				SlimeTime::g_unk52F9A0 = 300;
+				SlimeTime::g_unk52F9B8 = 0x40000;
+				SlimeTime::g_unk52F99C = 0;
+				SlimeTime::g_unk52F998 = 150;
+				SlimeTime::g_unk52F994 = 0;
+				SlimeTime::g_unk52F9AC = 0x7FFFFFFF;
+				SlimeTime::g_unk52F9B4 = 0;
+				SlimeTime::g_unk52F9B0 = 0;
+				SlimeTime::g_unk52F9A8 = 0;
+				SlimeTime::g_unk52F990 = 0;
+				g_levelActors[0].transform.angles.yaw = 3072;
+				g_levelActors[0].creatureRam->boundHalfX = 4096;
+				g_levelActors[0].creatureRam->boundHalfZ = 4096;
+				break;
+			case 7:
+				InitialiseLevel7();
+				break;
+			case 8:
+				MoveableObject::InitTable(AlsSpaceLand::g_unk4F2F44);
+				Collectables::Init(AlsSpaceLand::g_unk4F2F0C, 65);
+				Collectables::Activate(3, 1);
+				Buzz::g_underwaterYLevel = 0;
+				Buzz::g_unk830D30 = 0;
+				Buzz::g_currentFluidType = 0;
+				AlsSpaceLand::g_unk52FA80 = (Levels::Type63*)(Collectables::g_pickupSlots[3].yPosPtr - 1);
+				AlsSpaceLand::g_unk52FA80->props.flags &= 0x80u;
+				*(uint8_t*)&g_levelActors[1].actorFlags |= 0x80u;
+				memset(AlsSpaceLand::g_unk52FB20, 0, 0x48u);
+				AlsSpaceLand::g_unk52FAD8 = 0;
+				AlsSpaceLand::g_unk52FADC = 0;
+				AlsSpaceLand::g_unk52FA84 = 0;
+				AlsSpaceLand::g_laserWaypointIdx[0] = 0;
+				AlsSpaceLand::g_laserTotalTicks[0] = 0;
+				AlsSpaceLand::g_laserTimer[0] = 0;
+				AlsSpaceLand::g_laserWaypointIdx[1] = 0;
+				AlsSpaceLand::g_laserTotalTicks[1] = 0;
+				AlsSpaceLand::g_laserTimer[1] = 0;
+				Nu3D::Link::GetCurrentPosFixed(10, &AlsSpaceLand::g_clawHomePos);
+				Nu3D::Link::GetCurrentPosFixed(10, &AlsSpaceLand::g_tokenPos);
+				Nu3D::Link::GetCurrentPosFixed(20, &AlsSpaceLand::g_unk52FAA8);
+				Nu3D::Link::GetCurrentPosFixed(21, &AlsSpaceLand::g_unk52FA98);
+				Nu3D::Link::GetCurrentPosFixed(22, &AlsSpaceLand::g_unk52FAC8);
+				Nu3D::Link::GetCurrentPosFixed(23, &AlsSpaceLand::g_unk52FAB8);
+				AlsSpaceLand::g_tokenPos.y += 24576;
+				AlsSpaceLand::g_clawHomePos.x -= 0x4000;
+				AlsSpaceLand::g_clawHomePos.z -= 0x4000;
+				Nu3D::Link::SetScaleFromFixedOffsets(11, 0, 0, 0);
+				Nu3D::Link::SetScaleFromFixedOffsets(14, 0, 0, 0);
+				AlsSpaceLand::g_clawState = 0;
+				AlsSpaceLand::g_clawDropDepth = 0;
+				AlsSpaceLand::g_clawHoldTimer = 0;
+				AlsSpaceLand::g_clawCatchResult = 0;
+				AlsSpaceLand::g_unk52FB1C = 0;
+				AlsSpaceLand::g_clawInitialized = 0;
+				AlsSpaceLand::g_unk52FB98 = 0;
+				AlsSpaceLand::g_unk52FAE4 = 0;
+				AlsSpaceLand::g_unk52FAF8 = 0;
+				AlsSpaceLand::g_unk52FA90 = 0;
+				AlsSpaceLand::g_unk52FB78 = 0;
+				AlsSpaceLand::g_unk52FB6C = 0;
+				AlsSpaceLand::g_unk52FB68 = 0;
+				AlsSpaceLand::g_unk52FB70 = 0;
+				AlsSpaceLand::g_unk52FB8C = 0;
+				AlsSpaceLand::g_unk52FB80 = 0;
+				AlsSpaceLand::g_unk52FB7C = 60;
+				AlsSpaceLand::g_unk52FAE0 = 0;
+				AlsSpaceLand::g_unk52FA58 = 0;
+				AlsSpaceLand::g_unk52FA8C = 0;
+				AlsSpaceLand::g_unk52FA88 = g_levelActors[40].actorPhase;
+				Nu3D::Link::SetPositionRawAndCommit(25, -10861, -18786, 9697);
+				g_unk52F2F8 = 0;
+				g_unk52AD64 = 3;
+				break;
+			case 9:
+				InitialiseLevel9();
+				break;
+			case 10:
+				InitialiseLevel10();
+				break;
+			case 11: {
+				Collectables::Init(AlsPenthouse::g_unk4F3F18, 113);
+				Collectables::LoadTokenTable((int32_t*)AlsPenthouse::g_unk4F3F24);
+				Collectables::Activate(3, 1);
+				MoveableObject::InitTable(AlsPenthouse::g_unk4F3E60);
+				AlsPenthouse::InitHiddenCollectibles();
+				Levels::Method3(3, 1);
+				AlsPenthouse::g_unk52FD58[0] = 0;
+				AlsPenthouse::g_unk52FD58[1] = 0;
+				AlsPenthouse::g_unk52FD58[2] = 0;
+				AlsPenthouse::g_unk52FD58[3] = 0;
+				AlsPenthouse::g_unk52FD58[4] = 0;
+				AlsPenthouse::g_unk52FD58[5] = 0;
+				Buzz::g_underwaterYLevel = 0;
+				Buzz::g_currentFluidType = 1;
+				Buzz::g_unk830D30 = 0;
+				g_underwaterTintBlue = 104;
+				g_underwaterTintGreen = 104;
+				g_underwaterTintRed = 0x80;
+				g_unk52F2F8 = 0;
+				g_unk52AD64 = 0;
+				AlsPenthouse::g_unk52FDFC = 0;
+				AlsPenthouse::g_unk52FD30 = 0;
+				AlsPenthouse::g_unk52FD3C = 0;
+				AlsPenthouse::g_unk52FD78 = 0;
+				AlsPenthouse::g_unk52FDB8 = 0;
+
+				for (int32_t i = 0; i < 33; ++i)
+					Nu3D::Link::SetScaleFromFixedOffsets(AlsPenthouse::g_unk4F4024[i], 0, 0, 0);
+
+				AlsPenthouse::Method6(16);
+				AlsPenthouse::g_unk52FDAC = 0;
+				AlsPenthouse::g_unk52FD7C = 0;
+				AlsPenthouse::g_unk52FD1C = 0;
+				AlsPenthouse::g_unk52FD90 = 0;
+				AlsPenthouse::g_unk52FD28 = 0;
+				AlsPenthouse::g_unk52FD50 = 0;
+				AlsPenthouse::g_unk52FD18 = 0;
+				AlsPenthouse::g_unk52FD88 = 0;
+				AlsPenthouse::g_unk52FD20 = 0;
+				AlsPenthouse::g_unk52FD14 = 0;
+				AlsPenthouse::g_unk52FD0C = 0;
+				AlsPenthouse::Method2(37);
+				AlsPenthouse::g_unk52FD08 = 0;
+				AlsPenthouse::g_unk52FD4C = 1;
+				AlsPenthouse::g_unk52FD84 = 6;
+				AlsPenthouse::g_unk52FDBC = 0;
+				AlsPenthouse::g_unk52FD98.x = 32 * Levels::g_recordData[1]->data[6].x;
+				AlsPenthouse::g_unk52FD98.y = 32 * Levels::g_recordData[1]->data[6].y;
+				AlsPenthouse::g_unk52FD98.z = 32 * Levels::g_recordData[1]->data[6].z;
+				AlsPenthouse::Method8();
+				AlsPenthouse::g_unk52FD74 = 0;
+				AlsPenthouse::g_unk52FD44 = 8;
+				Nu3D::Link::SetScaleFromFixedOffsets(49, 0, 0, 0);
+				MoveableObject::g_unk52FD24 = 0;
+				AlsPenthouse::g_unk52FDF0 = 256;
+				AlsPenthouse::g_unk52FDB4 = 256;
+				AlsPenthouse::g_unk52FDF8 = 0;
+				AlsPenthouse::g_unk52FD48 = 0;
+				AlsPenthouse::g_unk52FD34 = 11;
+				Nu3D::Link::SetScaleFromFixedOffsets(48, 0, 0, 0);
+				AlsPenthouse::g_unk52FD8C = 0;
+				AlsPenthouse::g_unk52FD80 = 0;
+				AlsPenthouse::g_unk52FDF4 = 0;
+				AlsPenthouse::g_unk52FDB0 = 0;
+				AlsPenthouse::g_unk52FDC4 = 0;
+				AlsPenthouse::g_unk52FD40 = 0;
+				AlsPenthouse::g_unk52FD70 = 0;
+				AlsPenthouse::g_unk52FD10 = 0;
+				AlsPenthouse::g_unk52FD2C = g_levelActors[11].actorPhase;
+				g_levelActors[11].transform.pos.z += 0x10000;
+				AlsPenthouse::g_unk52FD38 = 0;
+				AlsPenthouse::g_unk52FD54 = 0;
+				AlsPenthouse::g_unk52FDA8 = 0;
+				AlsPenthouse::g_unk52FDC0 = 0;
+				Platform::DisableCollision(26);
+				Platform::DisableCollision(27);
+				break;
+			}
+			case 12:
+				MoveableObject::InitTable(0);
+				Collectables::Init(0, 0);
+				EvilEmperorZurg::g_unk52FE00 = g_levelActors[0].actorPhase;
+				g_levelActors[0].actorFlags |= Actor::ACTOR_NO_DESPAWN;
+				g_levelActors[0].transform.pos.y -= 163840;
+				g_levelActors[0].motionTargetPos.y = g_levelActors[0].transform.pos.y;
+				EvilEmperorZurg::g_unk52FE08 = 300;
+				EvilEmperorZurg::g_unk52FE20 = 120;
+				EvilEmperorZurg::g_unk52FE24 = 0;
+				EvilEmperorZurg::g_unk52FE28 = 0;
+				EvilEmperorZurg::g_unk52FE04 = 0;
+				EvilEmperorZurg::g_unk52FE30 = 260;
+				Actor::g_unk52FE34 = 0;
+				g_levelActors[0].transform.angles.yaw = 3072;
+				g_levelActors[0].transform.pos.z += 0x10000;
+				g_levelActors[0].creatureRam->rotSpeed = 0;
+				break;
+			case 13: // Airport Infiltration
+				MoveableObject::InitTable(AirportInfiltration::g_unk4F46A4);
+				Collectables::Init(AirportInfiltration::g_unk4F46C0, 64);
+				Collectables::Activate(3, 1);
+				AirportInfiltration::InitHiddenCollectibles();
+
+				AirportInfiltration::g_unk52FF24 = 0;
+				AirportInfiltration::g_unk52FF20 = 0;
+
+				Platform::SetRotationAngles(4, 0, -1024, 0);
+
+				AirportInfiltration::g_unk52FF34 = 0;
+				AirportInfiltration::g_unk52FF38 = 0;
+				AirportInfiltration::g_unk52FF40 = -512;
+				AirportInfiltration::g_unk52FF14 = 512;
+
+				AirportInfiltration::g_unk52FE38 = 0;
+				AirportInfiltration::g_unk52FF30 = 200;
+
+				Platform::InitPathPlatform(0, 8, 2, 21, 20, 125, 0, 1024);
+				Platform::InitPathPlatform(1, 10, 4, 25, 24, 125, 0, 1024);
+				Platform::InitPathPlatform(2, 2, 6, 13, 12, 125, 32768, -1024);
+				Platform::InitPathPlatform(3, 5, 7, 15, 14, 125, 0, -3072);
+				Platform::InitPathPlatform(4, 1, 5, 11, 10, 125, 0, -1592);
+
+				AirportInfiltration::g_unk52FE40 = 1;
+				AirportInfiltration::g_unk52FF1C = 0;
+				AirportInfiltration::g_unk52FF44 = 0;
+				AirportInfiltration::g_unk52FF2C = 0;
+				AirportInfiltration::g_unk52FEE8 = 0;
+
+				AirportInfiltration::g_unk52FF3C = g_levelActors[32].actorPhase;
+				g_levelActors[32].creatureRam->boundHalfX = 90;
+
+				break;
+			case 14:
+				InitialiseLevel14();
+				break;
+			case 15:
+				MoveableObject::InitTable(0);
+				Collectables::Init(0, 0);
+				Nullsub2(18, 17);
+				FinalShowdown::g_unk52FFFC = 200;
+				FinalShowdown::g_unk530008 = 0;
+				FinalShowdown::g_unk530018 = 0;
+				FinalShowdown::g_unk530054 = 0;
+				FinalShowdown::g_unk530060 = 0;
+				FinalShowdown::g_unk530028 = g_levelActors[0].actorPhase;
+				FinalShowdown::g_unk53000C = 0;
+				FinalShowdown::g_unk53001C = 0;
+				FinalShowdown::g_unk53004C = 0;
+				FinalShowdown::g_unk53005C = 0;
+				FinalShowdown::g_unk53002C = g_levelActors[2].actorPhase;
+				FinalShowdown::g_unk530004 = 0;
+				FinalShowdown::g_unk530020 = 0;
+				FinalShowdown::g_unk530050 = 0;
+				FinalShowdown::g_unk530030 = g_levelActors[1].actorPhase;
+				FinalShowdown::g_unk530010 = 0;
+				FinalShowdown::g_unk530064 = 0;
+				FinalShowdown::g_unk52FFF4 = 0;
+				FinalShowdown::g_unk530068 = 1024;
+				FinalShowdown::g_unk530000 = 240;
+				FinalShowdown::g_unk52FFF8 = 0;
+				FinalShowdown::g_unk530014 = 0;
+				FinalShowdown::g_unk530058 = 0;
+				FinalShowdown::g_unk52FFF0 = 0;
+				FinalShowdown::g_unk530024 = 0;
+				Nu3D::Link::GetCurrentPosFixed(0, &FinalShowdown::g_unk530038);
+				FinalShowdown::g_unk530048 = FinalShowdown::g_unk530038.y;
+				g_levelActors[0].targetYaw = 1024;
+				g_levelActors[0].transform.angles.yaw = 1024;
+				g_levelActors[1].targetYaw = 1024;
+				g_levelActors[1].transform.angles.yaw = 1024;
+				g_levelActors[2].targetYaw = 1024;
+				g_levelActors[2].transform.angles.yaw = 1024;
+				g_levelActors[0].actorPhase = 0;
+				g_levelActors[1].actorPhase = 0;
+				g_levelActors[2].actorPhase = 0;
+				g_levelActors[0].transform.pos.x = -207981;
+				g_levelActors[0].transform.pos.y = -37590;
+				g_levelActors[0].transform.pos.z = -5365;
+				g_levelActors[1].transform.pos.x = -206796;
+				g_levelActors[1].transform.pos.y = -37594;
+				g_levelActors[1].transform.pos.z = -17869;
+				g_levelActors[2].transform.pos.x = -207807;
+				g_levelActors[2].transform.pos.y = -37595;
+				g_levelActors[2].transform.pos.z = -33361;
+				g_levelActors[0].unkShort2 = 10000;
+				g_levelActors[1].unkShort2 = 10000;
+				g_levelActors[2].unkShort2 = 10000;
+				g_levelActors[3].unkShort2 = 10000;
+				g_levelActors[4].unkShort2 = 10000;
+				break;
+			case 16:
+				Nullsub9();
+				break;
+			case 17:
+				Nullsub10();
 				break;
 
 			default:

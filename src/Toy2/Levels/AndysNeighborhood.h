@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include "Toy2/Collectables.h"
 
 namespace Toy2
 {
@@ -19,6 +20,9 @@ namespace Toy2
 		extern int32_t g_zKiteRollPhase;
 
 		extern int16_t g_unk4F1508[8];
+		extern int16_t g_unk4F1518[8];
+		extern Collectables::TokenTableEntry g_unk4F153C[2];
+		extern int16_t g_unk4F154C[6];
 		extern char* g_unk4F1528[5];
 		extern int32_t g_unk52F5DC;
 		extern int32_t g_unk52F5E0;
@@ -27,6 +31,7 @@ namespace Toy2
 		extern int32_t g_unk52F5EC;
 		extern int32_t g_unk52F5F0;
 		extern Vector3I g_unk52F5F8;
+		extern int16_t g_unk52F608[2];
 		extern int16_t g_unk52F60C[2];
 		extern int32_t g_unk52F610;
 		extern int32_t g_unk52F614;
@@ -34,6 +39,7 @@ namespace Toy2
 		extern int32_t g_unk52F61C;
 		extern int32_t g_unk52F620;
 		extern Vector3I g_unk52F628;
+		extern int16_t g_unk52F638[2];
 		extern int32_t g_unk52F640;
 		extern Vector3I g_unk52F648;
 		extern int32_t g_unk52F658;
@@ -58,5 +64,6 @@ namespace Toy2
 		extern int32_t g_unk52F6DC;
 		extern int32_t g_unk52F6E0;
 		extern int32_t g_unk52F6E4;
+		extern int32_t g_unk52F6E8;
 	}
 }

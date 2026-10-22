@@ -16,6 +16,7 @@ namespace Toy2
 		extern int32_t g_unk52F9A0;
 		extern int32_t g_unk52F9A4;
 		extern int32_t g_unk52F9A8;
+		extern int32_t g_unk52F9AC;
 		extern int32_t g_unk52F9B0;
 		extern int32_t g_unk52F9B4;
 		extern int32_t g_unk52F9B8;

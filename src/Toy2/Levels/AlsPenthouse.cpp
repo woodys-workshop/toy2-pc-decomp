@@ -45,6 +45,9 @@ namespace Toy2
 			2, 0, 7, 0, 10, 0, 1, 1, 8, 1, 5, 1, 9, 1, 6, 0, 3, 0, 6, 0, 1, 0, 4, 0, 0, 0, 1, 0, 3, 1, 12, 0, 11, 0, 4, 1, 11, 1, 2, 1, 10, 1, 9, 1, 11, 1, 8, 0
 		};
 
+		// GLOBAL: TOY2 0x004F3E60
+		int16_t g_unk4F3E60[10] = { 30, 19, 13, 29, 20, 0, 81, 21, 14, -1 };
+
 		// GLOBAL: TOY2 0x004F3E74
 		int32_t g_unk4F3E74[24] = { 50, 59, 66, 73, 51, 60, 67, 74, 58, 65, 72, 79, 52, 61, 68, 75, 53, 62, 69, 76, 54, 63, 70, 77 };
 
@@ -59,6 +62,24 @@ namespace Toy2
 			"you can get to the token on top of the ^train bed^ if you solve the train puzzle. you need to get the train to stop on the dead end track. you "
 			"can change the track points using the yellow switches.",
 			"the ^gunslinger^ boss is in the woody's roundup set in the ^trophy room^."
+		};
+
+		// GLOBAL: TOY2 0x004F3F18
+		int16_t g_unk4F3F18[6] = { 96, 98, 99, 100, 97, 0 };
+
+		// GLOBAL: TOY2 0x004F3F24
+		Collectables::TokenTableEntry g_unk4F3F24[3] = {
+			{ 120,
+			  22,
+			  "^stomp^ the buttons to raise and lower the water level. the button in the bottom of the tub will drain all the water. the other buttons will raise the "
+			  "water to their level. ",
+			  3072 },
+			{ 119,
+			  21,
+			  "^stomp^ the buttons to change the track points and make the train switch tracks. get the train to go onto the dead end track so that you can push the "
+			  "box to the ^train bed^ to reach the pizza planet ^token^.",
+			  3072 },
+			{ -1, 0, 0, 0 }
 		};
 
 		// GLOBAL: TOY2 0x004F3F48
@@ -81,6 +102,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x004F3FE8
 		int32_t g_unk4F3FE8[15] = { -16000, 43, 256, -32000, 20, 1, -64000, 21, 2, -95999, 22, 4, -524288, 23, 8 };
+
+		// GLOBAL: TOY2 0x004F4024
+		uint8_t g_unk4F4024[33] = { 44, 43, 20, 21, 22, 23, 91, 12, 13, 14, 15, 16, 17, 18, 31, 32, 33, 34, 35, 36, 37, 66, 67, 68, 69, 70, 72, 73, 74, 75, 76, 77, 79 };
 
 		// GLOBAL: TOY2 0x0052FD08
 		int32_t g_unk52FD08;
@@ -105,6 +129,9 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FD30
 		int32_t g_unk52FD30;
+
+		// GLOBAL: TOY2 0x0052FD34
+		int32_t g_unk52FD34;
 
 		// GLOBAL: TOY2 0x0052FD38
 		int32_t g_unk52FD38;
