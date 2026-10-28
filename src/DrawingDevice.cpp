@@ -615,13 +615,15 @@ namespace DrawingDevice
 	// FUNCTION: TOY2 0x004ABD80
 	RECT* GetDestRect() { return &g_drawingDevice->m_rcViewportRect; }
 
-	// FUNCTION: TOY2 0x004ABF00
+	// FUNCTION: TOY2 0x004ABF00 [MATCHED]
 	void Destroy()
 	{
+		CD3DFramework* drawingDevice = g_drawingDevice;
+
 		if (g_drawingDevice)
 		{
 			g_drawingDevice->Release();
-			delete g_drawingDevice;
+			delete drawingDevice;
 		}
 
 		g_drawingDevice = 0;
