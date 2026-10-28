@@ -783,20 +783,19 @@ namespace Renderer
 		return color;
 	}
 
-	// FUNCTION: TOY2 0x004B2C80
+	// FUNCTION: TOY2 0x004B2C80 [MATCHED]
 	void ClearScreen(RGBA clearColor, int32_t clearFlags)
 	{
 		RGBA color = ApplyGammaCorrection(clearColor);
 
-		if (g_isSoftwareRendering)
-		{
-			uint16_t clearColor = Renderer::ConvertRGBATo16Bit(color);
-			SoftwareRenderer::g_softwareClearColor = (clearColor << 16) | clearColor;
-		}
-		else
+		if (! g_isSoftwareRendering)
 		{
 			DrawingDevice::ClearScreen(clearFlags, color.value);
+			return;
 		}
+
+		uint32_t color16 = Renderer::ConvertRGBATo16Bit(color) & 0xFFFF;
+		SoftwareRenderer::g_softwareClearColor = color16 | (color16 << 16);
 	}
 
 	// FUNCTION: TOY2 0x004B2D80
