@@ -1,10 +1,19 @@
 #include "SoftwareRenderer.h"
 #include "Renderer/Renderer.h"
+#include "Nu3D/BmpDataNode.h"
 
 #include <stdlib.h>
 
 namespace SoftwareRenderer
 {
+	struct TextureSnapshot
+	{
+		uint32_t* texData;
+		DDSURFACEDESC2* surfaceDesc;
+	};
+
+	STATIC_ASSERT(sizeof(TextureSnapshot) == 8);
+
 	// GLOBAL: TOY2 0x004F7400
 	PointI g_unk4F7400 = { -32768, -32768 };
 
@@ -436,8 +445,19 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x0047D650
 	void UnkFunc66(SoftwareRenderer::UnkSoft2* a1, int32_t a2) {}
 
-	// STUB: TOY2 0x004AC1F0
-	int32_t UnkFunc20(uint32_t** a1) { return 0; }
+	// FUNCTION: TOY2 0x004AC1F0
+	int32_t GetCurrentTexture(TextureSnapshot* texture)
+	{
+		if (Nu3D::g_currentBmpDataNode)
+		{
+			uint32_t* texData = Nu3D::g_currentBmpDataNode->texData;
+			texture->surfaceDesc = &Nu3D::g_currentBmpDataNode->surfaceDesc;
+			texture->texData = texData;
+			return 0;
+		}
+
+		return 1;
+	}
 
 	// FUNCTION: TOY2 0x004B2B80 [MATCHED]
 	int32_t GetStrideFromFVF(int32_t fvf)
