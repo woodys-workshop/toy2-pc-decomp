@@ -127,12 +127,9 @@ namespace Renderer
 			}
 		}
 
-		// FUNCTION: TOY2 0x0044F420
+		// FUNCTION: TOY2 0x0044F420 [MATCHED]
 		void CullAndQueue()
 		{
-			int32_t screenX;
-			int32_t screenY;
-
 			if (g_lensFlareCount > 0)
 			{
 				int32_t active = g_activeLensFlareIdx;
@@ -141,10 +138,11 @@ namespace Renderer
 
 				do
 				{
-					screenX = candidate->screenX;
-					screenY = candidate->screenY;
+					int32_t screenX = candidate->screenX;
+					int32_t screenY = candidate->screenY;
+					int32_t depth = candidate->depth;
 
-					if (screenX <= 0x200 && screenX >= 0 && screenY <= 0x100 && screenY >= 0 && candidate->depth > 128)
+					if (screenX <= 0x200 && screenX >= 0 && screenY <= 0x100 && screenY >= 0 && depth > 128)
 					{
 						int32_t slotX = 8 * screenX;
 						int32_t slotY = 8 * screenY;
@@ -158,7 +156,7 @@ namespace Renderer
 
 						int32_t counts = g_flareSlotCounts[active];
 
-						if (counts < 8 && 66559 - distSq > 0 && candidate->depth - 96 > 256)
+						if (counts < 8 && 66559 - distSq > 0 && depth - 96 > 256)
 						{
 							g_flareActive[active] = 1;
 							int32_t slotIdx = counts + 8 * active;
