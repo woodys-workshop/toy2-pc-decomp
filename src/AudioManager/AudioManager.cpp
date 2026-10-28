@@ -1576,8 +1576,8 @@ namespace AudioManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x0049AE20
-	void SetSfxVolume(int32_t volume) { g_sfxVolume = 2 * volume; }
+	// FUNCTION: TOY2 0x0049AE20 [MATCHED]
+	void SetSfxVolume(int32_t volume) { g_sfxVolume = (volume & 0xFF) << 1; }
 
 	// FUNCTION: TOY2 0x004A3ED0
 	void SetVolumes(int32_t musicVolume, int32_t soundVolume)

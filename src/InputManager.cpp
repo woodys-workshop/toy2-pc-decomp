@@ -174,16 +174,16 @@ namespace InputManager
 
 namespace InputManager
 {
-	// FUNCTION: TOY2 0x00414EA0
+	// FUNCTION: TOY2 0x00414EA0 [MATCHED]
 	BOOL WINAPI EnumDevices(LPCDIDEVICEINSTANCEA deviceInstance, LPVOID context)
 	{
 		GUID* lpContext = (GUID*)context;
 
 		lpContext[g_dInputDeviceCount] = deviceInstance->guidInstance;
 
-		bool check = g_dInputDeviceCount++ == 3;
+		++g_dInputDeviceCount;
 
-		return ! check;
+		return g_dInputDeviceCount != 4;
 	}
 
 	// FUNCTION: TOY2 0x004152E0
