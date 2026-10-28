@@ -95,7 +95,7 @@ namespace DrawingDevice
 		HRESULT CreateD3DDevice(const CLSID* guid);
 		HRESULT CreateAndSetViewport();
 		int32_t RestoreToGDISurface(int32_t refreshWindow);
-		int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surfaceOut);
+		int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surfaceOut);
 
 		static HRESULT Build(HWND hWnd, GUID* guid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, uint8_t flags);
 		static void InitSurfaceDesc(LPDDSURFACEDESC2 ddSurfaceDesc, DWORD flags, DWORD caps);
@@ -145,7 +145,7 @@ namespace DrawingDevice
 	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc);
 	HRESULT UnlockPrimarySurface();
 	int32_t RestoreToGDISurface(int32_t refreshWindow);
-	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface);
+	int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surface);
 	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext);
 	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc);
 
