@@ -128,23 +128,28 @@ namespace DrawingDevice
 	// FUNCTION: TOY2 0x004AEDA0
 	HRESULT CD3DFramework::InitalizeForWindow(HWND hWnd, GUID* ddAppGuid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, uint8_t flags)
 	{
-		if (! hWnd || ! displayMode && (flags & 1) != 0)
-			return DDERR_INVALIDPARAMS;
-
-		m_hWnd = hWnd;
-		m_bIsFullscreen = flags & 1;
-
-		HRESULT result = InitalizeDeviceAndSurfaces(ddAppGuid, &device->guid, displayMode, flags);
-
-		if ((result & 0x80000000) != 0)
+		if (hWnd)
 		{
-			Cleanup();
+			if (displayMode || (flags & 1) == 0)
+			{
+				m_hWnd = hWnd;
+				m_bIsFullscreen = flags & 1;
 
-			if (result == DDERR_GENERIC)
-				return 0x82000000;
+				HRESULT result = InitalizeDeviceAndSurfaces(ddAppGuid, &device->guid, displayMode, flags);
+
+				if (FAILED(result))
+				{
+					Cleanup();
+
+					if (result == DDERR_GENERIC)
+						result = 0x82000000;
+				}
+
+				return result;
+			}
 		}
 
-		return result;
+		return DDERR_INVALIDPARAMS;
 	}
 
 	// FUNCTION: TOY2 0x004AEE10
