@@ -1188,26 +1188,23 @@ namespace ModeSelect
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x00431E00
+	// FUNCTION: TOY2 0x00431E00 [MATCHED]
 	int32_t SelectSuitableDisplayMode()
 	{
 		int32_t result = 0;
 
-		DrawingDevice::DDAppDevice::DisplayMode* displayModeListHead = g_ddAppSelectedDevice->displayModeListHead;
-		g_ddAppSelectedDisplayMode = displayModeListHead;
+		DrawingDevice::DDAppDevice* selectedDevice = g_ddAppSelectedDevice;
+		g_ddAppSelectedDisplayMode = selectedDevice->displayModeListHead;
+		DrawingDevice::DDAppDevice::DisplayMode* nextDisplayMode = g_ddAppSelectedDisplayMode->nextDisplayMode;
 
-		for (DrawingDevice::DDAppDevice::DisplayMode* index = displayModeListHead->nextDisplayMode; index; index = index->nextDisplayMode)
+		while (nextDisplayMode && g_ddAppSelectedDisplayMode->surfaceDesc.dwHeight < 480)
 		{
-			if (displayModeListHead->surfaceDesc.dwHeight >= 480)
-				break;
-
-			displayModeListHead = index;
-
 			++result;
-			g_ddAppSelectedDisplayMode = index;
+			g_ddAppSelectedDisplayMode = nextDisplayMode;
+			nextDisplayMode = nextDisplayMode->nextDisplayMode;
 		}
 
-		g_ddAppSelectedDevice->primaryDisplayMode = displayModeListHead;
+		selectedDevice->primaryDisplayMode = g_ddAppSelectedDisplayMode;
 
 		return result;
 	}
