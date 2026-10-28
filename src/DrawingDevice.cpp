@@ -435,7 +435,7 @@ namespace DrawingDevice
 			return result != DDERR_OUTOFVIDEOMEMORY ? 0x82000005 : DDERR_OUTOFVIDEOMEMORY;
 	}
 
-	// FUNCTION: TOY2 0x004AF4E0
+	// FUNCTION: TOY2 0x004AF4E0 [MATCHED]
 	HRESULT CD3DFramework::CreateD3DDevice(const CLSID* guid)
 	{
 		DDSURFACEDESC2 surfaceDesc;
@@ -443,10 +443,10 @@ namespace DrawingDevice
 
 		m_pDD->GetDisplayMode(&surfaceDesc);
 
-		if (surfaceDesc.ddpfPixelFormat.dwRGBBitCount > 8)
-			return m_pD3D->CreateDevice(*guid, m_pddsRenderTarget, &m_pd3dDevice, 0) >= 0 ? 0 : 0x82000004;
-		else
+		if (surfaceDesc.ddpfPixelFormat.dwRGBBitCount <= 8)
 			return 0x8200000D;
+
+		return m_pD3D->CreateDevice(*guid, m_pddsRenderTarget, &m_pd3dDevice, 0) < 0 ? 0x82000004 : 0;
 	}
 
 	// FUNCTION: TOY2 0x004AF550
