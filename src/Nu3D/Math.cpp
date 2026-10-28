@@ -594,10 +594,18 @@ namespace Nu3D
 			result->z = scale * vector->z;
 		}
 
-		// FUNCTION: TOY2 0x004520D0
+		// NOTE: separate double operations preserve the x87 scaling steps.
+		// FUNCTION: TOY2 0x004520D0 [MATCHED]
 		int32_t CartesianToFixedAngle(int32_t x, int32_t y)
 		{
-			return atan2(x * 6.283185308 * 0.000244140625, y * 6.283185308 * 0.000244140625) * 4096.0 * 0.159154943071114;
+			double scaledX = x * 6.283185308;
+			scaledX *= 0.000244140625;
+
+			double scaledY = y * 6.283185308;
+			scaledY *= 0.000244140625;
+
+			double angle = atan2(scaledX, scaledY) * 4096.0;
+			return angle * 0.15915494307111402;
 		}
 
 		// FUNCTION: TOY2 0x004A92C0
