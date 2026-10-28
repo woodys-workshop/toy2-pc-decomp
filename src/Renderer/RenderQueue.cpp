@@ -300,7 +300,7 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B6A90
+	// FUNCTION: TOY2 0x004B6A90 [MATCHED]
 	void FlushTransparentBuckets()
 	{
 		Nu3D::Sprite** command = &g_spriteBuckets[255];
@@ -309,8 +309,10 @@ namespace Renderer
 		g_useSoftwareRasterizer = g_isSoftwareRendering == 0 ? g_useOptimizedDepth : 0;
 
 		do
-			Sprite::DispatchCommand(*command--);
-		while (command >= g_spriteBuckets);
+		{
+			Sprite::DispatchCommand(*command);
+			--command;
+		} while ((int32_t)command >= (int32_t)g_spriteBuckets);
 
 		g_useSoftwareRasterizer = 0;
 	}
