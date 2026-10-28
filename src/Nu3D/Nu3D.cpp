@@ -183,9 +183,21 @@ namespace Nu3D
 		}
 	}
 
-	// FUNCTION: TOY2 0x004CB2C0
-	void SetUseAsDiffuseModulation(int32_t option) { g_useAsDiffuseModulation = option; }
+	// FUNCTION: TOY2 0x004CB2C0 [MATCHED]
+	int32_t SetUseAsDiffuseModulation(int32_t option)
+	{
+		int32_t useAsDiffuseModulation = g_useAsDiffuseModulation;
+		g_useAsDiffuseModulation = option;
 
-	// FUNCTION: TOY2 0x004CB2A0
-	void SetDefaultPrimFlags(int32_t option) { g_defaultPrimitiveFlags = option; }
+		return useAsDiffuseModulation;
+	}
+
+	// FUNCTION: TOY2 0x004CB2A0 [MATCHED]
+	int32_t SetDefaultPrimFlags(int32_t option)
+	{
+		int32_t defaultPrimitiveFlags = g_defaultPrimitiveFlags;
+		g_defaultPrimitiveFlags = option;
+
+		return defaultPrimitiveFlags;
+	}
 }
