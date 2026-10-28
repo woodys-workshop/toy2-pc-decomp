@@ -48,19 +48,19 @@ namespace Nu3D
 		float g_minViewportX;
 
 		// GLOBAL: TOY2 0x00884678
-		DWORD g_currentViewportWidth;
+		float g_currentViewportWidth;
 
 		// GLOBAL: TOY2 0x0088466C
-		DWORD g_currentViewportHeight;
+		float g_currentViewportHeight;
 
 		// GLOBAL: TOY2 0x00E4D958
 		int32_t g_viewportChangeCount;
 
 		// GLOBAL: TOY2 0x008845A8
-		int32_t g_drawDeviceWidth;
+		float g_drawDeviceWidth;
 
 		// GLOBAL: TOY2 0x008845AC
-		int32_t g_drawDeviceHeight;
+		float g_drawDeviceHeight;
 
 		// GLOBAL: TOY2 0x009F6224
 		FustrumInfo g_fustrumInfo;
@@ -130,13 +130,13 @@ namespace Nu3D
 			output->right = g_viewClipRect.right;
 		}
 
-		// FUNCTION: TOY2 0x004B5590
+		// FUNCTION: TOY2 0x004B5590 [MATCHED]
 		void GetViewportRect(ViewportRectAlt* output)
 		{
 			output->left = g_currentViewportX;
 			output->top = g_currentViewportY;
-			output->right = g_currentViewportWidth + g_currentViewportX - 1.0;
-			output->bottom = g_currentViewportHeight + g_currentViewportY - 1.0;
+			output->right = g_currentViewportWidth + g_currentViewportX - 1.0f;
+			output->bottom = g_currentViewportHeight + g_currentViewportY - 1.0f;
 		}
 
 		// FUNCTION: TOY2 0x004BA3A0
