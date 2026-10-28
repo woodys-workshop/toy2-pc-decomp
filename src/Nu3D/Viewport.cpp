@@ -146,10 +146,10 @@ namespace Nu3D
 
 			if (Renderer::g_isSoftwareRendering)
 			{
-				g_viewClipRect.top = SoftwareRenderer::g_topOffset;
-				g_viewClipRect.left = SoftwareRenderer::g_leftOffset;
-				g_viewClipRect.bottom = SoftwareRenderer::g_bottomOffset;
-				g_viewClipRect.right = SoftwareRenderer::g_rightOffset;
+				g_viewClipRect.top = SoftwareRenderer::g_leftOffset;
+				g_viewClipRect.left = SoftwareRenderer::g_topOffset;
+				g_viewClipRect.bottom = SoftwareRenderer::g_rightOffset;
+				g_viewClipRect.right = SoftwareRenderer::g_bottomOffset;
 			}
 			else
 			{
