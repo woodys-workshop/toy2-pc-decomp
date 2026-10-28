@@ -105,45 +105,48 @@ namespace Renderer
 		// FUNCTION: TOY2 0x004B8DD0
 		void UpdateQueued2DRender(Nu3D::Sprite* sprite)
 		{
-			Nu3D::Sprite* queuedSprite = g_queued2DSprite;
-
-			if ((sprite->renderFlags & (RENDER_PRESET_COLOR_OVERLAY | RENDER_PRESET_FADE_OVERLAY)) != 0 && g_queued2DSprite)
-			{
-				for (Nu3D::Sprite* idx = g_queued2DSprite->next; idx; idx = idx->next)
-					queuedSprite = idx;
-
-				sprite->next = 0;
-				queuedSprite->next = sprite;
-			}
-			else
+			if ((sprite->renderFlags & (RENDER_PRESET_COLOR_OVERLAY | RENDER_PRESET_FADE_OVERLAY)) == 0 || ! g_queued2DSprite)
 			{
 				sprite->next = g_queued2DSprite;
 				g_queued2DSprite = sprite;
 			}
+			else
+			{
+				Nu3D::Sprite* queuedSprite = g_queued2DSprite;
+
+				while (queuedSprite->next)
+					queuedSprite = queuedSprite->next;
+
+				sprite->next = 0;
+				queuedSprite->next = sprite;
+			}
 
 			int32_t renderFlags = sprite->renderFlags;
 
-			if (renderFlags == RENDER_PRESET_COLOR_OVERLAY)
+			if (renderFlags != RENDER_PRESET_COLOR_OVERLAY)
+			{
+				if (renderFlags == RENDER_PRESET_FADE_OVERLAY)
+				{
+					uint8_t red = sprite->color.r;
+					uint8_t green = sprite->color.g;
+
+					if (red == green && red == sprite->color.b)
+					{
+						sprite->renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
+						sprite->color.a = green;
+						sprite->color.b = 0;
+						sprite->color.g = 0;
+						sprite->color.r = 0;
+					}
+					else
+					{
+						sprite->renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_ALT;
+					}
+				}
+			}
+			else
 			{
 				sprite->renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_CUSTOM;
-			}
-			else if (renderFlags == RENDER_PRESET_FADE_OVERLAY)
-			{
-				uint8_t blue = sprite->color.b;
-				uint8_t green = sprite->color.g;
-
-				if (blue == green && blue == sprite->color.r)
-				{
-					sprite->renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
-					sprite->color.a = green;
-					sprite->color.r = 0;
-					sprite->color.g = 0;
-					sprite->color.b = 0;
-				}
-				else
-				{
-					sprite->renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_ALT;
-				}
 			}
 		}
 
