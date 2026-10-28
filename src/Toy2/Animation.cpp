@@ -66,11 +66,11 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0053E4BE
 		int16_t g_unk53E4BE;
 
-		// FUNCTION: TOY2 0x004CD120
+		// FUNCTION: TOY2 0x004CD120 [MATCHED]
 		void ResetNodeAngles()
 		{
-			memset(g_nodeAngles, 0, sizeof(g_nodeAngles));
 			g_animActorList = 0;
+			memset(g_nodeAngles, 0, sizeof(g_nodeAngles));
 		}
 
 		// FUNCTION: TOY2 0x004CD140
