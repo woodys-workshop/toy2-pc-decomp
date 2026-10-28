@@ -187,38 +187,37 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B8670
+	// FUNCTION: TOY2 0x004B8670 [MATCHED]
 	RenderEntry* RenderEntry::AllocObj(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* instance)
 	{
-		if (! g_renderEntryCount)
+		if (g_renderEntryCount)
 		{
-			Logger::DebugLog("rndrentryAllocObj - out of rndrentries");
-			return 0;
+			int32_t index = --g_renderEntryCount;
+
+			RenderEntry* entry = &g_renderEntries[index];
+
+			entry->primitive = prim;
+			entry->instanceData = instance;
+			entry->material = material;
+
+			// opaque entries are bucketed by material; fading and blending need depth sorting
+			if (*(uint32_t*)&instance->lodFactor == 0x3F800000 && (material->metadata & 0xE33) == 0)
+			{
+				entry->type = RENDER_TYPE7;
+				entry->next = (RenderEntry*)material->renderEntryHead;
+				material->renderEntryHead = entry;
+			}
+			else
+			{
+				entry->type = RENDER_TYPE9;
+				InsertIntoBucket(entry);
+			}
+
+			return entry;
 		}
 
-		int32_t index = --g_renderEntryCount;
-
-		RenderEntry* entry = &g_renderEntries[index];
-
-		entry->primitive = prim;
-		entry->instanceData = instance;
-		entry->material = material;
-
-		// anything that needs sorting (lod fading, blending, etc.) goes into the depth sorted buckets,
-		// everything else gets bucketed by material so it can be drawn with as few state changes as possible
-		if (*(uint32_t*)&instance->lodFactor != 0x3F800000 || (material->metadata & 0xE33) != 0)
-		{
-			entry->type = RENDER_TYPE9;
-			InsertIntoBucket(entry);
-		}
-		else
-		{
-			entry->type = RENDER_TYPE7;
-			entry->next = (RenderEntry*)material->renderEntryHead;
-			material->renderEntryHead = entry;
-		}
-
-		return &g_renderEntries[index];
+		Logger::DebugLog("rndrentryAllocObj - out of rndrentries");
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004B85E0
