@@ -201,19 +201,21 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B6ED0
+	// FUNCTION: TOY2 0x004B6ED0 [MATCHED]
 	void Vertices::ApplyOffset(Nu3D::Patch::PatchVertices* patchVertices, float horzOffset, float vertOffset)
 	{
 		LPVOID lockedData;
 
 		if (g_FVF_14C_Buffer_2.vertexBuffer && ! DrawingAPI::LockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer, 0x801, &lockedData, 0))
 		{
-			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
-			{
-				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
+			Nu3D::Vertex* vertices = patchVertices->data.vertices;
 
-				uv[0] = horzOffset + patchVertices->data.vertices[i].coords.x;
-				uv[1] = vertOffset + patchVertices->data.vertices[i].coords.y;
+			for (int32_t i = 0; i < patchVertices->vertexCount; ++i)
+			{
+				((Nu3D::VertexTL*)lockedData)[i].uv.x = horzOffset + vertices->coords.x;
+				((Nu3D::VertexTL*)lockedData)[i].uv.y = vertOffset + vertices->coords.y;
+
+				++vertices;
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
