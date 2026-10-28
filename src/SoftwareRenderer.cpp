@@ -64,16 +64,16 @@ namespace SoftwareRenderer
 	int32_t g_softwareClearColor;
 
 	// GLOBAL: TOY2 0x005088D4
-	int32_t g_leftOffset = -1;
-
-	// GLOBAL: TOY2 0x005088D8
-	int32_t g_rightOffset = -1;
-
-	// GLOBAL: TOY2 0x005088DC
 	int32_t g_topOffset = -1;
 
-	// GLOBAL: TOY2 0x005088E0
+	// GLOBAL: TOY2 0x005088D8
 	int32_t g_bottomOffset = -1;
+
+	// GLOBAL: TOY2 0x005088DC
+	int32_t g_leftOffset = -1;
+
+	// GLOBAL: TOY2 0x005088E0
+	int32_t g_rightOffset = -1;
 
 	// GLOBAL: TOY2 0x00882910
 	int32_t g_bitsPerPixel;
