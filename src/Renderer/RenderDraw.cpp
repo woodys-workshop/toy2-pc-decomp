@@ -308,20 +308,27 @@ namespace Renderer
 			Vector3F reference;
 			Nu3D::Math::TransformPointPerspective(&reference, &params->position, &combined);
 
-			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
+			int32_t i = 0;
+			Nu3D::Vertex* vertices = patchVertices->data.vertices;
+
+			if (patchVertices->vertexCount > 0)
 			{
-				Vector3F projected;
-				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
+				do
+				{
+					Vector3F projected;
 
-				Nu3D::Math::ProjectPoint(&projected, &patchVertices->data.vertices[i].position, &combined);
+					Nu3D::Math::ProjectPoint(&projected, &vertices->position, &combined);
 
-				uv[0] = (projected.x + 1.0) * 0.5;
-				uv[1] = 1.0 - (projected.y + 1.0) * 0.5;
+					((Nu3D::VertexTL*)lockedData)[i].uv.x = (projected.x + 1.0f) * 0.5f;
+					((Nu3D::VertexTL*)lockedData)[i].uv.y = 1.0f - (projected.y + 1.0f) * 0.5f;
 
-				Nu3D::Math::TransformPointPerspective(&projected, &patchVertices->data.vertices[i].normals, &combined);
+					Nu3D::Math::TransformPointPerspective(&projected, &vertices++->normals, &combined);
 
-				uv[0] = (reference.x - projected.x) * params->scale + uv[0];
-				uv[1] = uv[1] - (reference.y - projected.y) * params->scale;
+					((Nu3D::VertexTL*)lockedData)[i].uv.x = (reference.x - projected.x) * params->scale + ((Nu3D::VertexTL*)lockedData)[i].uv.x;
+					((Nu3D::VertexTL*)lockedData)[i].uv.y = ((Nu3D::VertexTL*)lockedData)[i].uv.y - (reference.y - projected.y) * params->scale;
+
+					++i;
+				} while (i < patchVertices->vertexCount);
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
