@@ -517,54 +517,38 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0044E520
-		int32_t Classify(int32_t a1)
+		int32_t Classify(int32_t linkId)
 		{
-			int32_t result;
-
-			switch (Levels::g_objectListBase->entries[a1]->desc[2].id)
+			switch (Levels::g_objectListBase->entries[linkId]->desc[2].id)
 			{
-				case 6:
-					result = 4;
-					break;
+				case 0x20:
+					return 0;
+				case 0x3C:
+					return 1;
+				case 0x24:
+				case 0x48:
+					return 2;
 				case 0x12:
-					result = 3;
-					break;
-				case 0x13:
-					result = 10;
-					break;
-				case 0x14:
-					result = 8;
-					break;
+					return 3;
+				case 6:
+					return 4;
+				case 0x27:
+					return 5;
+				case 0x64:
+					return 6;
 				case 0x1E:
-					result = 7;
-					break;
+					return 7;
+				case 0x14:
+					return 8;
 				case 0x1F:
 				case 0x32:
 				case 0x50:
-					result = 9;
-					break;
-				case 0x20:
-					result = 0;
-					break;
-				case 0x24:
-				case 0x48:
-					result = 2;
-					break;
-				case 0x27:
-					result = 5;
-					break;
-				case 0x3C:
-					result = 1;
-					break;
-				case 0x64:
-					result = 6;
-					break;
+					return 9;
+				case 0x13:
+					return 10;
 				default:
-					result = -1;
-					break;
+					return -1;
 			}
-
-			return result;
 		}
 
 		// FUNCTION: TOY2 0x004A0F80
