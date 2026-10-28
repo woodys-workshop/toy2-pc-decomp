@@ -773,12 +773,12 @@ namespace Renderer
 	// FUNCTION: TOY2 0x004C2080
 	int32_t ConvertRGBATo16Bit(RGBA color) { return 0; }
 
-	// FUNCTION: TOY2 0x004B37B0
+	// FUNCTION: TOY2 0x004B37B0 [MATCHED]
 	RGBA ApplyGammaCorrection(RGBA color)
 	{
-		color.b = g_gammaLUT[color.b];
-		color.g = g_gammaLUT[color.g];
 		color.r = g_gammaLUT[color.r];
+		color.g = g_gammaLUT[color.g];
+		color.b = g_gammaLUT[color.b];
 
 		return color;
 	}
