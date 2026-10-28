@@ -1081,7 +1081,7 @@ namespace ModeSelect
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x00431CE0
+	// FUNCTION: TOY2 0x00431CE0 [MATCHED]
 	int32_t SelectDeviceByIndex(int32_t index)
 	{
 		int32_t result = 0;
@@ -1101,16 +1101,16 @@ namespace ModeSelect
 			++result;
 		}
 
-		if (index <= result)
-		{
-			g_selectedDDApp->primaryDevice = deviceListHead;
-		}
-		else
+		if (index > result)
 		{
 			result = 0;
 
 			g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead;
 			g_selectedDDApp->primaryDevice = g_ddAppSelectedDevice;
+		}
+		else
+		{
+			g_selectedDDApp->primaryDevice = deviceListHead;
 		}
 
 		return result;
