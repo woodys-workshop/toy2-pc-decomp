@@ -2,6 +2,7 @@
 #include "Renderer/Renderer.h"
 #include "Nu3D/BmpDataNode.h"
 
+#include <math.h>
 #include <stdlib.h>
 
 namespace SoftwareRenderer
@@ -521,8 +522,15 @@ namespace SoftwareRenderer
 		return result;
 	}
 
-	// STUB: TOY2 0x004BC430
-	float* UnkFunc18(float* a1, float* a2) { return 0; }
+	// FUNCTION: TOY2 0x004BC430 [MATCHED]
+	void GetRenderDistance(float* nearDistance, float* farDistance)
+	{
+		if (nearDistance)
+			*nearDistance = (float)sqrt(Renderer::g_nearRenderDistance);
+
+		if (farDistance)
+			*farDistance = (float)sqrt(Renderer::g_farRenderDistance);
+	}
 
 	// STUB: TOY2 0x004BC900
 	uint32_t UnkFunc27(int32_t a1, float* a2, float* a3, float* a4, uint32_t* a5) { return 0; }
