@@ -1,4 +1,5 @@
 #include "SoftwareRenderer.h"
+#include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "Nu3D/BmpDataNode.h"
 
@@ -7,6 +8,9 @@
 
 namespace SoftwareRenderer
 {
+	void InitialiseColourScaleTables();
+	void CommitZoom();
+
 	struct TextureSnapshot
 	{
 		uint32_t* texData;
@@ -74,6 +78,78 @@ namespace SoftwareRenderer
 
 	// GLOBAL: TOY2 0x005088E0
 	int32_t g_rightOffset = -1;
+
+	// GLOBAL: TOY2 0x00DE20B4
+	int32_t g_surfaceWidth;
+
+	// GLOBAL: TOY2 0x00E4D7B0
+	int32_t g_surfaceHeight;
+
+	// GLOBAL: TOY2 0x00E4D7A0
+	int32_t g_surfacePitch;
+
+	// GLOBAL: TOY2 0x00DE20AC
+	int32_t g_pixelMode;
+
+	// GLOBAL: TOY2 0x00A4CC6C
+	int32_t g_zoomLevel;
+
+	// GLOBAL: TOY2 0x00E4D7BC
+	int32_t g_zoomedWidth;
+
+	// GLOBAL: TOY2 0x00B7FBB4
+	int32_t g_zoomedHeight;
+
+	// GLOBAL: TOY2 0x00DE20A4
+	int32_t g_clipLeft;
+
+	// GLOBAL: TOY2 0x00DBB088
+	int32_t g_clipRight;
+
+	// GLOBAL: TOY2 0x00B7FBBC
+	int32_t g_clipTop;
+
+	// GLOBAL: TOY2 0x00DE20B8
+	int32_t g_clipBottom;
+
+	// GLOBAL: TOY2 0x00DBB084
+	float g_viewOffsetX;
+
+	// GLOBAL: TOY2 0x00DE20B0
+	float g_viewOffsetY;
+
+	// GLOBAL: TOY2 0x00DFF580
+	float g_viewScaleX;
+
+	// GLOBAL: TOY2 0x00B626BC
+	float g_viewScaleY;
+
+	// GLOBAL: TOY2 0x00E4D7A8
+	float g_zoomScaleX;
+
+	// GLOBAL: TOY2 0x00B7FBA4
+	float g_zoomScaleY;
+
+	// GLOBAL: TOY2 0x00A4CC84
+	uint8_t* g_frameBuffer;
+
+	// GLOBAL: TOY2 0x00E4D7B4
+	uint8_t* g_primarySurfacePixels;
+
+	// GLOBAL: TOY2 0x00A4CC78
+	uint16_t* g_colourScaleTables;
+
+	// GLOBAL: TOY2 0x00E4D7AC
+	uint16_t* g_blueScaleTable;
+
+	// GLOBAL: TOY2 0x00DBB08C
+	uint16_t* g_greenScaleTable;
+
+	// GLOBAL: TOY2 0x00B7FBC0
+	uint16_t* g_redScaleTable;
+
+	// GLOBAL: TOY2 0x00E4D7B8
+	uint16_t* g_unkE4D7B8;
 
 	// GLOBAL: TOY2 0x00882910
 	int32_t g_bitsPerPixel;
@@ -244,20 +320,118 @@ namespace SoftwareRenderer
 	// FUNCTION: TOY2 0x004C20E0
 	void SetLevelFileIndex(int32_t index) { g_levelFileIndex = index; }
 
-	// STUB: TOY2 0x004BCE00
-	void InitialisePrimarySurface() {}
+	// FUNCTION: TOY2 0x004BCE00 [MATCHED]
+	void InitialisePrimarySurface()
+	{
+		DDSURFACEDESC2 surfaceDesc;
+		surfaceDesc.dwSize = sizeof(surfaceDesc);
+		DrawingDevice::LockPrimarySurface(&surfaceDesc);
 
-	// STUB: TOY2 0x004C1E60
-	void InitialisePrimarySurface_T() {}
+		g_primarySurfacePixels = (uint8_t*)surfaceDesc.lpSurface;
+
+		int32_t top = 0;
+		int32_t bottom = surfaceDesc.dwHeight - 1;
+		int32_t left = 0;
+		int32_t right = surfaceDesc.dwWidth - 1;
+
+		g_surfacePitch = surfaceDesc.lPitch;
+		g_surfaceWidth = surfaceDesc.dwWidth;
+		g_surfaceHeight = surfaceDesc.dwHeight;
+
+		if (bottom == 199)
+		{
+			left = 14;
+			right = 306;
+			g_zoomedWidth = 292;
+		}
+
+		if (surfaceDesc.ddpfPixelFormat.dwRGBBitCount == 16)
+			g_pixelMode = surfaceDesc.ddpfPixelFormat.dwGBitMask != 0x3E0;
+		else if (surfaceDesc.ddpfPixelFormat.dwBBitMask == 0xFF)
+			g_pixelMode = 2;
+		else if (surfaceDesc.ddpfPixelFormat.dwRBitMask == 0xFF)
+			g_pixelMode = 3;
+
+		DrawingDevice::UnlockPrimarySurface();
+
+		g_clipTop = top;
+		g_clipBottom = bottom;
+		g_clipLeft = left;
+		g_clipRight = right;
+		g_topOffset = top;
+		g_leftOffset = left;
+		g_bottomOffset = bottom;
+		g_rightOffset = right;
+		g_zoomedWidth = g_surfaceWidth;
+		g_zoomedHeight = g_surfaceHeight;
+		CommitZoom();
+
+		g_zoomLevel = 0;
+
+		if (g_frameBuffer)
+		{
+			free(g_frameBuffer);
+			g_frameBuffer = 0;
+		}
+
+		if (g_colourScaleTables)
+			free(g_colourScaleTables);
+
+		g_frameBuffer = (uint8_t*)malloc(surfaceDesc.dwHeight * surfaceDesc.lPitch);
+		InitialiseColourScaleTables();
+	}
+
+	// FUNCTION: TOY2 0x004C1E60 [MATCHED]
+	void InitialisePrimarySurface_T() { InitialisePrimarySurface(); }
 
 	// STUB: TOY2 0x0047D0F0
 	void Destroy() {}
 
-	// STUB: TOY2 0x004C1FC0
-	void ZoomOut() {}
+	// FUNCTION: TOY2 0x004C1FC0 [MATCHED]
+	void ZoomOut()
+	{
+		if (g_zoomLevel >= 10)
+		{
+			g_zoomLevel = 10;
+			return;
+		}
 
-	// STUB: TOY2 0x004C1F00
-	void ZoomIn() {}
+		++g_zoomLevel;
+		g_zoomedWidth -= 16;
+		g_zoomedHeight -= 12;
+		g_leftOffset += 8;
+		g_rightOffset -= 8;
+		g_topOffset += 6;
+		g_bottomOffset -= 6;
+		g_clipLeft += 8;
+		g_clipRight -= 8;
+		g_clipTop += 6;
+		g_clipBottom -= 6;
+		CommitZoom();
+	}
+
+	// FUNCTION: TOY2 0x004C1F00 [MATCHED]
+	void ZoomIn()
+	{
+		if (g_zoomLevel <= 0)
+		{
+			g_zoomLevel = 0;
+			return;
+		}
+
+		--g_zoomLevel;
+		g_zoomedWidth += 16;
+		g_zoomedHeight += 12;
+		g_leftOffset -= 8;
+		g_rightOffset += 8;
+		g_topOffset -= 6;
+		g_bottomOffset += 6;
+		g_clipLeft -= 8;
+		g_clipRight += 8;
+		g_clipTop -= 6;
+		g_clipBottom += 6;
+		CommitZoom();
+	}
 
 	// STUB: TOY2 0x004C17B0
 	void PresentFrame() {}
@@ -571,11 +745,151 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C1720
 	void UnkFunc16(int32_t a1, int32_t a2, uint16_t* a3, uint32_t a4) {}
 
-	// STUB: TOY2 0x004C1C40
-	void InitialiseColourScaleTables() {}
+	// FUNCTION: TOY2 0x004C1C40 [MATCHED]
+	void InitialiseColourScaleTables()
+	{
+		g_colourScaleTables = (uint16_t*)malloc(0x80000);
+		g_blueScaleTable = g_colourScaleTables;
+		g_greenScaleTable = g_blueScaleTable + 65536;
+		g_redScaleTable = g_greenScaleTable + 65536;
+		g_unkE4D7B8 = g_redScaleTable + 65536;
 
-	// STUB: TOY2 0x004C1E70
-	void CommitZoom() {}
+		int32_t index = 0;
+
+		if (! g_pixelMode)
+		{
+			for (int32_t row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_greenScaleTable[index++] = (uint16_t)((product >> 6) & 0x3E0);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_redScaleTable[index++] = (uint16_t)((product >> 1) & 0x7C00);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+		}
+		else
+		{
+			index = 0;
+
+			for (int32_t row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_greenScaleTable[index++] = (uint16_t)((product >> 5) & 0x7C0);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_redScaleTable[index++] = (uint16_t)(product & 0xF800);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x004C1E70 [MATCHED]
+	void CommitZoom()
+	{
+		g_viewOffsetX = (float)g_leftOffset;
+		g_viewOffsetY = (float)g_topOffset;
+		g_viewScaleX = (float)((g_rightOffset - g_leftOffset + 1) * (1.0 / 320.0));
+		g_viewScaleY = (float)((g_bottomOffset - g_topOffset + 1) * (1.0 / 220.0));
+		g_zoomScaleX = (float)g_zoomedWidth / (float)g_surfaceWidth;
+		g_zoomScaleY = (float)g_zoomedHeight / (float)g_surfaceHeight;
+	}
 
 	// STUB: TOY2 0x004C4340
 	uint32_t* UnkFunc59(int32_t a1, uint32_t* a2, int32_t* a3, uint32_t* a4) { return 0; }
