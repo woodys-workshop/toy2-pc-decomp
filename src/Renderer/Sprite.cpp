@@ -656,7 +656,7 @@ namespace Renderer
 			g_spriteBuffer2DCount = 2000;
 		}
 
-		// FUNCTION: TOY2 0x004B8B10
+		// FUNCTION: TOY2 0x004B8B10 [MATCHED]
 		void InsertIntoBucket(Nu3D::Sprite* sprite)
 		{
 			Vector3F position;
@@ -668,18 +668,21 @@ namespace Renderer
 			position.y = position.y * position.y;
 			position.z = position.z * position.z;
 
-			float distanceSquared = position.z + position.y + position.x;
+			float rawDistanceSquared = position.z + position.y + position.x;
+			float distanceSquared;
 
-			if (distanceSquared < 1.0)
-				distanceSquared = 1.0;
+			if (1.0f > rawDistanceSquared)
+				distanceSquared = 1.0f;
+			else
+				distanceSquared = rawDistanceSquared;
+
+			sprite->distanceSquared = distanceSquared;
 
 			Nu3D::Sprite* previous = 0;
 			int32_t depth = 0;
 
 			// the exponent of the float is the bucket, they get exponentially further apart
 			int32_t bucket = ((*(uint32_t*)&distanceSquared >> 20) + 8) & 0xFF;
-
-			sprite->distanceSquared = distanceSquared;
 
 			Nu3D::Sprite* current = g_spriteBuckets[bucket];
 
@@ -691,7 +694,7 @@ namespace Renderer
 
 				previous = current;
 				current = current->next;
-				depth++;
+				++depth;
 			}
 
 			sprite->next = current;
