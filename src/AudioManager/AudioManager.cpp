@@ -2196,26 +2196,26 @@ namespace AudioManager
 		return PlayLoopingSound3D(owner, soundIndex, volume, leftVolume, rightVolume);
 	}
 
-	// FUNCTION: TOY2 0x0047D670
+	// FUNCTION: TOY2 0x0047D670 [MATCHED]
 	void LoadSoundPack(SoundEffect* sfxPack, int32_t wavId)
 	{
 		char buffer[256];
 
-		if (wavId <= 16)
+		if (wavId >= 0 && wavId <= 16)
 		{
 			char** wavList = sfxPack[wavId].wavList;
 			int32_t effectId = sfxPack[wavId].effectId;
 
-			for (const char* wavName = *wavList; wavName; ++effectId)
+			while (*wavList)
 			{
-				if (*wavName)
+				if (**wavList)
 				{
-					sprintf(buffer, "%s.wav", wavName);
+					sprintf(buffer, "%s.wav", *wavList);
 					LoadSoundEffect(buffer, effectId, 0);
 				}
 
-				wavName = wavList[1];
 				++wavList;
+				++effectId;
 			}
 		}
 	}
