@@ -637,18 +637,20 @@ namespace Nu3D
 		}
 	}
 
-	// FUNCTION: TOY2 0x004AC1A0
+	// FUNCTION: TOY2 0x004AC1A0 [MATCHED]
 	HRESULT SetTexture(int32_t stageIndex, BmpDataNode* bmpDataNode)
 	{
 		g_currentBmpDataNode = bmpDataNode;
 
-		if (Renderer::g_isSoftwareRendering)
-			return 0;
+		if (! Renderer::g_isSoftwareRendering)
+		{
+			if (bmpDataNode)
+				return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, bmpDataNode->d3dTexture);
 
-		if (bmpDataNode)
-			return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, bmpDataNode->d3dTexture);
+			return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, 0);
+		}
 
-		return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, 0);
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004B0D90
