@@ -1,6 +1,8 @@
 #include "SoftwareRenderer.h"
 #include "Renderer/Renderer.h"
 
+#include <stdlib.h>
+
 namespace SoftwareRenderer
 {
 	// GLOBAL: TOY2 0x004F7400
@@ -628,6 +630,14 @@ namespace SoftwareRenderer
 
 namespace SoftwareDevice
 {
+	struct VertexBufferHeader
+	{
+		int32_t stride;
+		uint32_t vertexCount;
+	};
+
+	STATIC_ASSERT(sizeof(VertexBufferHeader) == 8);
+
 	// Drawing Methods
 
 	// STUB: TOY2 0x004B9950
@@ -654,8 +664,29 @@ namespace SoftwareDevice
 	// STUB: TOY2 0x004B2B20
 	HRESULT ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer) { return DDERR_UNSUPPORTED; }
 
-	// STUB: TOY2 0x004B2B30
-	HRESULT CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags) { return DDERR_UNSUPPORTED; }
+	// FUNCTION: TOY2 0x004B2B30 [MATCHED]
+	HRESULT CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags)
+	{
+		uint32_t vertexCount = desc->dwNumVertices;
+		int32_t stride = SoftwareRenderer::GetStrideFromFVF(desc->dwFVF);
+
+		if (stride)
+		{
+			VertexBufferHeader* buffer = (VertexBufferHeader*)malloc(stride * vertexCount + sizeof(VertexBufferHeader));
+
+			if (buffer)
+			{
+				buffer->stride = stride;
+				buffer->vertexCount = vertexCount;
+				*outBuffer = (LPDIRECT3DVERTEXBUFFER)buffer;
+				return 0;
+			}
+
+			return DDERR_OUTOFMEMORY;
+		}
+
+		return DDERR_INVALIDPARAMS;
+	}
 
 	// STUB: TOY2 0x004B2BB0
 	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride) { return DDERR_UNSUPPORTED; }
