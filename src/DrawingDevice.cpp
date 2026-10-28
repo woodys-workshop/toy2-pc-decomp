@@ -885,7 +885,7 @@ namespace HardwareDevice
 	// FUNCTION: TOY2 0x004AC0D0
 	HRESULT OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags) { return buffer->Optimize(device, flags); }
 
-	// FUNCTION: TOY2 0x004AC030
+	// FUNCTION: TOY2 0x004AC030 [MATCHED]
 	HRESULT ProcessVerticesOnBuffer(
 		LPDIRECT3DVERTEXBUFFER destBuffer,
 		DWORD dwVertexOp,
@@ -895,6 +895,8 @@ namespace HardwareDevice
 		DWORD dwSrcIndex,
 		DWORD dwFlags)
 	{
-		return destBuffer->ProcessVertices(dwVertexOp, dwDestIndex, dwCount, srcBuffer, dwSrcIndex, DrawingDevice::g_drawingDevice->m_pd3dDevice, dwFlags);
+		LPDIRECT3DDEVICE3 device = DrawingDevice::g_drawingDevice->m_pd3dDevice;
+
+		return destBuffer->ProcessVertices(dwVertexOp, dwDestIndex, dwCount, srcBuffer, dwSrcIndex, device, dwFlags);
 	}
 }
