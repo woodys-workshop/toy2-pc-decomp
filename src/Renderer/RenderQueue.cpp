@@ -220,7 +220,7 @@ namespace Renderer
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004B85E0
+	// FUNCTION: TOY2 0x004B85E0 [MATCHED]
 	void ProcessPrimitive(Nu3D::InstanceData* instance, Nu3D::Primitive* prim)
 	{
 		Nu3D::Material* material = Nu3D::Material::GetFreeByIndex(prim->materialIndex);
@@ -238,7 +238,7 @@ namespace Renderer
 			if ((material->metadata & 0x40) != 0)
 				RenderEntry::AllocObj(Nu3D::g_tex14Version2, prim, instance);
 
-			if ((int8_t)material->metadata < 0)
+			if ((material->metadata & 0x80) != 0)
 				RenderEntry::AllocObj(Nu3D::g_tex14Version3, prim, instance);
 
 			// walk the multitexture chain, going around again for the next material in it
@@ -246,13 +246,13 @@ namespace Renderer
 
 			if (g_maxSimultaneousTextures > 0)
 			{
-				while (material)
+				do
 				{
-					material = material->alwaysZero;
+					if (! material)
+						return;
 
-					if (++textureCount >= g_maxSimultaneousTextures)
-						break;
-				}
+					material = material->alwaysZero;
+				} while (++textureCount < g_maxSimultaneousTextures);
 			}
 
 			if (! material)
