@@ -1116,7 +1116,7 @@ namespace ModeSelect
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x00431DA0
+	// FUNCTION: TOY2 0x00431DA0 [MATCHED]
 	int32_t SelectDisplayModeByIndex(int32_t index)
 	{
 		int32_t result = 0;
@@ -1136,15 +1136,15 @@ namespace ModeSelect
 			++result;
 		}
 
-		if (index <= result)
-		{
-			g_ddAppSelectedDevice->primaryDisplayMode = displayModeListHead;
-		}
-		else
+		if (index > result)
 		{
 			result = 0;
 			g_ddAppSelectedDisplayMode = g_ddAppSelectedDevice->displayModeListHead;
 			g_ddAppSelectedDevice->primaryDisplayMode = g_ddAppSelectedDisplayMode;
+		}
+		else
+		{
+			g_ddAppSelectedDevice->primaryDisplayMode = displayModeListHead;
 		}
 
 		return result;
