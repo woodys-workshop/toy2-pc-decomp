@@ -437,8 +437,20 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004AC1F0
 	int32_t UnkFunc20(uint32_t** a1) { return 0; }
 
-	// STUB: TOY2 0x004B2B80
-	int32_t GetStrideFromFVF(int32_t fvf) { return 0; }
+	// FUNCTION: TOY2 0x004B2B80 [MATCHED]
+	int32_t GetStrideFromFVF(int32_t fvf)
+	{
+		switch (fvf)
+		{
+			case D3DFVF_0x152:
+				return 36;
+			case D3DFVF_VERTEX:
+			case D3DFVF_0x1C4:
+				return 32;
+			default:
+				return 0;
+		}
+	}
 
 	// FUNCTION: TOY2 0x004B6140
 	void SubmitTriangleStripRaw(int32_t renderFlags, LPVOID vertexData, Renderer::RenderEntry* renderEntry, uint16_t* indices, int32_t vertexCount)
