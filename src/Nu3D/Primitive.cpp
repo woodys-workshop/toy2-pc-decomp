@@ -10,19 +10,19 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x0088447C
 	Primitive* g_primListHead;
 
-	// FUNCTION: TOY2 0x004B32E0
+	// FUNCTION: TOY2 0x004B32E0 [MATCHED]
 	int32_t Primitive::CreateAllVertexBuffers(Primitive* prim, int32_t flags)
 	{
 		int32_t result = 1;
 
-		if (! prim)
-			return 1;
-
-		do
+		if (prim)
 		{
-			result &= Patch::PatchVertices::CreateVertexBuffer(&prim->patchVerts, flags);
-			prim = prim->listNext;
-		} while (prim);
+			do
+			{
+				result &= Patch::PatchVertices::CreateVertexBuffer(&prim->patchVerts, flags);
+				prim = prim->listNext;
+			} while (prim);
+		}
 
 		return result;
 	}
