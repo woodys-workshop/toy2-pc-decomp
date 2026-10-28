@@ -325,16 +325,13 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x0044F190
+	// FUNCTION: TOY2 0x0044F190 [MATCHED]
 	void DrawLensFlares()
 	{
-		int32_t activeIdx;
-
 		// lens flares are enabled in the graphics options
 		if ((Toy2::g_toyCfgData.flags & 1) != 0)
 		{
 			LensFlare::CullAndQueue();
-			activeIdx = 0;
 
 			LensFlare::g_activeLensFlareIdx = 0;
 
@@ -348,17 +345,13 @@ namespace Renderer
 					{
 						LensFlare::RenderSlot(index);
 
-						activeIdx = LensFlare::g_activeLensFlareIdx;
 						++index;
 					} while (index < LensFlare::g_flareSlotCounts[LensFlare::g_activeLensFlareIdx]);
 				}
 			}
 		}
-		else
-		{
-			activeIdx = LensFlare::g_activeLensFlareIdx;
-		}
 
+		int32_t activeIdx = LensFlare::g_activeLensFlareIdx;
 		LensFlare::g_flareActive[activeIdx] = 0;
 		LensFlare::g_flareSlotCounts[activeIdx] = 0;
 		LensFlare::g_lensFlareCount = 0;
