@@ -933,15 +933,16 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004AD0C0
 	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return Nu3D::GetBmpDataNodeByName(texName); }
 
-	// FUNCTION: TOY2 0x004AD1C0
+	// FUNCTION: TOY2 0x004AD1C0 [MATCHED]
 	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode)
 	{
-		if (! bmpNode)
-			return -1;
+		if (bmpNode)
+		{
+			Nu3D::InitialiseTextureSurface(bmpNode);
+			return 0;
+		}
 
-		Nu3D::InitialiseTextureSurface(bmpNode);
-
-		return 0;
+		return -1;
 	}
 
 	// FUNCTION: TOY2 0x004BB270
