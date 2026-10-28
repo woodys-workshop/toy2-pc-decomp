@@ -1972,42 +1972,36 @@ namespace Renderer
 		Renderer::BlitTextureByIndex(texIndex, destX, destY, width, height, horizontalWrapOffset, verticalWrapOffset, destX + srcX, destY + srcY);
 	}
 
-	// FUNCTION: TOY2 0x004B89B0
+	// FUNCTION: TOY2 0x004B89B0 [MATCHED]
 	Renderer::RenderEntry* RenderEntry::AllocPatch(Nu3D::Material* material, Nu3D::Primitive* prim, Nu3D::InstanceData* spriteStruct)
 	{
-		int32_t count = g_renderEntryCount;
-
 		if (g_renderEntryCount)
 		{
-			--g_renderEntryCount;
+			int32_t index = --g_renderEntryCount;
 
-			RenderEntry* renderEntry = &g_renderEntries[count - 1];
+			RenderEntry* renderEntry = &g_renderEntries[index];
 
 			renderEntry->primitive = prim;
 			renderEntry->instanceData = spriteStruct;
 			renderEntry->material = material;
 
-			if (*(uint32_t*)&spriteStruct->lodFactor != 0x3F800000 || (material->metadata & 0xE33) != 0)
-			{
-				renderEntry->type = RENDER_TYPE8;
-				InsertIntoBucket(renderEntry);
-
-				return renderEntry;
-			}
-			else
+			if (*(uint32_t*)&spriteStruct->lodFactor == 0x3F800000 && (material->metadata & 0xE33) == 0)
 			{
 				renderEntry->type = RENDER_TYPE6;
 				renderEntry->next = (RenderEntry*)material->renderEntryHead;
 				material->renderEntryHead = renderEntry;
-
-				return &g_renderEntries[count - 1];
 			}
+			else
+			{
+				renderEntry->type = RENDER_TYPE8;
+				InsertIntoBucket(renderEntry);
+			}
+
+			return renderEntry;
 		}
-		else
-		{
-			Logger::DebugLog("rndrentryAllocPatch - out of rndrentries");
-			return 0;
-		}
+
+		Logger::DebugLog("rndrentryAllocPatch - out of rndrentries");
+		return 0;
 	}
 }
 
