@@ -693,12 +693,12 @@ namespace D3DApp
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x004092F0
+	// FUNCTION: TOY2 0x004092F0 [MATCHED]
 	HRESULT WINAPI EnumDisplayModes(LPDDSURFACEDESC surfaceDesc, LPVOID context)
 	{
 		ExamineDevice* examineContext = (ExamineDevice*)context;
 
-		int32_t dwWidth = surfaceDesc->dwWidth;
+		DWORD dwWidth = surfaceDesc->dwWidth;
 
 		if (dwWidth < 320 || surfaceDesc->dwHeight < 200)
 			return 1;
@@ -709,10 +709,9 @@ namespace D3DApp
 		displayMode->height = surfaceDesc->dwHeight;
 		displayMode->rgbBitCount = surfaceDesc->ddpfPixelFormat.dwRGBBitCount;
 
-		int32_t curDisplayModeCount = examineContext->displayModeCount + 1;
-		examineContext->displayModeCount = curDisplayModeCount;
+		++examineContext->displayModeCount;
 
-		return curDisplayModeCount != 128;
+		return examineContext->displayModeCount != 128;
 	}
 
 	// FUNCTION: TOY2 0x00409130
