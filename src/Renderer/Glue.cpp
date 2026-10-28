@@ -14,20 +14,22 @@ namespace Renderer
 		// GLOBAL: TOY2 0x00B6240C
 		int32_t g_selectedTex;
 
-		// FUNCTION: TOY2 0x004CE4D0
+		// FUNCTION: TOY2 0x004CE4D0 [MATCHED]
 		int32_t BackdropBltFast()
 		{
-			if (! g_sysMemBackdrop)
-				return 0;
+			if (g_sysMemBackdrop)
+			{
+				LPDIRECTDRAWSURFACE4 backBuffer = DrawingDevice::GetBackBuffer();
 
-			LPDIRECTDRAWSURFACE4 backBuffer = DrawingDevice::GetBackBuffer();
+				DrawingDevice::GetWidth();
+				DrawingDevice::GetHeight();
 
-			DrawingDevice::GetWidth();
-			DrawingDevice::GetHeight();
+				backBuffer->BltFast(0, 0, g_sysMemBackdrop, 0, 16);
 
-			backBuffer->BltFast(0, 0, g_sysMemBackdrop, 0, 16);
+				return 1;
+			}
 
-			return 1;
+			return 0;
 		}
 
 		// FUNCTION: TOY2 0x004CE340
