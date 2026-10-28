@@ -654,26 +654,28 @@ namespace Nu3D
 	}
 
 	// FUNCTION: TOY2 0x004B0D90
-	void GetDIBPixelColor(BGRA* color, DIBSECTION* dibSection, RGBQUAD* colorTables, int32_t* rowBasePtr, int32_t xOffset)
+	void GetDIBPixelColor(RGBA* color, DIBSECTION* dibSection, RGBQUAD* colorTables, int32_t* rowBasePtr, int32_t xOffset)
 	{
 		color->a = 255;
 
-		WORD bitDepth = dibSection->dsBmih.biBitCount;
-
-		if (bitDepth == 8)
+		switch ((int32_t)dibSection->dsBmih.biBitCount)
 		{
-			uint8_t index = ((uint8_t*)rowBasePtr)[xOffset];
-			color->b = colorTables[index].rgbBlue;
-			color->g = colorTables[index].rgbGreen;
-			color->r = colorTables[index].rgbRed;
-		}
-		else if (bitDepth == 24)
-		{
-			uint8_t* pixelPtr = (uint8_t*)rowBasePtr + 2 * xOffset + xOffset;
+			case 24: {
+				uint8_t* pixelPtr = (uint8_t*)rowBasePtr + xOffset + 2 * xOffset;
 
-			color->b = *pixelPtr++;
-			color->g = *pixelPtr;
-			color->r = pixelPtr[1];
+				color->b = *pixelPtr++;
+				color->g = *pixelPtr;
+				color->r = pixelPtr[1];
+				break;
+			}
+			case 8: {
+				uint8_t* pixelPtr = (uint8_t*)rowBasePtr + xOffset;
+
+				color->b = colorTables[*pixelPtr].rgbBlue;
+				color->g = colorTables[*pixelPtr].rgbGreen;
+				color->r = colorTables[*pixelPtr].rgbRed;
+				break;
+			}
 		}
 	}
 
@@ -741,7 +743,7 @@ namespace Nu3D
 						{
 							for (uint32_t xPixel = 0; xPixel < surfaceDesc.dwWidth; ++xPixel)
 							{
-								BGRA color;
+								RGBA color;
 								GetDIBPixelColor(&color, &dibSection, colorTables, srcRowPtr, xPixel * dibSection.dsBm.bmWidth / width);
 
 								int32_t shiftedGreen;
@@ -777,7 +779,7 @@ namespace Nu3D
 						// 15 or 16 bit
 						for (uint32_t xPixel = 0; xPixel < surfaceDesc.dwWidth; ++xPixel)
 						{
-							BGRA color;
+							RGBA color;
 							GetDIBPixelColor(&color, &dibSection, colorTables, srcRowPtr, xPixel * dibSection.dsBm.bmWidth / width);
 
 							int32_t shiftedGreen;
