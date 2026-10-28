@@ -114,20 +114,21 @@ namespace Nu3D
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004BC360
+	// FUNCTION: TOY2 0x004BC360 [MATCHED]
 	int32_t Portal::AreaPortal::BuildScalerEntry(NGNLoader::NGNImage* image, int32_t index, Link::DynamicScaler* scaler)
 	{
 		Portal::ScalerEntry* head = Portal::AreaPortal::AllocScalerEntry(image);
 
-		if (! head)
-			return 0;
+		if (head)
+		{
+			head->scaler = scaler;
+			head->next = image->portalHashTable->buckets[index].scalerHead;
 
-		head->scaler = scaler;
-		head->next = image->portalHashTable->buckets[index].scalerHead;
+			image->portalHashTable->buckets[index].scalerHead = head;
+			return 1;
+		}
 
-		image->portalHashTable->buckets[index].scalerHead = head;
-
-		return 1;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004BC120
