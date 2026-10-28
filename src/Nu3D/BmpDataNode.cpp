@@ -1031,14 +1031,19 @@ namespace Nu3D
 		Logger::DebugLog("warning - unable to find similar vertex in limb\r\n");
 	}
 
-	// FUNCTION: TOY2 0x004CBC40
-	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex)
+	// FUNCTION: TOY2 0x004CBC40 [MATCHED]
+	int32_t CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex)
 	{
 		if (vertexIndex < NGNLoader::ObjectLoad::g_curVertexCount && vertexIndex >= 0)
 		{
 			if (vertex)
+			{
 				memcpy(vertex, &NGNLoader::ObjectLoad::g_shapeVertices[vertexIndex], sizeof(Nu3D::Vertex));
+				return 1;
+			}
 		}
+
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004AD130

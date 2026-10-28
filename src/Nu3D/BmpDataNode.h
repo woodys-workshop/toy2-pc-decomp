@@ -69,7 +69,7 @@ namespace Nu3D
 	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName);
 	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags);
 	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex);
-	void CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex);
+	int32_t CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex);
 
 	STATIC_ASSERT(sizeof(BmpDataNode) == 0x110);
 }
