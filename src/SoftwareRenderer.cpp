@@ -688,8 +688,17 @@ namespace SoftwareDevice
 		return DDERR_INVALIDPARAMS;
 	}
 
-	// STUB: TOY2 0x004B2BB0
-	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride) { return DDERR_UNSUPPORTED; }
+	// FUNCTION: TOY2 0x004B2BB0 [MATCHED]
+	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD flags, LPVOID* outData, DWORD* outSize)
+	{
+		VertexBufferHeader* buffer = (VertexBufferHeader*)vertexBuffer;
+		*outData = buffer + 1;
+
+		if (outSize)
+			*outSize = buffer->vertexCount * buffer->stride;
+
+		return 0;
+	}
 
 	// FUNCTION: TOY2 0x004B2BD0
 	HRESULT UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer) { return 0; }

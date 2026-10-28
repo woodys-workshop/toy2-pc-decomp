@@ -176,7 +176,7 @@ namespace SoftwareDevice
 	// Vertex Methods
 	HRESULT ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	HRESULT CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags);
-	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
+	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD flags, LPVOID* outData, DWORD* outSize);
 	HRESULT UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	HRESULT OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
 	HRESULT ProcessVerticesOnBuffer(
