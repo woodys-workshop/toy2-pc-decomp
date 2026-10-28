@@ -646,22 +646,17 @@ namespace DrawingDevice
 		}
 	}
 
-	// FUNCTION: TOY2 0x004ACFC0
+	// FUNCTION: TOY2 0x004ACFC0 [MATCHED]
 	HRESULT GetChosenDevice(DDAppDevice::App** outApp, DDAppDevice** outDevice)
 	{
-		DDAppDevice::App* primaryApp = g_primaryDDApp;
-
 		if (! g_primaryDDApp)
 			return 0x81000001;
 
 		if (outApp)
-		{
 			*outApp = g_primaryDDApp;
-			primaryApp = g_primaryDDApp;
-		}
 
 		if (outDevice)
-			*outDevice = primaryApp->primaryDevice;
+			*outDevice = g_primaryDDApp->primaryDevice;
 
 		return 0;
 	}
