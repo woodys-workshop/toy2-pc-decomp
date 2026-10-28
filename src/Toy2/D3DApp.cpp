@@ -790,7 +790,7 @@ namespace D3DApp
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x00408CD0
+	// FUNCTION: TOY2 0x00408CD0 [MATCHED]
 	int32_t SortDisplayModes(const void* modeA, const void* modeB)
 	{
 		DisplayMode* displayModeA = (DisplayMode*)modeA;
@@ -805,19 +805,22 @@ namespace D3DApp
 		if (bitCountB < bitCountA)
 			return 1;
 
-		if (displayModeB->width > displayModeA->width)
+		int32_t widthA = displayModeA->width;
+		int32_t widthB = displayModeB->width;
+
+		if (widthB > widthA)
 			return -1;
 
-		if (displayModeB->width < displayModeA->width)
+		if (widthB < widthA)
 			return 1;
 
 		int32_t heightA = displayModeA->height;
 		int32_t heightB = displayModeB->height;
 
-		if (heightA >= heightB)
-			return heightB < heightA;
-		else
+		if (heightA < heightB)
 			return -1;
+
+		return heightB < heightA;
 	}
 
 	// FUNCTION: TOY2 0x00409360 [MATCHED]
