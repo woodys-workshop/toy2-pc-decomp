@@ -487,22 +487,18 @@ namespace DrawingDevice
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004AFA20
-	int32_t CD3DFramework::GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surfaceOut)
+	// FUNCTION: TOY2 0x004AFA20 [MATCHED]
+	int32_t CD3DFramework::GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surfaceOut)
 	{
 		if (index > 8)
 			return 0x8200000F;
 
-		DrawingDeviceSlot* slot = &m_slots[index];
-
-		if (! slot->valid)
+		if (! m_slots[index].valid)
 			return 0x8200000F;
 
-		int32_t result = 0;
+		*surfaceOut = m_slots[index].surface1;
 
-		*surfaceOut = slot->surface1;
-
-		return result;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004ABEB0
@@ -828,7 +824,7 @@ namespace DrawingDevice
 	int32_t RestoreToGDISurface(int32_t refreshWindow) { return g_drawingDevice->RestoreToGDISurface(refreshWindow); }
 
 	// FUNCTION: TOY2 0x004ABE30
-	int32_t GetSlotSurfaceByIndex(int32_t index, LPDIRECTDRAWSURFACE4* surface) { return g_drawingDevice->GetSlotSurfaceByIndex(index, surface); }
+	int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surface) { return g_drawingDevice->GetSlotSurfaceByIndex(index, surface); }
 
 	// FUNCTION: TOY2 0x004AC180
 	HRESULT SetTexture(DWORD flags, LPDIRECT3DTEXTURE2 texture) { return g_drawingDevice->m_pd3dDevice->SetTexture(flags, texture); }
