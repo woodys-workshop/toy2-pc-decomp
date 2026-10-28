@@ -1150,7 +1150,7 @@ namespace ModeSelect
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x00431D40
+	// FUNCTION: TOY2 0x00431D40 [MATCHED]
 	int32_t FindFirstHardwareDevice()
 	{
 		int32_t result = 0;
@@ -1158,34 +1158,22 @@ namespace ModeSelect
 		g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead;
 		DrawingDevice::DDAppDevice* selectedDevice = g_ddAppSelectedDevice;
 
-		if (g_ddAppSelectedDevice)
+		while (selectedDevice)
 		{
-			while (! selectedDevice->isHardwareAccelerated)
+			if (selectedDevice->isHardwareAccelerated)
 			{
-				selectedDevice = selectedDevice->nextDevice;
-
-				++result;
-
-				g_ddAppSelectedDevice = selectedDevice;
-
-				if (! selectedDevice)
-				{
-					g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead;
-					g_selectedDDApp->primaryDevice = g_ddAppSelectedDevice;
-					return 0;
-				}
+				g_selectedDDApp->primaryDevice = selectedDevice;
+				return result;
 			}
 
-			g_selectedDDApp->primaryDevice = selectedDevice;
-		}
-		else
-		{
-			g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead;
-			g_selectedDDApp->primaryDevice = g_ddAppSelectedDevice;
-			return 0;
+			selectedDevice = selectedDevice->nextDevice;
+			++result;
+			g_ddAppSelectedDevice = selectedDevice;
 		}
 
-		return result;
+		g_ddAppSelectedDevice = g_selectedDDApp->deviceListHead;
+		g_selectedDDApp->primaryDevice = g_ddAppSelectedDevice;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x00431E00 [MATCHED]
