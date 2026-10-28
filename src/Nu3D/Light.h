@@ -35,7 +35,7 @@ namespace Nu3D
 		static Light* BuildLight(D3DMATRIX* matrix, BGRA_F32* color, int32_t active);
 		static Light* BuildAmbient(BGRA_F32* color, int32_t active);
 		static void BuildGlobalLights();
-		static Light* Destroy(Light* light);
+		static void Destroy(Light* light);
 		static void DestroyAllLights();
 		static void Cleanup();
 		static void Update(Light* light);
