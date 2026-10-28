@@ -261,12 +261,13 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B8490
+	// FUNCTION: TOY2 0x004B8490 [MATCHED]
 	void RenderPrimitive(Nu3D::Primitive* primitive, D3DMATRIX* matrix, int32_t renderStage)
 	{
-		if (0.0 != primitive->originRadius)
+		if (0.0f != primitive->originRadius)
 		{
-			Nu3D::InstanceData* instance = InstanceData::AllocFromMatrix(matrix, g_additionalRenderFlags | renderStage);
+			renderStage |= g_additionalRenderFlags;
+			Nu3D::InstanceData* instance = InstanceData::AllocFromMatrix(matrix, renderStage);
 
 			if (instance)
 			{
