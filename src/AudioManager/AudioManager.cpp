@@ -549,18 +549,15 @@ namespace AudioManager
 		return status;
 	}
 
-	// FUNCTION: TOY2 0x0047E3C0
+	// FUNCTION: TOY2 0x0047E3C0 [MATCHED]
 	BOOL CALLBACK Enumerate(LPGUID lpGuid, LPCSTR description, LPCSTR lpcstrModule, LPVOID lpContext)
 	{
-		int32_t index = g_audioDeviceCount;
 		strcpy(g_audioDeviceDecs[g_audioDeviceCount], description);
 
-		BOOL result = 1;
+		g_audioDeviceGuids[g_audioDeviceCount + 1] = lpGuid;
+		++g_audioDeviceCount;
 
-		g_audioDeviceGuids[++index] = lpGuid;
-		g_audioDeviceCount = index;
-
-		return result;
+		return 1;
 	}
 
 	// FUNCTION: TOY2 0x0047E420
