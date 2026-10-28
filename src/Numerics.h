@@ -66,6 +66,14 @@ struct PointI16
 	int16_t y;
 };
 
+struct RectF
+{
+	float left;
+	float top;
+	float right;
+	float bottom;
+};
+
 struct Plane
 {
 	Vector3F normal;

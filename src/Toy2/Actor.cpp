@@ -760,19 +760,17 @@ namespace Toy2
 			RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
 			Toy2Actor::ActorBehaviourContext behaviourContext;
 			uint16_t* movementData = actor->movementData;
-			int32_t updateFlags = 0;
-			int32_t snapFlag = 0;
-			int32_t scriptFlag = 0;
-
 			behaviourContext.targetFlags = 0;
-
-			int32_t boundHalfXShift = creatureRam->boundHalfX << 8;
-			int32_t boundHalfZShift = creatureRam->boundHalfZ << 8;
-			int32_t latSpeedNoTarget = 2 * creatureRam->latSpeedNoTarget;
-			int32_t sinBound = Numerics::g_sinCosLUT[8 * creatureRam->boundAngle] >> 2;
-			int32_t latSpeedTarget = 2 * creatureRam->latSpeedTarget;
-			int32_t cosBound = Numerics::g_sinCosLUT[(8 * creatureRam->boundAngle + 1024) & 0xFFF] >> 2;
+			int16_t boundAngle = creatureRam->boundAngle;
+			int32_t sinBound = Numerics::g_sinCosLUT[8 * boundAngle] >> 2;
+			int32_t snapFlag = 0;
+			int32_t cosBound = Numerics::g_sinCosLUT[(8 * boundAngle + 1024) & 0xFFF] >> 2;
 			int32_t actorFlags = actor->actorFlags & 4;
+			int32_t boundHalfZShift = creatureRam->boundHalfZ << 8;
+			int32_t updateFlags = 0;
+			int32_t boundHalfXShift = creatureRam->boundHalfX << 8;
+			int32_t latSpeedTarget = 2 * creatureRam->latSpeedTarget;
+			int32_t latSpeedNoTarget = 2 * creatureRam->latSpeedNoTarget;
 
 			if (actor->damageCooldownTimer > 0)
 			{
@@ -786,19 +784,18 @@ namespace Toy2
 				latSpeedTarget = 32;
 			}
 
-			actor->unkShort1 -= Renderer::g_frameDelta;
+			actor->unkShort1 = actor->unkShort1 - (Renderer::g_frameDelta);
 
 			if (actor->unkShort1 < 0)
 			{
+				int32_t scriptFlag = 0;
+
 				while (1)
 				{
 					uint16_t* scriptStart = movementData;
 
 					switch ((int16_t)*movementData)
 					{
-						case -1:
-							movementData -= (int16_t)movementData[1];
-							break;
 						case 1:
 							actor->unkShort1 = movementData[1];
 							movementData += 2;
@@ -813,30 +810,29 @@ namespace Toy2
 							int32_t distance;
 							int16_t param = movementData[1];
 
-							if (param >= 0)
-							{
-								distance = param;
-							}
-							else
+							if (param < 0)
 							{
 								int16_t boundHalfX = creatureRam->boundHalfX;
 								int16_t boundHalfZ = creatureRam->boundHalfZ;
 
-								if (boundHalfX <= boundHalfZ)
-									distance = -64 * boundHalfX / param;
-								else
+								if (boundHalfX > boundHalfZ)
 									distance = -64 * boundHalfZ / param;
+								else
+									distance = -64 * boundHalfX / param;
+							}
+							else
+							{
+								distance = param;
 							}
 
-							uint8_t high = *g_randDatBufferPtr++;
-							int32_t angle = (*g_randDatBufferPtr++ + (high << 8)) & 0xFFF;
+							int32_t hi = *g_randDatBufferPtr++;
+							int32_t angle = ((hi << 8) + *g_randDatBufferPtr++) & 0xFFF;
 
 							actor->motionTargetPos.x = actor->boundary.x + ((distance * Numerics::g_sinCosLUT[(angle - 2048) & 0xFFF]) >> 9);
 							actor->motionTargetPos.y = actor->boundary.y;
 
-							movementData += 2;
-
 							actor->motionTargetPos.z = actor->boundary.z + ((distance * Numerics::g_sinCosLUT[(angle - 1024) & 0xFFF]) >> 9);
+							movementData += 2;
 							break;
 						}
 						case 5: {
@@ -844,9 +840,13 @@ namespace Toy2
 							int32_t offsetX;
 							int32_t offsetZ;
 
-							if (boundHalfXShift >= margin)
+							if (boundHalfXShift < margin)
 							{
-								offsetX = 2 * creatureRam->boundHalfX * *g_randDatBufferPtr++;
+								offsetX = 0;
+							}
+							else
+							{
+								offsetX = creatureRam->boundHalfX * (*g_randDatBufferPtr++ << 1);
 
 								if (offsetX < margin)
 									offsetX = margin;
@@ -856,12 +856,12 @@ namespace Toy2
 
 								offsetX = offsetX - boundHalfXShift;
 							}
-							else
-							{
-								offsetX = 0;
-							}
 
-							if (boundHalfZShift >= margin)
+							if (boundHalfZShift < margin)
+							{
+								offsetZ = 0;
+							}
+							else
 							{
 								offsetZ = 2 * *g_randDatBufferPtr++ * creatureRam->boundHalfZ;
 
@@ -872,10 +872,6 @@ namespace Toy2
 									offsetZ = 2 * boundHalfZShift - margin;
 
 								offsetZ = offsetZ - boundHalfZShift;
-							}
-							else
-							{
-								offsetZ = 0;
 							}
 
 							int32_t rotatedX = sinBound * offsetZ + cosBound * offsetX;
@@ -889,11 +885,8 @@ namespace Toy2
 						}
 						case 8:
 							if (scriptFlag > 0)
-								movementData = &movementData[(int16_t)movementData[1] + 1];
-							else
-								movementData += 2;
-							break;
-						case 11:
+								movementData += (int16_t)movementData[1] - 1;
+
 							movementData += 2;
 							break;
 						case 12:
@@ -901,6 +894,10 @@ namespace Toy2
 							actor->actorFlags = actor->actorFlags | movementData[2];
 
 							movementData += 3;
+							break;
+						case 33:
+							actor->unkShort4 = movementData[1];
+							movementData += 2;
 							break;
 						case 13: {
 							actor->primaryAnimIdx = movementData[1];
@@ -915,28 +912,43 @@ namespace Toy2
 						case 14:
 							scriptFlag = 1;
 
-							if (! ((uint8_t)movementData[1] & *g_randDatBufferPtr++))
-							{
-								movementData += 2;
-								break;
-							}
+							if (*g_randDatBufferPtr++ & movementData[1])
+								scriptFlag = 0;
 
-							scriptFlag = 0;
 							movementData += 2;
 							break;
 						case 15:
 							creatureRam->speedTarget = (int16_t)movementData[1] >> 4;
 							movementData += 2;
 							break;
+						case 20:
+							creatureRam->speedNoTarget = (uint8_t)movementData[1];
+							movementData += 2;
+							break;
+						case 29:
+							creatureRam->rotSpeed = (uint8_t)movementData[1];
+							movementData += 2;
+							break;
+						case 30:
+							*(uint8_t*)&creatureRam->defenseMode = (uint8_t)movementData[1];
+							movementData += 2;
+							break;
 						case 16: {
-							int32_t diffX = (actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5;
-							int32_t diffZ = (actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5;
-							int16_t range = movementData[1];
-
-							scriptFlag = diffX * diffX + diffZ * diffZ < range * range;
+							int32_t diffX = ((actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5);
+							scriptFlag = diffX * diffX + ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5) < (int16_t)movementData[1] * (int16_t)movementData[1];
 							movementData += 2;
 							break;
 						}
+						case 18: {
+							int32_t diffX = ((actor->transform.pos.x - actor->motionTargetPos.x) >> 5);
+							scriptFlag = diffX * diffX + ((actor->transform.pos.z - actor->motionTargetPos.z) >> 5) * ((actor->transform.pos.z - actor->motionTargetPos.z) >> 5) < (int16_t)movementData[1] * (int16_t)movementData[1];
+							movementData += 2;
+							break;
+						}
+						case 34:
+							scriptFlag = Buzz::g_fireChargeTimer != 0;
+							++movementData;
+							break;
 						case 17: {
 							int32_t diffX = (g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5;
 							int32_t diffZ = (g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5;
@@ -957,24 +969,11 @@ namespace Toy2
 							++movementData;
 							break;
 						}
-						case 18: {
-							int32_t diffX = (actor->transform.pos.x - actor->motionTargetPos.x) >> 5;
-							int32_t diffZ = (actor->transform.pos.z - actor->motionTargetPos.z) >> 5;
-							int16_t range = movementData[1];
-
-							scriptFlag = diffX * diffX + diffZ * diffZ < range * range;
-							movementData += 2;
-							break;
-						}
 						case 19:
 							// NOTE: scriptFlag is only ever 0 or 1, so this never jumps
 							if (scriptFlag < 0)
-								movementData = &movementData[(int16_t)movementData[1] + 1];
-							else
-								movementData += 2;
-							break;
-						case 20:
-							creatureRam->speedNoTarget = (uint8_t)movementData[1];
+								movementData += (int16_t)movementData[1] - 1;
+
 							movementData += 2;
 							break;
 						case 21:
@@ -991,41 +990,39 @@ namespace Toy2
 							movementData += 2;
 							break;
 						case 24: {
-							int32_t divisor = -(int16_t)movementData[1] >> 5;
+							int32_t param = (int16_t)movementData[1];
+							movementData += 2;
 
-							actor->velX = (actor->motionTargetPos.x - actor->transform.pos.x) / divisor;
-							actor->velForward = (actor->motionTargetPos.z - actor->transform.pos.z) / divisor;
+							actor->velX = (actor->motionTargetPos.x - actor->transform.pos.x) / (-param >> 5);
+							actor->velForward = (actor->motionTargetPos.z - actor->transform.pos.z) / (-(int16_t)movementData[-1] >> 5);
 
+							actor->gravityVel = (int16_t)movementData[-1];
 							actor->actorFlags |= ACTOR_VEL_CLAMP_OVERRIDE;
+							break;
+						}
+						case 28:
 							actor->gravityVel = (int16_t)movementData[1];
 							movementData += 2;
 							break;
-						}
-						case 25: {
-							int16_t mode = movementData[1];
-							int32_t angle;
-
-							if (mode == 1)
+						case 25:
+							switch ((int16_t)movementData[1])
 							{
-								angle = Nu3D::Math::CartesianToFixedAngle(
-									actor->transform.pos.x - actor->motionTargetPos.x, actor->transform.pos.z - actor->motionTargetPos.z);
-							}
-							else
-							{
-								if (mode != 2)
-								{
-									movementData += 2;
+								case 1:
+									actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(
+															 actor->transform.pos.x - actor->motionTargetPos.x, actor->transform.pos.z - actor->motionTargetPos.z)
+														 - 2048)
+														& 0xFFF;
 									break;
-								}
-
-								angle = Nu3D::Math::CartesianToFixedAngle(
-									actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z);
+								case 2:
+									actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(
+															 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+														 - 2048)
+														& 0xFFF;
+									break;
 							}
 
-							actor->targetYaw = (angle - 2048) & 0xFFF;
 							movementData += 2;
 							break;
-						}
 						case 26:
 							actor->velX = (int16_t)movementData[1];
 							actor->velForward = (int16_t)movementData[2];
@@ -1040,23 +1037,10 @@ namespace Toy2
 							++movementData;
 							actor->motionTargetPos.z = g_buzzActor.posAngles.pos.z;
 							break;
-						case 28:
-							actor->gravityVel = (int16_t)movementData[1];
-							movementData += 2;
-							break;
-						case 29:
-							creatureRam->rotSpeed = (uint8_t)movementData[1];
-							movementData += 2;
-							break;
-						case 30:
-							*(uint8_t*)&creatureRam->defenseMode = (uint8_t)movementData[1];
-							movementData += 2;
-							break;
 						case 31: {
-							int32_t angle =
-								Nu3D::Math::CartesianToFixedAngle(
-									g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z)
-								& 0xFFF;
+							int32_t dx = g_buzzActor.posAngles.pos.x - actor->transform.pos.x;
+							int32_t dz = g_buzzActor.posAngles.pos.z - actor->transform.pos.z;
+							int32_t angle = Nu3D::Math::CartesianToFixedAngle(dx, dz) & 0xFFF;
 							int32_t scale = (int16_t)movementData[1];
 
 							if (scale <= 0)
@@ -1066,29 +1050,26 @@ namespace Toy2
 							}
 
 							actor->motionTargetPos.x = actor->transform.pos.x + scale * Numerics::g_sinCosLUT[angle];
-							movementData += 2;
 							actor->motionTargetPos.z = actor->transform.pos.z + scale * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
+							movementData += 2;
 							break;
 						}
-						case 33:
-							actor->unkShort4 = movementData[1];
-							movementData += 2;
-							break;
-						case 34:
-							scriptFlag = Buzz::g_fireChargeTimer != 0;
-							++movementData;
-							break;
 						case 35: {
-							int32_t angle =
-								Nu3D::Math::CartesianToFixedAngle(
-									g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z)
-								& 0xFFF;
+							int32_t dx = g_buzzActor.posAngles.pos.x - actor->transform.pos.x;
+							int32_t dz = g_buzzActor.posAngles.pos.z - actor->transform.pos.z;
+							int32_t angle = Nu3D::Math::CartesianToFixedAngle(dx, dz) & 0xFFF;
 
 							actor->motionTargetPos.x = actor->transform.pos.x - (int16_t)movementData[1] * Numerics::g_sinCosLUT[angle];
 							actor->motionTargetPos.z = actor->transform.pos.z - (int16_t)movementData[1] * Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF];
 							movementData += 2;
 							break;
 						}
+						case 11:
+							movementData += 2;
+							break;
+						case -1:
+							movementData -= (int16_t)movementData[1];
+							break;
 						default:
 							break;
 					}
@@ -1179,17 +1160,18 @@ namespace Toy2
 						break;
 				}
 
-				if (abs(actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >= 0x10000)
+				if (abs(actor->transform.pos.y - g_buzzActor.posAngles.pos.y) < 0x10000)
+				{
+					if (heightOffset != -1)
+						targetY = g_buzzActor.posAngles.pos.y - heightOffset;
+				}
+				else
 				{
 					targetY = actor->boundary.y;
 				}
-				else if (heightOffset != -1)
-				{
-					targetY = g_buzzActor.posAngles.pos.y - heightOffset;
-				}
 
 				if (chaseFlag)
-					actor->unkShort1 += Renderer::g_frameDelta;
+					actor->unkShort1 = actor->unkShort1 + Renderer::g_frameDelta;
 
 				actorFlags = 1;
 
@@ -1211,7 +1193,8 @@ namespace Toy2
 
 			int32_t yaw = actor->transform.angles.yaw;
 			int32_t sinYaw = Numerics::g_sinCosLUT[-yaw & 0xFFF] >> 2;
-			int32_t cosYaw = Numerics::g_sinCosLUT[(1024 - actor->transform.angles.yaw) & 0xFFF] >> 2;
+			int32_t t59 = (1024 - actor->transform.angles.yaw) & 0xFFF;
+			int32_t cosYaw = Numerics::g_sinCosLUT[t59] >> 2;
 
 			int32_t frameDelta = Renderer::g_frameDelta;
 
@@ -1300,11 +1283,11 @@ namespace Toy2
 				actor->velForward = 0;
 			}
 
-			int32_t localX = actor->transform.pos.x - actor->boundary.x;
 			int32_t localZ = actor->transform.pos.z - actor->boundary.z;
+			int32_t localX = actor->transform.pos.x - actor->boundary.x;
 			int32_t clampX = (cosBound * localX - sinBound * localZ) >> 12;
 			int32_t clampZ = (cosBound * localZ + sinBound * localX) >> 12;
-			int32_t clamped = 0;
+			uint8_t clamped = 0;
 
 			if (clampX > creatureRam->boundHalfX << 8)
 			{
@@ -1346,8 +1329,8 @@ namespace Toy2
 			{
 				if ((actor->actorFlags & ACTOR_STUNNED) == 0 || (actor->actorFlags & ACTOR_OOB_SPECIAL_MOVE) != 0)
 				{
-					int32_t snapY = frameDelta * (targetY - curY) / 64 + curY;
 					actor->transform.pos.y -= 6400;
+					int32_t snapY = frameDelta * (targetY - curY) / 64 + curY;
 					int32_t groundHeight = Nu3D::Collision::GetGroundHeight(&actor->transform, g_unk4E05F0[actor->creatureId - 1]);
 					actor->transform.pos.y = groundHeight;
 
@@ -1396,22 +1379,7 @@ namespace Toy2
 				actor->transform.pos.y = newY;
 				int32_t fallY = newY;
 
-				if ((actor->actorFlags & ACTOR_STUNNED) != 0)
-				{
-					actor->transform.pos.y = actor->motionTargetPos.y;
-
-					if (Renderer::Shadows::g_shadowCount < 47)
-					{
-						int32_t recordIdx = Renderer::Shadows::g_shadowCount;
-						int16_t newCount = Renderer::Shadows::g_shadowCount + 1;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->transform.pos.x;
-						Renderer::Shadows::g_shadowRecords[recordIdx].groundY = actor->motionTargetPos.y;
-						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->transform.pos.z;
-						Renderer::Shadows::g_shadowCount = newCount;
-						Renderer::Shadows::g_shadowRecords[recordIdx].size = g_unk4E05F0[actor->creatureId - 1];
-					}
-				}
-				else
+				if ((actor->actorFlags & ACTOR_STUNNED) == 0)
 				{
 					actor->transform.pos.y = newY - 6400;
 					int32_t groundHeight = Nu3D::Collision::GetGroundHeight(&actor->transform, g_unk4E05F0[actor->creatureId - 1]);
@@ -1427,51 +1395,67 @@ namespace Toy2
 						actor->lastValidYPosition = groundHeight;
 					}
 				}
+				else
+				{
+					actor->transform.pos.y = actor->motionTargetPos.y;
+
+					if (Renderer::Shadows::g_shadowCount < 47)
+					{
+						int32_t recordIdx = Renderer::Shadows::g_shadowCount;
+						int16_t newCount = Renderer::Shadows::g_shadowCount + 1;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldX = actor->transform.pos.x;
+						Renderer::Shadows::g_shadowRecords[recordIdx].groundY = actor->motionTargetPos.y;
+						Renderer::Shadows::g_shadowRecords[recordIdx].worldZ = actor->transform.pos.z;
+						Renderer::Shadows::g_shadowCount = newCount;
+						Renderer::Shadows::g_shadowRecords[recordIdx].size = g_unk4E05F0[actor->creatureId - 1];
+					}
+				}
 
 				int32_t groundY = actor->transform.pos.y;
 
-				if (fallY <= groundY - 512)
+				if (fallY > groundY - 512)
 				{
-					actor->transform.pos.y = fallY;
+					do
+					{
+						if (snapFlag)
+						{
+							actor->unkShort1 = 0;
+							actor->movementData = actor->movementData + 1;
+
+							if ((actor->actorFlags & ACTOR_VEL_CLAMP_OVERRIDE) != 0)
+							{
+								actor->actorFlags &= ~ACTOR_VEL_CLAMP_OVERRIDE;
+
+								if (snapFlag == 2)
+								{
+									actor->velX = 0;
+									actor->velForward = 0;
+									actor->gravityVel = 0;
+									updateFlags += 2;
+									break;
+								}
+							}
+						}
+						else
+						{
+							int32_t fall = (groundY - fallY) >> 2;
+
+							if (fall < -1024)
+								fall = -1024;
+
+							actor->transform.pos.y = fall * Renderer::g_frameDelta + fallY;
+						}
+
+						actor->gravityVel = 0;
+						updateFlags += ACTOR_UPDATE_GROUNDED;
+					} while (0);
 				}
 				else
 				{
-					if (snapFlag)
-					{
-						actor->unkShort1 = 0;
-						actor->movementData = actor->movementData + 1;
-
-						if ((actor->actorFlags & ACTOR_VEL_CLAMP_OVERRIDE) != 0)
-						{
-							actor->actorFlags &= ~ACTOR_VEL_CLAMP_OVERRIDE;
-
-							if (snapFlag == 2)
-							{
-								actor->velX = 0;
-								actor->velForward = 0;
-								actor->gravityVel = 0;
-								updateFlags += 2;
-
-								goto animUpdate;
-							}
-						}
-					}
-					else
-					{
-						int32_t fall = (groundY - fallY) >> 2;
-
-						if (fall < -1024)
-							fall = -1024;
-
-						actor->transform.pos.y = fallY + fall * Renderer::g_frameDelta;
-					}
-
-					actor->gravityVel = 0;
-					updateFlags += ACTOR_UPDATE_GROUNDED;
+					actor->transform.pos.y = fallY;
 				}
 			}
 
-		animUpdate:
 			int32_t areaIndexByte;
 
 			if ((updateFlags & ACTOR_UPDATE_GROUNDED) != 0)

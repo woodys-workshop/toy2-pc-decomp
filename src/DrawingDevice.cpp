@@ -767,7 +767,7 @@ namespace DrawingDevice
 		if (g_drawingDevice->m_bIsFullscreen)
 			return frontBuffer->Flip(0, 1);
 
-		return frontBuffer->Blt(&g_drawingDevice->m_rcScreenRect, backBuffer, &g_drawingDevice->m_rcViewportRect, 0x1000000, 0);
+		return frontBuffer->Blt(&g_drawingDevice->m_rcScreenRect, backBuffer, &g_drawingDevice->m_rcViewportRect, DDBLT_WAIT, 0);
 	}
 
 	// FUNCTION: TOY2 0x004ABAD0

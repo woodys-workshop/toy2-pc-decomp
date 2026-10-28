@@ -3,6 +3,7 @@
 #include "InputManager.h"
 #include "InputTypes.h"
 #include "Logger.h"
+#include "Numerics.h"
 #include "Renderer/Renderer.h"
 #include "Toy2/Toy2.h"
 
@@ -19,187 +20,161 @@ namespace Nu3D
 {
 	namespace FMV
 	{
-		struct RECTF
+		enum FMVFlags
 		{
-			float left;
-			float top;
-			float right;
-			float bottom;
+			FMV_FLAG_INFO_OK = 1,
+			FMV_FLAG_LOOP = 2,
+			FMV_FLAG_STOPPED = 4,
 		};
 
-		struct Nu3DFMV
+		struct FMVInstance
 		{
-			IAMMultiMediaStream* m_multiStream;
-			IMediaStream* m_primaryVideo;
-			IDirectDrawMediaStream* m_ddMediaStream;
-			IDirectDrawSurface* m_ddSurface;
-			IDirectDrawStreamSample* m_ddMediaSample;
-			LPDIRECTDRAWSURFACE4 m_ddSurface4;
-			int32_t m_flags;
-			Nu3D::FMV::RECTF m_dimensions;
+			IAMMultiMediaStream* multiStream;
+			IMediaStream* primaryVideo;
+			IDirectDrawMediaStream* ddMediaStream;
+			IDirectDrawSurface* ddSurface;
+			IDirectDrawStreamSample* ddMediaSample;
+			LPDIRECTDRAWSURFACE4 ddSurface4;
+			uint32_t flags;
+			RectF dimensions;
 		};
 
-		STATIC_ASSERT(sizeof(RECTF) == 0x10);
-		STATIC_ASSERT(sizeof(Nu3DFMV) == 0x2C);
+		STATIC_ASSERT(sizeof(FMVInstance) == 0x2C);
 
 		// GLOBAL: TOY2 0x00B62668
 		int32_t g_nu3dCoInitialized;
 
-		// FUNCTION: TOY2 0x004DB8C0
-		void Destroy(Nu3D::FMV::Nu3DFMV* fmv)
+		// FUNCTION: TOY2 0x004DB8C0 [MATCHED]
+		void Destroy(FMVInstance* fmv)
 		{
-			if (fmv->m_ddMediaSample)
-				fmv->m_ddMediaSample->Release();
+			if (fmv->ddMediaSample)
+				fmv->ddMediaSample->Release();
 
-			if (fmv->m_ddMediaStream)
-				fmv->m_ddMediaStream->Release();
+			if (fmv->ddMediaStream)
+				fmv->ddMediaStream->Release();
 
-			if (fmv->m_primaryVideo)
-				fmv->m_primaryVideo->Release();
+			if (fmv->primaryVideo)
+				fmv->primaryVideo->Release();
 
-			if (fmv->m_multiStream)
-				fmv->m_multiStream->Release();
+			if (fmv->multiStream)
+				fmv->multiStream->Release();
 
 			free(fmv);
 		}
 
-		// FUNCTION: TOY2 0x004DB910
-		void SetDimensions(Nu3D::FMV::Nu3DFMV* fmv, int32_t left, int32_t top, int32_t right, int32_t bottom)
+		// FUNCTION: TOY2 0x004DB910 [MATCHED]
+		void SetDimensions(FMVInstance* fmv, int32_t left, int32_t top, int32_t right, int32_t bottom)
 		{
-			fmv->m_dimensions.left = (float)left;
-			fmv->m_dimensions.top = (float)top;
-			fmv->m_dimensions.right = (float)right;
-			fmv->m_dimensions.bottom = (float)bottom;
+			fmv->dimensions.left = (float)left;
+			fmv->dimensions.top = (float)top;
+			fmv->dimensions.right = (float)right;
+			fmv->dimensions.bottom = (float)bottom;
 		}
 
-		// FUNCTION: TOY2 0x004DB940
-		uint32_t IsPlaying(Nu3D::FMV::Nu3DFMV* fmv) { return (~fmv->m_flags >> 2) & 1; }
+		// FUNCTION: TOY2 0x004DB940 [MATCHED]
+		uint32_t IsPlaying(FMVInstance* fmv) { return ! (fmv->flags & FMV_FLAG_STOPPED); }
 
-		// FUNCTION: TOY2 0x004DBB00
-		void SetPaused(Nu3D::FMV::Nu3DFMV* fmv, int32_t paused)
+		// FUNCTION: TOY2 0x004DBB00 [MATCHED]
+		void SetPaused(FMVInstance* fmv, int32_t paused)
 		{
 			HRESULT setStateResult;
 
 			if (paused)
 			{
-				fmv->m_flags |= 4;
+				fmv->flags |= FMV_FLAG_STOPPED;
 
-				setStateResult = fmv->m_multiStream->SetState(STREAMSTATE_STOP);
+				setStateResult = fmv->multiStream->SetState(STREAMSTATE_STOP);
 				if (setStateResult < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 344)("Failed with HRESULT(0x%8.8X)\n", setStateResult);
 			}
 			else
 			{
-				fmv->m_flags &= ~4;
+				fmv->flags &= ~FMV_FLAG_STOPPED;
 
-				setStateResult = fmv->m_multiStream->SetState(STREAMSTATE_RUN);
+				setStateResult = fmv->multiStream->SetState(STREAMSTATE_RUN);
 				if (setStateResult < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 350)("Failed with HRESULT(0x%8.8X)\n", setStateResult);
 			}
 		}
 
-		// FUNCTION: TOY2 0x004DBB80
-		HRESULT Seek(Nu3D::FMV::Nu3DFMV* fmv, int32_t streamTime) { return fmv->m_multiStream->Seek((STREAM_TIME)10000000 * streamTime); }
+		// FUNCTION: TOY2 0x004DBB80 [MATCHED]
+		HRESULT Seek(FMVInstance* fmv, int32_t streamTime) { return fmv->multiStream->Seek((STREAM_TIME)10000000 * streamTime); }
 
-		// FUNCTION: TOY2 0x004DB950
-		void UpdateAndRenderFMV(Nu3D::FMV::Nu3DFMV* fmv)
+		// FUNCTION: TOY2 0x004DB950 [MATCHED]
+		void UpdateAndRenderFMV(FMVInstance* fmv)
 		{
-			HRESULT updateResult = fmv->m_ddMediaSample->Update(2, 0, 0, 0);
-			RECT rect1;
-			RECT rect2;
-			DDSURFACEDESC2 surfaceDesc2;
+			HRESULT updateResult = fmv->ddMediaSample->Update(2, 0, 0, 0);
 
-			if (updateResult <= E_INVALIDARG)
+			switch (updateResult)
 			{
-				switch (updateResult)
+				case MS_E_BUSY:
+					Logger::DebugLog("FMV - Update BUSY\r\n");
+					break;
+				case E_ABORT:
+					Logger::DebugLog("FMV - Update ABORT\r\n");
+					break;
+				case E_POINTER:
+					Logger::DebugLog("FMV - Update POINTER\r\n");
+					break;
+				case E_INVALIDARG:
+					Logger::DebugLog("FMV - Update INVALIDARG\r\n");
+					break;
+				case 0:
+					break;
+				case MS_S_ENDOFSTREAM:
+					Logger::DebugLog("FMV - Update ENDOFSTREAM\r\n");
+					break;
+				case MS_S_PENDING:
+					Logger::DebugLog("FMV - Update PENDING\r\n");
+					break;
+				default:
+					Logger::DebugLog("FMV - Update UNKNOWN\r\n");
+					break;
+			}
+
+			if (updateResult == MS_S_ENDOFSTREAM)
+			{
+				if ((fmv->flags & FMV_FLAG_LOOP) != 0)
 				{
-					case E_INVALIDARG:
-						Logger::DebugLog("FMV - Update INVALIDARG\r\n");
-						goto LABEL_20;
-					case E_POINTER:
-						Logger::DebugLog("FMV - Update POINTER\r\n");
-						goto LABEL_20;
-					case E_ABORT:
-						Logger::DebugLog("FMV - Update ABORT\r\n");
-						goto LABEL_20;
-					case MS_E_BUSY:
-						Logger::DebugLog("FMV - Update BUSY\r\n");
-						goto LABEL_20;
+					fmv->multiStream->Seek(0);
 				}
-
-				goto LABEL_13;
+				else
+				{
+					fmv->multiStream->SetState(STREAMSTATE_STOP);
+					fmv->multiStream->Seek(0);
+					fmv->flags |= FMV_FLAG_STOPPED;
+				}
 			}
 
-			if (! updateResult)
-				goto LABEL_14;
+			RECT destRect;
+			destRect.left = (int32_t)fmv->dimensions.left;
+			destRect.right = (int32_t)(fmv->dimensions.right + fmv->dimensions.left) - 1;
+			destRect.top = (int32_t)fmv->dimensions.top;
+			destRect.bottom = (int32_t)(fmv->dimensions.bottom + fmv->dimensions.top) - 1;
 
-			if (updateResult == MS_S_PENDING)
-			{
-				Logger::DebugLog("FMV - Update PENDING\r\n");
-				goto LABEL_20;
-			}
+			DDSURFACEDESC2 surfaceDesc;
+			memset(&surfaceDesc, 0, sizeof(surfaceDesc));
 
-			if (updateResult - MS_S_PENDING != 2)
-			{
-			LABEL_13:
-				Logger::DebugLog("FMV - Update UNKNOWN\r\n");
-			LABEL_14:
+			surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
+			fmv->ddSurface4->GetSurfaceDesc(&surfaceDesc);
 
-				if (updateResult != MS_S_ENDOFSTREAM)
-					goto LABEL_20;
+			RECT srcRect;
+			srcRect.left = 0;
+			srcRect.right = surfaceDesc.dwWidth - 1;
+			srcRect.top = 0;
+			srcRect.bottom = surfaceDesc.dwHeight - 1;
 
-				goto LABEL_15;
-			}
-
-			Logger::DebugLog("FMV - Update ENDOFSTREAM\r\n");
-		LABEL_15:
-
-			if ((fmv->m_flags & 2) != 0)
-			{
-				fmv->m_multiStream->Seek(0);
-			}
-			else
-			{
-				fmv->m_multiStream->SetState(STREAMSTATE_STOP);
-
-				fmv->m_multiStream->Seek(0);
-
-				fmv->m_flags |= 4;
-			}
-		LABEL_20:
-
-			rect1.left = (int32_t)fmv->m_dimensions.left;
-			rect1.right = (int32_t)(fmv->m_dimensions.right + fmv->m_dimensions.left) - 1;
-			rect1.top = (int32_t)fmv->m_dimensions.top;
-			rect1.bottom = (int32_t)(fmv->m_dimensions.bottom + fmv->m_dimensions.top) - 1;
-
-			memset(&surfaceDesc2, 0, sizeof(surfaceDesc2));
-
-			surfaceDesc2.dwSize = 124;
-			fmv->m_ddSurface4->GetSurfaceDesc(&surfaceDesc2);
-
-			rect2.left = 0;
-			rect2.right = surfaceDesc2.dwWidth - 1;
-			rect2.top = 0;
-			rect2.bottom = surfaceDesc2.dwHeight - 1;
-
-			DrawingDevice::GetBackBuffer()->Blt(&rect1, fmv->m_ddSurface4, &rect2, 0x1000000, 0);
+			DrawingDevice::GetBackBuffer()->Blt(&destRect, fmv->ddSurface4, &srcRect, DDBLT_WAIT, NULL);
 		}
 
 		// FUNCTION: TOY2 0x004DB600
-		Nu3D::FMV::Nu3DFMV* CreateFMVInstance(LPCCH filePath)
+		FMVInstance* CreateFMVInstance(LPCCH filePath)
 		{
-			Nu3D::FMV::Nu3DFMV* alloc = (Nu3D::FMV::Nu3DFMV*)malloc(sizeof(Nu3D::FMV::Nu3DFMV));
+			FMVInstance* alloc = (FMVInstance*)malloc(sizeof(FMVInstance));
 
 			if (alloc)
 			{
-				IAMMultiMediaStream* multiStreamMedia;
-				WCHAR wideCharPath[260];
-				RECT surfaceRect;
-				DWORD information;
-				HRESULT result;
-
-				memset(alloc, 0, sizeof(Nu3D::FMV::Nu3DFMV));
+				memset(alloc, 0, sizeof(FMVInstance));
 
 				if (! g_nu3dCoInitialized)
 				{
@@ -207,9 +182,10 @@ namespace Nu3D
 					g_nu3dCoInitialized = 1;
 				}
 
+				IAMMultiMediaStream* multiStreamMedia;
 				CoCreateInstance(CLSID_AMMultiMediaStream, 0, CLSCTX_INPROC_SERVER, IID_IAMMultiMediaStream, (void**)&multiStreamMedia);
 
-				result = multiStreamMedia->Initialize(STREAMTYPE_READ, 0, 0);
+				HRESULT result = multiStreamMedia->Initialize(STREAMTYPE_READ, 0, 0);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 130)("Failed ot initialize HRESULT(0x%8.8X)\n", result);
 
@@ -221,6 +197,7 @@ namespace Nu3D
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 141)("Failed to add audio media stream HRESULT(0x%8.8X)\n", result);
 
+				WCHAR wideCharPath[260];
 				MultiByteToWideChar(0, 0, filePath, -1, wideCharPath, 260);
 
 				if (multiStreamMedia->OpenFile(wideCharPath, 0) < 0)
@@ -230,94 +207,86 @@ namespace Nu3D
 					return 0;
 				}
 
-				alloc->m_multiStream = multiStreamMedia;
+				alloc->multiStream = multiStreamMedia;
 				multiStreamMedia->AddRef();
 
-				IAMMultiMediaStream* multiStreamMediaCpy = multiStreamMedia;
-
 				if (! multiStreamMedia)
-				{
 					printf("Could not create a CLSID_MultiMediaStream object\nCheck you have run regsvr32 amstream.dll\n");
-					multiStreamMediaCpy = multiStreamMedia;
-				}
 
-				multiStreamMediaCpy->Release();
+				multiStreamMedia->Release();
 
-				result = alloc->m_multiStream->GetMediaStream(MSPID_PrimaryVideo, &alloc->m_primaryVideo);
+				result = alloc->multiStream->GetMediaStream(MSPID_PrimaryVideo, &alloc->primaryVideo);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 167)("Failed to get media stream HRESULT(0x%8.8X)\n", result);
 
-				result = alloc->m_primaryVideo->QueryInterface(IID_IDirectDrawMediaStream, (void**)&alloc->m_ddMediaStream);
+				result = alloc->primaryVideo->QueryInterface(IID_IDirectDrawMediaStream, (void**)&alloc->ddMediaStream);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 173)("Failed to query DirectDrawMediaStream interface HRESULT(0x%8.8X)\n", result);
 
-				result = alloc->m_ddMediaStream->CreateSample(0, 0, 0, &alloc->m_ddMediaSample);
+				result = alloc->ddMediaStream->CreateSample(0, 0, 0, &alloc->ddMediaSample);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 179)("Failed to create sample HRESULT(0x%8.8X)\n", result);
 
-				result = alloc->m_ddMediaSample->GetSurface(&alloc->m_ddSurface, &surfaceRect);
+				RECT surfaceRect;
+				result = alloc->ddMediaSample->GetSurface(&alloc->ddSurface, &surfaceRect);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 185)("Failed get surface HRESULT(0x%8.8X)\n", result);
 
-				result = alloc->m_ddSurface->QueryInterface(IID_IDirectDrawSurface4, (void**)&alloc->m_ddSurface4);
+				result = alloc->ddSurface->QueryInterface(IID_IDirectDrawSurface4, (void**)&alloc->ddSurface4);
 				if (result < 0)
 					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 191)("Failed to query DirectDrawSurface4 interface HRESULT(0x%8.8X)\n", result);
 
-				information = 2;
-
-				if (alloc->m_multiStream->GetInformation(&information, 0) == 0)
+				DWORD information = 2;
+				if (alloc->multiStream->GetInformation(&information, 0) == 0)
 				{
-					alloc->m_flags |= 1;
+					alloc->flags |= FMV_FLAG_INFO_OK;
 					return alloc;
 				}
 
-				alloc->m_flags &= ~1;
+				alloc->flags &= ~FMV_FLAG_INFO_OK;
 			}
 
 			return alloc;
 		}
 
-		// FUNCTION: TOY2 0x004CE5F0
+		// FUNCTION: TOY2 0x004CE5F0 [MATCHED]
 		int32_t PlayMovie(LPCCH filePath)
 		{
 			int32_t exited = 0;
 
 			Renderer::ShowBlackFrames();
 
-			Nu3D::FMV::Nu3DFMV* instance = CreateFMVInstance(filePath);
+			FMVInstance* instance = CreateFMVInstance(filePath);
 
-			if (! instance)
-				return 0;
-
-			int32_t height = DrawingDevice::GetDestHeight();
-			int32_t width = DrawingDevice::GetDestWidth();
-
-			SetDimensions(instance, 0, 0, width, height);
-			Seek(instance, 0);
-			SetPaused(instance, 0);
-
-			do
+			if (instance)
 			{
-				Toy2::ProcessMiscEvents();
-				UpdateAndRenderFMV(instance);
+				SetDimensions(instance, 0, 0, DrawingDevice::GetDestWidth(), DrawingDevice::GetDestHeight());
+				Seek(instance, 0);
+				SetPaused(instance, 0);
 
-				if (Renderer::BeginScene())
+				do
 				{
-					int32_t isSoftwareRendering = Renderer::g_isSoftwareRendering;
-					Renderer::g_isSoftwareRendering = 0;
+					Toy2::ProcessMiscEvents();
+					UpdateAndRenderFMV(instance);
 
-					Renderer::EndScene(1);
+					if (Renderer::BeginScene())
+					{
+						int32_t isSoftwareRendering = Renderer::g_isSoftwareRendering;
+						Renderer::g_isSoftwareRendering = 0;
 
-					Renderer::g_isSoftwareRendering = isSoftwareRendering;
-				}
+						Renderer::EndScene(1);
 
-				if (InputManager::FindKeyReleased() || (InputManager::GetCurButtonsPressed() & (INPUT_CANCEL | INPUT_SPIN | INPUT_JUMP | INPUT_FIRE)) != 0)
-					exited = 1;
+						Renderer::g_isSoftwareRendering = isSoftwareRendering;
+					}
 
-				Sleep(1);
-			} while (IsPlaying(instance) && ! exited);
+					if (InputManager::FindKeyReleased() || (InputManager::GetCurButtonsPressed() & (INPUT_CANCEL | INPUT_SPIN | INPUT_JUMP | INPUT_FIRE)) != 0)
+						exited = 1;
 
-			Destroy(instance);
+					Sleep(1);
+				} while (IsPlaying(instance) && ! exited);
+
+				Destroy(instance);
+			}
 
 			return exited;
 		}
