@@ -40,8 +40,8 @@ namespace Nu3D
 	void PrecisionSleep(int32_t delayMs);
 	void MemSet32Util(void* buffer, int32_t count, uint32_t value);
 
-	void SetUseAsDiffuseModulation(int32_t option);
-	void SetDefaultPrimFlags(int32_t option);
+	int32_t SetUseAsDiffuseModulation(int32_t option);
+	int32_t SetDefaultPrimFlags(int32_t option);
 
 	STATIC_ASSERT(sizeof(VertexTL) == 32);
 	STATIC_ASSERT(sizeof(Vertex) == 36);
