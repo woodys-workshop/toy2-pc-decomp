@@ -1227,14 +1227,14 @@ namespace AudioManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x00413240
-	void ThreadPlay(LPSTR fileName, bool looping)
+	// FUNCTION: TOY2 0x00413240 [MATCHED]
+	void ThreadPlay(LPSTR fileName, int32_t looping)
 	{
 		if (g_directSound)
 		{
 			if (LoadFile(fileName))
 			{
-				g_looping = looping;
+				g_looping = looping & 1;
 
 				g_musicSoundBuffer->SetCurrentPosition(0);
 				SetMusicVolume(g_musicVolume);
