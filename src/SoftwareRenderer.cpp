@@ -661,8 +661,12 @@ namespace SoftwareDevice
 
 	// Vertex Methods
 
-	// STUB: TOY2 0x004B2B20
-	HRESULT ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer) { return DDERR_UNSUPPORTED; }
+	// FUNCTION: TOY2 0x004B2B20 [MATCHED]
+	HRESULT ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer)
+	{
+		free(buffer);
+		return 0;
+	}
 
 	// FUNCTION: TOY2 0x004B2B30 [MATCHED]
 	HRESULT CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags)
