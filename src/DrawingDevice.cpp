@@ -536,27 +536,25 @@ namespace DrawingDevice
 		viewport->dvClipHeight = 2.0;
 	}
 
-	// FUNCTION: TOY2 0x004AF0D0
+	// FUNCTION: TOY2 0x004AF0D0 [MATCHED]
 	HRESULT WINAPI CD3DFramework::EnumZBufferFormats(LPDDPIXELFORMAT lpDDPixFmt, LPVOID lpContext)
 	{
-		LPDDPIXELFORMAT pixelFormat = reinterpret_cast<LPDDPIXELFORMAT>(lpContext);
-		HRESULT result = 0;
+		LPDDPIXELFORMAT pixelFormat = (LPDDPIXELFORMAT)lpContext;
 
-		if (lpDDPixFmt)
+		if (lpDDPixFmt && pixelFormat)
 		{
-			if (pixelFormat)
+			if (lpDDPixFmt->dwFlags == pixelFormat->dwFlags)
 			{
-				if (lpDDPixFmt->dwFlags != pixelFormat->dwFlags)
-					return 1;
-
 				memcpy(pixelFormat, lpDDPixFmt, sizeof(DDPIXELFORMAT));
 
-				if (lpDDPixFmt->dwRGBBitCount != 16)
-					return 1;
+				if (lpDDPixFmt->dwRGBBitCount == 16)
+					return D3DENUMRET_CANCEL;
 			}
+
+			return D3DENUMRET_OK;
 		}
 
-		return result;
+		return D3DENUMRET_CANCEL;
 	}
 
 	/* ------ DrawingDevice ------- */
