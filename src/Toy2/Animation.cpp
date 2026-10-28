@@ -80,19 +80,19 @@ namespace Toy2
 				Nu3D::Math::TransformPointByMatrix(out, out, &g_localBoneMatrices[index + 32 * g_curActorAnimSlot]);
 		}
 
-		// FUNCTION: TOY2 0x004CD170
+		// FUNCTION: TOY2 0x004CD170 [MATCHED]
 		void ParseHeader(int16_t* animData)
 		{
 			int32_t headerSize;
 
-			if (*animData >= 0)
-				headerSize = 12;
-			else
+			if (*animData < 0)
 				headerSize = -*animData;
+			else
+				headerSize = 12;
 
 			g_unkB223E0 = (int16_t*)((uint8_t*)animData + headerSize);
-			g_unkB423E8 = (uint8_t*)animData + headerSize + 2 * animData[5];
-			g_unkB423EC = g_unkB423E8 + animData[6];
+			g_unkB423E8 = (uint8_t*)animData + headerSize + 2 * (uint16_t)animData[5];
+			g_unkB423EC = g_unkB423E8 + (uint16_t)animData[6];
 		}
 
 		// FUNCTION: TOY2 0x004CD1B0
