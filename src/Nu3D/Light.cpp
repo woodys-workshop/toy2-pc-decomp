@@ -210,8 +210,8 @@ namespace Nu3D
 		g_globalLight5 = BuildLight(&matrix, &color, 1);
 	}
 
-	// FUNCTION: TOY2 0x004C29A0
-	Light* Light::Destroy(Light* light)
+	// FUNCTION: TOY2 0x004C29A0 [MATCHED]
+	void Light::Destroy(Light* light)
 	{
 		if (light)
 		{
@@ -221,10 +221,8 @@ namespace Nu3D
 				DrawingDevice::ReleaseLight(light->direct3dLight);
 			}
 
-			return Free(light);
+			Free(light);
 		}
-
-		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004C3090
