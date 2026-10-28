@@ -14,12 +14,13 @@ namespace Numerics
 	};
 	// clang-format on
 
-	// FUNCTION: TOY2 0x004B0740
+	// FUNCTION: TOY2 0x004B0740 [MATCHED]
 	int32_t RoundUpToPowerOf2(int32_t number)
 	{
-		int32_t result;
+		int32_t result = 16;
 
-		for (result = 16; result < number; result *= 2) {};
+		while (result < number)
+			result <<= 1;
 
 		return result;
 	}
