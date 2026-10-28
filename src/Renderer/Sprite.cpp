@@ -1116,56 +1116,60 @@ namespace Renderer
 		// FUNCTION: TOY2 0x0049D7A0
 		void DrawBackdropTransition(int32_t* timer, int32_t* backdropIndex, int32_t cycleDuration)
 		{
-			if (*timer <= 0)
+			if (*timer > 0)
+			{
+				*timer -= g_frameDelta;
+			}
+			else
 			{
 				*timer = cycleDuration;
-				int32_t nextIndex = *backdropIndex + 1;
-				*backdropIndex = nextIndex;
+				++*backdropIndex;
 
-				if (nextIndex > 9)
+				if (*backdropIndex > 9)
 					*backdropIndex = 0;
 
 				Toy2::g_nextBackdropId = *backdropIndex + 48;
 
 				Glue::SetBackdrop(Toy2::g_nextBackdropId);
 			}
-			else
-			{
-				*timer -= g_frameDelta;
-			}
 
-			Vector2F uvTopLeft;
-			Vector2F uvBottomRight;
-			RGBA color;
+			// NOTE: the fade passes use opposite slots for their UV corners.
+			Vector2F uvCorners[2];
 
 			// fade to black at the end of the cycle
 			if (*timer < 25)
 			{
-				color.value = 0;
-				color.a = -1 - 10 * *timer;
+				RGBA color;
+				color.r = 0;
+				color.a = -1 - 10 * (int8_t)*timer;
+				color.g = 0;
+				color.b = 0;
 
-				uvTopLeft.x = 0.0;
-				uvTopLeft.y = 0.0;
+				uvCorners[1].x = 0.0f;
+				uvCorners[1].y = 0.0f;
 
-				uvBottomRight.x = 1.0;
-				uvBottomRight.y = 1.0;
+				uvCorners[0].x = 1.0f;
+				uvCorners[0].y = 1.0f;
 
-				Queue2DSprite(0.0, 0.0, 1.0, 1.0, &uvTopLeft, &uvBottomRight, 0, color, 3136);
+				Queue2DSprite(0.0f, 0.0f, 1.0f, 1.0f, &uvCorners[1], &uvCorners[0], 0, color, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 			}
 
 			// and fade in from black at the start
 			if (*timer > cycleDuration - 25)
 			{
-				color.value = 0;
-				color.a = 10 * *timer - 10 * cycleDuration - 1;
+				RGBA color;
+				color.r = 0;
+				color.g = 0;
+				color.b = 0;
+				color.a = 10 * (int8_t)*timer - 10 * (int8_t)cycleDuration - 1;
 
-				uvBottomRight.x = 0.0;
-				uvBottomRight.y = 0.0;
+				uvCorners[0].x = 0.0f;
+				uvCorners[0].y = 0.0f;
 
-				uvTopLeft.x = 1.0;
-				uvTopLeft.y = 1.0;
+				uvCorners[1].x = 1.0f;
+				uvCorners[1].y = 1.0f;
 
-				Queue2DSprite(0.0, 0.0, 1.0, 1.0, &uvBottomRight, &uvTopLeft, 0, color, 3136);
+				Queue2DSprite(0.0f, 0.0f, 1.0f, 1.0f, &uvCorners[0], &uvCorners[1], 0, color, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 			}
 		}
 
