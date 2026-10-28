@@ -802,13 +802,15 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x00487A60
 		BOOL IsFloorWalkable() { return Toy2::Collision::g_floorSlope.y >= (int16_t)0xE000; }
 
-		// FUNCTION: TOY2 0x00487AB0
+		// FUNCTION: TOY2 0x00487AB0 [MATCHED]
 		int32_t GetSurfaceQuality(int32_t collisionState)
 		{
-			if ((uint8_t)Toy2::Collision::g_buzzCollisionStates[collisionState].collisionQuality == 0xFF)
+			int16_t collisionQuality = Toy2::Collision::g_buzzCollisionStates[collisionState].collisionQuality;
+
+			if ((uint8_t)collisionQuality == 0xFF)
 				return -1;
 
-			return (uint8_t)Toy2::Collision::g_buzzCollisionStates[collisionState].collisionQuality;
+			return (uint8_t)collisionQuality;
 		}
 
 		// FUNCTION: TOY2 0x00487B20
