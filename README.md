@@ -10,7 +10,7 @@ Use a legally sourced Visual C++ 6.0 Professional or Enterprise with Service Pac
 
 Searchable media identifiers:
 
-- **Microsoft Visual Studio 6.0 Service Pack 3**: disc part number `X04-73525`, CD set `X04-73542-M`.
+- **Microsoft Visual Studio 6.0 Service Pack 3**: disc part number `X04-73545`.
 - **Microsoft DirectX 6.1 SDK**, available in either distribution:
   - **Gold release**.
   - **MSDN Disc 7, April 1999**, part number `X04-61941`.
