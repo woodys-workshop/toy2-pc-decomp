@@ -179,7 +179,7 @@ namespace Nu3D
 
 			g_clipNormMatrixCache._11 = 2.0 / g_pendingViewport.dvClipWidth;
 			g_clipNormMatrixCache._22 = 2.0 / g_pendingViewport.dvClipHeight;
-			g_clipNormMatrixCache._33 = 1.0 / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ;
+			g_clipNormMatrixCache._33 = 1.0 / (g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ);
 
 			g_clipNormMatrixCache._41 =
 				-1.0 - (g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth + g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth);
@@ -187,7 +187,7 @@ namespace Nu3D
 			g_clipNormMatrixCache._42 =
 				1.0 - (g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight + g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight);
 
-			g_clipNormMatrixCache._43 = -(g_pendingViewport.dvMinZ / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ);
+			g_clipNormMatrixCache._43 = -(g_pendingViewport.dvMinZ / (g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ));
 		}
 
 		// FUNCTION: TOY2 0x004B5AA0
