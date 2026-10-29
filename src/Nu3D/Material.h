@@ -32,7 +32,7 @@ namespace Nu3D
 		D3DMATERIAL d3dMaterial;
 		D3DMATERIALHANDLE d3dMaterialHandle;
 		LPDIRECT3DMATERIAL3 direct3DMat3;
-		int32_t texDataIndex;
+		uint32_t texDataIndex;
 		float opacity;
 		Renderer::RenderEntry* renderEntryHead;
 		int32_t metadata;
@@ -55,7 +55,7 @@ namespace Nu3D
 		static void AttachTexture(Material* material, uint32_t texDataIndex);
 		static Material* CreateFromColor(RGBColor* rgbColor);
 		static Material* CreateFromFile(MaterialFile* materialFile);
-		static void SetOpacity(Material* material, float alpha);
+		static float SetOpacity(Material* material, float alpha);
 	};
 
 	// the environment mapped (reflection) versions of the material currently being drawn
