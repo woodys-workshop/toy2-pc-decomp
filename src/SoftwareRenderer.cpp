@@ -8,9 +8,6 @@
 
 namespace SoftwareRenderer
 {
-	void InitialiseColourScaleTables();
-	void CommitZoom();
-
 	struct TextureSnapshot
 	{
 		uint32_t* texData;
@@ -319,6 +316,152 @@ namespace SoftwareRenderer
 
 	// FUNCTION: TOY2 0x004C20E0
 	void SetLevelFileIndex(int32_t index) { g_levelFileIndex = index; }
+
+	// FUNCTION: TOY2 0x004C1C40 [MATCHED]
+	void InitialiseColourScaleTables()
+	{
+		g_colourScaleTables = (uint16_t*)malloc(0x80000);
+		g_blueScaleTable = g_colourScaleTables;
+		g_greenScaleTable = g_blueScaleTable + 65536;
+		g_redScaleTable = g_greenScaleTable + 65536;
+		g_unkE4D7B8 = g_redScaleTable + 65536;
+
+		int32_t index = 0;
+
+		if (! g_pixelMode)
+		{
+			for (int32_t row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_greenScaleTable[index++] = (uint16_t)((product >> 6) & 0x3E0);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_redScaleTable[index++] = (uint16_t)((product >> 1) & 0x7C00);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+		}
+		else
+		{
+			index = 0;
+
+			for (int32_t row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_greenScaleTable[index++] = (uint16_t)((product >> 5) & 0x7C0);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_redScaleTable[index++] = (uint16_t)(product & 0xF800);
+				}
+			}
+
+			index = 0;
+
+			for (row = 0; row < 256; ++row)
+			{
+				for (int32_t column = 0; column < 256; ++column)
+				{
+					uint32_t product = row * column;
+
+					if (product > 0xFFFF)
+						product = 0xFFFF;
+
+					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
+				}
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x004C1E70 [MATCHED]
+	void CommitZoom()
+	{
+		g_viewOffsetX = (float)g_leftOffset;
+		g_viewOffsetY = (float)g_topOffset;
+		g_viewScaleX = (float)((g_rightOffset - g_leftOffset + 1) * (1.0 / 320.0));
+		g_viewScaleY = (float)((g_bottomOffset - g_topOffset + 1) * (1.0 / 220.0));
+		g_zoomScaleX = (float)g_zoomedWidth / (float)g_surfaceWidth;
+		g_zoomScaleY = (float)g_zoomedHeight / (float)g_surfaceHeight;
+	}
 
 	// FUNCTION: TOY2 0x004BCE00 [MATCHED]
 	void InitialisePrimarySurface()
@@ -744,152 +887,6 @@ namespace SoftwareRenderer
 
 	// STUB: TOY2 0x004C1720
 	void UnkFunc16(int32_t a1, int32_t a2, uint16_t* a3, uint32_t a4) {}
-
-	// FUNCTION: TOY2 0x004C1C40 [MATCHED]
-	void InitialiseColourScaleTables()
-	{
-		g_colourScaleTables = (uint16_t*)malloc(0x80000);
-		g_blueScaleTable = g_colourScaleTables;
-		g_greenScaleTable = g_blueScaleTable + 65536;
-		g_redScaleTable = g_greenScaleTable + 65536;
-		g_unkE4D7B8 = g_redScaleTable + 65536;
-
-		int32_t index = 0;
-
-		if (! g_pixelMode)
-		{
-			for (int32_t row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_greenScaleTable[index++] = (uint16_t)((product >> 6) & 0x3E0);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_redScaleTable[index++] = (uint16_t)((product >> 1) & 0x7C00);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
-				}
-			}
-		}
-		else
-		{
-			index = 0;
-
-			for (int32_t row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_blueScaleTable[index++] = (uint16_t)((product >> 11) & 0x1F);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_greenScaleTable[index++] = (uint16_t)((product >> 5) & 0x7C0);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_redScaleTable[index++] = (uint16_t)(product & 0xF800);
-				}
-			}
-
-			index = 0;
-
-			for (row = 0; row < 256; ++row)
-			{
-				for (int32_t column = 0; column < 256; ++column)
-				{
-					uint32_t product = row * column;
-
-					if (product > 0xFFFF)
-						product = 0xFFFF;
-
-					g_unkE4D7B8[index++] = (uint16_t)((product >> 11) & 0x1F);
-				}
-			}
-		}
-	}
-
-	// FUNCTION: TOY2 0x004C1E70 [MATCHED]
-	void CommitZoom()
-	{
-		g_viewOffsetX = (float)g_leftOffset;
-		g_viewOffsetY = (float)g_topOffset;
-		g_viewScaleX = (float)((g_rightOffset - g_leftOffset + 1) * (1.0 / 320.0));
-		g_viewScaleY = (float)((g_bottomOffset - g_topOffset + 1) * (1.0 / 220.0));
-		g_zoomScaleX = (float)g_zoomedWidth / (float)g_surfaceWidth;
-		g_zoomScaleY = (float)g_zoomedHeight / (float)g_surfaceHeight;
-	}
 
 	// STUB: TOY2 0x004C4340
 	uint32_t* UnkFunc59(int32_t a1, uint32_t* a2, int32_t* a3, uint32_t* a4) { return 0; }
