@@ -2016,7 +2016,7 @@ namespace AudioManager
 
 		StopAndWait();
 
-		if (index > 21)
+		if (index >= 22 || index < 0)
 			return 0;
 
 		FileUtils::AppendCDPath(fileName);
