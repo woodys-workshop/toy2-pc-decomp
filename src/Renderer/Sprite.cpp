@@ -1136,7 +1136,6 @@ namespace Renderer
 				Glue::SetBackdrop(Toy2::g_nextBackdropId);
 			}
 
-			// NOTE: the fade passes use opposite slots for their UV corners.
 			Vector2F uvCorners[2];
 
 			// fade to black at the end of the cycle

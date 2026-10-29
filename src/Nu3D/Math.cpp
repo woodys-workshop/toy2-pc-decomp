@@ -594,7 +594,6 @@ namespace Nu3D
 			result->z = scale * vector->z;
 		}
 
-		// NOTE: separate double operations preserve the x87 scaling steps.
 		// FUNCTION: TOY2 0x004520D0 [MATCHED]
 		int32_t CartesianToFixedAngle(int32_t x, int32_t y)
 		{

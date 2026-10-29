@@ -171,7 +171,6 @@ namespace Nu3D
 		}
 	}
 
-	// NOTE: EDI is saved by both the compiler and the inline assembly.
 	// FUNCTION: TOY2 0x0047D520 [MATCHED]
 	void MemSet32Util(void* buffer, int32_t count, uint32_t value)
 	{
