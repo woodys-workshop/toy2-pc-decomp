@@ -95,3 +95,11 @@ union BGRA
 
 	uint32_t value;
 };
+
+struct BGRA_F
+{
+	float b;
+	float g;
+	float r;
+	float a;
+};

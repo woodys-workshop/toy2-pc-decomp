@@ -560,7 +560,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x004A9530
-		D3DMATRIX* SetRotationYFromU16AngleLUT(D3DMATRIX* matrix, int16_t angle)
+		D3DMATRIX* SetRotationYFromU16AngleLUT(D3DMATRIX* matrix, int32_t angle)
 		{
 			float cos = Numerics::g_trigLUT[(angle + 0x4000) & 0xFFFF];
 

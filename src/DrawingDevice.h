@@ -127,7 +127,7 @@ namespace DrawingDevice
 	HRESULT SetRenderState(D3DRENDERSTATETYPE renderStateType, DWORD value);
 	HRESULT SetLightState(D3DLIGHTSTATETYPE lightState, DWORD value);
 	HRESULT CreateLight(LPDIRECT3DLIGHT* outLight);
-	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT d3dLight);
+	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT2 d3dLight);
 	HRESULT AddLight(LPDIRECT3DLIGHT light);
 	HRESULT DeleteLight(LPDIRECT3DLIGHT light);
 	int32_t ReleaseLight(LPDIRECT3DLIGHT light);

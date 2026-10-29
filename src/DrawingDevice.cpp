@@ -690,7 +690,7 @@ namespace DrawingDevice
 	HRESULT CreateLight(LPDIRECT3DLIGHT* outLight) { return GetD3D()->CreateLight(outLight, 0); }
 
 	// FUNCTION: TOY2 0x004ABF50
-	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT d3dLight) { return light->SetLight(d3dLight); }
+	HRESULT SetLight(LPDIRECT3DLIGHT light, LPD3DLIGHT2 d3dLight) { return light->SetLight((LPD3DLIGHT)d3dLight); }
 
 	// FUNCTION: TOY2 0x004ABF60
 	HRESULT AddLight(LPDIRECT3DLIGHT light) { return GetViewport()->AddLight(light); }

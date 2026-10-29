@@ -34,7 +34,7 @@ namespace Nu3D
 		void FullMatrixMultiply(D3DMATRIX* output, D3DMATRIX* left, D3DMATRIX* right);
 		void InvertAffineMatrix(D3DMATRIX* output, D3DMATRIX* input);
 		Matrix3x3I16* EulerToRotationMatrix(AnglesWithRoll* angles, Matrix3x3I16* matrix);
-		D3DMATRIX* SetRotationYFromU16AngleLUT(D3DMATRIX* matrix, int16_t angle);
+		D3DMATRIX* SetRotationYFromU16AngleLUT(D3DMATRIX* matrix, int32_t angle);
 		int32_t CartesianToFixedAngle(int32_t x, int32_t y);
 		float Abs(float value);
 		float DotProduct(Vector3F* v1, Vector3F* v2);
