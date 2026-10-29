@@ -322,7 +322,7 @@ def format_sources():
 
 def generate_progress_image(output_path):
     icon_path = Path("resources/APPICON.ico")
-    reccmp_args = ["reccmp-reccmp", "--target", build_script.PROJECT_NAME.upper(), "--silent", "--svg", str(output_path)]
+    reccmp_args = ["reccmp-reccmp", "--target", build_script.PROJECT_NAME.upper(), "--silent", "--nolib", "--svg", str(output_path)]
 
     icon_png = None
 
