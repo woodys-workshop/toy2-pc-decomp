@@ -12,7 +12,6 @@ cmake_policy(SET CMP0091 NEW)
 project(${PROJECT_NAME} C CXX RC)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/patcher)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
 
 # The git hash is shown on screen. Version.h is only rewritten when the hash changes, so it won't rebuild everything
@@ -264,39 +263,17 @@ set(TOY2_SOURCES
     # AudioManager
     src/AudioManager/AudioManager.cpp
     src/AudioManager/AudioManager.h
-
 )
 
 # Build the game
 add_executable(toy2decomp WIN32 
     ${TOY2_SOURCES}
-
     resources/toy2.rc
 )
-
-# Build the testing dll(s)
-add_library(patcher SHARED
-    patcher/main.cpp
-
-    patcher/Loader.cpp
-    patcher/Loader.h
-
-    patcher/GamePatches.cpp
-    patcher/GamePatches.h
-
-    patcher/Utilities.h
-
-    ${TOY2_SOURCES}
-)
-
-target_link_directories(patcher PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6
-)
-target_link_libraries(patcher PRIVATE minhook_x86 ddraw dxguid winmm dinput dsound amstrmid)
 
 target_link_directories(toy2decomp PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6
 )
+
 target_link_libraries(toy2decomp PRIVATE ddraw dxguid winmm dinput dsound amstrmid)
 set_target_properties(toy2decomp PROPERTIES OUTPUT_NAME "toy2")
