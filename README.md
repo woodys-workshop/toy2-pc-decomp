@@ -6,7 +6,7 @@
 
 ## Build setup
 
-Use Visual C++ 6.0 Professional or Enterprise with Service Pack 3, plus DirectX 6.1 Foundations and its bundled DirectX Media 6.0 SDK.
+Use a legally sourced Visual C++ 6.0 Professional or Enterprise with Service Pack 3, plus DirectX 6.1 Foundations and its bundled DirectX Media 6.0 SDK.
 
 Searchable media identifiers:
 
