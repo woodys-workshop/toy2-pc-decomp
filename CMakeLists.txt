@@ -6,13 +6,17 @@ set(CMAKE_CXX_STANDARD 98)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# MSVC runtime library flags are selected by an abstraction
 cmake_policy(SET CMP0091 NEW)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT DEFINED ENV{CMAKE_BUILD_TYPE})
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build configuration")
+endif()
 
 project(${PROJECT_NAME} C CXX RC)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external/include/directx6/media)
 
 # The git hash is shown on screen. Version.h is only rewritten when the hash changes, so it won't rebuild everything
 set(TOY2_GIT_HASH "unknown")
@@ -41,6 +45,7 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/src/Version.h.in ${CMAKE_BINARY_DIR}/generated/Version.h @ONLY)
 include_directories(${CMAKE_BINARY_DIR}/generated)
 
+# VC6's single-threaded CRT is selected by /ML (LIBC) or /MLd (LIBCD).
 set(CMAKE_MSVC_RUNTIME_LIBRARY "")
 
 # C++ flags
@@ -271,9 +276,14 @@ add_executable(toy2decomp WIN32
     resources/toy2.rc
 )
 
-target_link_directories(toy2decomp PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6
+# Explicit SDK paths prevent fallback to the older libraries bundled with VC98.
+target_link_libraries(toy2decomp PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6/ddraw.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6/dxguid.lib
+    winmm
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6/dinput.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6/dsound.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/libs/directx6/amstrmid.lib
 )
 
-target_link_libraries(toy2decomp PRIVATE ddraw dxguid winmm dinput dsound amstrmid)
 set_target_properties(toy2decomp PROPERTIES OUTPUT_NAME "toy2")
