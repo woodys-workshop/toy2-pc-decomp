@@ -1946,11 +1946,11 @@ namespace Renderer
 	{
 		if ((Toy2::g_toyCfgData.flags & 4) != 0)
 		{
-			int32_t texIndex = NGNLoader::GetTextureDataIndex(texIndex);
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(texIndex);
 
-			if (texIndex)
+			if (textureDataIndex)
 			{
-				NGNLoader::NGNTextureData* texData = NGNLoader::GetTextureDataByIndex(texIndex);
+				NGNLoader::NGNTextureData* texData = NGNLoader::GetTextureDataByIndex(textureDataIndex);
 
 				Renderer::BlitBitmapWithWrapping(texData->bmpDataNode, srcX, srcY, width, height, horizontalWrapOffset, verticalWrapOffset, destX, destY);
 			}
