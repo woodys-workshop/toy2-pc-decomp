@@ -8,14 +8,10 @@
 
 Use a legally sourced Visual C++ 6.0 Professional or Enterprise with Service Pack 3, plus DirectX 6.1 Foundations and its bundled DirectX Media 6.0 SDK.
 
-Searchable media identifiers:
+- **Microsoft Visual Studio 6.0 Service Pack 3**
+- **Microsoft DirectX 6.1 SDK**
 
-- **Microsoft Visual Studio 6.0 Service Pack 3**: disc part number `X04-73525`, CD set `X04-73542-M`.
-- **Microsoft DirectX 6.1 SDK**, available in either distribution:
-  - **Gold release**.
-  - **MSDN Disc 7, April 1999**, part number `X04-61941`.
-
-Place the SDK files in these locations before building:
+Place your SDK files in these locations before building:
 
 | SDK files | Repository location |
 | --- | --- |
