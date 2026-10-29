@@ -52,7 +52,7 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/Zi /ML /O2 /D \"NDEBUG\"")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "/Os /ML /D \"NDEBUG\"")
 
 # EXE linker flags
-set(CMAKE_EXE_LINKER_FLAGS "/machine:I386 /NODEFAULTLIB:libcp.lib")
+set(CMAKE_EXE_LINKER_FLAGS "/machine:I386 /NODEFAULTLIB:libcp.lib /FIXED:NO /INCREMENTAL:NO")
 set(CMAKE_EXE_LINKER_FLAGS_DEBUG "/incremental:yes /debug")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/incremental:no")
 set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO "/incremental:no /debug")
