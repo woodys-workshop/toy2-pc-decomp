@@ -279,6 +279,58 @@ def print_namespace_progress(namespace, ida_functions, source_functions):
     print(f"{Fore.RED}Not started:{Style.RESET_ALL}                {not_started_count}")
     print("=" * 60)
 
+def count_matched(verbose=False):
+    result = subprocess.run(
+        ["reccmp-reccmp", "--target", build_script.PROJECT_NAME.upper(), "--nolib", "--no-color"],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        print("Error: reccmp failed, is toy2.exe built?")
+        print(result.stderr.strip() or result.stdout.strip())
+        return
+
+    line_pattern = re.compile(r"^\s*(\S.*?) \((0x[0-9a-fA-F]+)\) is ([0-9.]+)%(\*?) similar to the original")
+
+    matched = 0
+    effective = 0
+    below = []
+
+    for line in result.stdout.splitlines():
+        match = line_pattern.match(line)
+
+        if not match:
+            continue
+
+        name, address, percentage, star = match.groups()
+
+        if float(percentage) < 100.0:
+            below.append((name, address, percentage))
+        elif star:
+            effective += 1
+        else:
+            matched += 1
+
+    implemented = matched + effective + len(below)
+
+    if verbose:
+        for name, address, percentage in sorted(below, key=lambda item: float(item[2]), reverse=True):
+            print(f"  {name} ({address}) {percentage}%")
+
+    print("=" * 60)
+    print(f"Implemented functions:      {implemented}")
+    print(f"{Fore.GREEN}100% matched:{Style.RESET_ALL}               {matched}")
+    print(f"{Fore.CYAN}Effective match (100%*):{Style.RESET_ALL}    {effective}")
+    print(f"{Fore.YELLOW}Below 100%:{Style.RESET_ALL}                 {len(below)}")
+    print("-" * 60)
+
+    if implemented:
+        print(f"100% matched vs Implemented: {matched}/{implemented} ({matched / implemented * 100:.1f}%)")
+
+    print("=" * 60)
+
+
 def find_clang_format():
     found = shutil.which("clang-format")
 
@@ -378,6 +430,12 @@ def main():
     )
 
     parser.add_argument(
+        "--matched",
+        action="store_true",
+        help="Run reccmp and count how many implemented functions are a 100%% match. Use --verbose to list the ones below 100%%.",
+    )
+
+    parser.add_argument(
         "--image",
         nargs="?",
         const="progress.svg",
@@ -406,14 +464,17 @@ def main():
         namespace_filter = None if args.progress is True else args.progress
         count_progress(namespace_filter, verbose=args.verbose)
 
+    if args.matched:
+        count_matched(verbose=args.verbose)
+
     if args.image:
         generate_progress_image(args.image)
 
     if args.format:
         format_sources()
 
-    if not args.progress and not args.count and not args.image and not args.format:
-        print("Enter an option, --count, --progress, --image or --format.")
+    if not args.progress and not args.count and not args.matched and not args.image and not args.format:
+        print("Enter an option, --count, --progress, --matched, --image or --format.")
 
 
 if __name__ == "__main__":
