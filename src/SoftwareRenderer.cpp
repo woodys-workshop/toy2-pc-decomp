@@ -888,8 +888,14 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C1720
 	void UnkFunc16(int32_t a1, int32_t a2, uint16_t* a3, uint32_t a4) {}
 
-	// STUB: TOY2 0x004C4340
-	uint32_t* UnkFunc59(int32_t a1, uint32_t* a2, int32_t* a3, uint32_t* a4) { return 0; }
+	// FUNCTION: TOY2 0x004C4340 [MATCHED]
+	uint32_t* UnkFunc59(int32_t packedColour, uint32_t* red, int32_t* green, uint32_t* blue)
+	{
+		*red = ((uint32_t)packedColour >> 16 & 0xFF) << 8;
+		*green = packedColour & 0xFF00;
+		*blue = (packedColour & 0xFF) << 8;
+		return blue;
+	}
 
 	// STUB: TOY2 0x004C4370
 	int16_t UnkFunc48(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
