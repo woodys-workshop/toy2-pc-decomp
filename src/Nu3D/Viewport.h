@@ -55,7 +55,10 @@ namespace Nu3D
 		{
 			FrustumData frustum;
 			int32_t frustumInfo[3];
-			ViewportRectAlt clipRect;
+			float clipLeft;
+			float clipRight;
+			float clipTop;
+			float clipBottom;
 			int32_t frustumCount;
 		};
 
