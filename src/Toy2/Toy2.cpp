@@ -5779,8 +5779,32 @@ namespace Toy2
 		return;
 	}
 
-	// STUB: TOY2 0x0047D4E0
-	int32_t* BuildPerspectiveDivideTable(int32_t centerX) { return 0; }
+	// FUNCTION: TOY2 0x0047D4E0
+	int32_t* BuildPerspectiveDivideTable(int32_t centerX)
+	{
+		using SoftwareRenderer::g_nativeDivideNumerator;
+		using SoftwareRenderer::g_nativeDivideTable;
+		using SoftwareRenderer::g_nativeMinimumDepth;
+		__asm
+		{
+			mov     ebx, centerX
+			mov     ecx, 7FFFh
+			mov     eax, ebx
+			sar     eax, 1
+			mov     g_nativeMinimumDepth, eax
+			shl     ebx, 0Ch
+			mov     g_nativeDivideNumerator, ebx
+		LBL_DIVIDE_DEPTH:
+			mov     eax, ebx
+			mov     edx, 0
+			idiv    ecx
+			mov     g_nativeDivideTable[ecx * 4], eax
+			dec     ecx
+			jnz     LBL_DIVIDE_DEPTH
+			lea     eax, g_nativeDivideTable
+		}
+		// EAX returns the table without changing its untouched entry zero.
+	}
 
 	// FUNCTION: TOY2 0x00499950
 	void InitDirect3DRenderer()
