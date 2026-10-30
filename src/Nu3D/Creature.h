@@ -30,6 +30,7 @@ namespace Nu3D
 		int32_t animCount;
 
 		static void Destroy(Creature* creature);
+		static int32_t FindNodeIndex(Creature* creature, const char* name);
 		static int32_t SetNodeVisible(Creature* creature, int32_t nodeIdx, int32_t visible);
 		static void SetNodeVisibleByIndex(int32_t creatureIndex, int32_t nodeIdx, int32_t visible);
 	};
