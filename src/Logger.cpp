@@ -22,7 +22,7 @@ namespace Logger
 	int32_t g_logsEnabled;
 
 	// GLOBAL: TOY2 0x00504E54
-	int32_t g_logFileExists = 1;
+	uint16_t g_logFileExists = 1;
 
 	// GLOBAL: TOY2 0x004E0698
 	char g_errorNotSet[256] = "ERROR NOT SET";
@@ -71,6 +71,11 @@ namespace Logger
 	// FUNCTION: TOY2 0x004A66A0 [MODIFIED]
 	void Log(char* format, ...)
 	{
+#ifndef APPLY_FIXES
+		if (! g_logsEnabled)
+			return;
+#endif
+
 		char buffer[1024];
 
 		va_list argList;
@@ -79,9 +84,11 @@ namespace Logger
 		memset(buffer, 0, sizeof(buffer));
 		vsprintf(buffer, format, argList);
 
-		printf("%s", buffer); // Addition
+#ifdef APPLY_FIXES
+		printf("%s", buffer);
 
 		if (g_logsEnabled)
+#endif
 		{
 			if (g_logFileExists)
 			{
@@ -1511,7 +1518,7 @@ namespace Logger
 				return "The operation is not supported.";
 			case E_FAIL:
 				return "There is an undefined error condition.";
-			case CLASS_E_NOAGGREGATION:
+			case CO_E_NOTINITIALIZED:
 				return "An attempt was made to call an interface method of a DirectDraw object created by CoCreateInstance before the object was initialized.";
 			case E_OUTOFMEMORY:
 				return "DirectDraw does not have enough memory to perform the operation.";
