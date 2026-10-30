@@ -2557,7 +2557,7 @@ namespace Toy2
 			int16_t meshType;
 
 			if (Collision::g_groundContactMeshIdx == -1)
-				meshType = (int16_t)Collision::g_unk7295A0;
+				memcpy(&meshType, &Collision::g_unk7295A0, sizeof(meshType));
 			else
 				meshType = Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].typeFlags;
 
