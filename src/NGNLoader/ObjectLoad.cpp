@@ -888,6 +888,7 @@ namespace NGNLoader
 							break;
 
 						default:
+							Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 1002)("err");
 							fseek(stream, size, SEEK_CUR);
 							break;
 					}
