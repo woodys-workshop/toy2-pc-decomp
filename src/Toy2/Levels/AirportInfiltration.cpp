@@ -38,7 +38,7 @@ namespace Toy2
 	namespace AirportInfiltration
 	{
 		// GLOBAL: TOY2 0x004F4668
-		Vector3I g_unk4F4668[5] = { { 0, 0, 500 }, { 500, 0, 0 }, { 0, 0, -1280 }, { -1280, 0, 0 }, { 0, -1280, 0 } };
+		Vector3I g_unk4F4668[5] = { { 0, 0, 1280 }, { 1280, 0, 0 }, { 0, 0, -1280 }, { -1280, 0, 0 }, { 0, -1280, 0 } };
 
 		// GLOBAL: TOY2 0x004F46A4
 		int16_t g_unk4F46A4[4] = { 8, 11, 0, -1 };

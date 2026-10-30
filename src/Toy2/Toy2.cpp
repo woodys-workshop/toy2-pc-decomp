@@ -1970,9 +1970,9 @@ namespace Toy2
 			-g_buzzActor.lightDirection.x,
 			-g_buzzActor.lightDirection.y,
 			-g_buzzActor.lightDirection.z,
-			g_buzzActor.color.r,
-			g_buzzActor.color.g,
-			g_buzzActor.color.b);
+			g_buzzActor.color.value & 0xFF,
+			(g_buzzActor.color.value >> 8) & 0xFF,
+			(g_buzzActor.color.value >> 16) & 0xFF);
 
 		if (Renderer::BeginScene())
 		{
@@ -2093,7 +2093,7 @@ namespace Toy2
 
 							// a blob shadow on the floor underneath it
 							position.x = pickup->pos.x;
-							position.y = pickup->props.floorPos - 10.0;
+							position.y = (int16_t)pickup->props.floorPos - 10.0;
 							position.z = pickup->pos.z;
 
 							int32_t shadowTexture = NGNLoader::GetTextureDataIndex(31);
@@ -7596,9 +7596,9 @@ namespace Toy2
 				AndysNeighborhood::g_unk52F6E4 = 0;
 				AndysNeighborhood::g_unk52F678 = 1;
 				AndysNeighborhood::g_unk52F6B4 = 4095;
-				AndysNeighborhood::g_unk52F674[0] = 0;
+				AndysNeighborhood::g_unk52F674 = 0;
 				AndysNeighborhood::g_unk52F690 = 0;
-				AndysNeighborhood::g_unk52F60C[0] = 0;
+				AndysNeighborhood::g_unk52F60C = 0;
 				AndysNeighborhood::g_unk52F6C8 = 4096;
 				AndysNeighborhood::g_unk52F6CC = 4096;
 				AndysNeighborhood::g_unk52F618 = 0;
@@ -7615,7 +7615,7 @@ namespace Toy2
 				AndysNeighborhood::g_unk52F61C = 0;
 				AndysNeighborhood::g_unk52F5E8 = 0;
 				AndysNeighborhood::g_unk52F6D0 = 0;
-				AndysNeighborhood::g_unk52F638[0] = 0;
+				AndysNeighborhood::g_unk52F638 = 0;
 				AndysNeighborhood::g_unk52F658 = 0;
 				AndysNeighborhood::g_unk52F6E8 = 0;
 				Nu3D::Link::SetRotationRelative8bit(5, 0, 0, 750);
@@ -7629,7 +7629,7 @@ namespace Toy2
 				Nu3D::Link::SetScaleFromFixedOffsets(32, 0, 0, 0);
 				Nu3D::Link::SetScaleFromFixedOffsets(33, 0, 0, 0);
 				Nu3D::Link::GetCurrentPosFixed(25, &AndysNeighborhood::g_unk52F680);
-				AndysNeighborhood::g_unk52F608[0] = 280;
+				AndysNeighborhood::g_unk52F608 = 280;
 				Nu3D::Link::SetScaleFromFixedOffsets(27, 4096, 280, 4096);
 				Levels::g_recordData[61]->data[0].y = AndysNeighborhood::g_unk52F680.y;
 				AndysNeighborhood::g_unk52F6A8 = 0;
@@ -7719,6 +7719,8 @@ namespace Toy2
 				AlsSpaceLand::g_unk52FA80->props.flags &= 0x80u;
 				*(uint8_t*)&g_levelActors[1].actorFlags |= 0x80u;
 				memset(AlsSpaceLand::g_unk52FB20, 0, 0x48u);
+				AlsSpaceLand::g_unk52FB60 = 0;
+				AlsSpaceLand::g_unk52FB64 = 0;
 				AlsSpaceLand::g_unk52FAD8 = 0;
 				AlsSpaceLand::g_unk52FADC = 0;
 				AlsSpaceLand::g_unk52FA84 = 0;

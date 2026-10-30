@@ -761,7 +761,7 @@ namespace Toy2
 			v64 = g_unk52FBC8;
 			v65 = g_unk52FBC8;
 
-			if (g_levelActors[g_unk52FBC8].unkVar13_ == 0x8000)
+			if ((uint16_t)g_levelActors[g_unk52FBC8].unkVar13_ == 0x8000)
 			{
 				g_levelActors[g_unk52FBC8].unkVar12 += 12 * v56;
 
@@ -777,7 +777,7 @@ namespace Toy2
 
 			v66 = g_unk52FBC4;
 
-			if (v64 != g_unk52FBC4 && g_levelActors[g_unk52FBC4].unkVar13_ == 0x8000)
+			if (v64 != g_unk52FBC4 && (uint16_t)g_levelActors[g_unk52FBC4].unkVar13_ == 0x8000)
 			{
 				g_levelActors[g_unk52FBC4].unkVar12 += 12 * v56;
 

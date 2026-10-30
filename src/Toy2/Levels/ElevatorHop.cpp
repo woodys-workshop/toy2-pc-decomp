@@ -1757,7 +1757,7 @@ namespace Toy2
 							v112 = g_unk52FCDC;
 						}
 
-						v114 = v112;
+						v114 = v112 & 0xFFFF;
 						v115 = v112 >> 16;
 
 						v117 = v111->data[v115 + 1].z;
