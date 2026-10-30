@@ -405,9 +405,9 @@ namespace Toy2
 
 			int16_t type65Idx = 65;
 
-			if (*reinterpret_cast<uint16_t*>(recordPtr - 4) > 0)
+			if (*reinterpret_cast<int32_t*>(recordPtr - 4) > 0)
 			{
-				int32_t totalRecordCount = *reinterpret_cast<uint16_t*>(recordPtr - 4);
+				int32_t totalRecordCount = *reinterpret_cast<int32_t*>(recordPtr - 4);
 
 				DECOMP_PRINT(("Total Record Count -> %d\n", totalRecordCount));
 
@@ -424,7 +424,7 @@ namespace Toy2
 							g_type64Count = type64Count;
 							g_type64Structs[type64Idx].recordPtr = recordPtr;
 
-							recordPtr += 12 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
+							recordPtr += 12 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
 						}
 						else
 						{
@@ -478,15 +478,15 @@ namespace Toy2
 							}
 
 							if (*reinterpret_cast<uint16_t*>(recordPtr + 2) == 63)
-								recordPtr += 16 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
+								recordPtr += 16 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
 							else
-								recordPtr += 12 * *reinterpret_cast<uint16_t*>(recordPtr) + 4;
+								recordPtr += 12 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
 						}
 					}
 					else
 					{
 						g_recordData[-recordType] = reinterpret_cast<RecordData*>(recordPtr);
-						recordPtr += 4 * ((3 * *reinterpret_cast<uint16_t*>(recordPtr) + 1) / 2) + 16;
+						recordPtr += 4 * ((3 * *reinterpret_cast<int16_t*>(recordPtr) + 1) / 2) + 16;
 					}
 
 					--totalRecordCount;

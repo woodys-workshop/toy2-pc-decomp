@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include <stddef.h>
 
 namespace Toy2
 {
@@ -18,7 +19,7 @@ namespace Toy2
 		{
 			uint8_t linkId;
 			uint8_t flags;
-			uint16_t floorPos;
+			int16_t floorPos;
 		};
 
 		struct Type63
@@ -26,6 +27,10 @@ namespace Toy2
 			Vector3I pos;
 			Type63Properties props;
 		};
+
+		STATIC_ASSERT(sizeof(Type63Properties) == 0x4);
+		STATIC_ASSERT(sizeof(Type63) == 0x10);
+		STATIC_ASSERT(offsetof(Type63, props) + offsetof(Type63Properties, floorPos) == 0xE);
 
 		struct ModelTypeData_A
 		{
