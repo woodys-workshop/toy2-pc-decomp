@@ -2,6 +2,7 @@
 
 #include <WINDOWS.H>
 #include <MMSYSTEM.H>
+#include <STDDEF.H>
 
 namespace Nu3D
 {
@@ -11,8 +12,17 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x00883FF8
 	uint8_t g_hasTimeStampCounter;
 
+	// GLOBAL: TOY2 0x00883FF9
+	uint8_t g_hasMMX;
+
+	// GLOBAL: TOY2 0x00883FFA
+	uint8_t g_has3DNow;
+
 	// GLOBAL: TOY2 0x00883FE0
 	int64_t g_cpuTicksPerSecond;
+
+	// GLOBAL: TOY2 0x00884004
+	int32_t g_calibrationGetterInitialized;
 
 	// GLOBAL: TOY2 0x00508A68
 	int32_t g_useAsDiffuseModulation = 1;
@@ -23,15 +33,9 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B1880
 	void SetIsSoftwareRendering(int32_t value) { g_isSoftwareRendering = value; }
 
-	// FUNCTION: TOY2 0x004AB7D0 [MATCHED]
+	// FUNCTION: TOY2 0x004AB7D0
 	void GetCPUFeatures()
 	{
-		// GLOBAL: TOY2 0x00883FF9
-		static uint8_t g_hasMMX;
-
-		// GLOBAL: TOY2 0x00883FFA
-		static uint8_t g_hasLongMode;
-
 		__asm
 		{
 			pushfd                       ; save EFLAGS
@@ -64,12 +68,33 @@ namespace Nu3D
 			test    eax, 80000000h      ; high bit of eax
 			jz      LBL_DONE
 			mov     eax, 1
-			test    edx, 80000000h      ; long-mode bit (edx bit 31)
+			test    edx, 80000000h      ; 3DNow (edx bit 31)
 			jz      LBL_DONE
-			mov     g_hasLongMode, al
+			mov     g_has3DNow, al
 
 		LBL_DONE:
 		}
+	}
+
+	// FUNCTION: TOY2 0x004AB7C0
+	int32_t QueryTimeStampCounter()
+	{
+		GetCPUFeatures();
+		return (int8_t)g_hasTimeStampCounter;
+	}
+
+	// FUNCTION: TOY2 0x004AB830
+	int32_t QueryMMX()
+	{
+		GetCPUFeatures();
+		return (int8_t)g_hasMMX;
+	}
+
+	// FUNCTION: TOY2 0x004AB840
+	int32_t Query3DNow()
+	{
+		GetCPUFeatures();
+		return (int8_t)g_has3DNow;
 	}
 
 	// FUNCTION: TOY2 0x004AB8C0 [MATCHED]
@@ -171,6 +196,18 @@ namespace Nu3D
 		}
 	}
 
+	// FUNCTION: TOY2 0x004ABA10
+	int32_t GetCalibrationLow32()
+	{
+		if (! g_calibrationGetterInitialized)
+		{
+			g_calibrationGetterInitialized = 1;
+			CalibrateTimestampCounter();
+		}
+
+		return g_hasTimeStampCounter ? (int32_t)g_cpuTicksPerSecond : 1;
+	}
+
 	// FUNCTION: TOY2 0x0047D520 [MATCHED]
 	void MemSet32Util(void* buffer, int32_t count, uint32_t value)
 	{
@@ -194,6 +231,9 @@ namespace Nu3D
 		return useAsDiffuseModulation;
 	}
 
+	// FUNCTION: TOY2 0x004CB2D0
+	int32_t GetUseAsDiffuseModulation() { return g_useAsDiffuseModulation; }
+
 	// FUNCTION: TOY2 0x004CB2A0 [MATCHED]
 	int32_t SetDefaultPrimFlags(int32_t option)
 	{
@@ -201,5 +241,37 @@ namespace Nu3D
 		g_defaultPrimitiveFlags = option;
 
 		return defaultPrimitiveFlags;
+	}
+
+	// FUNCTION: TOY2 0x004CB2B0
+	int32_t GetDefaultPrimFlags() { return g_defaultPrimitiveFlags; }
+
+	STATIC_ASSERT(offsetof(VertexTL, position) == 0x00);
+	STATIC_ASSERT(offsetof(VertexTL, rhw) == 0x0C);
+	STATIC_ASSERT(offsetof(VertexTL, diffuse) == 0x10);
+	STATIC_ASSERT(offsetof(VertexTL, specular) == 0x14);
+	STATIC_ASSERT(offsetof(VertexTL, uv) == 0x18);
+
+	// FUNCTION: TOY2 0x004B9D40
+	__declspec(naked) void SetTimingDisplayVertex(VertexTL* vertex, float x, float y, uint32_t color)
+	{
+		// X passes through x87; Y retains its raw float bits.
+		__asm
+		{
+			mov eax, [esp + 4]
+			mov ecx, [esp + 12]
+			fld dword ptr [esp + 8]
+			mov [eax + 4], ecx
+			xor ecx, ecx
+			fstp dword ptr [eax]
+			mov [eax + 8], ecx
+			mov [eax + 28], ecx
+			mov [eax + 24], ecx
+			mov ecx, [esp + 16]
+			mov dword ptr [eax + 12], 3F000000h
+			mov [eax + 20], ecx
+			mov [eax + 16], ecx
+			ret
+		}
 	}
 }
