@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stddef.h>
 
 namespace Toy2
 {
@@ -36,8 +37,30 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052B7E8
 		ScriptedCameraState g_scriptedCameraState;
 
+		union ScriptedCameraRollStorage
+		{
+			struct
+			{
+				int16_t roll;
+				uint16_t opaque;
+			} words;
+			uint32_t raw;
+		};
+
+		struct ScriptedCameraRollAlignment
+		{
+			uint8_t byte;
+			ScriptedCameraRollStorage storage;
+		};
+
 		// GLOBAL: TOY2 0x0052B810
-		int16_t g_scriptedCameraRoll;
+		ScriptedCameraRollStorage g_scriptedCameraRollStorage;
+
+		STATIC_ASSERT(sizeof(ScriptedCameraRollStorage) == 4);
+		STATIC_ASSERT(sizeof(g_scriptedCameraRollStorage.words.roll) == 2);
+		STATIC_ASSERT(offsetof(ScriptedCameraRollStorage, words.roll) == 0);
+		STATIC_ASSERT(offsetof(ScriptedCameraRollStorage, words.opaque) == 2);
+		STATIC_ASSERT(offsetof(ScriptedCameraRollAlignment, storage) == 4);
 
 		// GLOBAL: TOY2 0x0052B814
 		int16_t g_cameraFadeState;
@@ -205,7 +228,7 @@ namespace Toy2
 			else
 				angle = Nu3D::Math::CartesianToFixedAngle(y * y, x * x + z * z);
 
-			g_scriptedCameraRoll = 0;
+			g_scriptedCameraRollStorage.words.roll = 0;
 
 			g_scriptedCameraState.angles.pitch = -angle;
 		}
@@ -338,9 +361,9 @@ namespace Toy2
 
 			memset(cameraState, 0, sizeof(GameplayCameraState));
 
-			// the original clears 48 bytes here, the 8 bytes after the scripted camera state are the roll, fade state and cutscene flags
+			// Clear the state, roll slot, fade word and cutscene word.
 			memset(&g_scriptedCameraState, 0, sizeof(ScriptedCameraState));
-			g_scriptedCameraRoll = 0;
+			memset(&g_scriptedCameraRollStorage, 0, sizeof(g_scriptedCameraRollStorage));
 			g_cameraFadeState = 0;
 			g_inCutscene = 0;
 
@@ -1087,7 +1110,11 @@ namespace Toy2
 			}
 
 			if (targetIdx == -1 || g_unk50A14C)
+			{
+				yawVel = pitchAccel;
+				pitchTarget = pitchCap;
 				goto LABEL_124;
+			}
 
 			// the camera turns towards the target
 			{
@@ -2358,8 +2385,10 @@ namespace Toy2
 					if (yawDelta >= 0x800)
 						yawDelta -= 4096;
 
-					roll = g_scriptedCameraRoll;
-					rollDelta = (g_activeCameraTransform.roll - g_scriptedCameraRoll) & 0xFFF;
+					uint32_t scriptedRoll;
+					memcpy(&scriptedRoll, &g_scriptedCameraRollStorage, sizeof(scriptedRoll));
+					roll = (int16_t)scriptedRoll;
+					rollDelta = ((uint32_t)g_activeCameraTransform.roll - scriptedRoll) & 0xFFF;
 
 					if (rollDelta >= 0x800)
 						rollDelta -= 4096;
@@ -2375,7 +2404,7 @@ namespace Toy2
 				g_activeCameraTransform.pos.y = g_scriptedCameraState.pos.y;
 				g_activeCameraTransform.pos.z = g_scriptedCameraState.pos.z;
 				g_activeCameraTransform.angles = g_scriptedCameraState.angles;
-				g_activeCameraTransform.roll = g_scriptedCameraRoll;
+				g_activeCameraTransform.roll = g_scriptedCameraRollStorage.words.roll;
 			}
 			else
 			{
@@ -2848,7 +2877,7 @@ namespace Toy2
 
 						if (distSq < radiusSq)
 						{
-							int32_t travel = (int32_t)(closest - sqrt((double)(radiusSq - distSq)));
+							int32_t travel = closest - (int32_t)sqrt((double)(radiusSq - distSq));
 							int32_t hitX = ((dir.x * travel) >> 4) / scaleX;
 							int32_t hitY = 2 * dir.y * travel / scaleY;
 							int32_t hitZ = ((dir.z * travel) >> 4) / scaleZ;
