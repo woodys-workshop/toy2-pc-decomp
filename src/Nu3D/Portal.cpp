@@ -13,7 +13,7 @@
 namespace Nu3D
 {
 	// GLOBAL: TOY2 0x00A4C414
-	uint8_t Portal::g_visibleAreaFlags[64];
+	int8_t Portal::g_visibleAreaFlags[64];
 
 	// GLOBAL: TOY2 0x00A4CC60
 	int32_t Portal::g_renderedScalerCount;
@@ -22,7 +22,7 @@ namespace Nu3D
 	int32_t Portal::g_portalRecursionDepth = -1;
 
 	// GLOBAL: TOY2 0x00A4C458
-	uint8_t Portal::g_minPortalRecursionDepth;
+	int8_t Portal::g_minPortalRecursionDepth;
 
 	// GLOBAL: TOY2 0x005088A8
 	int32_t Portal::g_hiddenShapeId = -1;
@@ -265,6 +265,6 @@ namespace Nu3D
 	namespace Portal
 	{
 		// FUNCTION: TOY2 0x004BC160
-		int32_t IsAreaVisible(uint8_t index) { return g_visibleAreaFlags[index & 63]; }
+		int32_t IsAreaVisible(int32_t index) { return g_visibleAreaFlags[index & 63]; }
 	}
 }

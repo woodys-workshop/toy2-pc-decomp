@@ -466,10 +466,10 @@ namespace Nu3D
 			int32_t i;
 
 			// the rotated triangle, v0 is the base vertex, e1 and e2 and e3 are the offsets to the other vertices
-			int32_t v0x, v0y, v0z;
-			int32_t e1x, e1z, e2x, e2z, e3x, e3y, e3z;
-			int32_t n1x, n1y, n1z;
-			int32_t n2x, n2y, n2z;
+			int16_t v0x, v0y, v0z;
+			int16_t e1x, e1z, e2x, e2z, e3x, e3y, e3z;
+			int16_t n1x, n1y, n1z;
+			int16_t n2x, n2y, n2z;
 			int32_t edgeX;
 			int32_t edgeZ;
 			int32_t baseZ;
@@ -1041,8 +1041,9 @@ namespace Nu3D
 						hitX = position[0] + startDistance * direction[0] / (startDistance - endDistance);
 						hitZ = position[2] + startDistance * direction[2] / (startDistance - endDistance);
 
+						// NEG/JS tests the wrapped sign, including INT_MIN.
 						if (tangent.x * (hitX - 32 * segment[0]) + tangent.z * (hitZ - 32 * segment[2]) >= 0
-							&& tangent.x * (hitX - 32 * segment[3]) + tangent.z * (hitZ - 32 * segment[5]) <= 0)
+							&& 0U - (tangent.x * (hitX - 32U * segment[3]) + tangent.z * (hitZ - 32U * segment[5])) <= 0x7FFFFFFFU)
 						{
 							newBest = (startDistance << 14) / (startDistance - endDistance);
 
@@ -1264,7 +1265,7 @@ namespace Nu3D
 			if (SweepAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, position, displacement, radius) == 1)
 				++hitCount;
 
-			if (hitCount <= 0)
+			if ((int16_t)hitCount <= 0)
 			{
 				position[0] += displacement[0];
 				position[1] = displacement[1] + position[1];
@@ -1286,7 +1287,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x0048C030
-		int32_t RaycastAgainstCandidates(int32_t a1, int32_t* direction, int32_t* position)
+		int32_t RaycastAgainstCandidates(int32_t* direction, int32_t* position, int32_t forwardedMode)
 		{
 			Toy2::Collision::CollisionTriangle* triangle;
 			Toy2::Collision::CollisionMeshInstance* mesh;
@@ -1483,7 +1484,7 @@ namespace Nu3D
 			if (RaycastAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, (int16_t*)&flipped, position, direction) == 1)
 				++result;
 
-			if (result <= 0 || flipped != 1)
+			if ((int16_t)result <= 0 || (int16_t)flipped != 1)
 				return 0;
 
 			distanceDiff = hitT0 - hitT1;
@@ -1744,11 +1745,11 @@ namespace Nu3D
 			// the platforms are always checked
 			platformMeshes = &Toy2::Collision::g_collisionMeshList[Toy2::Collision::g_unk7284A0];
 			speedSq = movement[2] / 16 * (movement[2] / 16) + movement[1] / 16 * (movement[1] / 16) + movement[0] / 16 * (movement[0] / 16);
-			speed = (int32_t)(16 * sqrt((double)speedSq));
+			speed = 16 * (int32_t)sqrt((double)speedSq);
 
 			for (platformCount = Toy2::Collision::g_unk7284A2; platformCount > 0; platformCount--, platformMeshes++)
 			{
-				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				mesh = &Toy2::Collision::g_collisionMeshInstances[(int16_t)*platformMeshes];
 				originY = mesh->origin.y;
 				originX = mesh->origin.x;
 				originZ = mesh->origin.z;
@@ -1933,7 +1934,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x0048D530
-		int32_t SweepQuery(int32_t* a1, int32_t* a2, int32_t a3, int32_t a4)
+		int32_t SweepQuery(int32_t* startPosition, int32_t* displacement, int32_t cameraMode, int32_t queryMode)
 		{
 			Toy2::Collision::CollisionCacheEntry* cameraEntry = (Toy2::Collision::CollisionCacheEntry*)Toy2::Collision::g_unk72871C + 8;
 			Toy2::Collision::CollisionMeshInstance* mesh;
@@ -1999,40 +2000,40 @@ namespace Nu3D
 			Toy2::Collision::g_candidateTriangleCount = 0;
 			Toy2::Collision::g_unk7291D8 = 0;
 
-			movement[0] = a2[0];
-			movement[1] = a2[1];
-			movement[2] = a2[2];
+			movement[0] = displacement[0];
+			movement[1] = displacement[1];
+			movement[2] = displacement[2];
 
-			if (a2[0] < 0)
+			if (displacement[0] < 0)
 			{
-				minX = a1[0] + 2048;
+				minX = startPosition[0] + 2048;
 				extX = 4096 - movement[0];
 			}
 			else
 			{
-				minX = a1[0] + movement[0] + 2048;
+				minX = startPosition[0] + movement[0] + 2048;
 				extX = movement[0] + 4096;
 			}
 
 			if (movement[1] >= 0)
 			{
 				extY = movement[1] + 4096;
-				minY = a1[1] + movement[1] + 2048;
+				minY = startPosition[1] + movement[1] + 2048;
 			}
 			else
 			{
 				extY = 4096 - movement[1];
-				minY = a1[1] + 2048;
+				minY = startPosition[1] + 2048;
 			}
 
 			if (movement[2] >= 0)
 			{
-				minZ = a1[2] + movement[2] + 2048;
+				minZ = startPosition[2] + movement[2] + 2048;
 				extZ = movement[2] + 4096;
 			}
 			else
 			{
-				minZ = a1[2] + 2048;
+				minZ = startPosition[2] + 2048;
 				extZ = 4096 - movement[2];
 			}
 
@@ -2040,9 +2041,9 @@ namespace Nu3D
 			cellExtY = ((uint32_t)extY + 31) >> 5;
 			cellExtZ = ((uint32_t)extZ + 31) >> 5;
 
-			meshMask = a3 != 0 ? 512 : 256;
+			meshMask = cameraMode != 0 ? 512 : 256;
 
-			if (a3 && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z && (uint32_t)(minX - extX) > (uint32_t)cameraEntry->unkC
+			if (cameraMode && minX < cameraEntry->x && minY < cameraEntry->y && minZ < cameraEntry->z && (uint32_t)(minX - extX) > (uint32_t)cameraEntry->unkC
 				&& (uint32_t)(minY - extY) > (uint32_t)cameraEntry->unk10 && (uint32_t)(minZ - extZ) > (uint32_t)cameraEntry->unk14)
 			{
 				for (i = cameraEntry->count - 1; i >= 0; i--)
@@ -2175,21 +2176,21 @@ namespace Nu3D
 
 			for (platformCount = Toy2::Collision::g_unk7284A2; platformCount > 0; platformCount--, platformMeshes++)
 			{
-				localY = a1[1];
-				localX = a1[0];
-				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				localY = startPosition[1];
+				localX = startPosition[0];
+				mesh = &Toy2::Collision::g_collisionMeshInstances[(int16_t)*platformMeshes];
 				originX = mesh->origin.x;
 				originZ = mesh->origin.z;
 				originY = mesh->origin.y;
 
-				if (((originZ - a1[2]) >> 6) * ((originZ - a1[2]) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6)
+				if (((originZ - startPosition[2]) >> 6) * ((originZ - startPosition[2]) >> 6) + ((originY - localY) >> 6) * ((originY - localY) >> 6)
 						+ ((originX - localX) >> 6) * ((originX - localX) >> 6)
 					<= speedSq + (mesh->boundingSqRadius >> 1))
 				{
 					platformIdx = mesh->platformIdx;
 					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x)
 						+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z)
-						+ (int32_t)(16 * sqrt((double)speedSq));
+						+ 16 * (int32_t)sqrt((double)speedSq);
 					doubleReach = 2 * platformReach;
 					nodeMargin = (platformReach + 15) / 16;
 
@@ -2203,10 +2204,10 @@ namespace Nu3D
 
 						originZ = mesh->origin.z;
 						originY = mesh->origin.y;
-						localY = a1[1] - originY;
+						localY = startPosition[1] - originY;
 						originX = mesh->origin.x;
-						localZ = a1[2] - originZ;
-						localX = a1[0] - mesh->origin.x;
+						localZ = startPosition[2] - originZ;
+						localX = startPosition[0] - mesh->origin.x;
 
 						platformX = platformReach + mesh->origin.x + (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 4096;
 						platformY = platformReach + originY + (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 4096;
@@ -2214,9 +2215,9 @@ namespace Nu3D
 					}
 					else
 					{
-						platformY = platformReach + a1[1];
-						platformZ = a1[2];
-						platformX = a1[0] + platformReach;
+						platformY = platformReach + startPosition[1];
+						platformZ = startPosition[2];
+						platformX = startPosition[0] + platformReach;
 					}
 
 					platformZ = platformReach + platformZ;
@@ -2346,16 +2347,16 @@ namespace Nu3D
 			if (Toy2::Collision::g_candidateTriangleCount <= 0 && edgeCount <= 0)
 				return 0;
 
-			query[0] = a1[0];
-			query[1] = a1[1];
-			query[2] = a1[2];
-			query[3] = a1[3];
+			query[0] = startPosition[0];
+			query[1] = startPosition[1];
+			query[2] = startPosition[2];
+			query[3] = startPosition[3];
 
-			i = RaycastAgainstCandidates(a4, movement, query);
+			i = RaycastAgainstCandidates(movement, query, queryMode);
 
-			a2[0] = query[0] - a1[0];
-			a2[1] = query[1] - a1[1];
-			a2[2] = query[2] - a1[2];
+			displacement[0] = query[0] - startPosition[0];
+			displacement[1] = query[1] - startPosition[1];
+			displacement[2] = query[2] - startPosition[2];
 
 			return i;
 		}
