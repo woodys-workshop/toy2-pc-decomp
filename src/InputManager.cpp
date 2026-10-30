@@ -3,6 +3,7 @@
 #include "SaveManager.h"
 #include "Nu3D/Nu3D.h"
 
+#include <stddef.h>
 #include <DINPUT.H>
 
 namespace InputManager
@@ -90,6 +91,9 @@ namespace InputManager
 
 	// GLOBAL: TOY2 0x00529CD8
 	DIJOYSTATE g_joystickState;
+
+	STATIC_ASSERT(sizeof(DIJOYSTATE) == 80);
+	STATIC_ASSERT(offsetof(DIJOYSTATE, rgbButtons) == 48);
 
 	// GLOBAL: TOY2 0x00529CB4
 	LPDIRECTINPUTDEVICE2A g_dInputUnused[4];
@@ -372,7 +376,7 @@ namespace InputManager
 			{
 				int32_t dInputCode = joystickMapping->dInputCode;
 
-				if (joystickMapping->dInputCode >= 0x400 && dInputCode < 0x41F && g_previousInputStates[dInputCode + 40])
+				if (joystickMapping->dInputCode >= 0x400 && dInputCode < 0x41F && g_joystickState.rgbButtons[dInputCode - 0x400])
 					joystickButtons |= (uint16_t)(joystickMapping->gameControlId);
 
 				++joystickMapping;
