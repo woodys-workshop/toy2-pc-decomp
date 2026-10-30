@@ -183,18 +183,18 @@ namespace Renderer
 		{
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
-				// modulation is 12 bit fixed point (4096 = 1.0), each channel clamps at 255
+				// modulation is 12-bit fixed point; wrapped products use a signed upper clamp
 				// transformed vertices (XYZRHW) are 32 bytes each, the diffuse colour lives at +0x10
 				uint8_t* color = (uint8_t*)lockedData + 32 * i + 0x10;
 
-				uint32_t red = colorR * color[2];
-				color[2] = (red & 0xFFFFF000) <= 0xFF000 ? red >> 12 : 255;
+				uint32_t red = (uint32_t)colorR * color[2];
+				color[2] = (int32_t)(red & 0xFFFFF000) <= 0xFF000 ? (int32_t)red >> 12 : 255;
 
-				uint32_t green = colorG * color[1];
-				color[1] = (green & 0xFFFFF000) <= 0xFF000 ? green >> 12 : 255;
+				uint32_t green = (uint32_t)colorG * color[1];
+				color[1] = (int32_t)(green & 0xFFFFF000) <= 0xFF000 ? (int32_t)green >> 12 : 255;
 
-				uint32_t blue = colorB * color[0];
-				color[0] = (blue & 0xFFFFF000) <= 0xFF000 ? blue >> 12 : 255;
+				uint32_t blue = (uint32_t)colorB * color[0];
+				color[0] = (int32_t)(blue & 0xFFFFF000) <= 0xFF000 ? (int32_t)blue >> 12 : 255;
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
