@@ -6,10 +6,50 @@
 #include "Nu3D/Primitive.h"
 #include "NGNLoader/NGNLoader.h"
 #include "NGNLoader/ObjectLoad.h"
+#include "Toy2/Toy2.h"
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 namespace Nu3D
 {
+	struct AlternateBmpDataNode
+	{
+		HBITMAP mainBitmap;
+		HBITMAP alphaBitmap;
+		LPDIRECTDRAWSURFACE4 surface;
+		LPDIRECT3DTEXTURE2 texture;
+		uint32_t textureStage;
+		char name[80];
+		int32_t alphaRequested;
+		uint32_t flags;
+		uint8_t reserved[0x28];
+		void* cpuPixels;
+		DDSURFACEDESC2 surfaceDesc;
+		uint32_t references;
+		AlternateBmpDataNode* previous;
+		AlternateBmpDataNode* next;
+	};
+
+	STATIC_ASSERT(sizeof(AlternateBmpDataNode) == 0x120);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, mainBitmap) == 0x0);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, name) == 0x14);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, alphaRequested) == 0x64);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, flags) == 0x68);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, cpuPixels) == 0x94);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, surfaceDesc) == 0x98);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, references) == 0x114);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, previous) == 0x118);
+	STATIC_ASSERT(offsetof(AlternateBmpDataNode, next) == 0x11C);
+
+	// GLOBAL: TOY2 0x00508288
+	char g_alternateMediaDirectory[512] = "MEDIA\\";
+
+	// GLOBAL: TOY2 0x00508488
+	const char* g_alternateSdkValueName = "DX6SDK Samples Path";
+
+	HRESULT ResolveAlternateMediaPath(const char* filename, const char* mediaDirectory, char* outputPath);
+
 	// GLOBAL: TOY2 0x00884044
 	uint8_t g_lastBmpPalette[1024];
 
@@ -702,7 +742,7 @@ namespace Nu3D
 		HRESULT lockResult;
 		do
 		{
-			lockResult = ddSurface->Lock(0, &surfaceDesc, DDLOCK_WAIT, 0);
+			lockResult = ddSurface->Lock(0, &surfaceDesc, DDLOCK_NOSYSLOCK, 0);
 		} while (lockResult == DDERR_WASSTILLDRAWING);
 
 		if (lockResult < 0)
@@ -1057,5 +1097,82 @@ namespace Nu3D
 			return bmpDataNode->d3dTexture;
 		else
 			return 0;
+	}
+
+	// FUNCTION: TOY2 0x004B1A60
+	void SetAlternateMediaDirectory(const char* directory)
+	{
+		strcpy(g_alternateMediaDirectory, directory ? directory : Toy2::g_emptyStr);
+	}
+
+	// FUNCTION: TOY2 0x004B1B60
+	HRESULT LoadAlternateBitmap(AlternateBmpDataNode* node)
+	{
+		char* extension = strrchr(node->name, '.');
+		char resolvedPath[256];
+
+		if (! extension)
+			return E_NOTIMPL;
+
+		node->mainBitmap = (HBITMAP)LoadImageA(GetModuleHandleA(NULL), node->name, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		if (node->mainBitmap)
+			return S_OK;
+
+		if (FAILED(ResolveAlternateMediaPath(node->name, g_alternateMediaDirectory, resolvedPath)))
+			return DDERR_NOTFOUND;
+
+		if (lstrcmpiA(extension, ".bmp") != 0)
+			return E_NOTIMPL;
+
+		node->mainBitmap = (HBITMAP)LoadImageA(GetModuleHandleA(NULL), resolvedPath, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+		if (! node->mainBitmap)
+			node->mainBitmap = (HBITMAP)LoadImageA(NULL, resolvedPath, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+
+		return node->mainBitmap ? S_OK : DDERR_NOTFOUND;
+	}
+
+	// FUNCTION: TOY2 0x004B1C50
+	HRESULT ResolveAlternateMediaPath(const char* filename, const char* mediaDirectory, char* outputPath)
+	{
+		HKEY key;
+		DWORD pathBytes;
+		DWORD valueType;
+		char sdkRoot[512];
+		FILE* file;
+
+		strcpy(outputPath, filename);
+		file = fopen(outputPath, "rb");
+		if (file && fclose(file) == 0)
+			return S_OK;
+
+		char* d3dPath = getenv("D3DPATH");
+		if (d3dPath)
+		{
+			sprintf(outputPath, "%s\\%s", d3dPath, filename);
+			file = fopen(outputPath, "rb");
+			if (file && fclose(file) == 0)
+				return S_OK;
+		}
+
+		if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, "Software\\Microsoft\\DirectX", 0, KEY_READ, &key) != ERROR_SUCCESS)
+			return DDERR_NOTFOUND;
+
+		pathBytes = 512;
+		LONG queryResult = RegQueryValueExA(key, g_alternateSdkValueName, NULL, &valueType, (LPBYTE)sdkRoot, &pathBytes);
+		RegCloseKey(key);
+		if (queryResult != ERROR_SUCCESS)
+			return DDERR_NOTFOUND;
+
+		sprintf(outputPath, "%s\\D3DIM\\Media\\%s", sdkRoot, filename);
+		file = fopen(outputPath, "rb");
+		if (file && fclose(file) == 0)
+			return S_OK;
+
+		sprintf(outputPath, "%s\\%s%s", sdkRoot, mediaDirectory, filename);
+		file = fopen(outputPath, "rb");
+		if (file && fclose(file) == 0)
+			return S_OK;
+
+		return DDERR_NOTFOUND;
 	}
 }
