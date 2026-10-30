@@ -459,8 +459,8 @@ namespace Toy2
 			}
 			else
 			{
-				headerSize = -*clipHeader;
-				CharacterLoader::g_unk53EED8 = (int16_t)headerSize;
+				CharacterLoader::g_unk53EED8 = (int16_t)-*clipHeader;
+				headerSize = CharacterLoader::g_unk53EED8;
 				CharacterLoader::g_unk53E4C0 = 1;
 			}
 
@@ -576,7 +576,7 @@ namespace Toy2
 							point.z = 0;
 							point.y = -200;
 
-							TransformByBone(&point, (Actor::Toy2Actor*)&g_buzzActor, baseBone);
+							TransformByBone(&point, (Actor::Toy2Actor*)&g_buzzActor, (int16_t)baseBone);
 
 							g_unk53E4BC = (int16_t)point.z;
 							g_unk53E4B8 = (int16_t)point.x;

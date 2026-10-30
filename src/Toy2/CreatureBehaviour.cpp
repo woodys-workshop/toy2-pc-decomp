@@ -537,7 +537,8 @@ namespace Toy2
 
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14);
+							particle->rotSpeed = *g_randDatBufferPtr - 128;
 							++g_randDatBufferPtr;
 							--count;
 						} while (count);
@@ -589,7 +590,8 @@ namespace Toy2
 
 				if (g_tickState[7])
 				{
-					Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 17, 10)->rotSpeed = *g_randDatBufferPtr - 128;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 17, 10);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 				}
 
@@ -597,7 +599,8 @@ namespace Toy2
 
 				if (randomBits && (actor->unkVar7 & 0xFFFF0000) == 0xE0000)
 				{
-					Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 4, 4)->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 4, 4);
+					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					++g_randDatBufferPtr;
 				}
 			}

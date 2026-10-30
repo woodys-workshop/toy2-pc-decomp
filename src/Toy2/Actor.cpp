@@ -400,8 +400,9 @@ namespace Toy2
 		};
 
 		// GLOBAL: TOY2 0x004E0570
-		uint8_t g_unk4E0570[24] = {
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x16
+		uint8_t g_unk4E0570[26] = {
+			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C,
+			0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x16, 0xFF, 0x0B
 		};
 
 		// NOTE: indexed by creatureId - 1, the original indexes from 0x004E05EE
@@ -490,14 +491,14 @@ namespace Toy2
 
 				if (*sequence == 0xFF)
 				{
-					if (sequence[1] == 1)
+					if (sequence[1] != 1)
 					{
-						actor->unkVar30 = (int32_t)(sequence - 1);
-						actor->unkVar7 |= 0xFFFF;
+						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
 					}
 					else
 					{
-						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
+						actor->unkVar30 = (int32_t)(sequence - 1);
+						actor->unkVar7 |= 0xFFFF;
 					}
 				}
 
@@ -1600,7 +1601,7 @@ namespace Toy2
 			CharacterLoader::g_unk53EECC = -1;
 
 			CharacterLoader::BoneTransform* bone =
-				&CharacterLoader::g_boneTransforms[boneIndex + *(uint16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
+				&CharacterLoader::g_boneTransforms[boneIndex + *(int16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
 
 			// the scratch space holds the angles first and the rotation matrix built from them after that
 			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];
@@ -1636,7 +1637,7 @@ namespace Toy2
 			int32_t boneY = bone->translation.y;
 			int32_t boneZ = bone->translation.z;
 
-			int32_t posX = actor->transform.pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
+			int32_t posX = actor->transform.pos.x + (boneZ * matrix->m02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
 			int32_t posY = actor->transform.pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
 			int32_t posZ = actor->transform.pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
 
