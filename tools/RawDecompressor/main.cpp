@@ -153,10 +153,10 @@ void DecompressBuffer(uint8_t* p_inBuffer, uint8_t* p_outBuffer)
 				p_outBuffer[1] = afterHeader[1];
 
 				p_outBuffer += 4;
-				afterHeader += 4;
 
 				*(p_outBuffer - 2) = afterHeader[2];
 				*(p_outBuffer - 1) = afterHeader[3];
+				afterHeader += 4;
 
 				uint32_t literalBlockCount = distanceHighOrLiteralCount + 1;
 
@@ -309,8 +309,7 @@ void DecompressBuffer(uint8_t* p_inBuffer, uint8_t* p_outBuffer)
 
 			if ( copyLength & 1 )
 			{
-				matchSource = &p_outBuffer[-matchDistance];
-				*p_outBuffer++ = *matchSource;
+				*p_outBuffer++ = *matchSource++;
 			}
 
 			int32_t pairCopyCount = (copyLength >> 1) - 1;
