@@ -2316,11 +2316,388 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C9190
 	uint32_t* UnkFunc58(float* a1, int32_t a2) { return 0; }
 
-	// STUB: TOY2 0x004C9A50
-	uint32_t* UnkFunc34(float* a1) { return 0; }
+	// FUNCTION: TOY2 0x004C9A50 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc34(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band)
+	{
+		__asm
+		{
+			mov eax, dword ptr [esp + 4]
+			push ebx
+			mov ebx, dword ptr [g_pixelMode]
+			push esi
+			mov esi, dword ptr [eax + 80h]
+			mov ecx, dword ptr [eax + 88h]
+			mov edx, dword ptr [eax + 94h]
+			push edi
+			mov edi, dword ptr [eax + 84h]
+			test ebx, ebx
+			jne Near ptr LBL_DEPTH_NONZERO_MODE
+			test esi, esi
+			jne Near ptr LBL_DEPTH_ZERO_TEXTURED
+			test ch, 40h
+			je SHORT LBL_DEPTH_ZERO_FLAT_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc52
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_FLAT_SUBTRACT: // 0x004C9A99
+			test ecx, 20000h
+			je SHORT LBL_DEPTH_ZERO_FLAT_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc53
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_FLAT_ALPHA: // 0x004C9AB0
+			test ch, 4
+			je SHORT LBL_DEPTH_ZERO_FLAT_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_DEPTH_ZERO_FLAT_PARTIAL_ALPHA
+		LBL_DEPTH_ZERO_FLAT_OPAQUE: // 0x004C9AC9
+			mov dword ptr [g_selectedSpan], offset UnkFunc55
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_FLAT_PARTIAL_ALPHA: // 0x004C9AD8
+			mov edx, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc56
+			sub edx, ecx
+			mov dword ptr [g_vertexAlphaComplement], edx
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_FLAT_ORDINARY: // 0x004C9AF4
+			cmp edi, 4
+			jne SHORT LBL_DEPTH_ZERO_FLAT_OPAQUE
+			push eax
+			call UnkFunc54
+			add esp, 4
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_ZERO_TEXTURED: // 0x004C9B06
+			test ch, 40h
+			je SHORT LBL_DEPTH_ZERO_TEXTURE_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc49
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_TEXTURE_SUBTRACT: // 0x004C9B1A
+			test ecx, 20000h
+			je SHORT LBL_DEPTH_ZERO_TEXTURE_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc50
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_TEXTURE_ALPHA: // 0x004C9B31
+			test ch, 4
+			je SHORT LBL_DEPTH_ZERO_TEXTURE_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_DEPTH_ZERO_TEXTURE_PARTIAL_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc43
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_TEXTURE_PARTIAL_ALPHA: // 0x004C9B59
+			mov edx, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc51
+			sub edx, ecx
+			mov dword ptr [g_vertexAlphaComplement], edx
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_ZERO_TEXTURE_ORDINARY: // 0x004C9B75
+			cmp edi, 4
+			jne SHORT LBL_DEPTH_ZERO_TEXTURE_GENERIC
+			test edx, edx
+			push esi
+			push eax
+			je Near ptr LBL_DEPTH_FULL_RATE_QUAD
+			call UnkFunc45
+			add esp, 8
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_ZERO_TEXTURE_GENERIC: // 0x004C9B90
+			test edx, edx
+			je Near ptr LBL_DEPTH_FULL_RATE_SPAN
+			mov dword ptr [g_selectedSpan], offset UnkFunc47
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_MODE: // 0x004C9BA7
+			test esi, esi
+			jne Near ptr LBL_DEPTH_NONZERO_TEXTURED
+			test ch, 40h
+			je SHORT LBL_DEPTH_NONZERO_FLAT_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc36
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_FLAT_SUBTRACT: // 0x004C9BC3
+			test ecx, 20000h
+			je SHORT LBL_DEPTH_NONZERO_FLAT_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc37
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_FLAT_ALPHA: // 0x004C9BDA
+			test ch, 4
+			je SHORT LBL_DEPTH_NONZERO_FLAT_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_DEPTH_NONZERO_FLAT_PARTIAL_ALPHA
+		LBL_DEPTH_NONZERO_FLAT_OPAQUE: // 0x004C9BF3
+			mov dword ptr [g_selectedSpan], offset UnkFunc40
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_FLAT_PARTIAL_ALPHA: // 0x004C9C02
+			mov edx, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc38
+			sub edx, ecx
+			mov dword ptr [g_vertexAlphaComplement], edx
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_FLAT_ORDINARY: // 0x004C9C1E
+			cmp edi, 4
+			jne SHORT LBL_DEPTH_NONZERO_FLAT_OPAQUE
+			push eax
+			call UnkFunc39
+			add esp, 4
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_NONZERO_TEXTURED: // 0x004C9C30
+			test ch, 40h
+			je SHORT LBL_DEPTH_NONZERO_TEXTURE_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc41
+			jmp Near ptr LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_TEXTURE_SUBTRACT: // 0x004C9C44
+			test ecx, 20000h
+			je SHORT LBL_DEPTH_NONZERO_TEXTURE_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc42
+			jmp SHORT LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_TEXTURE_ALPHA: // 0x004C9C58
+			test ch, 4
+			je SHORT LBL_DEPTH_NONZERO_TEXTURE_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_DEPTH_NONZERO_TEXTURE_PARTIAL_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc43
+			jmp SHORT LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_TEXTURE_PARTIAL_ALPHA: // 0x004C9C7D
+			mov edx, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc44
+			sub edx, ecx
+			mov dword ptr [g_vertexAlphaComplement], edx
+			jmp SHORT LBL_DEPTH_GENERIC
+		LBL_DEPTH_NONZERO_TEXTURE_ORDINARY: // 0x004C9C96
+			cmp edi, 4
+			jne SHORT LBL_DEPTH_NONZERO_TEXTURE_GENERIC
+			test edx, edx
+			push esi
+			push eax
+			je SHORT LBL_DEPTH_FULL_RATE_QUAD
+			call UnkFunc45
+			add esp, 8
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_FULL_RATE_QUAD: // 0x004C9CAD
+			call UnkFunc46
+			add esp, 8
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_NONZERO_TEXTURE_GENERIC: // 0x004C9CB9
+			test edx, edx
+			je SHORT LBL_DEPTH_FULL_RATE_SPAN
+			mov dword ptr [g_selectedSpan], offset UnkFunc47
+			jmp SHORT LBL_DEPTH_GENERIC
+		LBL_DEPTH_FULL_RATE_SPAN: // 0x004C9CC9
+			mov dword ptr [g_selectedSpan], offset UnkFunc48
+		LBL_DEPTH_GENERIC: // 0x004C9CD3
+			cmp edi, 3
+			push esi
+			push eax
+			jne SHORT LBL_DEPTH_GENERIC_QUAD
+			call UnkFunc57
+			add esp, 8
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		LBL_DEPTH_GENERIC_QUAD: // 0x004C9CE6
+			call UnkFunc58
+			add esp, 8
+			pop edi
+			pop esi
+			pop ebx
+			ret
+		}
+	}
 
-	// STUB: TOY2 0x004C9D00
-	uint32_t* UnkFunc35(int32_t a1) { return 0; }
+	// FUNCTION: TOY2 0x004C9D00 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc35(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band)
+	{
+		__asm
+		{
+			mov eax, dword ptr [esp + 4]
+			push esi
+			push edi
+			mov edi, dword ptr [g_pixelMode]
+			mov edx, dword ptr [eax + 80h]
+			mov ecx, dword ptr [eax + 88h]
+			mov esi, dword ptr [eax + 84h]
+			test edi, edi
+			jne Near ptr LBL_FIFO_NONZERO_MODE
+			test edx, edx
+			jne Near ptr LBL_FIFO_ZERO_TEXTURED
+			test ch, 40h
+			je SHORT LBL_FIFO_ZERO_FLAT_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc52
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_FLAT_SUBTRACT: // 0x004C9D42
+			test ecx, 20000h
+			je SHORT LBL_FIFO_ZERO_FLAT_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc53
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_FLAT_ALPHA: // 0x004C9D59
+			test ch, 4
+			je SHORT LBL_FIFO_ZERO_FLAT_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_FIFO_ZERO_FLAT_PARTIAL_ALPHA
+		LBL_FIFO_ZERO_FLAT_OPAQUE: // 0x004C9D72
+			mov dword ptr [g_selectedSpan], offset UnkFunc55
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_FLAT_PARTIAL_ALPHA: // 0x004C9D81
+			mov edi, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc56
+			sub edi, ecx
+			mov dword ptr [g_vertexAlphaComplement], edi
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_FLAT_ORDINARY: // 0x004C9D9D
+			cmp esi, 4
+			jne SHORT LBL_FIFO_ZERO_FLAT_OPAQUE
+			push eax
+			call UnkFunc54
+			add esp, 4
+			pop edi
+			pop esi
+			ret
+		LBL_FIFO_ZERO_TEXTURED: // 0x004C9DAE
+			test ch, 40h
+			je SHORT LBL_FIFO_ZERO_TEXTURE_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc49
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_TEXTURE_SUBTRACT: // 0x004C9DC2
+			test ecx, 20000h
+			je SHORT LBL_FIFO_ZERO_TEXTURE_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc50
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_TEXTURE_ALPHA: // 0x004C9DD9
+			test ch, 4
+			je Near ptr LBL_FIFO_TEXTURED_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_FIFO_ZERO_TEXTURE_PARTIAL_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc43
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_ZERO_TEXTURE_PARTIAL_ALPHA: // 0x004C9E05
+			mov edi, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc51
+			sub edi, ecx
+			mov dword ptr [g_vertexAlphaComplement], edi
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_MODE: // 0x004C9E21
+			test edx, edx
+			jne Near ptr LBL_FIFO_NONZERO_TEXTURED
+			test ch, 40h
+			je SHORT LBL_FIFO_NONZERO_FLAT_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc36
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_FLAT_SUBTRACT: // 0x004C9E3D
+			test ecx, 20000h
+			je SHORT LBL_FIFO_NONZERO_FLAT_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc37
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_FLAT_ALPHA: // 0x004C9E54
+			test ch, 4
+			je SHORT LBL_FIFO_NONZERO_FLAT_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_FIFO_NONZERO_FLAT_PARTIAL_ALPHA
+		LBL_FIFO_NONZERO_FLAT_OPAQUE: // 0x004C9E6D
+			mov dword ptr [g_selectedSpan], offset UnkFunc40
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_FLAT_PARTIAL_ALPHA: // 0x004C9E7C
+			mov edi, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc38
+			sub edi, ecx
+			mov dword ptr [g_vertexAlphaComplement], edi
+			jmp Near ptr LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_FLAT_ORDINARY: // 0x004C9E98
+			cmp esi, 4
+			jne SHORT LBL_FIFO_NONZERO_FLAT_OPAQUE
+			push eax
+			call UnkFunc39
+			add esp, 4
+			pop edi
+			pop esi
+			ret
+		LBL_FIFO_NONZERO_TEXTURED: // 0x004C9EA9
+			test ch, 40h
+			je SHORT LBL_FIFO_NONZERO_TEXTURE_SUBTRACT
+			mov dword ptr [g_selectedSpan], offset UnkFunc41
+			jmp SHORT LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_TEXTURE_SUBTRACT: // 0x004C9EBA
+			test ecx, 20000h
+			je SHORT LBL_FIFO_NONZERO_TEXTURE_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc42
+			jmp SHORT LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_TEXTURE_ALPHA: // 0x004C9ECE
+			test ch, 4
+			je SHORT LBL_FIFO_TEXTURED_ORDINARY
+			mov ecx, dword ptr [eax + 10h]
+			shr ecx, 18h
+			cmp ecx, 0FFh
+			mov dword ptr [g_vertexAlpha], ecx
+			jne SHORT LBL_FIFO_NONZERO_TEXTURE_PARTIAL_ALPHA
+			mov dword ptr [g_selectedSpan], offset UnkFunc43
+			jmp SHORT LBL_FIFO_GENERIC
+		LBL_FIFO_NONZERO_TEXTURE_PARTIAL_ALPHA: // 0x004C9EF3
+			mov edi, 0FFh
+			mov dword ptr [g_selectedSpan], offset UnkFunc44
+			sub edi, ecx
+			mov dword ptr [g_vertexAlphaComplement], edi
+			jmp SHORT LBL_FIFO_GENERIC
+		LBL_FIFO_TEXTURED_ORDINARY: // 0x004C9F0C
+			cmp esi, 4
+			jne SHORT LBL_FIFO_FULL_RATE_SPAN
+			push edx
+			push eax
+			call UnkFunc46
+			add esp, 8
+			pop edi
+			pop esi
+			ret
+		LBL_FIFO_FULL_RATE_SPAN: // 0x004C9F1E
+			mov dword ptr [g_selectedSpan], offset UnkFunc48
+		LBL_FIFO_GENERIC: // 0x004C9F28
+			cmp esi, 3
+			push edx
+			push eax
+			jne SHORT LBL_FIFO_GENERIC_QUAD
+			call UnkFunc57
+			add esp, 8
+			pop edi
+			pop esi
+			ret
+		LBL_FIFO_GENERIC_QUAD: // 0x004C9F3A
+			call UnkFunc58
+			add esp, 8
+			pop edi
+			pop esi
+			ret
+		}
+	}
 }
 
 namespace SoftwareDevice
