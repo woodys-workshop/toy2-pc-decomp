@@ -211,7 +211,10 @@ namespace Nu3D
 			g_screenSpaceMatrixCache._22 = height * -0.5f;
 			g_screenSpaceMatrixCache._33 = 1.0f;
 			g_screenSpaceMatrixCache._41 = (float)g_pendingViewport.dwX + width * 0.5f;
-			g_screenSpaceMatrixCache._42 = (float)g_pendingViewport.dwY + height * 0.5f;
+
+			// Materialize unsigned Y so VC6 cannot use signed DWORD FIADD.
+			volatile double viewportY = g_pendingViewport.dwY;
+			g_screenSpaceMatrixCache._42 = viewportY + height * 0.5f;
 			g_screenSpaceMatrixCache._44 = 1.0f;
 			g_screenSpaceMatrixDirty = 0;
 		}
@@ -233,10 +236,10 @@ namespace Nu3D
 			memcpy(viewportCache->frustumInfo, &g_fustrumInfo, sizeof(viewportCache->frustumInfo));
 
 			// Copy float representations, including NaN payloads.
-			memcpy(&viewportCache->clipRect.left, &g_viewClipRect.top, sizeof(float));
-			memcpy(&viewportCache->clipRect.top, &g_viewClipRect.left, sizeof(float));
-			memcpy(&viewportCache->clipRect.right, &g_viewClipRect.bottom, sizeof(float));
-			memcpy(&viewportCache->clipRect.bottom, &g_viewClipRect.right, sizeof(float));
+			memcpy(&viewportCache->clipLeft, &g_viewClipRect.top, sizeof(float));
+			memcpy(&viewportCache->clipTop, &g_viewClipRect.left, sizeof(float));
+			memcpy(&viewportCache->clipRight, &g_viewClipRect.bottom, sizeof(float));
+			memcpy(&viewportCache->clipBottom, &g_viewClipRect.right, sizeof(float));
 			viewportCache->frustumCount = g_fustrumInfo.fustrumCount;
 		}
 
@@ -301,10 +304,10 @@ namespace Nu3D
 			memcpy(&g_frustumData, &viewportCache->frustum, sizeof(g_frustumData));
 			memcpy(&g_fustrumInfo, viewportCache->frustumInfo, sizeof(viewportCache->frustumInfo));
 
-			memcpy(&g_viewClipRect.top, &viewportCache->clipRect.left, sizeof(float));
-			memcpy(&g_viewClipRect.left, &viewportCache->clipRect.top, sizeof(float));
-			memcpy(&g_viewClipRect.bottom, &viewportCache->clipRect.right, sizeof(float));
-			memcpy(&g_viewClipRect.right, &viewportCache->clipRect.bottom, sizeof(float));
+			memcpy(&g_viewClipRect.top, &viewportCache->clipLeft, sizeof(float));
+			memcpy(&g_viewClipRect.left, &viewportCache->clipTop, sizeof(float));
+			memcpy(&g_viewClipRect.bottom, &viewportCache->clipRight, sizeof(float));
+			memcpy(&g_viewClipRect.right, &viewportCache->clipBottom, sizeof(float));
 			g_fustrumInfo.fustrumCount = viewportCache->frustumCount;
 
 			if (g_fustrumInfo.unkInt7)
@@ -414,10 +417,9 @@ namespace Nu3D
 {
 	STATIC_ASSERT(offsetof(Viewport::ViewportCache, frustum) == 0x0);
 	STATIC_ASSERT(offsetof(Viewport::ViewportCache, frustumInfo) == 0x1F4);
-	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRect) == 0x200);
-	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRect.left) == 0x200);
-	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRect.right) == 0x204);
-	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRect.top) == 0x208);
-	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRect.bottom) == 0x20C);
+	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipLeft) == 0x200);
+	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipRight) == 0x204);
+	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipTop) == 0x208);
+	STATIC_ASSERT(offsetof(Viewport::ViewportCache, clipBottom) == 0x20C);
 	STATIC_ASSERT(offsetof(Viewport::ViewportCache, frustumCount) == 0x210);
 }

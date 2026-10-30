@@ -50,20 +50,15 @@ namespace Nu3D
 			uint8_t unusedData[372];
 		};
 
-		struct ViewportSnapshotRect
-		{
-			float left;
-			float right;
-			float top;
-			float bottom;
-		};
-
 		// snapshot of the frustum planes + clip rect, used to restore the view after rendering through a portal
 		struct ViewportCache
 		{
 			FrustumData frustum;
 			int32_t frustumInfo[3];
-			ViewportSnapshotRect clipRect;
+			float clipLeft;
+			float clipRight;
+			float clipTop;
+			float clipBottom;
 			int32_t frustumCount;
 		};
 
@@ -92,6 +87,5 @@ namespace Nu3D
 	STATIC_ASSERT(sizeof(Viewport::ViewportRect) == 0x10);
 	STATIC_ASSERT(sizeof(Viewport::FustrumInfo) == 0x1C);
 	STATIC_ASSERT(sizeof(Viewport::FrustumData) == 0x1F4);
-	STATIC_ASSERT(sizeof(Viewport::ViewportSnapshotRect) == 0x10);
 	STATIC_ASSERT(sizeof(Viewport::ViewportCache) == 0x214);
 }
