@@ -32,9 +32,9 @@ namespace Toy2
 
 			RGBA color;
 			color.a = -1;
-			color.b = g_menuClearColor.r;
+			color.r = g_menuClearColor.r;
 			color.g = g_menuClearColor.g;
-			color.r = g_menuClearColor.b;
+			color.b = g_menuClearColor.b;
 
 			Toy2::g_showBlackFrames = 1;
 			Renderer::Sprite::g_parallaxDepthZPos = 0.80000001;

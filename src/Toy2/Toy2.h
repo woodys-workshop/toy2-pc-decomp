@@ -31,8 +31,8 @@ namespace Toy2
 
 	struct SectorBackdropTexIdTable
 	{
-		int32_t primary[10];
-		int32_t secondary[8];
+		int32_t primary[9];
+		int32_t secondary[9];
 	};
 
 	struct SaveNameBuffer
@@ -119,7 +119,7 @@ namespace Toy2
 		Transform* headOffset,
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor);
-	int32_t ShowTokenSparkle();
+	int32_t ShowTokenSparkle(int32_t linkId);
 	void CheckForQuit();
 
 	extern ToyCfg g_toyCfgData;
@@ -179,7 +179,7 @@ namespace Toy2
 	extern int32_t g_unk830CC4;
 	extern int32_t g_unk830C90;
 	extern int32_t g_unk830C94;
-	extern int16_t g_unk830D4C;
+	extern int32_t g_unk830D4C;
 	extern int32_t g_collectionCount;
 	extern int32_t g_unk52F2F8;
 	extern Nu3D::Particles::ParticleInstance* g_unk830E2C;
@@ -193,11 +193,25 @@ namespace Toy2
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
+	STATIC_ASSERT(sizeof(SectorBackdropTexIdTable) == 0x48);
 	STATIC_ASSERT(sizeof(TickAccumulators) == 0xC);
 	STATIC_ASSERT(sizeof(SoundSequencePlayer) == 0x14);
 	STATIC_ASSERT(sizeof(SpawnLocation) == 0x10);
 	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
 	STATIC_ASSERT(sizeof(SaveNameBuffer) == 0x100);
+
+	namespace Ini
+	{
+		struct KeyNameEntry
+		{
+			uint16_t scancode;
+			uint16_t unk2;
+			uint16_t keyName;
+		};
+
+		extern KeyNameEntry g_keyNameTable[123];
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+	}
 
 	namespace Game
 	{
