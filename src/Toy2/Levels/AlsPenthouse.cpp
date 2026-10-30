@@ -1383,7 +1383,7 @@ namespace Toy2
 			if (g_unk52FD8C > 1000)
 				g_unk52FD8C -= 1300;
 
-			if (g_buzzActor.collisionFlags && (Platform::GetFlags(12) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(12))[2] < -12288)
+			if (g_buzzActor.collisionFlags && (Platform::GetFlags(12) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(12))[1] < -12288)
 			{
 				Levels::Method3(13, 1);
 

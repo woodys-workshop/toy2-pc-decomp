@@ -521,7 +521,7 @@ namespace Toy2
 			*(&Levels::g_portalEntries[1].entries[0].categoryIdx + v1) = g_unk52F7E8;
 
 			g_unk52F880 = *(&Levels::g_portalEntries[1].entries[0].recordIdx + v2);
-			g_unk52F7E4 = *(int32_t*)Levels::g_portalEntries[2].entries;
+			g_unk52F7E4 = *(int32_t*)Levels::g_portalEntries[2].entries & 0xFF;
 			g_unk52F7E8 = Levels::g_portalEntries[2].entries[1].recordIdx;
 			g_unk52F7D0 = 4096;
 			g_unk52F7C8 = 0;

@@ -381,7 +381,7 @@ namespace Toy2
 			Nu3D::Link::GetRotation8Bit(6, &a2);
 			Nu3D::Link::SetRotationRelative8bit(7, a2.x, a2.y, a2.z);
 
-			if (g_buzzActor.collisionFlags && (Platform::GetFlags(3) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(3))[2] < -12288)
+			if (g_buzzActor.collisionFlags && (Platform::GetFlags(3) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(3))[1] < -12288)
 			{
 				Levels::Method3(1, 1);
 
@@ -409,7 +409,7 @@ namespace Toy2
 				if ((g_unk52F938 & 1) != 0)
 					goto LABEL_37;
 
-				if ((Platform::GetFlags(4) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(4))[2] < -12288 && Buzz::g_groundSlamTicker)
+				if ((Platform::GetFlags(4) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(4))[1] < -12288 && Buzz::g_groundSlamTicker)
 				{
 					g_unk52F938 |= 1u;
 					Platform::GetOrigin(4, &a2);

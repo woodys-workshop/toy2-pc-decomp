@@ -550,7 +550,7 @@ namespace Toy2
 				if (! g_buzzActor.collisionFlags)
 					goto LABEL_85;
 
-				if ((Platform::GetFlags(10) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(10))[2] < -12288)
+				if ((Platform::GetFlags(10) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(10))[1] < -12288)
 				{
 					g_unk52FA4C = 32;
 					Levels::Method3(3, 1);
@@ -625,7 +625,7 @@ namespace Toy2
 				if (! g_buzzActor.collisionFlags)
 					goto LABEL_105;
 
-				if ((Platform::GetFlags(14) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(14))[2] < -12288)
+				if ((Platform::GetFlags(14) & 3) == 2 && ((int16_t*)Platform::GetContactFace32(14))[1] < -12288)
 				{
 					g_unk52F9E8 = 32;
 					Levels::Method3(2, 1);
@@ -784,14 +784,14 @@ namespace Toy2
 			}
 
 			x = g_levelActors[10].transform.pos.x;
-			if (g_levelActors[10].transform.pos.x < -499087)
+			if ((uint32_t)g_levelActors[10].transform.pos.x < 0xFFF86271u)
 			{
 				x = -499087;
 				g_levelActors[10].transform.pos.x = -499087;
 			}
 
 			v17 = g_levelActors[11].transform.pos.x;
-			if (g_levelActors[11].transform.pos.x < -499087)
+			if ((uint32_t)g_levelActors[11].transform.pos.x < 0xFFF86271u)
 			{
 				v17 = -499087;
 				g_levelActors[11].transform.pos.x = -499087;

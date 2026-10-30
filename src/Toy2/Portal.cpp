@@ -319,7 +319,7 @@ namespace Toy2
 								{
 									int32_t rectIdx = Sector::g_unk54DD74;
 
-									*(uint8_t*)&Renderer::Shadows::g_unusedShadowVar = 0;
+									Levels::g_datContents[15].unkByte1 = 0;
 
 									g_backdropRects[rectIdx].x0 = Levels::g_datContents[portal->categoryIdx].unkShort1;
 									g_backdropRects[rectIdx].x1 = Levels::g_datContents[portal->categoryIdx].unkShort3;

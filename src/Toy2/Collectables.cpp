@@ -34,8 +34,8 @@ namespace Toy2
 		// the directions the pieces of a collected token fly in
 		// GLOBAL: TOY2 0x005039C4
 		int16_t g_gameStruct5[48] = {
-			0,	  4096, 0, 0,	  -4096, 0, 4096, 0,	 0, -4096, 0,	  0,	2896, 2896, 0,	   2896, -2896, 0,	  -2896, 2896,	0,	   -2896, -2896, 0,
-			2896, 2896, 0, -2896, 2896,	 0, 2896, -2896, 0, -2896, -2896, 2896, 0,	  2896, -2896, 0,	 2896,	2896, 0,	 -2896, -2896, 0,	  -2896
+			0, 4096, 0,	   0, -4096, 0,	   4096, 0,	   0,	  -4096, 0,		0,	   2896, 2896, 0,	 2896,	-2896, 0,	 -2896, 2896, 0,	 -2896, -2896, 0,
+			0, 2896, 2896, 0, -2896, 2896, 0,	 2896, -2896, 0,	 -2896, -2896, 2896, 0,	   2896, -2896, 0,	   2896, 2896,	0,	  -2896, -2896, 0,	   -2896
 		};
 
 		// the gravity of Buzz while the level ends
@@ -141,14 +141,14 @@ namespace Toy2
 						position.pos.z = 32 * pickup->pos.z;
 						position.pos.y = 32 * (pickup->pos.y - 10);
 
-						int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
+						int16_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
 
 						pickup->props.floorPos = floorPos;
 
 						if (floorPos == 0x7FFF)
 							pickup->props.floorPos = 32766;
 
-						if (pickup->props.floorPos - pickup->pos.y > 6144)
+						if ((int16_t)pickup->props.floorPos - pickup->pos.y > 6144)
 							pickup->props.floorPos = 32767;
 
 						Levels::Type63* current = pickup;
@@ -214,14 +214,14 @@ namespace Toy2
 							position.pos.z = 32 * table->pos.z;
 							position.pos.y = 32 * (table->pos.y - 10);
 
-							int32_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
+							int16_t floorPos = Nu3D::Collision::GetGroundHeightEx(&position, 0, 0) >> 5;
 
 							table->props.floorPos = floorPos;
 
 							if (floorPos == 0x7FFF)
 								table->props.floorPos = 32766;
 
-							if (table->props.floorPos - table->pos.y > 6144)
+							if ((int16_t)table->props.floorPos - table->pos.y > 6144)
 								table->props.floorPos = 0x7FFF;
 
 							objectList = Levels::g_objectListBase;
