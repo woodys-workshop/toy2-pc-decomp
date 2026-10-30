@@ -37,9 +37,9 @@ namespace Renderer
 			int32_t segementLength,
 			Transform* origin,
 			Transform* direction,
-			uint8_t tintB,
-			uint8_t tintG,
-			uint8_t tintR);
+			int32_t tintB,
+			int32_t tintG,
+			int32_t tintR);
 
 		STATIC_ASSERT(sizeof(BeamRequest) == 0x38);
 	}
