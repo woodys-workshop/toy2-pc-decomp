@@ -336,10 +336,10 @@ namespace Toy2
 
 									FloodVisibility(
 										Levels::g_portalEntries[categoryIdx].entries,
-										Levels::g_datContents[categoryIdx].unkShort1,
-										Levels::g_datContents[categoryIdx].unkShort3,
-										Levels::g_datContents[categoryIdx].unkShort2,
-										Levels::g_datContents[categoryIdx].unkShort4,
+										(int16_t)Levels::g_datContents[categoryIdx].unkShort1,
+										(int16_t)Levels::g_datContents[categoryIdx].unkShort3,
+										(int16_t)Levels::g_datContents[categoryIdx].unkShort2,
+										(int16_t)Levels::g_datContents[categoryIdx].unkShort4,
 										a6 - 1);
 								}
 							}
