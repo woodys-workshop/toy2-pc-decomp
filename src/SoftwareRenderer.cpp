@@ -576,7 +576,7 @@ namespace SoftwareRenderer
 		CommitZoom();
 	}
 
-	// FUNCTION: TOY2 0x004C17B0
+	// FUNCTION: TOY2 0x004C17B0 [MATCHED]
 	void PresentFrame()
 	{
 		uint8_t* destinationRow;
@@ -597,11 +597,11 @@ namespace SoftwareRenderer
 				mov     ecx, g_surfaceWidth
 				shr     ecx, 1
 				mov     ebx, 0
-			clearTopBorder:
+			LBL_CLEAR_TOP_BORDER:
 				mov     dword ptr [eax], ebx
 				add     eax, 4
 				dec     ecx
-				jne     clearTopBorder
+				jne     LBL_CLEAR_TOP_BORDER
 				pop     esi
 				mov     ecx, g_surfaceHeight
 				dec     ecx
@@ -609,19 +609,19 @@ namespace SoftwareRenderer
 				mov     eax, g_surfaceWidth
 				dec     eax
 				shl     eax, 1
-			clearSideBorders:
+			LBL_CLEAR_SIDE_BORDERS:
 				mov     word ptr [esi], bx
 				mov     word ptr [esi + eax], bx
 				add     esi, edx
 				dec     ecx
-				jne     clearSideBorders
+				jne     LBL_CLEAR_SIDE_BORDERS
 				mov     ecx, g_surfaceWidth
 				shr     ecx, 1
-			clearBottomBorder:
+			LBL_CLEAR_BOTTOM_BORDER:
 				mov     dword ptr [esi], ebx
 				add     esi, 4
 				dec     ecx
-				jne     clearBottomBorder
+				jne     LBL_CLEAR_BOTTOM_BORDER
 
 				mov     eax, g_rightOffset
 				sub     eax, g_leftOffset
@@ -643,26 +643,26 @@ namespace SoftwareRenderer
 				mov     eax, g_frameBuffer
 				add     eax, ecx
 				mov     sourceRow, eax
-			copyActiveRow:
+			LBL_COPY_ACTIVE_ROW:
 				push    ebx
 				mov     esi, sourceRow
 				mov     edi, destinationRow
 				mov     ecx, pairsPerRow
 				mov     ebx, g_softwareClearColor
-			copyActivePairs:
+			LBL_COPY_ACTIVE_PAIRS:
 				mov     eax, dword ptr [esi]
 				mov     dword ptr [edi], eax
 				mov     dword ptr [esi], ebx
 				add     esi, 4
 				add     edi, 4
 				dec     ecx
-				jne     copyActivePairs
+				jne     LBL_COPY_ACTIVE_PAIRS
 				mov     eax, g_surfacePitch
 				add     destinationRow, eax
 				add     sourceRow, eax
 				pop     ebx
 				dec     ebx
-				jne     copyActiveRow
+				jne     LBL_COPY_ACTIVE_ROW
 
 				mov     eax, g_primarySurfacePixels
 				mov     destinationRow, eax
@@ -670,28 +670,28 @@ namespace SoftwareRenderer
 				mov     sourceRow, eax
 				mov     ebx, g_topOffset
 				and     ebx, ebx
-				je      setupSideMargins
-			copyTopMarginRow:
+				je      LBL_SETUP_SIDE_MARGINS
+			LBL_COPY_TOP_MARGIN_ROW:
 				push    ebx
 				mov     esi, sourceRow
 				mov     edi, destinationRow
 				mov     ecx, g_surfaceWidth
 				shr     ecx, 1
 				mov     ebx, 00100010h
-			copyTopMarginPairs:
+			LBL_COPY_TOP_MARGIN_PAIRS:
 				mov     eax, dword ptr [esi]
 				mov     dword ptr [edi], eax
 				mov     dword ptr [esi], ebx
 				add     esi, 4
 				add     edi, 4
 				dec     ecx
-				jne     copyTopMarginPairs
+				jne     LBL_COPY_TOP_MARGIN_PAIRS
 				mov     eax, g_surfacePitch
 				add     destinationRow, eax
 				add     sourceRow, eax
 				pop     ebx
 				dec     ebx
-				jne     copyTopMarginRow
+				jne     LBL_COPY_TOP_MARGIN_ROW
 
 				mov     eax, g_primarySurfacePixels
 				mov     destinationRow, eax
@@ -704,29 +704,29 @@ namespace SoftwareRenderer
 				add     destinationRow, ebx
 				add     sourceRow, ebx
 				mov     ebx, g_topOffset
-			copyBottomMarginRow:
+			LBL_COPY_BOTTOM_MARGIN_ROW:
 				push    ebx
 				mov     esi, sourceRow
 				mov     edi, destinationRow
 				mov     ecx, g_surfaceWidth
 				shr     ecx, 1
 				mov     ebx, 00100010h
-			copyBottomMarginPairs:
+			LBL_COPY_BOTTOM_MARGIN_PAIRS:
 				mov     eax, dword ptr [esi]
 				mov     dword ptr [edi], eax
 				mov     dword ptr [esi], ebx
 				add     esi, 4
 				add     edi, 4
 				dec     ecx
-				jne     copyBottomMarginPairs
+				jne     LBL_COPY_BOTTOM_MARGIN_PAIRS
 				mov     eax, g_surfacePitch
 				add     destinationRow, eax
 				add     sourceRow, eax
 				pop     ebx
 				dec     ebx
-				jne     copyBottomMarginRow
+				jne     LBL_COPY_BOTTOM_MARGIN_ROW
 
-			setupSideMargins:
+			LBL_SETUP_SIDE_MARGINS:
 				mov     eax, g_topOffset
 				mov     ecx, g_surfacePitch
 				imul    ecx, eax
@@ -738,7 +738,7 @@ namespace SoftwareRenderer
 				mov     sourceRow, eax
 				mov     ebx, g_leftOffset
 				and     ebx, ebx
-				je      presentationComplete
+				je      LBL_PRESENTATION_COMPLETE
 				shr     ebx, 1
 				mov     pairsPerRow, ebx
 				mov     eax, g_rightOffset
@@ -747,14 +747,14 @@ namespace SoftwareRenderer
 				mov     ebx, g_bottomOffset
 				sub     ebx, g_topOffset
 				inc     ebx
-			copySideMarginRow:
+			LBL_COPY_SIDE_MARGIN_ROW:
 				push    ebx
 				mov     esi, sourceRow
 				mov     edi, destinationRow
 				mov     ecx, pairsPerRow
 				mov     ebx, 00100010h
 				mov     edx, rightMarginBytes
-			copySideMarginPairs:
+			LBL_COPY_SIDE_MARGIN_PAIRS:
 				mov     eax, dword ptr [esi]
 				mov     dword ptr [edi], eax
 				mov     dword ptr [esi], ebx
@@ -764,14 +764,14 @@ namespace SoftwareRenderer
 				add     esi, 4
 				add     edi, 4
 				dec     ecx
-				jne     copySideMarginPairs
+				jne     LBL_COPY_SIDE_MARGIN_PAIRS
 				mov     eax, g_surfacePitch
 				add     destinationRow, eax
 				add     sourceRow, eax
 				pop     ebx
 				dec     ebx
-				jne     copySideMarginRow
-			presentationComplete:
+				jne     LBL_COPY_SIDE_MARGIN_ROW
+			LBL_PRESENTATION_COMPLETE:
 			}
 
 			DrawingDevice::UnlockPrimarySurface();
