@@ -13,7 +13,6 @@
 
 #include <directx6/ddraw.h>
 #include <directx6/d3d.h>
-#include <stddef.h>
 
 namespace Nu3D
 {
@@ -123,22 +122,10 @@ namespace NGNLoader
 
 	STATIC_ASSERT(sizeof(NGNImage) == 0x67C);
 	STATIC_ASSERT(sizeof(NGNTextureData) == 0x1C);
-	STATIC_ASSERT(sizeof(NGNTextureData) == sizeof(Nu3D::Viewport::FustrumInfo));
-	STATIC_ASSERT(offsetof(NGNTextureData, isTex14) == offsetof(Nu3D::Viewport::FustrumInfo, unkInt3));
 	STATIC_ASSERT(sizeof(NGNTextureDataSentinal) == 0x8);
 	STATIC_ASSERT(sizeof(NGNTextureCache) == 0x128);
 	STATIC_ASSERT(sizeof(NGNTextureCacheSentinal) == 0x8);
 
 	STATIC_ASSERT(sizeof(TextureEntry) == 0x10);
 	STATIC_ASSERT(sizeof(Type266Entry) == 0x8);
-	STATIC_ASSERT(offsetof(TextureEntry, auxiliaryData) == 0x8);
-	STATIC_ASSERT(offsetof(TextureEntry, auxiliaryValue) == 0xC);
-	STATIC_ASSERT(offsetof(Type266Entry, count) == 0x0);
-	STATIC_ASSERT(offsetof(Type266Entry, index) == 0x2);
-	STATIC_ASSERT(offsetof(Type266Entry, points) == 0x4);
-	STATIC_ASSERT(sizeof(Vector3F) == 0xC);
-	STATIC_ASSERT(offsetof(NGNImage, data266) == 0x54);
-	STATIC_ASSERT(sizeof(((NGNImage*)0)->data266) == 0x200);
-	STATIC_ASSERT(offsetof(NGNImage, portalHashTable) == 0x254);
-	STATIC_ASSERT(offsetof(NGNImage, textureEntries) == 0x27C);
 }

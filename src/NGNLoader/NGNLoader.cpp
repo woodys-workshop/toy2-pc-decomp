@@ -11,6 +11,7 @@
 #include "NGNLoader/ObjectLoad.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <string.h>
 
 namespace NGNLoader
@@ -1468,7 +1469,7 @@ namespace NGNLoader
 	{
 		// Texture zero aliases the frustum object immediately before the original pool.
 		if (! texDataIndex)
-			return reinterpret_cast<NGNTextureData*>(&Nu3D::Viewport::g_fustrumInfo);
+			return (NGNTextureData*)&Nu3D::Viewport::g_fustrumInfo;
 
 		return &g_textureDataFreeList[texDataIndex - 1];
 	}
@@ -1584,4 +1585,16 @@ namespace NGNLoader
 		Nu3D::FreeAllBmpDataNodes_T();
 	}
 
+	STATIC_ASSERT(sizeof(NGNTextureData) == sizeof(Nu3D::Viewport::FustrumInfo));
+	STATIC_ASSERT(offsetof(NGNTextureData, isTex14) == offsetof(Nu3D::Viewport::FustrumInfo, unkInt3));
+	STATIC_ASSERT(offsetof(TextureEntry, auxiliaryData) == 0x8);
+	STATIC_ASSERT(offsetof(TextureEntry, auxiliaryValue) == 0xC);
+	STATIC_ASSERT(offsetof(Type266Entry, count) == 0x0);
+	STATIC_ASSERT(offsetof(Type266Entry, index) == 0x2);
+	STATIC_ASSERT(offsetof(Type266Entry, points) == 0x4);
+	STATIC_ASSERT(sizeof(Vector3F) == 0xC);
+	STATIC_ASSERT(offsetof(NGNImage, data266) == 0x54);
+	STATIC_ASSERT(sizeof(((NGNImage*)0)->data266) == 0x200);
+	STATIC_ASSERT(offsetof(NGNImage, portalHashTable) == 0x254);
+	STATIC_ASSERT(offsetof(NGNImage, textureEntries) == 0x27C);
 }

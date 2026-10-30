@@ -29,11 +29,16 @@
 #include "Toy2/Weather.h"
 #include "Toy2/Platform.h"
 #include "Toy2/Buzz.h"
+#include <stddef.h>
 
 namespace Toy2
 {
 	namespace Levels
 	{
+		STATIC_ASSERT(sizeof(Type63Properties) == 0x4);
+		STATIC_ASSERT(sizeof(Type63) == 0x10);
+		STATIC_ASSERT(offsetof(Type63, props) + offsetof(Type63Properties, floorPos) == 0xE);
+
 		// GLOBAL: TOY2 0x00559C70
 		RecordData* g_recordData[96];
 
@@ -385,7 +390,7 @@ namespace Toy2
 			for (int16_t* p = region0400 + 170; p != g_layerScaleTable + (sizeof(g_layerScaleTable) / sizeof(g_layerScaleTable[0])); ++p)
 				*p = 512;
 
-			uint8_t* base = reinterpret_cast<uint8_t*>(g_levelDataBase);
+			uint8_t* base = (uint8_t*)g_levelDataBase;
 			int32_t type64Count = 0;
 			Levels::g_unused9 = 0;
 
@@ -405,15 +410,15 @@ namespace Toy2
 
 			int16_t type65Idx = 65;
 
-			if (*reinterpret_cast<int32_t*>(recordPtr - 4) > 0)
+			if (*(int32_t*)(recordPtr - 4) > 0)
 			{
-				int32_t totalRecordCount = *reinterpret_cast<int32_t*>(recordPtr - 4);
+				int32_t totalRecordCount = *(int32_t*)(recordPtr - 4);
 
 				DECOMP_PRINT(("Total Record Count -> %d\n", totalRecordCount));
 
 				do
 				{
-					int16_t recordType = *reinterpret_cast<uint16_t*>(recordPtr + 2);
+					int16_t recordType = *(uint16_t*)(recordPtr + 2);
 
 					if (recordType >= 0)
 					{
@@ -424,21 +429,21 @@ namespace Toy2
 							g_type64Count = type64Count;
 							g_type64Structs[type64Idx].recordPtr = recordPtr;
 
-							recordPtr += 12 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
+							recordPtr += 12 * *(int16_t*)recordPtr + 4;
 						}
 						else
 						{
 							if (recordType <= 64)
 							{
-								g_recordData[recordType] = reinterpret_cast<RecordData*>(recordPtr);
+								g_recordData[recordType] = (RecordData*)recordPtr;
 							}
 							else
 							{
 								// Portal records, the last point of the record holds the zone it belongs to, and its category
 								g_hasZoneData = 1;
-								g_recordData[type65Idx] = reinterpret_cast<RecordData*>(recordPtr);
+								g_recordData[type65Idx] = (RecordData*)recordPtr;
 
-								Vector3I* zoneAnchor = reinterpret_cast<Vector3I*>(recordPtr + 12 * *reinterpret_cast<int16_t*>(recordPtr) - 8);
+								Vector3I* zoneAnchor = (Vector3I*)(recordPtr + 12 * *(int16_t*)recordPtr - 8);
 								int32_t zone = zoneAnchor->x;
 
 								// the counts are in bytes, an entry is 2 bytes
@@ -451,13 +456,13 @@ namespace Toy2
 
 								// the points are squashed down to 16 bit, in place
 								int32_t portalVertIdx = 0;
-								int32_t* portalVert = reinterpret_cast<int32_t*>(recordPtr + 4);
+								int32_t* portalVert = (int32_t*)(recordPtr + 4);
 
-								if (*reinterpret_cast<int16_t*>(recordPtr) > 0)
+								if (*(int16_t*)recordPtr > 0)
 								{
 									do
 									{
-										int16_t* portalVert16 = reinterpret_cast<int16_t*>(portalVert);
+										int16_t* portalVert16 = (int16_t*)portalVert;
 
 										int32_t coordRaw = portalVert[0];
 										portalVert16[0] = coordRaw >> 2;
@@ -470,23 +475,23 @@ namespace Toy2
 
 										portalVert += 3;
 										++portalVertIdx;
-									} while (portalVertIdx < *reinterpret_cast<int16_t*>(recordPtr));
+									} while (portalVertIdx < *(int16_t*)recordPtr);
 								}
 
 								type64Count = g_type64Count;
 								++type65Idx;
 							}
 
-							if (*reinterpret_cast<uint16_t*>(recordPtr + 2) == 63)
-								recordPtr += 16 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
+							if (*(uint16_t*)(recordPtr + 2) == 63)
+								recordPtr += 16 * *(int16_t*)recordPtr + 4;
 							else
-								recordPtr += 12 * *reinterpret_cast<int16_t*>(recordPtr) + 4;
+								recordPtr += 12 * *(int16_t*)recordPtr + 4;
 						}
 					}
 					else
 					{
-						g_recordData[-recordType] = reinterpret_cast<RecordData*>(recordPtr);
-						recordPtr += 4 * ((3 * *reinterpret_cast<int16_t*>(recordPtr) + 1) / 2) + 16;
+						g_recordData[-recordType] = (RecordData*)recordPtr;
+						recordPtr += 4 * ((3 * *(int16_t*)recordPtr + 1) / 2) + 16;
 					}
 
 					--totalRecordCount;
@@ -503,16 +508,16 @@ namespace Toy2
 				portalByteOffset += 32;
 				++portalCountsCursor;
 
-				uint8_t* termEntry = reinterpret_cast<uint8_t*>(g_portalEntries) + termOffset;
+				uint8_t* termEntry = (uint8_t*)g_portalEntries + termOffset;
 				termEntry[0] = 0xFF;
 				termEntry[1] = 0xFF;
 			} while (portalByteOffset < 640);
 
-			int32_t secondIdx = *reinterpret_cast<int32_t*>(recordPtr) << 7;
+			int32_t secondIdx = *(int32_t*)recordPtr << 7;
 			g_instanceRecordCount = 0;
 
-			InstanceSection* secondSection = reinterpret_cast<InstanceSection*>(recordPtr + 4 * (secondIdx / 4) + 4);
-			ModelTypeData_B* sectionStorage = reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize);
+			InstanceSection* secondSection = (InstanceSection*)(recordPtr + 4 * (secondIdx / 4) + 4);
+			ModelTypeData_B* sectionStorage = (ModelTypeData_B*)((uint8_t*)g_levelDataBase + fileSize);
 
 			DECOMP_PRINT(("Second Idx %d\n", secondIdx));
 
@@ -537,20 +542,18 @@ namespace Toy2
 
 					if ((secondSection_->flags & 8) != 0)
 					{
-						ModelTypeData_A* typeData =
-							reinterpret_cast<ModelTypeData_A*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondSection_->unk6));
+						ModelTypeData_A* typeData = (ModelTypeData_A*)((uint8_t*)g_levelDataBase + (uint32_t)secondSection_->unk6);
 
-						secondSection_->unk6 = reinterpret_cast<ModelTypeData_B*>(typeData);
-						typeData->meshPtr += reinterpret_cast<int32_t>(g_levelDataBase);
+						secondSection_->unk6 = (ModelTypeData_B*)typeData;
+						typeData->meshPtr += (int32_t)g_levelDataBase;
 
 						if ((secondSection_->flags & 0x20) != 0)
 						{
 							secondSection_->flags |= 0x40;
-							typeData->animPtr += reinterpret_cast<int32_t>(g_levelDataBase);
+							typeData->animPtr += (int32_t)g_levelDataBase;
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(
-							reinterpret_cast<AnglesWithRoll*>(&typeData->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
+						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&typeData->rotation, (Matrix3x3I16*)sectionStorage);
 
 						int32_t mat_21 = sectionStorage->mat_21;
 						sectionStorage->mat_11 = typeData->scaleX * sectionStorage->mat_11 / 4096;
@@ -579,20 +582,18 @@ namespace Toy2
 					}
 					else
 					{
-						ModelTypeData_B* typeData2 =
-							reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondSection_->unk6));
+						ModelTypeData_B* typeData2 = (ModelTypeData_B*)((uint8_t*)g_levelDataBase + (uint32_t)secondSection_->unk6);
 
 						secondSection_->unk6 = typeData2;
-						typeData2->modelPtr = reinterpret_cast<uint8_t*>(typeData2->modelPtr) + reinterpret_cast<uint32_t>(g_levelDataBase);
+						typeData2->modelPtr = (uint8_t*)typeData2->modelPtr + (uint32_t)g_levelDataBase;
 
 						if ((secondSection_->flags & 0x20) != 0)
 						{
 							secondSection_->flags |= 0x40;
-							typeData2->unk11 += reinterpret_cast<int32_t>(g_levelDataBase);
+							typeData2->unk11 += (int32_t)g_levelDataBase;
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(
-							reinterpret_cast<AnglesWithRoll*>(&typeData2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
+						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&typeData2->rotation, (Matrix3x3I16*)sectionStorage);
 
 						sectionStorage->modelPtr = typeData2;
 						sectionStorage->unk11 = 0;
@@ -608,10 +609,10 @@ namespace Toy2
 			}
 
 			// The object list comes right after the last instance, and a second batch of instances after that
-			g_objectListBase = reinterpret_cast<ObjectList*>(reinterpret_cast<uint8_t*>(secondSection_) + sizeof(InstanceSection));
+			g_objectListBase = (ObjectList*)((uint8_t*)secondSection_ + sizeof(InstanceSection));
 			int32_t secondSectionCount = g_objectListBase->count;
 
-			g_secondInstanceSection = reinterpret_cast<InstanceSection*>(reinterpret_cast<uint8_t*>(g_objectListBase) + 4 * secondSectionCount + 8);
+			g_secondInstanceSection = (InstanceSection*)((uint8_t*)g_objectListBase + 4 * secondSectionCount + 8);
 
 			DECOMP_PRINT(("Second section count -> %d\n", secondSectionCount));
 			DECOMP_PRINT(("Second Instance Flags -> %d\n", g_secondInstanceSection->flags));
@@ -632,19 +633,17 @@ namespace Toy2
 
 					if ((secondInstance->flags & 8) != 0)
 					{
-						ModelTypeData_A* modelA2 =
-							reinterpret_cast<ModelTypeData_A*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondInstance->unk6));
-						secondInstance->unk6 = reinterpret_cast<ModelTypeData_B*>(modelA2);
-						modelA2->meshPtr += reinterpret_cast<int32_t>(g_levelDataBase);
+						ModelTypeData_A* modelA2 = (ModelTypeData_A*)((uint8_t*)g_levelDataBase + (uint32_t)secondInstance->unk6);
+						secondInstance->unk6 = (ModelTypeData_B*)modelA2;
+						modelA2->meshPtr += (int32_t)g_levelDataBase;
 
 						if ((secondInstance->flags & 0x20) != 0)
 						{
 							secondInstance->flags |= 0x40;
-							modelA2->animPtr += reinterpret_cast<int32_t>(g_levelDataBase);
+							modelA2->animPtr += (int32_t)g_levelDataBase;
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(
-							reinterpret_cast<AnglesWithRoll*>(&modelA2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
+						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&modelA2->rotation, (Matrix3x3I16*)sectionStorage);
 
 						int32_t secMat21 = sectionStorage->mat_21;
 						sectionStorage->mat_11 = modelA2->scaleX * sectionStorage->mat_11 / 4096;
@@ -671,19 +670,17 @@ namespace Toy2
 					}
 					else
 					{
-						ModelTypeData_B* modelB2 =
-							reinterpret_cast<ModelTypeData_B*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + reinterpret_cast<uint32_t>(secondInstance->unk6));
+						ModelTypeData_B* modelB2 = (ModelTypeData_B*)((uint8_t*)g_levelDataBase + (uint32_t)secondInstance->unk6);
 						secondInstance->unk6 = modelB2;
-						modelB2->modelPtr = reinterpret_cast<uint8_t*>(modelB2->modelPtr) + reinterpret_cast<uint32_t>(g_levelDataBase);
+						modelB2->modelPtr = (uint8_t*)modelB2->modelPtr + (uint32_t)g_levelDataBase;
 
 						if ((secondInstance->flags & 0x20) != 0)
 						{
 							secondInstance->flags |= 0x40;
-							modelB2->unk11 += reinterpret_cast<int32_t>(g_levelDataBase);
+							modelB2->unk11 += (int32_t)g_levelDataBase;
 						}
 
-						Nu3D::Math::EulerToRotationMatrix(
-							reinterpret_cast<AnglesWithRoll*>(&modelB2->rotation), reinterpret_cast<Matrix3x3I16*>(sectionStorage));
+						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&modelB2->rotation, (Matrix3x3I16*)sectionStorage);
 
 						sectionStorage->modelPtr = modelB2;
 						sectionStorage->unk11 = 0;
@@ -699,7 +696,7 @@ namespace Toy2
 			}
 
 			// The trailer of the file holds the size of the LOD data, -1 meaning there isn't any
-			int32_t lodTrailerSize = *reinterpret_cast<int32_t*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize - 4);
+			int32_t lodTrailerSize = *(int32_t*)((uint8_t*)g_levelDataBase + fileSize - 4);
 
 			DECOMP_PRINT(("Load trailer size -> %d\n", lodTrailerSize));
 			DECOMP_PRINT(("Object List Base Count -> %d\n", g_objectListBase->count));
@@ -711,7 +708,7 @@ namespace Toy2
 			}
 			else
 			{
-				uint8_t* newLvlBase = reinterpret_cast<uint8_t*>(g_levelDataBase) + fileSize - lodTrailerSize;
+				uint8_t* newLvlBase = (uint8_t*)g_levelDataBase + fileSize - lodTrailerSize;
 
 				if (g_type64Count > 0)
 				{
@@ -731,7 +728,7 @@ namespace Toy2
 
 						for (int32_t recordOffset = 0; recordOffset < 24; recordOffset += 12)
 						{
-							Vector3I* bboxVert = reinterpret_cast<Vector3I*>(reinterpret_cast<uint8_t*>(record->recordPtr) + recordOffset + 4);
+							Vector3I* bboxVert = (Vector3I*)((uint8_t*)record->recordPtr + recordOffset + 4);
 
 							if (bboxVert->x < record->unkVar0.x)
 								record->unkVar0.x = bboxVert->x;
@@ -761,7 +758,7 @@ namespace Toy2
 						// the LOD data of this record, each block starts with its own size
 						record->unkVar8 = newLvlBase;
 
-						newLvlBase = newLvlBase + *reinterpret_cast<int16_t*>(newLvlBase);
+						newLvlBase = newLvlBase + *(int16_t*)newLvlBase;
 
 						++record;
 						--type64Count_;
@@ -779,7 +776,7 @@ namespace Toy2
 			if (g_objectDescCache)
 				free(g_objectDescCache);
 
-			g_objectDescCache = reinterpret_cast<ObjectDescCache*>(malloc(28 * (g_objectListBase->count + 1)));
+			g_objectDescCache = (ObjectDescCache*)malloc(28 * (g_objectListBase->count + 1));
 
 			int32_t objIdx = 0;
 
@@ -787,18 +784,18 @@ namespace Toy2
 			{
 				do
 				{
-					uint32_t meshPtr = reinterpret_cast<uint32_t>(g_objectListBase->entries[objIdx]);
+					uint32_t meshPtr = (uint32_t)g_objectListBase->entries[objIdx];
 
 					if (meshPtr)
 					{
-						g_objectListBase->entries[objIdx] = reinterpret_cast<Object*>(reinterpret_cast<uint8_t*>(g_levelDataBase) + meshPtr);
+						g_objectListBase->entries[objIdx] = (Object*)((uint8_t*)g_levelDataBase + meshPtr);
 
 						Object* object = g_objectListBase->entries[objIdx];
 
 						g_objectDescCache[objIdx].unkInt7 = object->unk14;
 
 						// the desc has a pointer to the data the cache wants at 0x14, it is bigger than ObjectDesc, which isn't fully known
-						int16_t* objDesc = *reinterpret_cast<int16_t**>(reinterpret_cast<uint8_t*>(object->desc) + 0x14);
+						int16_t* objDesc = *(int16_t**)((uint8_t*)object->desc + 0x14);
 
 						g_objectDescCache[objIdx].unkInt8 = objDesc[6];
 						g_objectDescCache[objIdx].unkInt9 = objDesc[7];
