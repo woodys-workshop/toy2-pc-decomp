@@ -44,7 +44,9 @@ namespace Renderer
 	extern Nu3D::VertexTL g_vertsBuffer[1500];
 
 	int32_t Set508718(int32_t value);
+	float SetLodFactor(float lodFactor);
 	int32_t SetAdditionalRenderFlags(int32_t flags);
+	void SetSpriteTemplate(const Nu3D::Sprite* sprite);
 	void ResetRenderPools();
 	void RenderPrimitive(Nu3D::Primitive* primitive, D3DMATRIX* matrix, int32_t renderStage);
 	void ProcessPrimitive(Nu3D::InstanceData* instance, Nu3D::Primitive* prim);
@@ -66,7 +68,7 @@ namespace Renderer
 
 	namespace Vertices
 	{
-		void ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::InstanceData* instance);
+		void ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::Sprite* scratch);
 		void ProjectForTex14(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix);
 		void ModuleColor(Nu3D::Patch::PatchVertices* patchVertices, int32_t colorR, int32_t colorG, int32_t colorB);
 		void ApplyOffset(Nu3D::Patch::PatchVertices* patchVertices, float horzOffset, float vertOffset);

@@ -4,6 +4,7 @@
 #include "Nu3D/Light.h"
 #include "Nu3D/Font.h"
 #include "Nu3D/Camera.h"
+#include "Nu3D/Math.h"
 #include "Nu3D/BmpDataNode.h"
 #include "Nu3D/Material.h"
 #include "NGNLoader/NGNLoader.h"
@@ -21,6 +22,7 @@
 #include <WINDOWS.H>
 #include <STDARG.H>
 #include <STDIO.H>
+#include <STDLIB.H>
 #include <STRING.H>
 
 namespace Renderer
@@ -201,7 +203,7 @@ namespace Renderer
 	float g_farRenderDistance = 1000000.0;
 
 	// GLOBAL: TOY2 0x00830C4C
-	float g_parallaxPrevVertInput;
+	int32_t g_parallaxPrevVertInput;
 
 	// GLOBAL: TOY2 0x00731F24
 	float g_parallaxScrollDelta;
@@ -580,6 +582,36 @@ namespace Renderer
 		DECOMP_PRINT(("Finished Renderer::InitResources\n"));
 	}
 
+	// FUNCTION: TOY2 0x004B9A70
+	void CleanupScratchResources()
+	{
+		Nu3D::Patch::PatchVertices::ReleaseBuffer(&g_FVF_14C_Buffer_2);
+		if (g_FVF_14C_Buffer_2.data.verticesTL)
+			free(g_FVF_14C_Buffer_2.data.verticesTL);
+
+		Nu3D::Patch::PatchVertices::ReleaseBuffer(&g_FVF_14C_Buffer_1);
+		if (g_FVF_14C_Buffer_1.data.verticesTL)
+			free(g_FVF_14C_Buffer_1.data.verticesTL);
+
+		Nu3D::Patch::PatchVertices::ReleaseBuffer(&g_FVF_152_Buffer);
+		if (g_FVF_152_Buffer.data.vertices)
+			free(g_FVF_152_Buffer.data.vertices);
+
+		if (Nu3D::g_tex14Version3)
+			Nu3D::Material::ReleaseFromList(Nu3D::g_tex14Version3);
+		if (Nu3D::g_tex14Version2)
+			Nu3D::Material::ReleaseFromList(Nu3D::g_tex14Version2);
+		if (Nu3D::g_tex14Version1)
+			Nu3D::Material::ReleaseFromList(Nu3D::g_tex14Version1);
+		if (g_whiteMaterial)
+			Nu3D::Material::ReleaseFromList(g_whiteMaterial);
+
+		Nu3D::g_tex14Version3 = 0;
+		Nu3D::g_tex14Version2 = 0;
+		Nu3D::g_tex14Version1 = 0;
+		g_whiteMaterial = 0;
+	}
+
 	// FUNCTION: TOY2 0x004B37F0
 	void Cleanup()
 	{
@@ -656,16 +688,14 @@ namespace Renderer
 		g_virtualScreenHeight = 256.0;
 	}
 
-	// FUNCTION: TOY2 0x00490860 [MATCHED]
+	// FUNCTION: TOY2 0x00490860
 	void DoFrameDelay(int32_t isGameplayFrame)
 	{
 #ifdef APPLY_FIXES
 		ApplyFixes::LockFrameRate();
 		return;
 #endif
-		g_lastFrameTimestamp = Nu3D::GetHighResolutionTime();
-
-		// This method does the FPS delay for each frame, it is the source of all pain
+		// Measure elapsed time from the prior frame's terminal timestamp.
 		int32_t hrt = Nu3D::GetHighResolutionTime();
 		int32_t elapsedMs = hrt - g_lastFrameTimestamp;
 
@@ -972,10 +1002,10 @@ namespace Renderer
 			}
 
 			RGBA brightenColor;
-			brightenColor.b = brightenBlue;
+			brightenColor.r = brightenBlue;
 			brightenColor.g = brightenGreen;
 			brightenColor.a = -1 - brightenGreen;
-			brightenColor.r = brightenRed;
+			brightenColor.b = brightenRed;
 
 			uvTopLeft.x = 0.0;
 			uvTopLeft.y = 0.0;
@@ -1051,9 +1081,9 @@ namespace Renderer
 
 		RGBA darkenColor;
 		darkenColor.a = -1 - darkenGreen;
-		darkenColor.b = darkenBlue;
+		darkenColor.r = darkenBlue;
 		darkenColor.g = darkenGreen;
-		darkenColor.r = darkenRed;
+		darkenColor.b = darkenRed;
 
 		int32_t texDataIndex;
 
@@ -1394,10 +1424,10 @@ namespace Renderer
 			g_parallaxTexHeightRatio = bitmapHeight / g_virtualScreenHeight;
 
 			// the yaw input is a 16-bit angle, work out how far it moved since last frame (accounting for wrap around)
-			double verticalInput = verticalScroll;
+			double verticalInput = (uint16_t)verticalScroll;
 			int32_t verticalDelta = (int32_t)(verticalInput - g_parallaxPrevVertInput);
 
-			g_parallaxPrevVertInput = verticalInput;
+			g_parallaxPrevVertInput = (int32_t)verticalInput;
 
 			if (verticalDelta > 32768)
 				verticalDelta -= 65536;
@@ -1450,7 +1480,7 @@ namespace Renderer
 		uvBottomRight.x = 1.0;
 		uvBottomRight.y = 1.0;
 
-		// the bars slide in/out over 25 frames, the timer is how far along they currently are
+		// The bars slide in/out over 25 timer units.
 		if (! g_enableCinematicBars)
 		{
 			int32_t timer = g_letterboxTimer - g_frameDelta;
@@ -1483,7 +1513,7 @@ namespace Renderer
 			}
 		}
 
-		float height = g_letterboxTimer * 0.0040000002;
+		float height = g_letterboxTimer * 0.004f;
 
 		RGBA black;
 		black.value = 0xFF000000;
@@ -1753,7 +1783,7 @@ namespace Renderer
 
 				default:
 					// quirk: only lowercase letters and digits have a tile, upper case letters wrap around
-					if (character > '9')
+					if ((uint8_t)character > '9')
 						fontIndex = character - 97;
 					else
 						fontIndex = character - 22;
@@ -1778,7 +1808,7 @@ namespace Renderer
 
 		vsprintf(buffer, format, argList);
 
-		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255);
+		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255, 0x60);
 	}
 
 	// FUNCTION: TOY2 0x004AFD30
@@ -1913,6 +1943,65 @@ namespace Renderer
 		g_useVertexColorMod = a1;
 
 		return result;
+	}
+
+	// FUNCTION: TOY2 0x004B9310
+	void SetSimultaneousTextureLimit(int32_t limit) { g_maxSimultaneousTexturesMax = limit; }
+
+	// FUNCTION: TOY2 0x004B9320
+	HRESULT DrawImmediateLine(const D3DMATERIALHANDLE* materialHandle, const Vector3F* first, const Vector3F* second)
+	{
+		Vector3F firstNormal = { 0.0f, 1.0f, 0.0f };
+		Vector3F secondNormal = { 0.0f, -1.0f, 0.0f };
+		D3DVERTEX vertices[2];
+		D3DMATRIX worldMatrix;
+		STATIC_ASSERT(sizeof(D3DVERTEX) == 0x20);
+
+		Nu3D::Math::BuildIdentityMatrix(&worldMatrix);
+
+		vertices[0].tv = 0.0f;
+		vertices[0].tu = 0.0f;
+		vertices[1].tv = 0.0f;
+		vertices[1].tu = 0.0f;
+		memcpy(&vertices[0], first, sizeof(Vector3F));
+		memcpy(&vertices[0].nx, &firstNormal, sizeof(Vector3F));
+		memcpy(&vertices[1], second, sizeof(Vector3F));
+		memcpy(&vertices[1].nx, &secondNormal, sizeof(Vector3F));
+
+		InitRenderState(g_additionalRenderFlags);
+		if (materialHandle)
+			DrawingDevice::SetLightState(D3DLIGHTSTATE_MATERIAL, *materialHandle);
+
+		Nu3D::SetTexture(0, 0);
+		DrawingDevice::SetWorldTransform(&worldMatrix);
+		return DrawingDevice::DrawPrimitive(D3DPT_LINESTRIP, D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1, vertices, 2, 0);
+	}
+
+	// FUNCTION: TOY2 0x004B9530
+	HRESULT DrawTransformedLine(const D3DMATERIALHANDLE* materialHandle, const Vector3F* first, const Vector3F* second)
+	{
+		Nu3D::VertexTL vertices[2];
+		D3DMATRIX identityMatrix;
+		Nu3D::Math::BuildIdentityMatrix(&identityMatrix);
+
+		vertices[0].uv.y = 0.0f;
+		vertices[0].uv.x = 0.0f;
+		vertices[1].uv.y = 0.0f;
+		vertices[1].uv.x = 0.0f;
+		memcpy(&vertices[0].position, first, sizeof(Vector3F));
+		memcpy(&vertices[0].rhw, &first->z, sizeof(float));
+		memcpy(&vertices[1].position, second, sizeof(Vector3F));
+		memcpy(&vertices[1].rhw, &second->z, sizeof(float));
+		vertices[1].diffuse.value = 0xFF000000;
+		vertices[0].diffuse.value = 0xFF000000;
+		// Specular dwords are unwritten.
+
+		InitRenderState(g_additionalRenderFlags);
+		if (materialHandle)
+			DrawingDevice::SetLightState(D3DLIGHTSTATE_MATERIAL, *materialHandle);
+
+		BindTexture(0);
+		return DrawingDevice::DrawPrimitive(D3DPT_LINESTRIP, D3DFVF_0x1C4, vertices, 2, 0);
 	}
 
 	// FUNCTION: TOY2 0x004B9600

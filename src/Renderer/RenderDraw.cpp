@@ -294,13 +294,13 @@ namespace Renderer
 	}
 
 	// FUNCTION: TOY2 0x004B75E0
-	void Vertices::ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::InstanceData* instance)
+	void Vertices::ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::Sprite* scratch)
 	{
 		LPVOID lockedData;
 
 		if (g_FVF_14C_Buffer_2.vertexBuffer && ! DrawingAPI::LockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer, 0x801, &lockedData, 0))
 		{
-			Metadata100Params* params = (Metadata100Params*)&instance->sprite;
+			Metadata100Params* params = (Metadata100Params*)scratch;
 
 			D3DMATRIX combined;
 			Nu3D::Math::FullMatrixMultiply(&combined, matrix, &params->matrix);
@@ -402,7 +402,7 @@ namespace Renderer
 			}
 
 			if ((material->metadata & 0x100) != 0)
-				Vertices::ApplyMetadata100(&primitive->patchVerts, instanceData->matrices, instanceData);
+				Vertices::ApplyMetadata100(&primitive->patchVerts, instanceData->matrices, &instanceData->sprite);
 
 			if (isTex14)
 				Vertices::ProjectForTex14(&primitive->patchVerts, instanceData->matrices);
