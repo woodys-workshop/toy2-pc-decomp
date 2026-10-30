@@ -84,6 +84,9 @@ namespace SoftwareRenderer
 	extern int32_t g_leftOffset;
 	extern int32_t g_rightOffset;
 	extern int32_t g_bitsPerPixel;
+	extern uint32_t g_nativeDivideNumerator;
+	extern int32_t g_nativeDivideTable[32768];
+	extern int32_t g_nativeMinimumDepth;
 	extern D3DMATRIX* g_viewTransform;
 	extern D3DMATRIX* g_projectionTransform;
 	extern SortedTriangle* g_depthBuckets[1024];

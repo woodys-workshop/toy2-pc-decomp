@@ -2,6 +2,7 @@
 #include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "Nu3D/BmpDataNode.h"
+#include "Logger.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -15,6 +16,117 @@ namespace SoftwareRenderer
 	};
 
 	STATIC_ASSERT(sizeof(TextureSnapshot) == 8);
+
+	struct NativeVertex
+	{
+		int32_t x, y;
+		int32_t red, green, blue;
+		int32_t u, v;
+	};
+
+	struct NativePrimitive
+	{
+		NativeVertex vertices[4];
+		NativePrimitive* next;
+		uint16_t flags;
+		uint8_t page;
+		uint8_t unknown77;
+		uint8_t secondaryUV[4][2];
+	};
+
+	STATIC_ASSERT(sizeof(NativeVertex) == 0x1C);
+	STATIC_ASSERT(sizeof(NativePrimitive) == 0x80);
+	STATIC_ASSERT(sizeof(PALETTEENTRY) == 4);
+
+	// GLOBAL: TOY2 0x0084CBE0
+	NativePrimitive* g_nativePrimitivePool;
+
+	// GLOBAL: TOY2 0x00704E6C
+	uint32_t g_nativeDivideNumerator;
+
+	// GLOBAL: TOY2 0x00704E74
+	int32_t g_nativeDivideTable[32768];
+
+	// GLOBAL: TOY2 0x00724E74
+	int32_t g_nativeMinimumDepth;
+
+	// GLOBAL: TOY2 0x00534564
+	uint8_t g_nativeLightingTable[128][256];
+
+	// GLOBAL: TOY2 0x0070462C
+	uint8_t* g_nativeColourCube;
+
+	// GLOBAL: TOY2 0x00704630
+	PALETTEENTRY g_nativeDisplayPalette[256];
+
+	// GLOBAL: TOY2 0x00704A30
+	uint8_t* g_nativeTintTable;
+
+	// GLOBAL: TOY2 0x00704A34
+	uint8_t* g_nativeAddTable;
+
+	// GLOBAL: TOY2 0x00704A38
+	PALETTEENTRY g_nativeBasePalette[256];
+
+	// GLOBAL: TOY2 0x00704E38
+	uint8_t* g_nativeBlend256;
+
+	// GLOBAL: TOY2 0x00704E3C
+	uint8_t* g_nativeBlend512;
+
+	// GLOBAL: TOY2 0x00704E40
+	uint8_t* g_nativeBlend768;
+
+	// GLOBAL: TOY2 0x00704E44
+	LPDIRECTDRAWPALETTE g_nativePalette;
+
+	// GLOBAL: TOY2 0x00704E48
+	uint8_t* g_nativeSubtractTable;
+
+	// GLOBAL: TOY2 0x00703E20
+	uint16_t g_nativeBlueTable[64];
+
+	// GLOBAL: TOY2 0x00703EA0
+	uint16_t g_nativeGreenTable[128];
+
+	// GLOBAL: TOY2 0x00703FA0
+	uint16_t g_nativeRedTable[64];
+
+	// GLOBAL: TOY2 0x00704028
+	uint16_t g_nativeBlueQuarter[64];
+
+	// GLOBAL: TOY2 0x007040A8
+	uint16_t g_nativeBlueThreeQuarter[64];
+
+	// GLOBAL: TOY2 0x00704128
+	uint16_t g_nativeBlueHalf[64];
+
+	// GLOBAL: TOY2 0x007041A8
+	uint16_t g_nativeGreenQuarter[128];
+
+	// GLOBAL: TOY2 0x007042A8
+	uint16_t g_nativeGreenThreeQuarter[128];
+
+	// GLOBAL: TOY2 0x007043A8
+	uint16_t g_nativeGreenHalf[128];
+
+	// GLOBAL: TOY2 0x007044A8
+	uint16_t g_nativeRedQuarter[64];
+
+	// GLOBAL: TOY2 0x00704528
+	uint16_t g_nativeRedThreeQuarter[64];
+
+	// GLOBAL: TOY2 0x007045A8
+	uint16_t g_nativeRedHalf[64];
+
+	// GLOBAL: TOY2 0x00534558
+	uint8_t* g_nativePixels;
+
+	// GLOBAL: TOY2 0x00882778
+	int32_t g_nativePixelPitch;
+
+	// GLOBAL: TOY2 0x008827A0
+	uint8_t* g_nativeTexturePages[64];
 
 	// GLOBAL: TOY2 0x004F7400
 	PointI g_unk4F7400 = { -32768, -32768 };
@@ -32,7 +144,7 @@ namespace SoftwareRenderer
 	int32_t g_unk559C40 = -1;
 
 	// GLOBAL: TOY2 0x00839280
-	int32_t g_unk839280 = -1;
+	int32_t g_unk839280;
 
 	// GLOBAL: TOY2 0x00504D34
 	void* g_unk504D34 = g_unk87E50C;
@@ -527,8 +639,13 @@ namespace SoftwareRenderer
 	// FUNCTION: TOY2 0x004C1E60 [MATCHED]
 	void InitialisePrimarySurface_T() { InitialisePrimarySurface(); }
 
-	// STUB: TOY2 0x0047D0F0
-	void Destroy() {}
+	// FUNCTION: TOY2 0x0047D0F0
+	void Destroy()
+	{
+		Logger::Log("QUIT : Destroying software renderer.\n");
+		if (g_nativePrimitivePool)
+			free(g_nativePrimitivePool);
+	}
 
 	// FUNCTION: TOY2 0x004C1FC0 [MATCHED]
 	void ZoomOut()
@@ -757,11 +874,49 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x0047D210
 	void UnkFunc8() {}
 
-	// STUB: TOY2 0x0047D540
-	int32_t UnkFunc6(uint32_t* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5) { return 0; }
+	// FUNCTION: TOY2 0x0047D540
+	int32_t UnkFunc6(uint32_t* pixels, int32_t width, int32_t height, int32_t byteGap, int32_t value)
+	{
+		__asm
+		{
+			push    edi
+			mov     edi, pixels
+			mov     ecx, width
+			mov     ebx, height
+			mov     edx, byteGap
+			mov     eax, value
+		LBL_FILL_ROW:
+			push    ecx
+		LBL_FILL_PIXEL:
+			mov     dword ptr [edi], eax
+			add     edi, 4
+			dec     ecx
+			jnz     LBL_FILL_PIXEL
+			pop     ecx
+			add     edi, edx
+			dec     ebx
+			jnz     LBL_FILL_ROW
+			pop     edi
+		}
+		// EAX retains the captured fill value.
+	}
 
-	// STUB: TOY2 0x0047D650
-	void UnkFunc66(SoftwareRenderer::UnkSoft2* a1, int32_t a2) {}
+	// FUNCTION: TOY2 0x0047D650
+	void UnkFunc66(SoftwareRenderer::UnkSoft2* records, int32_t count)
+	{
+		__asm
+		{
+			push    edi
+			mov     edi, records
+			mov     ecx, count
+		LBL_CLEAR_MARKERS:
+			mov     byte ptr [edi], 0
+			add     edi, 4Ch
+			dec     ecx
+			jnz     LBL_CLEAR_MARKERS
+			pop     edi
+		}
+	}
 
 	// FUNCTION: TOY2 0x004AC1F0
 	int32_t GetCurrentTexture(TextureSnapshot* texture)
