@@ -491,14 +491,14 @@ namespace Toy2
 
 				if (*sequence == 0xFF)
 				{
-					if (sequence[1] == 1)
+					if (sequence[1] != 1)
 					{
-						actor->unkVar30 = (int32_t)(sequence - 1);
-						actor->unkVar7 |= 0xFFFF;
+						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
 					}
 					else
 					{
-						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
+						actor->unkVar30 = (int32_t)(sequence - 1);
+						actor->unkVar7 |= 0xFFFF;
 					}
 				}
 
