@@ -351,7 +351,7 @@ namespace DrawingDevice
 			GetClientRect(m_hWnd, &m_rcScreenRect);
 
 			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset;
-			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset - DrawingDevice::g_viewportBottomOffset;
+			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportBottomOffset;
 
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect);
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect.right);
