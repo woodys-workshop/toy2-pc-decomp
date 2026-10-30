@@ -568,8 +568,10 @@ namespace Toy2
 				int32_t deltaX = (g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5;
 				int32_t deltaZ = (g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5;
 
-				if ((creatureRam->boundHalfX << 8) + ((deltaX * cosValue - deltaZ * sinValue) >> 7) >= (creatureRam->boundHalfX << 9)
-					|| (insideBounds = 1, (creatureRam->boundHalfZ << 8) + ((deltaX * sinValue + deltaZ * cosValue) >> 7) >= (creatureRam->boundHalfZ << 9)))
+				if ((uint32_t)((creatureRam->boundHalfX << 8) + ((deltaX * cosValue - deltaZ * sinValue) >> 7)) >= (uint32_t)(creatureRam->boundHalfX << 9)
+					|| (insideBounds = 1,
+						(uint32_t)((creatureRam->boundHalfZ << 8) + ((deltaX * sinValue + deltaZ * cosValue) >> 7))
+							>= (uint32_t)(creatureRam->boundHalfZ << 9)))
 				{
 					insideBounds = 0;
 				}
@@ -577,7 +579,7 @@ namespace Toy2
 
 			if (actor->primaryAnimIdx == 7)
 			{
-				if ((actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
+				if ((int32_t)(actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
 					Collectables::Activate(4, 0);
 
 				int32_t yawAngle = actor->transform.angles.yaw;
@@ -629,7 +631,7 @@ namespace Toy2
 				pitch = AudioManager::g_pitchArray[1];
 
 				if (AudioManager::g_pitchArray[1] <= 512)
-					goto LABEL_46;
+					goto LBL_CHECK_MOVEMENT_SOUND;
 
 				pitch = (int16_t)(-32 * Renderer::g_frameDelta + AudioManager::g_pitchArray[1]);
 			}
@@ -640,7 +642,7 @@ namespace Toy2
 
 			AudioManager::g_pitchArray[1] = pitch;
 
-		LABEL_46:
+		LBL_CHECK_MOVEMENT_SOUND:
 			if (actor->actorPhase >= 10 && pitch > 512)
 				AudioManager::PlaySoundEffect(53, &actor->transform.pos);
 		}
