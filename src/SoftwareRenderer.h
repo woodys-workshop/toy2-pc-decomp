@@ -16,6 +16,33 @@ namespace Renderer
 
 namespace SoftwareRenderer
 {
+	struct BVertex
+	{
+		float x;
+		float y;
+		float z;
+		float cameraY;
+		uint32_t diffuse;
+		int32_t cameraX;
+		float u;
+		float v;
+	};
+
+	struct BPolygon
+	{
+		BVertex vertices[4];
+		uint32_t* texture;
+		int32_t count;
+		uint32_t flags;
+		BPolygon* next;
+		uint32_t unknown90;
+		int32_t band;
+		uint32_t unknown98;
+	};
+
+	STATIC_ASSERT(sizeof(BVertex) == 0x20);
+	STATIC_ASSERT(sizeof(BPolygon) == 0x9C);
+
 	// a triangle waiting to be drawn, they get sorted into 1024 buckets by depth
 	struct SortedTriangle
 	{
@@ -87,6 +114,7 @@ namespace SoftwareRenderer
 	extern uint32_t g_nativeDivideNumerator;
 	extern int32_t g_nativeDivideTable[32768];
 	extern int32_t g_nativeMinimumDepth;
+	extern int32_t g_pixelMode;
 	extern D3DMATRIX* g_viewTransform;
 	extern D3DMATRIX* g_projectionTransform;
 	extern SortedTriangle* g_depthBuckets[1024];
@@ -100,6 +128,8 @@ namespace SoftwareRenderer
 	void ZoomOut();
 	void ZoomIn();
 	void PresentFrame();
+	void FlushDepthQueue();
+	void FlushFIFOQueue();
 
 	void UnkFunc67(int32_t param1, int32_t param2);
 	void UnkFunc2();
@@ -110,7 +140,7 @@ namespace SoftwareRenderer
 	void UnkFunc7();
 	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ);
 
-	// the Submit* functions queue triangles for the software rasterizer, which is not decompiled
+	// The Submit* functions sort triangles on the CPU for hardware rendering.
 	void SubmitSortedTriangle(
 		int32_t renderFlags,
 		Renderer::RenderEntry* renderEntry,

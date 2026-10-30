@@ -1248,8 +1248,7 @@ namespace Renderer
 
 		if (g_isSoftwareRendering)
 		{
-			SoftwareRenderer::UnkFunc33();
-			SoftwareRenderer::UnkFunc32();
+			SoftwareRenderer::FlushDepthQueue();
 		}
 	}
 
