@@ -351,7 +351,7 @@ namespace DrawingDevice
 			GetClientRect(m_hWnd, &m_rcScreenRect);
 
 			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset;
-			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset - DrawingDevice::g_viewportBottomOffset;
+			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportBottomOffset;
 
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect);
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect.right);
@@ -782,7 +782,7 @@ namespace DrawingDevice
 
 		++g_setTexCalls;
 
-		if (textureIndex && (bmpDataNode = NGNLoader::g_textureDataFreeList[textureIndex].bmpDataNode) != 0)
+		if (textureIndex && (bmpDataNode = NGNLoader::g_textureDataFreeList[textureIndex - 1].bmpDataNode) != 0)
 			return Nu3D::SetTexture(stageIndex, bmpDataNode);
 		else
 			return Nu3D::SetTexture(stageIndex, 0);
@@ -795,7 +795,7 @@ namespace DrawingDevice
 
 		++g_setTexCalls;
 
-		if (textureIndex && (bmpDataNode = NGNLoader::g_textureDataFreeList[textureIndex].bmpDataNode) != 0)
+		if (textureIndex && (bmpDataNode = NGNLoader::g_textureDataFreeList[textureIndex - 1].bmpDataNode) != 0)
 			return Nu3D::SetTexture(0, bmpDataNode);
 		else
 			return Nu3D::SetTexture(0, 0);

@@ -181,139 +181,74 @@ namespace ModeSelect
 
 		MarkCompatibleBitDepthDevices();
 
-		uint8_t flags = selectionFlags;
+		DWORD flags = selectionFlags;
 
 		if (! g_forceFullscreen)
-		{
-			flags = selectionFlags | 2;
-			selectionFlags |= 2;
-		}
+			flags |= 2;
 
-		if ((flags & 60) != 0)
-		{
-			DDAppDevice::App* appIter = g_ddAppListHead;
+		DDAppDevice::App* app;
+		DDAppDevice* device;
 
-			for (DDAppDevice::App* outerApp = g_ddAppListHead; appIter; outerApp = appIter)
+		if ((flags & 0x3C) != 0)
+		{
+			for (app = g_ddAppListHead; app; app = app->chainDDApp)
 			{
-				DDAppDevice* deviceIter = appIter->deviceListHead;
-
-				if (deviceIter)
+				for (device = app->deviceListHead; device; device = device->nextDevice)
 				{
-					while (true)
+					BOOL matches;
+
+					if (! memcmp(device->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
+						matches = (flags & 4) != 0;
+					else if (! memcmp(device->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
+						matches = (flags & 8) != 0;
+					else
+						matches = ((flags & 16) != 0 && app == g_ddAppListHead) || ((flags & 32) != 0 && app != g_ddAppListHead);
+
+					if (matches)
 					{
-						BOOL matchesDriverKind = 0;
-
-						if (! memcmp(deviceIter->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
-						{
-							if ((selectionFlags & 4) != 0)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-						else if (! memcmp(deviceIter->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
-						{
-							if ((selectionFlags & 8) != 0)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-						else
-						{
-							if ((selectionFlags & 16) != 0)
-								matchesDriverKind = outerApp == g_ddAppListHead;
-
-							if ((selectionFlags & 32) != 0 && outerApp != g_ddAppListHead || matchesDriverKind)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-
-						deviceIter = deviceIter->nextDevice;
-
-						if (! deviceIter)
-						{
-							appIter = outerApp;
-							break;
-						}
+						g_primaryDDApp = app;
+						app->primaryDevice = device;
+						return 0;
 					}
 				}
-
-				appIter = appIter->chainDDApp;
 			}
 
 			return 0x81000005;
 		}
 
-		DDAppDevice::App* appIter;
-		DDAppDevice* device;
-		int32_t wantHardware;
-		int32_t wantWindowed;
-		int16_t attemptIndex = 0;
+		uint32_t attemptIndex = 0;
 
-		while (true)
+		do
 		{
-			wantHardware = (attemptIndex & 1) == 0;
-			wantWindowed = (~attemptIndex >> 1) & 1;
+			int32_t wantHardware = (~attemptIndex) & 1;
+			int32_t wantWindowed = ((~attemptIndex & 0xFFFF) >> 1) & 1;
 
 			if ((wantHardware != 1 || (flags & 1) == 0) && (wantWindowed != 1 || (flags & 2) == 0))
 			{
-				appIter = g_ddAppListHead;
+				for (app = g_ddAppListHead; app; app = app->chainDDApp)
+				{
+					if (wantWindowed && (app->ddCaps1.dwCaps2 & 0x80000) == 0)
+						continue;
 
-				if (g_ddAppListHead)
-					break;
+					for (device = app->deviceListHead; device; device = device->nextDevice)
+					{
+						if (wantHardware != device->isHardwareAccelerated || (wantWindowed && ! device->supportsCurrentMode))
+							continue;
+
+						device->canRenderWindowedOnPrimary = wantWindowed;
+						g_primaryDDApp = app;
+						app->primaryDevice = device;
+						return 0;
+					}
+				}
 			}
 
-		LBL_NEXT_ATTEMPT:
+			++attemptIndex;
+		} while ((uint16_t)attemptIndex < 4);
 
-			if (++attemptIndex >= 4)
-			{
-				if (g_foundAnyD3DDevice)
-					return (g_foundRefDevice != 0) + 0x81000002;
-				else
-					return 0x81000001;
-			}
-		}
-
-		while (true)
-		{
-			if (! wantWindowed || (appIter->ddCaps1.dwCaps2 & 0x80000) != 0)
-			{
-				device = appIter->deviceListHead;
-				if (device)
-					break;
-			}
-
-			appIter = appIter->chainDDApp;
-
-			if (! appIter)
-				goto LBL_NEXT_ATTEMPT;
-		}
-
-		while (wantHardware != device->isHardwareAccelerated || wantWindowed && ! device->supportsCurrentMode)
-		{
-			device = device->nextDevice;
-
-			if (! device)
-			{
-				appIter = appIter->chainDDApp;
-
-				if (! appIter)
-					goto LBL_NEXT_ATTEMPT;
-			}
-		}
-
-		device->canRenderWindowedOnPrimary = wantWindowed;
-
-		g_primaryDDApp = appIter;
-		appIter->primaryDevice = device;
-
-		return 0;
+		if (! g_foundAnyD3DDevice)
+			return 0x81000001;
+		return (g_foundRefDevice != 0) + 0x81000002;
 	}
 
 	// FUNCTION: TOY2 0x004ACFB0
@@ -327,7 +262,7 @@ namespace ModeSelect
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice* device = reinterpret_cast<DDAppDevice*>(lpContext);
+		DDAppDevice* device = (DDAppDevice*)lpContext;
 
 		if (! lpDDSurfaceDesc2 || ! device)
 			return D3DENUMRET_CANCEL;
@@ -402,10 +337,11 @@ namespace ModeSelect
 
 			if (ddAppParent->vidMemTotal == ddAppParent->totalTextureMem)
 			{
-				if (ddAppParent->vidMemFree - texMem < 0x80000)
+				DWORD remaining = ddAppParent->vidMemFree - texMem;
+				if ((int32_t)remaining < 0x80000)
 					return D3DENUMRET_OK;
 			}
-			else if (ddAppParent->freeTextureMem < texMem)
+			else if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
 			{
 				return D3DENUMRET_OK;
 			}

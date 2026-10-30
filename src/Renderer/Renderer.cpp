@@ -1781,6 +1781,9 @@ namespace Renderer
 		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255);
 	}
 
+	// FUNCTION: TOY2 0x004AFB10
+	void SetBlitWithWrappingPath(int32_t value) { g_blitWithWrappingPath = value; }
+
 	// FUNCTION: TOY2 0x004AFD30
 	void BlitBitmapWithWrapping(
 		Nu3D::BmpDataNode* bmpDataNode,
