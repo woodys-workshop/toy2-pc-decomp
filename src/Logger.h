@@ -7,7 +7,7 @@ namespace Logger
 {
 	extern int32_t g_showMsgBoxOnThrow;
 	extern int32_t g_logsEnabled;
-	extern int32_t g_logFileExists;
+	extern uint16_t g_logFileExists;
 
 	typedef void (*ThrowErrorFunc)(char* format, ...);
 

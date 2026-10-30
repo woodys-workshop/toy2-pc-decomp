@@ -200,7 +200,7 @@ namespace AudioManager
 	int32_t g_unk726230;
 
 	// GLOBAL: TOY2 0x00726234
-	int16_t g_soundEffectSampleRates[128];
+	uint16_t g_soundEffectSampleRates[128];
 
 	// GLOBAL: TOY2 0x00726334
 	DWORD g_writeCursor;
@@ -537,16 +537,14 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x0047D8E0
-	int32_t IsEffectPlaying(int32_t bufferIndex)
+	int32_t IsEffectPlaying(DWORD bufferIndex)
 	{
-		DWORD status;
-
 		if (! g_directSoundInit)
 			return 0;
 
-		g_lastDSoundError = g_soundEffectBuffers[bufferIndex]->GetStatus(&status);
+		g_lastDSoundError = g_soundEffectBuffers[bufferIndex]->GetStatus(&bufferIndex);
 
-		return status;
+		return bufferIndex;
 	}
 
 	// FUNCTION: TOY2 0x0047E3C0 [MATCHED]
@@ -1852,7 +1850,7 @@ namespace AudioManager
 		int32_t rightChannel = rightVolume;
 		DWORD highestCursor = 0;
 		int32_t bestBuffer = -1;
-		DWORD sampleRate = g_soundEffectSampleRates[soundIndex];
+		WORD sampleRate = g_soundEffectSampleRates[soundIndex];
 		LONG pan = 10000 * (rightVolume - leftVolume) / 128;
 
 		if (pan <= 10000)
@@ -1882,7 +1880,7 @@ namespace AudioManager
 				++state;
 
 				if (voice >= 6)
-					goto LABEL_57;
+					goto LBL_SELECT_PLAYBACK_BUFFER;
 			}
 
 			int32_t found = voice + bufferIndex;
@@ -1914,7 +1912,7 @@ namespace AudioManager
 		{
 			owner = (void*)1;
 
-		LABEL_57:
+		LBL_SELECT_PLAYBACK_BUFFER:
 			int32_t voiceCount = 0;
 
 			do
