@@ -2,7 +2,8 @@
 
 #include <string>
 #include <cstdint>
-#include <vector>
+#include <cstddef>
+#include <iosfwd>
 
 namespace SaveViewer
 {
@@ -38,9 +39,19 @@ namespace SaveViewer
 		uint16_t health;
 		uint8_t unkByte5;
 		uint8_t tokens[16];
-		uint8_t unkBytes[48];
+		uint8_t moviesUnlocked[48];
 		uint8_t unkByte8;
 	};
+
+	static_assert(sizeof(SaveControlMapping) == 8);
+	static_assert(sizeof(Save99Data) == 392);
+	static_assert(offsetof(Save99Data, mappings) == 8);
+	static_assert(offsetof(Save99Data, unusedPad) == 0x138);
+	static_assert(sizeof(Save0Data) == 392);
+	static_assert(offsetof(Save0Data, lives) == 0x138);
+	static_assert(offsetof(Save0Data, tokens) == 0x147);
+	static_assert(offsetof(Save0Data, moviesUnlocked) == 0x157);
+	static_assert(offsetof(Save0Data, unkByte8) == 0x187);
 
 	enum class SaveType
 	{
@@ -48,7 +59,9 @@ namespace SaveViewer
 		ProgressionData,
 	};
 
-	void readSave(const std::string& savePath);
-	void readControlData(std::ifstream& file);
-	void readProgressionData(std::ifstream& file, const int32_t strSize);
+	// The caller selects the payload type; the file has no type tag.
+	bool readSave(const std::string& savePath, SaveType type);
+	// Payload readers require 392 bytes at the current stream position.
+	bool readControlData(std::ifstream& file);
+	bool readProgressionData(std::ifstream& file);
 }

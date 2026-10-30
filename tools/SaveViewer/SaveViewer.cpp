@@ -1,14 +1,24 @@
 #include "SaveViewer.hpp"
-#include "Common/GameStructs.hpp"
+#include "Common/InputMappings.hpp"
 
-#include <iostream>
+#include <algorithm>
+#include <bit>
+#include <cstdio>
 #include <fstream>
 #include <filesystem>
 
+static_assert(std::endian::native == std::endian::little);
+
 namespace SaveViewer
 {
-	void readSave(const std::string& savePath)
+	bool readSave(const std::string& savePath, SaveType type)
 	{
+		if (type != SaveType::ControlData && type != SaveType::ProgressionData)
+		{
+			printf("[SaveViewer] Invalid save type.\n");
+			return false;
+		}
+
 		const auto filePath = std::filesystem::path(savePath);
 		const auto fileName = filePath.filename().string();
 		const auto fileExtension = filePath.extension().string();
@@ -16,7 +26,7 @@ namespace SaveViewer
 		if (fileExtension != ".sav")
 		{
 			printf("[SaveViewer] Not a valid .sav file.\n");
-			return;
+			return false;
 		}
 
 		printf("[SaveViewer] Reading sav file -> %s\n", fileName.c_str());
@@ -25,52 +35,59 @@ namespace SaveViewer
 		if (! file.is_open())
 		{
 			printf("[SaveViewer] Could not open file %s\n", savePath.c_str());
-			return;
+			return false;
 		}
 
-		std::streamsize size = file.tellg();
-		file.seekg(0, std::ios::beg);
+		const std::streamsize size = file.tellg();
+		const std::streamsize minimumSize = sizeof(int32_t) + sizeof(Save0Data);
+		if (size < minimumSize || ! file.seekg(0, std::ios::beg))
+		{
+			printf("[SaveViewer] Missing header or payload.\n");
+			return false;
+		}
 
-		// Read first 4 bytes to determine whether this is a normal save file or a 99.sav
 		int32_t strSize { 0 };
-
-		if (! file.read(reinterpret_cast<char*>(&strSize), sizeof(int32_t)))
+		if (! file.read(reinterpret_cast<char*>(&strSize), sizeof(strSize)))
 		{
 			printf("[SaveViewer] Failed to read file.\n");
-			return;
+			return false;
+		}
+
+		if (strSize < 0 || strSize > size - minimumSize)
+		{
+			printf("[SaveViewer] Invalid name length or short payload.\n");
+			return false;
+		}
+
+		std::string saveName(static_cast<size_t>(strSize), '\0');
+		if (strSize != 0 && ! file.read(saveName.data(), strSize))
+		{
+			printf("[SaveViewer] Failed to read save name.\n");
+			return false;
 		}
 
 		printf("[SaveViewer] String size is %d\n", strSize);
+		printf("Save Name: ");
+		fwrite(saveName.data(), 1, saveName.size(), stdout);
+		printf("\n");
 
-		SaveType type = (strSize == 0 ? SaveType::ControlData : SaveType::ProgressionData);
-
-		if (type == SaveType::ControlData)
-			readControlData(file);
-		else if (type == SaveType::ProgressionData)
-			readProgressionData(file, strSize);
+		const bool success = type == SaveType::ControlData ? readControlData(file) : readProgressionData(file);
+		if (success && size - minimumSize != strSize)
+			printf("[SaveViewer] Trailing file bytes: %lld (not decoded)\n", static_cast<long long>(size - minimumSize - strSize));
+		return success;
 	}
 
-	void readProgressionData(std::ifstream& file, const int32_t strSize)
+	bool readProgressionData(std::ifstream& file)
 	{
-		// read the save name string in.
-		std::vector<char> saveName(strSize, 0);
-
-		if (! file.read(saveName.data(), strSize))
-		{
-			printf("[SaveViewer] Failed to read progression data save name.\n");
-			return;
-		}
-
 		Save0Data progData {};
 
 		if (! file.read(reinterpret_cast<char*>(&progData), sizeof(Save0Data)))
 		{
 			printf("[SaveViewer] Failed to read progression data.\n");
-			return;
+			return false;
 		}
 
 		printf("------------------ Progression Data ------------------\n");
-		printf("Save Name: %s\n", saveName.data());
 		printf("unkInt1: %u\n", progData.unkInt1);
 		printf("unkInt2: %u\n", progData.unkInt2);
 		printf("lives: %u\n", progData.lives);
@@ -86,6 +103,11 @@ namespace SaveViewer
 		printf("health: %u\n", progData.health);
 		printf("unkByte5: %u\n", progData.unkByte5);
 
+		printf("zeros (opaque): [ ");
+		for (uint8_t byte : progData.zeros)
+			printf("%u ", byte);
+		printf("]\n");
+
 		printf("tokens: [ ");
 		for (uint8_t token : progData.tokens)
 		{
@@ -93,19 +115,23 @@ namespace SaveViewer
 		}
 		printf("]\n");
 
-		// uint8_t  unkBytes[48];
+		printf("moviesUnlocked: [ ");
+		for (uint8_t movie : progData.moviesUnlocked)
+			printf("%u ", movie);
+		printf("]\n");
 
 		printf("unkByte8: %u\n", progData.unkByte8);
+		return true;
 	}
 
-	void readControlData(std::ifstream& file)
+	bool readControlData(std::ifstream& file)
 	{
 		Save99Data controlData {};
 
 		if (! file.read(reinterpret_cast<char*>(&controlData), sizeof(Save99Data)))
 		{
 			printf("[SaveViewer] Failed to read control data.\n");
-			return;
+			return false;
 		}
 
 		printf("------------------ Control Data ------------------\n");
@@ -119,7 +145,9 @@ namespace SaveViewer
 		{
 			if (mapping.dInputCode == -1)
 			{
+				printf("Mapping %d: input -1 (unused), control %d\n", index, mapping.gameControlId);
 				unusedControls++;
+				index++;
 				continue;
 			}
 
@@ -131,23 +159,40 @@ namespace SaveViewer
 				return item.id == mapping.gameControlId;
 			});
 
-			printf("Mapping %d: \"%s\" mapped to \"%s\"\n", index, inputMapping->name, gameControl->name);
+			const char* inputName = inputMapping != g_inputMapping + g_inputMappingCount && inputMapping->name ? inputMapping->name : "unknown";
+			const char* controlName = gameControl != g_gameControls + g_gameControlsCount && gameControl->name ? gameControl->name : "unknown";
+			printf("Mapping %d: input %d (\"%s\") mapped to control %d (\"%s\")\n", index, mapping.dInputCode, inputName, mapping.gameControlId, controlName);
 			index++;
 		}
 
 		printf("%d Unused Mappings\n", unusedControls);
+		printf("unusedPad (opaque): [ ");
+		for (uint8_t byte : controlData.unusedPad)
+			printf("%u ", byte);
+		printf("]\n");
+		return true;
 	}
 }
 
 int32_t main(int32_t argc, char* argv[])
 {
-	if (argc == 1)
+	if (argc != 3)
 	{
-		printf("[SaveViewer] Please provide the filename of the save.\n");
+		printf("Usage: SaveViewer <progress|controls> <file.sav>\n");
 		return 1;
 	}
 
-	SaveViewer::readSave(std::string(argv[1]));
+	SaveViewer::SaveType type;
+	const std::string typeName(argv[1]);
+	if (typeName == "progress")
+		type = SaveViewer::SaveType::ProgressionData;
+	else if (typeName == "controls")
+		type = SaveViewer::SaveType::ControlData;
+	else
+	{
+		printf("[SaveViewer] Expected save type progress or controls.\n");
+		return 1;
+	}
 
-	return 0;
+	return SaveViewer::readSave(std::string(argv[2]), type) ? 0 : 1;
 }
