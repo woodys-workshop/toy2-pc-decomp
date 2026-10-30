@@ -2,6 +2,8 @@
 #include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "Nu3D/BmpDataNode.h"
+#include "Nu3D/Camera.h"
+#include "Toy2/D3DApp.h"
 #include "Logger.h"
 
 #include <math.h>
@@ -714,8 +716,22 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004BCB60
 	void UnkFunc33() {}
 
-	// STUB: TOY2 0x00470C70
-	void UnkFunc7() {}
+	// FUNCTION: TOY2 0x00470C70
+	void UnkFunc7()
+	{
+		int32_t redTint = Nu3D::Camera::g_cameraTintBlue;
+		int32_t blueTint = Nu3D::Camera::g_cameraTintRed;
+		int32_t greenTint = Nu3D::Camera::g_cameraTintGreen;
+
+		for (int32_t index = 1; index < 256; ++index)
+		{
+			g_nativeDisplayPalette[index].peRed = (uint8_t)(g_nativeBasePalette[index].peRed * redTint / 128);
+			g_nativeDisplayPalette[index].peGreen = (uint8_t)(g_nativeBasePalette[index].peGreen * greenTint / 128);
+			g_nativeDisplayPalette[index].peBlue = (uint8_t)(g_nativeBasePalette[index].peBlue * blueTint / 128);
+		}
+
+		g_nativePalette->SetEntries(0, 1, 255, &g_nativeDisplayPalette[1]);
+	}
 
 	// FUNCTION: TOY2 0x004C1C20
 	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ)
@@ -730,8 +746,47 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x0040CD80
 	int32_t ShowBackBuffer() { return 0; }
 
-	// STUB: TOY2 0x004319E0
-	void UnkFunc11() {}
+	// FUNCTION: TOY2 0x004319E0
+	void UnkFunc11()
+	{
+		for (int32_t level = 0; level < 128; ++level)
+		{
+			for (int32_t index = 0; index < 256; ++index)
+			{
+				int32_t red = g_nativeBasePalette[index].peRed * level / 64;
+				int32_t green = g_nativeBasePalette[index].peGreen * level / 64;
+				int32_t blue = g_nativeBasePalette[index].peBlue * level / 64;
+
+				if (red > 255)
+					red = 255;
+				if (green > 255)
+					green = 255;
+				if (blue > 255)
+					blue = 255;
+
+				int32_t bestDistance = 0x7FFFFFFF;
+				uint8_t nearest;
+
+				for (int32_t candidate = 1; candidate < 256; ++candidate)
+				{
+					int32_t redDelta = abs(red - g_nativeBasePalette[candidate].peRed) * 4;
+					int32_t greenDelta = abs(green - g_nativeBasePalette[candidate].peGreen) * 5;
+					int32_t blueDelta = abs(blue - g_nativeBasePalette[candidate].peBlue) * 3;
+					int32_t distance = blueDelta * blueDelta + greenDelta * greenDelta + redDelta * redDelta;
+
+					if (distance < bestDistance)
+					{
+						bestDistance = distance;
+						nearest = (uint8_t)candidate;
+					}
+				}
+
+				g_nativeLightingTable[level][index] = nearest;
+			}
+		}
+
+		OutputDebugStringA("Generated lighting\n");
+	}
 
 	// STUB: TOY2 0x00454D30
 	int32_t UnkRenderAPI5(int32_t* a1) { return 0; }
@@ -808,29 +863,292 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x0046D7B0
 	int32_t UnkRenderAPI25(int32_t* a1) { return 0; }
 
-	// STUB: TOY2 0x00470BF0
-	void SetPaletteOnAPI() {}
+	// FUNCTION: TOY2 0x00470BF0
+	void SetPaletteOnAPI()
+	{
+		HRESULT result = D3DApp::g_d3dAppI.lpDD->CreatePalette(DDPCAPS_8BIT | DDPCAPS_ALLOW256, g_nativeDisplayPalette, &g_nativePalette, 0);
+		if (result < 0)
+			Logger::LogDDError("d3dappi.lpDD->CreatePalette(0x00000004l|0x00000040l,&pal[0],&SonicRPalette,0)", result);
 
-	// STUB: TOY2 0x00470D00
-	void UnkFunc9(int32_t a1) {}
+		result = D3DApp::g_d3dAppI.lpFrontBuffer->SetPalette(g_nativePalette);
+		if (result < 0)
+			Logger::LogDDError("d3dappi.lpFrontBuffer->SetPalette(SonicRPalette)", result);
 
-	// STUB: TOY2 0x00470D60
-	int32_t UnkFunc10() { return 0; }
+		result = D3DApp::g_d3dAppI.lpBackBuffer->SetPalette(g_nativePalette);
+		if (result < 0)
+			Logger::LogDDError("d3dappi.lpBackBuffer->SetPalette(SonicRPalette)", result);
+	}
 
-	// STUB: TOY2 0x00470FB0
-	char* UnkFunc15() { return 0; }
+	// FUNCTION: TOY2 0x00470D00
+	void UnkFunc9(const uint8_t* rgb)
+	{
+		int32_t index;
+		for (index = 0; index < 256; ++index)
+		{
+			g_nativeDisplayPalette[index].peRed = 0;
+			g_nativeDisplayPalette[index].peGreen = 0;
+			g_nativeDisplayPalette[index].peBlue = 0;
+		}
 
-	// STUB: TOY2 0x004710C0
-	void UnkFunc12(uint8_t* a1, int32_t a2) {}
+		for (index = 0; index < 256; ++index)
+		{
+			g_nativeBasePalette[index].peRed = rgb[0];
+			g_nativeBasePalette[index].peGreen = rgb[1];
+			g_nativeBasePalette[index].peBlue = rgb[2];
+			rgb += 3;
+		}
 
-	// STUB: TOY2 0x00471190
-	char* UnkFunc13() { return 0; }
+		g_nativeBasePalette[0].peRed = 0;
+		g_nativeBasePalette[0].peGreen = 0;
+		g_nativeBasePalette[0].peBlue = 0;
+		UnkFunc11();
+	}
 
-	// STUB: TOY2 0x00471250
-	char* UnkFunc14() { return 0; }
+	// FUNCTION: TOY2 0x00470D60
+	int32_t UnkFunc10()
+	{
+		uint8_t* output = g_nativeColourCube;
+		int32_t red;
+		for (red = 0; red < 256; red += 8)
+		{
+			for (int32_t green = 0; green < 256; green += 8)
+			{
+				for (int32_t blue = 0; blue < 256; blue += 8)
+				{
+					uint8_t nearest = 0;
+					int32_t bestDistance = 9999999;
 
-	// STUB: TOY2 0x00471300
-	void SetNewPalette(int32_t a1, int32_t a2) {}
+					for (int32_t candidate = 1; candidate < 256; ++candidate)
+					{
+						int32_t greenDelta = (g_nativeBasePalette[candidate].peGreen - green) * 5;
+						int32_t redDelta = (g_nativeBasePalette[candidate].peRed - red) * 4;
+						int32_t blueDelta = (g_nativeBasePalette[candidate].peBlue - blue) * 3;
+						int32_t totalDelta = blueDelta + greenDelta + redDelta;
+						int32_t distance = totalDelta * totalDelta + blueDelta * blueDelta + greenDelta * greenDelta + redDelta * redDelta;
+
+						if (distance < bestDistance)
+						{
+							bestDistance = distance;
+							nearest = (uint8_t)candidate;
+						}
+					}
+
+					*output++ = nearest;
+				}
+			}
+		}
+
+		return red;
+	}
+
+	// FUNCTION: TOY2 0x00470FB0
+	char* UnkFunc15()
+	{
+		PALETTEENTRY* source = g_nativeBasePalette;
+		uint8_t* output = g_nativeTintTable;
+		do
+		{
+			int32_t sourceGreen = source->peGreen;
+			int32_t sourceRed = source->peRed;
+			int32_t sourceBlue = source->peBlue;
+
+			for (int32_t redOffset = -96; redOffset <= 128; redOffset += 32)
+			{
+				for (int32_t greenOffset = -96; greenOffset <= 128; greenOffset += 32)
+				{
+					for (int32_t blueOffset = -96; blueOffset <= 128; blueOffset += 32)
+					{
+						int32_t red = sourceRed + redOffset;
+						int32_t green = sourceGreen + greenOffset;
+						int32_t blue = sourceBlue + blueOffset;
+						if (red < 0)
+							red = 0;
+						else if (red > 255)
+							red = 255;
+						if (green < 0)
+							green = 0;
+						else if (green > 255)
+							green = 255;
+						if (blue < 0)
+							blue = 0;
+						else if (blue > 255)
+							blue = 255;
+
+						*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + (blue >> 3)];
+					}
+				}
+			}
+			++source;
+		} while (source < g_nativeBasePalette + 256);
+
+		// EAX holds the loop-end green-channel address.
+		return (char*)((uint32_t)source + 1);
+	}
+
+	// FUNCTION: TOY2 0x004710C0
+	void UnkFunc12(uint8_t* output, int32_t weight)
+	{
+		uint32_t outerWeight = 1024U - (uint32_t)weight;
+		for (int32_t outer = 0; outer < 256; ++outer)
+		{
+			uint32_t outerRed = g_nativeBasePalette[outer].peRed * outerWeight;
+			uint32_t outerGreen = g_nativeBasePalette[outer].peGreen * outerWeight;
+			uint32_t outerBlue = g_nativeBasePalette[outer].peBlue * outerWeight;
+
+			for (int32_t inner = 0; inner < 256; ++inner)
+			{
+				int32_t red = (int32_t)(g_nativeBasePalette[inner].peRed * (uint32_t)weight + outerRed) >> 10;
+				int32_t green = (int32_t)(g_nativeBasePalette[inner].peGreen * (uint32_t)weight + outerGreen) >> 10;
+				int32_t blue = (int32_t)(g_nativeBasePalette[inner].peBlue * (uint32_t)weight + outerBlue) >> 13;
+				*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + blue];
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x00471190
+	char* UnkFunc13()
+	{
+		PALETTEENTRY* source = g_nativeBasePalette;
+		uint8_t* output = g_nativeAddTable;
+		do
+		{
+			int32_t sourceRed = source->peRed;
+			int32_t sourceGreen = source->peGreen;
+			int32_t sourceBlue = source->peBlue;
+			for (int32_t inner = 0; inner < 256; ++inner)
+			{
+				int32_t red = g_nativeBasePalette[inner].peRed + sourceRed;
+				int32_t green = g_nativeBasePalette[inner].peGreen + sourceGreen;
+				int32_t blue = g_nativeBasePalette[inner].peBlue + sourceBlue;
+				if (red > 255)
+					red = 255;
+				if (green > 255)
+					green = 255;
+				if (blue > 255)
+					blue = 255;
+
+				*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + (blue >> 3)];
+			}
+			++source;
+		} while (source < g_nativeBasePalette + 256);
+
+		return (char*)((uint32_t)source + 1);
+	}
+
+	// FUNCTION: TOY2 0x00471250
+	char* UnkFunc14()
+	{
+		PALETTEENTRY* source = g_nativeBasePalette;
+		uint8_t* output = g_nativeSubtractTable;
+		do
+		{
+			int32_t sourceRed = source->peRed;
+			int32_t sourceGreen = source->peGreen;
+			int32_t sourceBlue = source->peBlue;
+			for (int32_t inner = 0; inner < 256; ++inner)
+			{
+				int32_t red = sourceRed - g_nativeBasePalette[inner].peRed;
+				int32_t green = sourceGreen - g_nativeBasePalette[inner].peGreen;
+				int32_t blue = sourceBlue - g_nativeBasePalette[inner].peBlue;
+				if (red < 0)
+					red = 0;
+				if (green < 0)
+					green = 0;
+				if (blue < 0)
+					blue = 0;
+
+				*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + (blue >> 3)];
+			}
+			++source;
+		} while (source < g_nativeBasePalette + 256);
+
+		return (char*)((uint32_t)source + 1);
+	}
+
+	// FUNCTION: TOY2 0x00471300
+	void SetNewPalette(int32_t paletteAddress, int32_t flags)
+	{
+		Logger::Log("SOFT : SetNewPalette.\n");
+		UnkFunc9((const uint8_t*)paletteAddress);
+
+		if (! g_nativeColourCube)
+			g_nativeColourCube = (uint8_t*)malloc(0x8000);
+		if (! g_nativeBlend256)
+			g_nativeBlend256 = (uint8_t*)malloc(0x10000);
+		if (! g_nativeBlend512)
+			g_nativeBlend512 = (uint8_t*)malloc(0x10000);
+		if (! g_nativeBlend768)
+			g_nativeBlend768 = (uint8_t*)malloc(0x10000);
+		if (! g_nativeAddTable)
+			g_nativeAddTable = (uint8_t*)malloc(0x10000);
+		if (! g_nativeSubtractTable)
+			g_nativeSubtractTable = (uint8_t*)malloc(0x10000);
+		if (! g_nativeTintTable)
+			g_nativeTintTable = (uint8_t*)malloc(0x20000);
+
+		if (flags & 1)
+			UnkFunc10();
+		if (flags & 0x10)
+		{
+			UnkFunc12(g_nativeBlend256, 256);
+			UnkFunc12(g_nativeBlend512, 512);
+			UnkFunc12(g_nativeBlend768, 768);
+		}
+		if (flags & 0x100)
+			UnkFunc13();
+		if (flags & 0x1000)
+			UnkFunc14();
+		if (flags & 0x10000)
+			UnkFunc15();
+	}
+
+	// FUNCTION: TOY2 0x00471450
+	uint32_t ReleaseNativePaletteTables()
+	{
+		if (g_nativeColourCube)
+		{
+			free(g_nativeColourCube);
+			g_nativeColourCube = 0;
+		}
+		if (g_nativeBlend256)
+		{
+			free(g_nativeBlend256);
+			g_nativeBlend256 = 0;
+		}
+		if (g_nativeBlend512)
+		{
+			free(g_nativeBlend512);
+			g_nativeBlend512 = 0;
+		}
+		if (g_nativeBlend768)
+		{
+			free(g_nativeBlend768);
+			g_nativeBlend768 = 0;
+		}
+		if (g_nativeAddTable)
+		{
+			free(g_nativeAddTable);
+			g_nativeAddTable = 0;
+		}
+		if (g_nativeSubtractTable)
+		{
+			free(g_nativeSubtractTable);
+			g_nativeSubtractTable = 0;
+		}
+		if (g_nativeTintTable)
+		{
+			free(g_nativeTintTable);
+			g_nativeTintTable = 0;
+		}
+		if (g_nativePalette)
+		{
+			uint32_t references = g_nativePalette->Release();
+			g_nativePalette = 0;
+			return references;
+		}
+
+		return 0;
+	}
 
 	// STUB: TOY2 0x00471520
 	int32_t UnkRenderAPI26(int32_t* a1) { return 0; }
@@ -865,8 +1183,98 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x0047C870
 	void UnlockBackBuffer() {}
 
-	// STUB: TOY2 0x0047C8B0
-	int32_t UnkFunc1() { return 0; }
+	// FUNCTION: TOY2 0x0047C8B0
+	int32_t UnkFunc1()
+	{
+		int32_t index;
+		int32_t blueThreeQuarter;
+		if (g_bitsPerPixel == 16)
+		{
+			for (index = 0; index < 64; ++index)
+			{
+				int32_t colour = index - 12;
+				if (colour < 0)
+					colour = 0;
+				else if (colour > 31)
+					colour = 31;
+
+				g_nativeRedTable[index] = (uint16_t)(colour << 11);
+				g_nativeRedQuarter[index] = (uint16_t)((colour * 10 / 32) << 11);
+				g_nativeRedHalf[index] = (uint16_t)((colour * 17 / 32) << 11);
+				g_nativeRedThreeQuarter[index] = (uint16_t)((colour * 25 / 32) << 11);
+			}
+			for (index = 0; index < 128; ++index)
+			{
+				int32_t colour = index - 24;
+				if (colour < 0)
+					colour = 0;
+				else if (colour > 63)
+					colour = 63;
+
+				g_nativeGreenTable[index] = (uint16_t)(colour << 5);
+				g_nativeGreenQuarter[index] = (uint16_t)((colour * 18 / 64) << 5);
+				g_nativeGreenHalf[index] = (uint16_t)((colour * 33 / 64) << 5);
+				g_nativeGreenThreeQuarter[index] = (uint16_t)((colour * 49 / 64) << 5);
+			}
+			for (index = 0; index < 64; ++index)
+			{
+				int32_t colour = index - 12;
+				if (colour < 0)
+					colour = 0;
+				else if (colour > 31)
+					colour = 31;
+
+				g_nativeBlueTable[index] = (uint16_t)colour;
+				g_nativeBlueQuarter[index] = (uint16_t)(colour * 10 / 32);
+				g_nativeBlueHalf[index] = (uint16_t)(colour * 17 / 32);
+				blueThreeQuarter = colour * 25 / 32;
+				g_nativeBlueThreeQuarter[index] = (uint16_t)blueThreeQuarter;
+			}
+			return blueThreeQuarter;
+		}
+
+		for (index = 0; index < 64; ++index)
+		{
+			int32_t colour = index - 12;
+			if (colour < 0)
+				colour = 0;
+			else if (colour > 31)
+				colour = 31;
+
+			g_nativeRedTable[index] = (uint16_t)(colour << 10);
+			g_nativeRedQuarter[index] = (uint16_t)((colour * 10 / 32) << 10);
+			g_nativeRedHalf[index] = (uint16_t)((colour * 17 / 32) << 10);
+			g_nativeRedThreeQuarter[index] = (uint16_t)((colour * 25 / 32) << 10);
+		}
+		for (index = 0; index < 64; ++index)
+		{
+			int32_t colour = index - 12;
+			if (colour < 0)
+				colour = 0;
+			else if (colour > 31)
+				colour = 31;
+
+			g_nativeGreenTable[index] = (uint16_t)(colour << 5);
+			g_nativeGreenQuarter[index] = (uint16_t)((colour * 10 / 32) << 5);
+			g_nativeGreenHalf[index] = (uint16_t)((colour * 17 / 32) << 5);
+			g_nativeGreenThreeQuarter[index] = (uint16_t)((colour * 25 / 32) << 5);
+		}
+		for (index = 0; index < 64; ++index)
+		{
+			int32_t colour = index - 12;
+			if (colour < 0)
+				colour = 0;
+			else if (colour > 31)
+				colour = 31;
+
+			g_nativeBlueTable[index] = (uint16_t)colour;
+			g_nativeBlueQuarter[index] = (uint16_t)(colour * 10 / 32);
+			g_nativeBlueHalf[index] = (uint16_t)(colour * 17 / 32);
+			blueThreeQuarter = colour * 25 / 32;
+			g_nativeBlueThreeQuarter[index] = (uint16_t)blueThreeQuarter;
+		}
+		return blueThreeQuarter;
+	}
 
 	// STUB: TOY2 0x0047D120
 	void UnkFunc5() {}
