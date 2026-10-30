@@ -408,8 +408,24 @@ namespace Nu3D
 			return cameraInstance;
 		}
 
+		// FUNCTION: TOY2 0x004BB910
+		void Free(void* allocation)
+		{
+			if (allocation)
+				free(allocation);
+		}
+
 		// FUNCTION: TOY2 0x004BB9D0 [MATCHED]
 		void SetMatrixScaleVector(Vector3F* vector) { Math::g_matrixScaleVector = *vector; }
+
+		// FUNCTION: TOY2 0x004BB9F0
+		void GetMatrixScaleVector(Vector3F* vector)
+		{
+			// Keep raw component transfers ordered for overlapping output.
+			*(uint32_t*)&vector->x = *(uint32_t*)&Math::g_matrixScaleVector.x;
+			*(uint32_t*)&vector->y = *(uint32_t*)&Math::g_matrixScaleVector.y;
+			*(uint32_t*)&vector->z = *(uint32_t*)&Math::g_matrixScaleVector.z;
+		}
 
 		// FUNCTION: TOY2 0x004BB9C0 [MATCHED]
 		void ScaleMatrix(CameraInstance* camera) { Math::ScaleMatrix(&camera->matrix); }
@@ -451,6 +467,15 @@ namespace Nu3D
 
 		// FUNCTION: TOY2 0x004BB850
 		D3DMATRIX* GetProjectionMatrix() { return &g_projMatrix; }
+
+		// FUNCTION: TOY2 0x004BB860
+		D3DMATRIX* GetPerspectiveMatrix() { return &g_outProjMatrix; }
+
+		// FUNCTION: TOY2 0x004BB870
+		D3DMATRIX* GetClipNormMatrix() { return &g_clipNormMatrix; }
+
+		// FUNCTION: TOY2 0x004BB880
+		D3DMATRIX* GetScreenSpaceMatrix() { return &g_screenSpaceMatrix; }
 
 		// FUNCTION: TOY2 0x004BBE10
 		void TransformPointProjective(Vector3F* outPoints, Vector3F* inPoints, int32_t count, D3DMATRIX* localMatrix)
@@ -843,7 +868,7 @@ namespace Nu3D
 			g_secondaryCamera = *camera;
 			ScaleMatrix(&g_secondaryCamera);
 
-			if (g_flippedCamera == 0) // perma 0
+			if (g_flippedCamera == 0)
 			{
 				CreateInverseMatrix(&g_projMatrix, &g_secondaryCamera.matrix);
 				Math::ScaleMatrixByVector(&g_projMatrix, &g_secondaryCamera.scaleVector);
@@ -878,6 +903,9 @@ namespace Nu3D
 			RebuildTransformPipeline();
 			CalculateFrustumPlanes(&g_secondaryCamera);
 		}
+
+		// FUNCTION: TOY2 0x004BBCB0
+		void SetFlipMode(int32_t mode) { g_flippedCamera = mode; }
 
 		// FUNCTION: TOY2 0x004B68A0 [MATCHED]
 		void SetBillboardYaw(int32_t billboardYaw) { g_billboardYaw = billboardYaw; }
@@ -1198,6 +1226,16 @@ namespace Nu3D
 			g_unk5D2B18 = a1->unkInt3;
 
 			return g_unk5D2B18;
+		}
+
+		// FUNCTION: TOY2 0x00450870
+		NineWords* SetTranslation(NineWords* matrix, Vector3I* translation)
+		{
+			// Each store precedes the next load when the records overlap.
+			matrix->unkInt1 = translation->x;
+			matrix->unkInt2 = translation->y;
+			matrix->unkInt3 = translation->z;
+			return matrix;
 		}
 
 		// FUNCTION: TOY2 0x00451280
