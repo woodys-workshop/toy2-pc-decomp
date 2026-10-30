@@ -1,4 +1,5 @@
 #include "Toy2/D3DApp.h"
+#include "Toy2/Toy2.h"
 #include "Logger.h"
 #include <cstdio>
 
@@ -58,7 +59,7 @@ namespace D3DApp
 		Logger::Log("---------------------\n");
 		Logger::Log("BEGIN EXAMINE MACHINE\n\n");
 
-		int32_t count = 0;
+		int16_t count = 0;
 
 		WNDCLASSA wndClass;
 		wndClass.style = CS_HREDRAW | CS_VREDRAW;
@@ -69,19 +70,19 @@ namespace D3DApp
 		wndClass.hIcon = LoadIconA(0, IDI_WINLOGO);
 		wndClass.hCursor = LoadCursorA(0, IDC_ARROW);
 		wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-		wndClass.lpszMenuName = "";
+		wndClass.lpszMenuName = Toy2::g_emptyStr;
 		wndClass.lpszClassName = "Examining Machine";
 
 		if (! RegisterClassA(&wndClass))
 			return 0;
 
-		int32_t curDeviceCount = 1;
+		int16_t curDeviceCount = 1;
 
 		g_windowData.mainHwnd = CreateWindowExA(
 			WS_EX_APPWINDOW,
 			"Examining Machine",
 			"Examining Machine",
-			WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+			WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
 			CW_USEDEFAULT,
@@ -157,15 +158,15 @@ namespace D3DApp
 			int32_t hardwareRGBCount = 0;
 			int32_t softwareRGBCount = 0;
 
-			InterfaceDevice* hardwareRGBDevice;
-			InterfaceDevice* softwareRGBDevice;
+			InterfaceDevice* hardwareRGBDevices[6];
+			InterfaceDevice* softwareRGBDevices[6];
 
 			if (g_pcStruct.defaultDriver->deviceCount > 0)
 			{
 				int32_t curInterfaceDev = 0;
 
-				InterfaceDevice** softwareDevices = &softwareRGBDevice;
-				InterfaceDevice** hardwareDevices = &hardwareRGBDevice;
+				InterfaceDevice** softwareDevices = softwareRGBDevices;
+				InterfaceDevice** hardwareDevices = hardwareRGBDevices;
 
 				do
 				{
@@ -190,11 +191,11 @@ namespace D3DApp
 				} while (count < defaultDriver->deviceCount);
 			}
 
-			if (hardwareRGBCount && hardwareRGBDevice->hasTexturing)
+			if (hardwareRGBCount && hardwareRGBDevices[0]->hasTexturing)
 			{
-				g_pcStruct.selectedInterfaceDevice = hardwareRGBDevice;
+				g_pcStruct.selectedInterfaceDevice = hardwareRGBDevices[0];
 				g_pcStruct.fullscreenMode = 1;
-				Logger::Log("INFO Direct3D - Hardware RGB driver >>>%s,%s<<< selected\n", hardwareRGBDevice->baseName, hardwareRGBDevice->description);
+				Logger::Log("INFO Direct3D - Hardware RGB driver >>>%s,%s<<< selected\n", hardwareRGBDevices[0]->baseName, hardwareRGBDevices[0]->description);
 			}
 			else
 			{
@@ -204,8 +205,8 @@ namespace D3DApp
 
 					if (softwareRGBCount)
 					{
-						g_pcStruct.selectedInterfaceDevice = softwareRGBDevice;
-						Logger::Log("INFO Direct3D - Driver >>>%s,%s<<< selected\n", softwareRGBDevice->baseName, softwareRGBDevice->description);
+						g_pcStruct.selectedInterfaceDevice = softwareRGBDevices[0];
+						Logger::Log("INFO Direct3D - Driver >>>%s,%s<<< selected\n", softwareRGBDevices[0]->baseName, softwareRGBDevices[0]->description);
 						defaultDriver = g_pcStruct.defaultDriver;
 					}
 
@@ -319,7 +320,7 @@ namespace D3DApp
 
 		if (g_pcStruct.softwareRenderMode)
 		{
-			int32_t displayModeLoopIndex = 0;
+			int16_t displayModeLoopIndex = 0;
 
 			if (g_pcStruct.defaultDriver->displayModeCount > 0)
 			{
@@ -330,7 +331,7 @@ namespace D3DApp
 					if (defaultDriver->displayModes[displayModeCounter].width == 640 && defaultDriver->displayModes[displayModeCounter].height == 480
 						&& defaultDriver->displayModes[displayModeCounter].rgbBitCount == 16)
 					{
-						g_pcStruct.mode = defaultDriver->displayModes;
+						g_pcStruct.mode = &defaultDriver->displayModes[displayModeCounter];
 						defaultDriver->selectedDisplayModeIndex = displayModeCounter;
 						defaultDriver = g_pcStruct.defaultDriver;
 					}
@@ -343,7 +344,7 @@ namespace D3DApp
 		}
 		else
 		{
-			int32_t deviceLoopIndex = 0;
+			int16_t deviceLoopIndex = 0;
 
 			if (g_pcStruct.defaultDriver->displayModeCount > 0)
 			{
@@ -466,15 +467,13 @@ namespace D3DApp
 		{
 			int32_t lastError = GetLastError();
 
+#ifdef APPLY_FIXES
 			char* buffer = NULL;
+#else
+			char* buffer;
+#endif
 			FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				0,
-				lastError,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				buffer,
-				0,
-				0);
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, 0);
 			MessageBoxA(0, buffer, "GetLastError", MB_ICONINFORMATION);
 			LocalFree(buffer);
 			return 0;
@@ -520,7 +519,6 @@ namespace D3DApp
 		LPDIRECTDRAW lpDD;
 		if (DirectDrawCreate(guid, &lpDD, 0) < 0)
 		{
-			curDevice->dd2->Release();
 			memset(&g_pcStruct.examineDevices[g_pcStruct.ddDeviceCount], 0, sizeof(g_pcStruct.examineDevices[g_pcStruct.ddDeviceCount]));
 			return 1;
 		}
@@ -554,7 +552,6 @@ namespace D3DApp
 		DDSCAPS ddsCaps;
 		ddsCaps.dwCaps = 4096;
 
-		// $TODO: Honestly who knows whats going on here (compiler artifact?)
 		if (guid && guid != (GUID*)2 && g_checkAvailableMem != 1)
 		{
 			HRESULT availMemResult = curDevice->dd2->GetAvailableVidMem(&ddsCaps, (LPDWORD)&curDevice->texVidMemTot, (LPDWORD)&curDevice->texVidMemFree);
@@ -562,7 +559,7 @@ namespace D3DApp
 			if (availMemResult < 0)
 				Logger::LogDDError("ddinfo->DDDevice->GetAvailableVidMem(&caps, &ddinfo->TexVidMemTotal, &ddinfo->TexVidMemFree)", availMemResult);
 
-			int32_t texVidMemFree = curDevice->texVidMemFree;
+			uint32_t texVidMemFree = (uint32_t)curDevice->texVidMemFree;
 
 			if (texVidMemFree < 0x200000)
 			{
@@ -584,7 +581,7 @@ namespace D3DApp
 
 		int32_t dwSVBCaps = curDevice->ddCaps.dwSVBCaps;
 
-		curDevice->hasVideoDMA = dwSVBCaps >> 31;
+		curDevice->hasVideoDMA = (uint32_t)dwSVBCaps >> 31;
 
 		if (dwSVBCaps < 0)
 		{
@@ -661,7 +658,7 @@ namespace D3DApp
 
 			do
 			{
-				Logger::Log("DDMODE %i - %dx%dx%d bit.\n", iter++, item->rgbBitCount, item->width, item->height);
+				Logger::Log("DDMODE %i - %dx%dx%d bit.\n", iter++, item->width, item->height, item->rgbBitCount);
 				++item;
 			} while (iter < curDevice->displayModeCount);
 		}
