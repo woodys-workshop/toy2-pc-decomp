@@ -6176,7 +6176,7 @@ namespace Toy2
 		Buzz::CancelGrapple();
 		Buzz::ResetGravityBoots();
 
-		g_buzzActor.actorFlags &= 0xFFBB;
+		g_buzzActor.actorFlags &= 0xFDBB;
 	}
 
 	// FUNCTION: TOY2 0x0043E5A0

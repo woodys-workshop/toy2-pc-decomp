@@ -620,7 +620,7 @@ namespace Toy2
 					int32_t speed = (*scriptIP)[4];
 
 					// arrived
-					if (distX < speed + 2 && abs(originY - target.y) < speed + 2 && abs(originZ - target.z) < speed + 2)
+					if (distX < speed + 8 && abs(originY - target.y) < speed + 8 && abs(originZ - target.z) < speed + 8)
 					{
 						*accelRamp = 0;
 						*timer = 0;
@@ -788,7 +788,7 @@ namespace Toy2
 
 					int32_t speed = (*scriptIP)[3];
 
-					if (distX >= speed + 2 || abs(originY - target.y) >= speed + 2 || abs(originZ - target.z) >= speed + 2)
+					if (distX >= speed + 8 || abs(originY - target.y) >= speed + 8 || abs(originZ - target.z) >= speed + 8)
 					{
 						int32_t curSpeed;
 

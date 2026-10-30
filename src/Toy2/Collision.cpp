@@ -1085,7 +1085,7 @@ namespace Toy2
 		{
 			CollisionTriangle* triangle = (CollisionTriangle*)a1;
 			// the normals of the two triangles of the face, the y of a normal is 0x7FFF when there is none
-			int16_t faceAdjacency[8];
+			int16_t faceAdjacency[6];
 			int32_t segStart[3];
 			int32_t segEnd[3];
 			int32_t hit = 0;
@@ -1244,7 +1244,7 @@ namespace Toy2
 				if (useFirst)
 				{
 					memcpy(&faceAdjacency[0], &triangle->unk20, 4);
-					memcpy(&faceAdjacency[2], &triangle->unk24, 4);
+					memcpy(&faceAdjacency[2], &triangle->unk24, 2);
 				}
 				else
 				{
@@ -1254,7 +1254,7 @@ namespace Toy2
 				if (useSecond)
 				{
 					memcpy(&faceAdjacency[3], &triangle->unk26, 4);
-					memcpy(&faceAdjacency[5], &triangle->unk2A, 4);
+					memcpy(&faceAdjacency[5], &triangle->unk2A, 2);
 				}
 				else
 				{

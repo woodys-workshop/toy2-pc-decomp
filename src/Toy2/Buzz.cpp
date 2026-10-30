@@ -631,7 +631,7 @@ namespace Toy2
 
 					if (v10 < 0)
 					{
-						v10 = (int32_t)-(v10 * sqrt((double)(g_buzzActor.unkVar30 * g_buzzActor.unkVar30 + g_buzzActor.unkVar31 * g_buzzActor.unkVar31)));
+						v10 = -(v10 * (int32_t)sqrt((double)(g_buzzActor.unkVar30 * g_buzzActor.unkVar30 + g_buzzActor.unkVar31 * g_buzzActor.unkVar31)));
 
 						if (v10 < 0)
 						{
@@ -900,12 +900,12 @@ namespace Toy2
 							case 0x33:
 							case 0x34:
 								hitType = 2;
-								collisionFlags = instance->collisionFlags;
+								collisionFlags = (int8_t)instance->collisionFlags;
 								goto LABEL_21;
 
 							case 5:
 								hitType = 2;
-								collisionFlags = instance->collisionFlags;
+								collisionFlags = (int8_t)instance->collisionFlags;
 								goto LABEL_21;
 
 							case 7:
@@ -951,7 +951,7 @@ namespace Toy2
 							case 0x36:
 							LABEL_18:
 								hitType = 1;
-								collisionFlags = instance->collisionFlags;
+								collisionFlags = (int8_t)instance->collisionFlags;
 								goto LABEL_21;
 
 							case 0x37:
@@ -1253,7 +1253,7 @@ namespace Toy2
 			int32_t turnRate;
 			int16_t facingAngle;
 			uint16_t yawAngle;
-			uint32_t angleDiff;
+			int32_t angleDiff;
 			bool slipping;
 
 			if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
@@ -1458,7 +1458,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A5370
-		uint32_t FireGrapple()
+		uint32_t FireGrapple(int32_t unusedYaw, int32_t unusedPitch)
 		{
 			int32_t dominantDist;
 			Transform direction;
@@ -1723,7 +1723,7 @@ namespace Toy2
 
 					if (g_grappleTimer && Camera::g_cameraState >= 3 && Camera::g_unk50A540 && Camera::g_lockOnActorIdx >= 1000)
 					{
-						FireGrapple();
+						FireGrapple(yaw, pitch);
 					}
 					else if (g_discLauncherTimer)
 					{
@@ -2552,7 +2552,15 @@ namespace Toy2
 
 			Collision::g_unk72912C = -1;
 
-			if (Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].typeFlags == 8)
+			// The original mesh -1 type word aliases the response-strength low word.
+			int16_t meshType;
+
+			if (Collision::g_groundContactMeshIdx == -1)
+				meshType = (int16_t)Collision::g_unk7295A0;
+			else
+				meshType = Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].typeFlags;
+
+			if (meshType == 8)
 			{
 				int32_t platformIdx = Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].platformIdx;
 				int16_t flags;
@@ -3703,7 +3711,7 @@ namespace Toy2
 			{
 				if (buzzActor->collisionFlags)
 				{
-					actorFlags &= 0xBB;
+					actorFlags &= 0xFFBB;
 					buzzActor->actorFlags = actorFlags;
 				}
 				else
