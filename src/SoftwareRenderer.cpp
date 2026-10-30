@@ -576,8 +576,207 @@ namespace SoftwareRenderer
 		CommitZoom();
 	}
 
-	// STUB: TOY2 0x004C17B0
-	void PresentFrame() {}
+	// FUNCTION: TOY2 0x004C17B0
+	void PresentFrame()
+	{
+		uint8_t* destinationRow;
+		int32_t rightMarginBytes;
+		uint32_t pairsPerRow;
+		uint8_t* sourceRow;
+		DDSURFACEDESC2 surfaceDesc;
+		surfaceDesc.dwSize = sizeof(surfaceDesc);
+
+		if (g_frameBuffer)
+		{
+			DrawingDevice::LockPrimarySurface(&surfaceDesc);
+
+			__asm
+			{
+				mov     eax, g_frameBuffer
+				push    eax
+				mov     ecx, g_surfaceWidth
+				shr     ecx, 1
+				mov     ebx, 0
+			clearTopBorder:
+				mov     dword ptr [eax], ebx
+				add     eax, 4
+				dec     ecx
+				jne     clearTopBorder
+				pop     esi
+				mov     ecx, g_surfaceHeight
+				dec     ecx
+				mov     edx, g_surfacePitch
+				mov     eax, g_surfaceWidth
+				dec     eax
+				shl     eax, 1
+			clearSideBorders:
+				mov     word ptr [esi], bx
+				mov     word ptr [esi + eax], bx
+				add     esi, edx
+				dec     ecx
+				jne     clearSideBorders
+				mov     ecx, g_surfaceWidth
+				shr     ecx, 1
+			clearBottomBorder:
+				mov     dword ptr [esi], ebx
+				add     esi, 4
+				dec     ecx
+				jne     clearBottomBorder
+
+				mov     eax, g_rightOffset
+				sub     eax, g_leftOffset
+				inc     eax
+				shr     eax, 1
+				mov     pairsPerRow, eax
+				mov     edx, g_leftOffset
+				shl     edx, 1
+				mov     eax, g_topOffset
+				mov     ecx, g_surfacePitch
+				imul    ecx, eax
+				add     ecx, edx
+				mov     ebx, g_bottomOffset
+				sub     ebx, eax
+				inc     ebx
+				mov     eax, g_primarySurfacePixels
+				add     eax, ecx
+				mov     destinationRow, eax
+				mov     eax, g_frameBuffer
+				add     eax, ecx
+				mov     sourceRow, eax
+			copyActiveRow:
+				push    ebx
+				mov     esi, sourceRow
+				mov     edi, destinationRow
+				mov     ecx, pairsPerRow
+				mov     ebx, g_softwareClearColor
+			copyActivePairs:
+				mov     eax, dword ptr [esi]
+				mov     dword ptr [edi], eax
+				mov     dword ptr [esi], ebx
+				add     esi, 4
+				add     edi, 4
+				dec     ecx
+				jne     copyActivePairs
+				mov     eax, g_surfacePitch
+				add     destinationRow, eax
+				add     sourceRow, eax
+				pop     ebx
+				dec     ebx
+				jne     copyActiveRow
+
+				mov     eax, g_primarySurfacePixels
+				mov     destinationRow, eax
+				mov     eax, g_frameBuffer
+				mov     sourceRow, eax
+				mov     ebx, g_topOffset
+				and     ebx, ebx
+				je      setupSideMargins
+			copyTopMarginRow:
+				push    ebx
+				mov     esi, sourceRow
+				mov     edi, destinationRow
+				mov     ecx, g_surfaceWidth
+				shr     ecx, 1
+				mov     ebx, 00100010h
+			copyTopMarginPairs:
+				mov     eax, dword ptr [esi]
+				mov     dword ptr [edi], eax
+				mov     dword ptr [esi], ebx
+				add     esi, 4
+				add     edi, 4
+				dec     ecx
+				jne     copyTopMarginPairs
+				mov     eax, g_surfacePitch
+				add     destinationRow, eax
+				add     sourceRow, eax
+				pop     ebx
+				dec     ebx
+				jne     copyTopMarginRow
+
+				mov     eax, g_primarySurfacePixels
+				mov     destinationRow, eax
+				mov     eax, g_frameBuffer
+				mov     sourceRow, eax
+				mov     ebx, g_bottomOffset
+				inc     ebx
+				mov     eax, g_surfacePitch
+				imul    ebx, eax
+				add     destinationRow, ebx
+				add     sourceRow, ebx
+				mov     ebx, g_topOffset
+			copyBottomMarginRow:
+				push    ebx
+				mov     esi, sourceRow
+				mov     edi, destinationRow
+				mov     ecx, g_surfaceWidth
+				shr     ecx, 1
+				mov     ebx, 00100010h
+			copyBottomMarginPairs:
+				mov     eax, dword ptr [esi]
+				mov     dword ptr [edi], eax
+				mov     dword ptr [esi], ebx
+				add     esi, 4
+				add     edi, 4
+				dec     ecx
+				jne     copyBottomMarginPairs
+				mov     eax, g_surfacePitch
+				add     destinationRow, eax
+				add     sourceRow, eax
+				pop     ebx
+				dec     ebx
+				jne     copyBottomMarginRow
+
+			setupSideMargins:
+				mov     eax, g_topOffset
+				mov     ecx, g_surfacePitch
+				imul    ecx, eax
+				mov     eax, g_primarySurfacePixels
+				add     eax, ecx
+				mov     destinationRow, eax
+				mov     eax, g_frameBuffer
+				add     eax, ecx
+				mov     sourceRow, eax
+				mov     ebx, g_leftOffset
+				and     ebx, ebx
+				je      presentationComplete
+				shr     ebx, 1
+				mov     pairsPerRow, ebx
+				mov     eax, g_rightOffset
+				shl     eax, 1
+				mov     rightMarginBytes, eax
+				mov     ebx, g_bottomOffset
+				sub     ebx, g_topOffset
+				inc     ebx
+			copySideMarginRow:
+				push    ebx
+				mov     esi, sourceRow
+				mov     edi, destinationRow
+				mov     ecx, pairsPerRow
+				mov     ebx, 00100010h
+				mov     edx, rightMarginBytes
+			copySideMarginPairs:
+				mov     eax, dword ptr [esi]
+				mov     dword ptr [edi], eax
+				mov     dword ptr [esi], ebx
+				mov     eax, dword ptr [esi + edx]
+				mov     dword ptr [edi + edx], eax
+				mov     dword ptr [esi + edx], ebx
+				add     esi, 4
+				add     edi, 4
+				dec     ecx
+				jne     copySideMarginPairs
+				mov     eax, g_surfacePitch
+				add     destinationRow, eax
+				add     sourceRow, eax
+				pop     ebx
+				dec     ebx
+				jne     copySideMarginRow
+			presentationComplete:
+			}
+
+			DrawingDevice::UnlockPrimarySurface();
+		}
+	}
 
 	// STUB: TOY2 0x00490410
 	void UnkFunc67(int32_t param1, int32_t param2) {}
