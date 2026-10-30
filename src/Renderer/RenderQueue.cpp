@@ -75,6 +75,15 @@ namespace Renderer
 		return previous;
 	}
 
+	// FUNCTION: TOY2 0x004B92A0
+	float SetLodFactor(float lodFactor)
+	{
+		float previous = g_lodFactor;
+		memcpy(&g_lodFactor, &lodFactor, sizeof(lodFactor));
+
+		return previous;
+	}
+
 	// FUNCTION: TOY2 0x004B92B0
 	int32_t SetAdditionalRenderFlags(int32_t flags)
 	{
@@ -82,6 +91,23 @@ namespace Renderer
 		g_additionalRenderFlags = flags;
 
 		return previous;
+	}
+
+	// FUNCTION: TOY2 0x004B92C0
+	void SetSpriteTemplate(const Nu3D::Sprite* sprite)
+	{
+		const uint8_t* source = (const uint8_t*)sprite;
+		uint8_t* destination = (uint8_t*)&g_spriteBuffer[2000];
+
+		// Copy forward one dword at a time, including overlapping input.
+		for (int32_t remaining = 33; remaining; --remaining)
+		{
+			uint32_t word;
+			memcpy(&word, source, sizeof(word));
+			memcpy(destination, &word, sizeof(word));
+			source += sizeof(word);
+			destination += sizeof(word);
+		}
 	}
 
 	// FUNCTION: TOY2 0x004B62C0

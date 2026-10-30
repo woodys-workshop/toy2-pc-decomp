@@ -40,7 +40,7 @@ namespace DrawingAPI
 	// Vertex Methods
 	typedef HRESULT Device_ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	typedef HRESULT Device_CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags);
-	typedef HRESULT Device_LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
+	typedef HRESULT Device_LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* sizeBytes);
 	typedef HRESULT Device_UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	typedef HRESULT Device_OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
 	typedef HRESULT Device_ProcessVerticesOnBuffer(
@@ -96,6 +96,7 @@ namespace Renderer
 	extern Nu3D::Material* g_boundMaterial;
 
 	void Cleanup();
+	void CleanupScratchResources();
 	void Init();
 	void ConfigureFog(float fogStart, float fogEnd, RGBA color);
 	void SetFogEnable(int32_t enableFog);
@@ -150,6 +151,9 @@ namespace Renderer
 	void RenderPatchList(Nu3D::Patch* patch, D3DMATRIX* nodeMatrices, int32_t** flags, int32_t renderStage);
 	void SetVertexColorModulation(int32_t red, int32_t green, int32_t blue);
 	int32_t EnableVertexColorModulation(int32_t a1);
+	void SetSimultaneousTextureLimit(int32_t limit);
+	HRESULT DrawImmediateLine(const D3DMATERIALHANDLE* materialHandle, const Vector3F* first, const Vector3F* second);
+	HRESULT DrawTransformedLine(const D3DMATERIALHANDLE* materialHandle, const Vector3F* first, const Vector3F* second);
 	void DrawSingleTexturedTriangle(void* vertices, int32_t texIndex, int32_t renderState);
 	int32_t Set9F5FF8(int32_t value);
 
@@ -161,17 +165,17 @@ namespace DevDraw
 	struct DrawBuffer
 	{
 		void* vertex[65];
-		uint16_t vertexCount[65];
+		int16_t vertexCount[65];
 		uint16_t index[65][1000];
-		uint16_t indexCount[65];
+		int16_t indexCount[65];
 	};
 
 	struct DrawTranBuffer
 	{
 		void* vertices[65];
-		uint16_t vertexCount[65];
+		int16_t vertexCount[65];
 		uint16_t index[32][6000];
-		uint16_t indexCount[32];
+		int16_t indexCount[32];
 	};
 
 	extern DrawBuffer* g_drawBuffer;
