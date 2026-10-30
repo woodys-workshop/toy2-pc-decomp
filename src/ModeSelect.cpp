@@ -244,7 +244,7 @@ namespace ModeSelect
 			}
 
 			++attemptIndex;
-		} while (static_cast<uint16_t>(attemptIndex) < 4);
+		} while ((uint16_t)attemptIndex < 4);
 
 		if (! g_foundAnyD3DDevice)
 			return 0x81000001;
@@ -262,7 +262,7 @@ namespace ModeSelect
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice* device = reinterpret_cast<DDAppDevice*>(lpContext);
+		DDAppDevice* device = (DDAppDevice*)lpContext;
 
 		if (! lpDDSurfaceDesc2 || ! device)
 			return D3DENUMRET_CANCEL;
@@ -338,10 +338,10 @@ namespace ModeSelect
 			if (ddAppParent->vidMemTotal == ddAppParent->totalTextureMem)
 			{
 				DWORD remaining = ddAppParent->vidMemFree - texMem;
-				if (static_cast<int32_t>(remaining) < 0x80000)
+				if ((int32_t)remaining < 0x80000)
 					return D3DENUMRET_OK;
 			}
-			else if (static_cast<int32_t>(ddAppParent->freeTextureMem) < static_cast<int32_t>(texMem))
+			else if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
 			{
 				return D3DENUMRET_OK;
 			}
