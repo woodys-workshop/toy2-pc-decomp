@@ -6,8 +6,14 @@
 #include <math.h>
 #include <stdlib.h>
 
+// Assembly-only CRT entry: ST(0) input, EDX:EAX result, no stack arguments.
+extern "C" int64_t __cdecl _ftol();
+
 namespace SoftwareRenderer
 {
+	typedef void(__cdecl* SpanFunction)(BVertex*, BVertex*, uint16_t*, uint32_t*, int32_t, int32_t, int32_t, int32_t, int32_t, int32_t);
+	STATIC_ASSERT(sizeof(SpanFunction) == 4);
+
 	struct TextureSnapshot
 	{
 		uint32_t* texData;
@@ -87,6 +93,15 @@ namespace SoftwareRenderer
 
 	// GLOBAL: TOY2 0x00DE20AC
 	int32_t g_pixelMode;
+
+	// GLOBAL: TOY2 0x00B626AC
+	int32_t g_vertexAlpha;
+
+	// GLOBAL: TOY2 0x00B626B0
+	SpanFunction g_selectedSpan;
+
+	// GLOBAL: TOY2 0x00B626B8
+	int32_t g_vertexAlphaComplement;
 
 	// GLOBAL: TOY2 0x00A4CC6C
 	int32_t g_zoomLevel;
@@ -903,20 +918,613 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C4640
 	int16_t UnkFunc47(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
 
-	// STUB: TOY2 0x004C48E0
-	int32_t UnkFunc55(uint32_t a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, uint32_t a7, int32_t a8, int32_t a9, uint32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C48E0 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc55(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			sub esp, 8
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov ebx, dword ptr [ebp + 0xC]
+			mov esi, eax
+			fld dword ptr [ebx]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 0xC], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov edx, dword ptr [ebp + 0x28]
+			mov eax, edi
+			mov edi, ebx
+			mov ebx, eax
+			mov eax, dword ptr [ebp + 0x24]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0x1C], edx
+			mov edx, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 0xC], esi
+			mov dword ptr [ebp + 8], ecx
+			mov dword ptr [ebp + 0x20], edx
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CHECK_WIDTH
+		LBL_ORDERED_ENDPOINTS:
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CHECK_WIDTH:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			sar esi, 1
+			test esi, esi
+			mov dword ptr [ebp + 0x18], esi
+			jle LBL_LOAD_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 8], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp - 4], eax
+			mov eax, dword ptr [ebp + 0x20]
+			sub eax, ecx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+		LBL_LOAD_ENDPOINTS:
+			fld dword ptr [ebx]
+			call _ftol
+			fld dword ptr [edi]
+			mov esi, eax
+			mov dword ptr [ebp - 8], esi
+			call _ftol
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, dword ptr [ebp + 0x10]
+			lea ecx, [eax + esi * 2]
+			mov dword ptr [ebp + 0x10], ecx
+			mov eax, dword ptr [ebp - 8]
+			and eax, 1
+			je LBL_DRAW_PAIRS
+			mov esi, dword ptr [ebp + 0x2C]
+			and esi, 0xF800
+			shr esi, 11
+			mov eax, dword ptr [ebp + 0x28]
+			and eax, 0xF800
+			shr eax, 6
+			add esi, eax
+			mov eax, dword ptr [ebp + 0x24]
+			and eax, 0xF800
+			shr eax, 1
+			add eax, esi
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add ecx, 2
+			mov dword ptr [ebp + 0x10], ecx
+			mov eax, dword ptr [ebp + 0xC]
+			dec eax
+			shr eax, 1
+			mov dword ptr [ebp + 0x18], eax
+		LBL_DRAW_PAIRS:
+			mov edi, dword ptr [ebp + 0x10]
+			mov ebx, dword ptr [ebp + 0x2C]
+			mov ecx, dword ptr [ebp + 0x28]
+			mov edx, dword ptr [ebp + 0x24]
+			mov eax, dword ptr [ebp + 0x18]
+			and eax, eax
+			je LBL_DRAW_TAIL
+		LBL_PAIR_LOOP:
+			push eax
+			mov esi, ebx
+			shr esi, 11
+			mov eax, ecx
+			and eax, 0xF800
+			shr eax, 6
+			add esi, eax
+			mov eax, edx
+			and eax, 0xF800
+			shr eax, 1
+			add eax, esi
+			push ax
+			shl eax, 16
+			pop ax
+			mov dword ptr [edi], eax
+			add edi, 4
+			add ebx, dword ptr [ebp + 0x20]
+			add ecx, dword ptr [ebp - 4]
+			add edx, dword ptr [ebp + 8]
+			pop eax
+			dec eax
+			jne LBL_PAIR_LOOP
+		LBL_DRAW_TAIL:
+			mov eax, dword ptr [ebp + 0x1C]
+			and eax, 1
+			je LBL_SPAN_DONE
+			mov esi, ebx
+			and esi, 0xF800
+			shr esi, 11
+			mov eax, ecx
+			and eax, 0xF800
+			shr eax, 6
+			add esi, eax
+			mov eax, edx
+			and eax, 0xF800
+			shr eax, 1
+			add eax, esi
+			mov word ptr [edi], ax
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			mov esp, ebp
+			pop ebp
+			ret
+		}
+	}
 
-	// STUB: TOY2 0x004C4A60
-	int32_t UnkFunc40(uint32_t a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, uint32_t a7, int32_t a8, int32_t a9, uint32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C4A60 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc40(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			sub esp, 8
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov ebx, dword ptr [ebp + 0xC]
+			mov esi, eax
+			fld dword ptr [ebx]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 0xC], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov edx, dword ptr [ebp + 0x28]
+			mov eax, edi
+			mov edi, ebx
+			mov ebx, eax
+			mov eax, dword ptr [ebp + 0x24]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0x1C], edx
+			mov edx, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 0xC], esi
+			mov dword ptr [ebp + 8], ecx
+			mov dword ptr [ebp + 0x20], edx
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CHECK_WIDTH
+		LBL_ORDERED_ENDPOINTS:
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CHECK_WIDTH:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			sar esi, 1
+			test esi, esi
+			mov dword ptr [ebp + 0x18], esi
+			jle LBL_LOAD_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 8], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp - 4], eax
+			mov eax, dword ptr [ebp + 0x20]
+			sub eax, ecx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+		LBL_LOAD_ENDPOINTS:
+			fld dword ptr [ebx]
+			call _ftol
+			fld dword ptr [edi]
+			mov esi, eax
+			mov dword ptr [ebp - 8], esi
+			call _ftol
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, dword ptr [ebp + 0x10]
+			lea ecx, [eax + esi * 2]
+			mov dword ptr [ebp + 0x10], ecx
+			mov eax, dword ptr [ebp - 8]
+			and eax, 1
+			je LBL_DRAW_PAIRS
+			mov esi, dword ptr [ebp + 0x2C]
+			and esi, 0xF800
+			shr esi, 11
+			mov eax, dword ptr [ebp + 0x28]
+			and eax, 0xF800
+			shr eax, 5
+			add esi, eax
+			mov eax, dword ptr [ebp + 0x24]
+			and eax, 0xF800
+			add eax, esi
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add ecx, 2
+			mov dword ptr [ebp + 0x10], ecx
+			mov eax, dword ptr [ebp + 0xC]
+			dec eax
+			shr eax, 1
+			mov dword ptr [ebp + 0x18], eax
+		LBL_DRAW_PAIRS:
+			mov edi, dword ptr [ebp + 0x10]
+			mov ebx, dword ptr [ebp + 0x2C]
+			mov ecx, dword ptr [ebp + 0x28]
+			mov edx, dword ptr [ebp + 0x24]
+			mov eax, dword ptr [ebp + 0x18]
+			and eax, eax
+			je LBL_DRAW_TAIL
+		LBL_PAIR_LOOP:
+			push eax
+			mov esi, ebx
+			shr esi, 11
+			mov eax, ecx
+			and eax, 0xF800
+			shr eax, 5
+			add esi, eax
+			mov eax, edx
+			and eax, 0xF800
+			add eax, esi
+			push ax
+			shl eax, 16
+			pop ax
+			mov dword ptr [edi], eax
+			add edi, 4
+			add ebx, dword ptr [ebp + 0x20]
+			add ecx, dword ptr [ebp - 4]
+			add edx, dword ptr [ebp + 8]
+			pop eax
+			dec eax
+			jne LBL_PAIR_LOOP
+		LBL_DRAW_TAIL:
+			mov eax, dword ptr [ebp + 0x1C]
+			and eax, 1
+			je LBL_SPAN_DONE
+			mov esi, ebx
+			and esi, 0xF800
+			shr esi, 11
+			mov eax, ecx
+			and eax, 0xF800
+			shr eax, 5
+			add esi, eax
+			mov eax, edx
+			and eax, 0xF800
+			add eax, esi
+			mov word ptr [edi], ax
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			mov esp, ebp
+			pop ebp
+			ret
+		}
+	}
 
 	// STUB: TOY2 0x004C4BE0
 	int32_t UnkFunc49(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
 
-	// STUB: TOY2 0x004C4E00
-	int32_t UnkFunc52(float* a1, float* a2, int32_t a3, int32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, uint32_t a8, uint32_t a9, uint32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C4E00 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc52(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov esi, eax
+			mov eax, dword ptr [ebp + 0xC]
+			fld dword ptr [eax]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 8], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov eax, dword ptr [ebp + 0x24]
+			mov ebx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0xC], edi
+			mov edi, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 8], esi
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CALCULATE_SLOPES
+		LBL_ORDERED_ENDPOINTS:
+			mov edi, dword ptr [ebp + 0x20]
+			mov ebx, dword ptr [ebp + 0x1C]
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CALCULATE_SLOPES:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x18], eax
+			mov eax, ebx
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, edi
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0xC]
+			cdq
+			fld dword ptr [ecx]
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+			call _ftol
+			mov edx, dword ptr [ebp + 0x10]
+			lea eax, [edx + eax * 2]
+			mov dword ptr [ebp + 0x10], eax
+			mov edi, g_unkE4D7B8
+			mov eax, dword ptr [ebp + 8]
+		LBL_PIXEL_LOOP:
+			push eax
+			mov ecx, dword ptr [ebp + 0x10]
+			mov eax, dword ptr [ecx]
+			push eax
+			mov ecx, dword ptr [ebp + 0x2C]
+			shr ecx, 11
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_BLUE_READY
+			mov eax, 0x1F
+		LBL_BLUE_READY:
+			mov dword ptr [ebp + 0xC], eax
+			mov ecx, dword ptr [ebp + 0x28]
+			shr ecx, 11
+			pop eax
+			push eax
+			shr eax, 5
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_GREEN_READY
+			mov eax, 0x1F
+		LBL_GREEN_READY:
+			shl eax, 5
+			add dword ptr [ebp + 0xC], eax
+			mov ecx, dword ptr [ebp + 0x24]
+			shr ecx, 11
+			pop eax
+			shr eax, 10
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_RED_READY
+			mov eax, 0x1F
+		LBL_RED_READY:
+			shl eax, 10
+			add eax, dword ptr [ebp + 0xC]
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add dword ptr [ebp + 0x10], 2
+			mov eax, dword ptr [ebp + 0x18]
+			add dword ptr [ebp + 0x24], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			add dword ptr [ebp + 0x28], eax
+			mov eax, dword ptr [ebp + 0x20]
+			add dword ptr [ebp + 0x2C], eax
+			pop eax
+			dec eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			pop ebp
+			ret
+		}
+	}
 
-	// STUB: TOY2 0x004C4F30
-	int32_t UnkFunc36(float* a1, float* a2, int32_t a3, int32_t a4, uint32_t a5, uint32_t a6, uint32_t a7, uint32_t a8, uint32_t a9, uint32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C4F30 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc36(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov esi, eax
+			mov eax, dword ptr [ebp + 0xC]
+			fld dword ptr [eax]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 8], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov eax, dword ptr [ebp + 0x24]
+			mov ebx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0xC], edi
+			mov edi, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 8], esi
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CALCULATE_SLOPES
+		LBL_ORDERED_ENDPOINTS:
+			mov edi, dword ptr [ebp + 0x20]
+			mov ebx, dword ptr [ebp + 0x1C]
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CALCULATE_SLOPES:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x18], eax
+			mov eax, ebx
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, edi
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0xC]
+			cdq
+			fld dword ptr [ecx]
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+			call _ftol
+			mov edx, dword ptr [ebp + 0x10]
+			lea eax, [edx + eax * 2]
+			mov dword ptr [ebp + 0x10], eax
+			mov edi, g_unkE4D7B8
+			mov eax, dword ptr [ebp + 8]
+		LBL_PIXEL_LOOP:
+			push eax
+			mov ecx, dword ptr [ebp + 0x10]
+			mov eax, dword ptr [ecx]
+			push eax
+			mov ecx, dword ptr [ebp + 0x2C]
+			shr ecx, 11
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_BLUE_READY
+			mov eax, 0x1F
+		LBL_BLUE_READY:
+			mov dword ptr [ebp + 0xC], eax
+			mov ecx, dword ptr [ebp + 0x28]
+			shr ecx, 11
+			pop eax
+			push eax
+			shr eax, 6
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_GREEN_READY
+			mov eax, 0x1F
+		LBL_GREEN_READY:
+			shl eax, 6
+			add dword ptr [ebp + 0xC], eax
+			mov ecx, dword ptr [ebp + 0x24]
+			shr ecx, 11
+			pop eax
+			shr eax, 11
+			and eax, 0x1F
+			add eax, ecx
+			cmp eax, 0x20
+			jl LBL_RED_READY
+			mov eax, 0x1F
+		LBL_RED_READY:
+			shl eax, 11
+			add eax, dword ptr [ebp + 0xC]
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add dword ptr [ebp + 0x10], 2
+			mov eax, dword ptr [ebp + 0x18]
+			add dword ptr [ebp + 0x24], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			add dword ptr [ebp + 0x28], eax
+			mov eax, dword ptr [ebp + 0x20]
+			add dword ptr [ebp + 0x2C], eax
+			pop eax
+			dec eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			pop ebp
+			ret
+		}
+	}
 
 	// STUB: TOY2 0x004C5060
 	int32_t UnkFunc41(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
@@ -924,11 +1532,273 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C5280
 	int32_t UnkFunc50(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
 
-	// STUB: TOY2 0x004C5490
-	int32_t UnkFunc53(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C5490 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc53(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov esi, eax
+			mov eax, dword ptr [ebp + 0xC]
+			fld dword ptr [eax]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 8], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov eax, dword ptr [ebp + 0x24]
+			mov ebx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0xC], edi
+			mov edi, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 8], esi
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CALCULATE_SLOPES
+		LBL_ORDERED_ENDPOINTS:
+			mov edi, dword ptr [ebp + 0x20]
+			mov ebx, dword ptr [ebp + 0x1C]
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CALCULATE_SLOPES:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x18], eax
+			mov eax, ebx
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, edi
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0xC]
+			cdq
+			fld dword ptr [ecx]
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+			call _ftol
+			mov edx, dword ptr [ebp + 0x10]
+			lea eax, [edx + eax * 2]
+			mov dword ptr [ebp + 0x10], eax
+			mov edi, g_unkE4D7B8
+			mov eax, dword ptr [ebp + 8]
+		LBL_PIXEL_LOOP:
+			push eax
+			mov ecx, dword ptr [ebp + 0x10]
+			mov ax, word ptr [ecx]
+			push eax
+			and eax, 0x1F
+			movzx ecx, word ptr [ebp + 0x2C]
+			shr ecx, 11
+			sub eax, ecx
+			jns LBL_BLUE_READY
+			xor eax, eax
+		LBL_BLUE_READY:
+			mov dword ptr [ebp + 0xC], eax
+			movzx ecx, word ptr [ebp + 0x28]
+			shr ecx, 11
+			pop eax
+			push eax
+			shr eax, 5
+			and eax, 0x1F
+			sub eax, ecx
+			jns LBL_GREEN_READY
+			xor eax, eax
+		LBL_GREEN_READY:
+			shl eax, 5
+			add dword ptr [ebp + 0xC], eax
+			movzx ecx, word ptr [ebp + 0x24]
+			shr ecx, 11
+			pop eax
+			shr eax, 10
+			and eax, 0x1F
+			sub eax, ecx
+			jns LBL_RED_READY
+			xor eax, eax
+		LBL_RED_READY:
+			shl eax, 10
+			add eax, dword ptr [ebp + 0xC]
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add dword ptr [ebp + 0x10], 2
+			mov eax, dword ptr [ebp + 0x18]
+			add dword ptr [ebp + 0x24], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			add dword ptr [ebp + 0x28], eax
+			mov eax, dword ptr [ebp + 0x20]
+			add dword ptr [ebp + 0x2C], eax
+			pop eax
+			dec eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			pop ebp
+			ret
+		}
+	}
 
-	// STUB: TOY2 0x004C55B0
-	int32_t UnkFunc37(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C55B0 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc37(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebp
+			mov ebp, esp
+			push ebx
+			push esi
+			push edi
+			mov edi, dword ptr [ebp + 8]
+			fld dword ptr [edi]
+			call _ftol
+			mov esi, eax
+			mov eax, dword ptr [ebp + 0xC]
+			fld dword ptr [eax]
+			call _ftol
+			sub esi, eax
+			mov dword ptr [ebp + 8], esi
+			je LBL_SPAN_DONE
+			test esi, esi
+			jge LBL_ORDERED_ENDPOINTS
+			mov ecx, dword ptr [ebp + 0x18]
+			mov eax, dword ptr [ebp + 0x24]
+			mov ebx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x24], ecx
+			mov ecx, dword ptr [ebp + 0x1C]
+			mov dword ptr [ebp + 0xC], edi
+			mov edi, dword ptr [ebp + 0x2C]
+			mov dword ptr [ebp + 0x28], ecx
+			mov ecx, dword ptr [ebp + 0x20]
+			neg esi
+			mov dword ptr [ebp + 8], esi
+			mov dword ptr [ebp + 0x2C], ecx
+			jmp LBL_CALCULATE_SLOPES
+		LBL_ORDERED_ENDPOINTS:
+			mov edi, dword ptr [ebp + 0x20]
+			mov ebx, dword ptr [ebp + 0x1C]
+			mov eax, dword ptr [ebp + 0x18]
+		LBL_CALCULATE_SLOPES:
+			cmp esi, 1
+			jl LBL_SPAN_DONE
+			mov ecx, dword ptr [ebp + 0x24]
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0x2C]
+			cdq
+			idiv esi
+			mov edx, dword ptr [ebp + 0x28]
+			mov dword ptr [ebp + 0x18], eax
+			mov eax, ebx
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [ebp + 0x1C], eax
+			mov eax, edi
+			sub eax, ecx
+			mov ecx, dword ptr [ebp + 0xC]
+			cdq
+			fld dword ptr [ecx]
+			idiv esi
+			mov dword ptr [ebp + 0x20], eax
+			call _ftol
+			mov edx, dword ptr [ebp + 0x10]
+			lea eax, [edx + eax * 2]
+			mov dword ptr [ebp + 0x10], eax
+			mov edi, g_unkE4D7B8
+			mov eax, dword ptr [ebp + 8]
+		LBL_PIXEL_LOOP:
+			push eax
+			mov ecx, dword ptr [ebp + 0x10]
+			mov ax, word ptr [ecx]
+			push eax
+			and eax, 0x1F
+			movzx ecx, word ptr [ebp + 0x2C]
+			shr ecx, 11
+			sub eax, ecx
+			jns LBL_BLUE_READY
+			xor eax, eax
+		LBL_BLUE_READY:
+			mov dword ptr [ebp + 0xC], eax
+			movzx ecx, word ptr [ebp + 0x28]
+			shr ecx, 11
+			pop eax
+			push eax
+			shr eax, 6
+			and eax, 0x1F
+			sub eax, ecx
+			jns LBL_GREEN_READY
+			xor eax, eax
+		LBL_GREEN_READY:
+			shl eax, 6
+			add dword ptr [ebp + 0xC], eax
+			movzx ecx, word ptr [ebp + 0x24]
+			shr ecx, 11
+			pop eax
+			shr eax, 11
+			and eax, 0x1F
+			sub eax, ecx
+			jns LBL_RED_READY
+			xor eax, eax
+		LBL_RED_READY:
+			shl eax, 11
+			add eax, dword ptr [ebp + 0xC]
+			mov ecx, dword ptr [ebp + 0x10]
+			mov word ptr [ecx], ax
+			add dword ptr [ebp + 0x10], 2
+			mov eax, dword ptr [ebp + 0x18]
+			add dword ptr [ebp + 0x24], eax
+			mov eax, dword ptr [ebp + 0x1C]
+			add dword ptr [ebp + 0x28], eax
+			mov eax, dword ptr [ebp + 0x20]
+			add dword ptr [ebp + 0x2C], eax
+			pop eax
+			dec eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebx
+			pop ebp
+			ret
+		}
+	}
 
 	// STUB: TOY2 0x004C56D0
 	int32_t UnkFunc42(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
@@ -939,11 +1809,292 @@ namespace SoftwareRenderer
 	// STUB: TOY2 0x004C5AC0
 	int32_t UnkFunc51(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
 
-	// STUB: TOY2 0x004C5D80
-	int32_t UnkFunc56(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C5D80 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc56(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebx
+			push ebp
+			push esi
+			push edi
+			mov edi, dword ptr [esp + 0x14]
+			fld dword ptr [edi]
+			call _ftol
+			mov ebx, dword ptr [esp + 0x18]
+			mov esi, eax
+			fld dword ptr [ebx]
+			call _ftol
+			sub esi, eax
+			jns LBL_FORWARD_SPAN
+			mov eax, dword ptr [esp + 0x30]
+			mov ecx, dword ptr [esp + 0x24]
+			mov edx, dword ptr [esp + 0x28]
+			mov ebp, dword ptr [esp + 0x2C]
+			mov dword ptr [esp + 0x24], eax
+			mov eax, dword ptr [esp + 0x34]
+			mov ebx, edi
+			mov edi, dword ptr [esp + 0x38]
+			neg esi
+			mov dword ptr [esp + 0x30], ecx
+			mov dword ptr [esp + 0x34], edx
+			mov dword ptr [esp + 0x28], eax
+			mov dword ptr [esp + 0x38], ebp
+			jmp LBL_CALCULATE_SLOPES
+		LBL_FORWARD_SPAN:
+			test esi, esi
+			je LBL_SPAN_DONE
+			mov ebp, dword ptr [esp + 0x38]
+			mov edi, dword ptr [esp + 0x2C]
+		LBL_CALCULATE_SLOPES:
+			fld dword ptr [ebx]
+			call _ftol
+			mov ecx, dword ptr [esp + 0x1C]
+			lea ebx, [ecx + eax * 2]
+			mov eax, dword ptr [esp + 0x24]
+			sub eax, dword ptr [esp + 0x30]
+			cdq
+			idiv esi
+			mov edx, dword ptr [esp + 0x34]
+			mov dword ptr [esp + 0x2C], eax
+			mov eax, dword ptr [esp + 0x28]
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [esp + 0x28], eax
+			mov eax, edi
+			sub eax, ebp
+			cdq
+			idiv esi
+			test esi, esi
+			mov dword ptr [esp + 0x14], eax
+			jle LBL_SPAN_DONE
+			mov dword ptr [esp + 0x24], esi
+		LBL_PIXEL_LOOP:
+			mov edi, g_vertexAlpha
+			xor ecx, ecx
+			mov cx, word ptr [ebx]
+			mov eax, g_vertexAlphaComplement
+			mov esi, ecx
+			mov edx, edi
+			and esi, 0x1F
+			imul edx, ebp
+			shl esi, 3
+			imul esi, eax
+			shr edx, 8
+			add esi, edx
+			cmp esi, 0xF800
+			jle LBL_BLUE_READY
+			mov esi, 0xF800
+		LBL_BLUE_READY:
+			mov edx, ecx
+			mov ebp, edi
+			imul ebp, dword ptr [esp + 0x34]
+			shr edx, 2
+			and edx, 0xF8
+			imul edx, eax
+			shr ebp, 8
+			add edx, ebp
+			sar esi, 11
+			cmp edx, 0xF800
+			jle LBL_GREEN_READY
+			mov edx, 0xF800
+		LBL_GREEN_READY:
+			shr ecx, 7
+			and ecx, 0xF8
+			imul ecx, eax
+			mov eax, dword ptr [esp + 0x30]
+			imul edi, eax
+			shr edi, 8
+			sar edx, 6
+			add ecx, edi
+			and edx, 0x3E0
+			cmp ecx, 0xF800
+			jle LBL_RED_READY
+			mov ecx, 0xF800
+		LBL_RED_READY:
+			sar ecx, 1
+			and ecx, 0x7C00
+			mov ebp, dword ptr [esp + 0x38]
+			add ecx, esi
+			mov esi, dword ptr [esp + 0x2C]
+			add eax, esi
+			add ecx, edx
+			mov edx, dword ptr [esp + 0x34]
+			mov dword ptr [esp + 0x30], eax
+			mov eax, dword ptr [esp + 0x28]
+			mov word ptr [ebx], cx
+			mov ecx, dword ptr [esp + 0x14]
+			add edx, eax
+			mov eax, dword ptr [esp + 0x24]
+			add ebx, 2
+			add ebp, ecx
+			dec eax
+			mov dword ptr [esp + 0x34], edx
+			mov dword ptr [esp + 0x38], ebp
+			mov dword ptr [esp + 0x24], eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebp
+			pop ebx
+			ret
+		}
+	}
 
-	// STUB: TOY2 0x004C5F00
-	int32_t UnkFunc38(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }
+	// FUNCTION: TOY2 0x004C5F00 [MATCHED]
+	__declspec(naked) void __cdecl UnkFunc38(
+		BVertex* edgeA,
+		BVertex* edgeB,
+		uint16_t* row,
+		uint32_t* texture,
+		int32_t redA,
+		int32_t greenA,
+		int32_t blueA,
+		int32_t redB,
+		int32_t greenB,
+		int32_t blueB)
+	{
+		__asm
+		{
+			push ebx
+			push ebp
+			push esi
+			push edi
+			mov edi, dword ptr [esp + 0x14]
+			fld dword ptr [edi]
+			call _ftol
+			mov ebx, dword ptr [esp + 0x18]
+			mov esi, eax
+			fld dword ptr [ebx]
+			call _ftol
+			sub esi, eax
+			jns LBL_FORWARD_SPAN
+			mov eax, dword ptr [esp + 0x30]
+			mov ecx, dword ptr [esp + 0x24]
+			mov edx, dword ptr [esp + 0x28]
+			mov ebp, dword ptr [esp + 0x2C]
+			mov dword ptr [esp + 0x24], eax
+			mov eax, dword ptr [esp + 0x34]
+			mov ebx, edi
+			mov edi, dword ptr [esp + 0x38]
+			neg esi
+			mov dword ptr [esp + 0x30], ecx
+			mov dword ptr [esp + 0x34], edx
+			mov dword ptr [esp + 0x28], eax
+			mov dword ptr [esp + 0x38], ebp
+			jmp LBL_CALCULATE_SLOPES
+		LBL_FORWARD_SPAN:
+			test esi, esi
+			je LBL_SPAN_DONE
+			mov ebp, dword ptr [esp + 0x38]
+			mov edi, dword ptr [esp + 0x2C]
+		LBL_CALCULATE_SLOPES:
+			fld dword ptr [ebx]
+			call _ftol
+			mov ecx, dword ptr [esp + 0x1C]
+			lea ebx, [ecx + eax * 2]
+			mov eax, dword ptr [esp + 0x24]
+			sub eax, dword ptr [esp + 0x30]
+			cdq
+			idiv esi
+			mov edx, dword ptr [esp + 0x34]
+			mov dword ptr [esp + 0x2C], eax
+			mov eax, dword ptr [esp + 0x28]
+			sub eax, edx
+			cdq
+			idiv esi
+			mov dword ptr [esp + 0x28], eax
+			mov eax, edi
+			sub eax, ebp
+			cdq
+			idiv esi
+			test esi, esi
+			mov dword ptr [esp + 0x14], eax
+			jle LBL_SPAN_DONE
+			mov dword ptr [esp + 0x24], esi
+		LBL_PIXEL_LOOP:
+			mov edi, g_vertexAlpha
+			xor ecx, ecx
+			mov cx, word ptr [ebx]
+			mov eax, g_vertexAlphaComplement
+			mov esi, ecx
+			mov edx, edi
+			and esi, 0x1F
+			imul edx, ebp
+			shl esi, 3
+			imul esi, eax
+			shr edx, 8
+			add esi, edx
+			cmp esi, 0xF800
+			jle LBL_BLUE_READY
+			mov esi, 0xF800
+		LBL_BLUE_READY:
+			mov edx, ecx
+			mov ebp, edi
+			imul ebp, dword ptr [esp + 0x34]
+			shr edx, 3
+			and edx, 0xF8
+			imul edx, eax
+			shr ebp, 8
+			add edx, ebp
+			sar esi, 11
+			cmp edx, 0xF800
+			jle LBL_GREEN_READY
+			mov edx, 0xF800
+		LBL_GREEN_READY:
+			shr ecx, 8
+			and ecx, 0xF8
+			imul ecx, eax
+			mov eax, dword ptr [esp + 0x30]
+			imul edi, eax
+			shr edi, 8
+			sar edx, 5
+			add ecx, edi
+			and edx, 0x7C0
+			cmp ecx, 0xF800
+			jle LBL_RED_READY
+			mov ecx, 0xF800
+		LBL_RED_READY:
+			and ecx, 0xF800
+			mov ebp, dword ptr [esp + 0x38]
+			add ecx, esi
+			mov esi, dword ptr [esp + 0x2C]
+			add eax, esi
+			add ecx, edx
+			mov edx, dword ptr [esp + 0x34]
+			mov dword ptr [esp + 0x30], eax
+			mov eax, dword ptr [esp + 0x28]
+			mov word ptr [ebx], cx
+			mov ecx, dword ptr [esp + 0x14]
+			add edx, eax
+			mov eax, dword ptr [esp + 0x24]
+			add ebx, 2
+			add ebp, ecx
+			dec eax
+			mov dword ptr [esp + 0x34], edx
+			mov dword ptr [esp + 0x38], ebp
+			mov dword ptr [esp + 0x24], eax
+			jne LBL_PIXEL_LOOP
+		LBL_SPAN_DONE:
+			pop edi
+			pop esi
+			pop ebp
+			pop ebx
+			ret
+		}
+	}
 
 	// STUB: TOY2 0x004C6080
 	int32_t UnkFunc44(float* a1, float* a2, int32_t a3, int32_t a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8, int32_t a9, int32_t a10) { return 0; }

@@ -770,8 +770,52 @@ namespace Renderer
 		g_lastFrameTimestamp = Nu3D::GetHighResolutionTime();
 	}
 
-	// FUNCTION: TOY2 0x004C2080
-	int32_t ConvertRGBATo16Bit(RGBA color) { return 0; }
+	// FUNCTION: TOY2 0x004C2080 [MATCHED]
+	__declspec(naked) int32_t ConvertRGBATo16Bit(RGBA color)
+	{
+		using SoftwareRenderer::g_pixelMode;
+		// The full EAX result includes the incoming high word of ESI.
+		__asm
+		{
+			mov eax, g_pixelMode
+			push esi
+			test eax, eax
+			mov al, byte ptr [esp + 0xA]
+			jne LBL_NONZERO_MODE
+			mov ecx, dword ptr [esp + 8]
+			shr al, 3
+			mov dl, ch
+			and cl, 0xF8
+			movzx si, al
+			and dl, 0xF8
+			xor ax, ax
+			movzx cx, cl
+			mov al, dl
+			shl eax, 2
+			shl ecx, 7
+			add eax, ecx
+			add eax, esi
+			pop esi
+			ret
+		LBL_NONZERO_MODE:
+			mov ecx, dword ptr [esp + 8]
+			shr al, 3
+			mov dl, ch
+			and cl, 0xF8
+			movzx si, al
+			and dl, 0xF8
+			xor ax, ax
+			mov al, dl
+			xor edx, edx
+			mov dh, cl
+			shl eax, 3
+			mov ecx, edx
+			add eax, ecx
+			add eax, esi
+			pop esi
+			ret
+		}
+	}
 
 	// FUNCTION: TOY2 0x004B37B0 [MATCHED]
 	RGBA ApplyGammaCorrection(RGBA color)

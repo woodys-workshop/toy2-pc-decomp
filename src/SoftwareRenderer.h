@@ -16,6 +16,9 @@ namespace Renderer
 
 namespace SoftwareRenderer
 {
+	struct BVertex;
+	struct BPolygon;
+
 	// a triangle waiting to be drawn, they get sorted into 1024 buckets by depth
 	struct SortedTriangle
 	{
@@ -84,6 +87,7 @@ namespace SoftwareRenderer
 	extern int32_t g_leftOffset;
 	extern int32_t g_rightOffset;
 	extern int32_t g_bitsPerPixel;
+	extern int32_t g_pixelMode;
 	extern D3DMATRIX* g_viewTransform;
 	extern D3DMATRIX* g_projectionTransform;
 	extern SortedTriangle* g_depthBuckets[1024];
@@ -104,6 +108,8 @@ namespace SoftwareRenderer
 	void UnkFunc31();
 	void UnkFunc32();
 	void UnkFunc33();
+	void UnkFunc34(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band);
+	void UnkFunc35(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band);
 	void UnkFunc7();
 	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ);
 
