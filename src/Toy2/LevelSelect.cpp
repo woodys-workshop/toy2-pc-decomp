@@ -119,7 +119,7 @@ namespace Toy2
 		float g_arrowZoomProgress;
 
 		// GLOBAL: TOY2 0x004F6878
-		char* g_jumpToSelectTxt = "jump to select";
+		char g_jumpToSelectTxt[] = "jump to select";
 
 		// FUNCTION: TOY2 0x00452170
 		void ResetCursor() { g_levelSelectCursor = 0; }
@@ -371,7 +371,7 @@ namespace Toy2
 			int32_t tokensHeld = (tokenProgress >> 16) & 0xFF;
 			int32_t tokensNeeded = (tokenProgress >> 8) & 0xFF;
 
-			if (tokenProgress > 14u)
+			if (maxUnlockedLevel > 14)
 				maxUnlockedLevel = 14;
 
 			int32_t sceneTimer = 0;
@@ -631,7 +631,8 @@ namespace Toy2
 						approachBlend = 0;
 				}
 
-				Toy2::LevelSelect::TurnTowardLookDir(&levelSelectCam, 0x2000 / (sqrt(distSquared) + 256));
+				int32_t cameraDistance = (int32_t)sqrt(distSquared);
+				Toy2::LevelSelect::TurnTowardLookDir(&levelSelectCam, 0x2000 / (cameraDistance + 256));
 
 				cameraTransform.pos.x += (levelSelectCam.pos.x - cameraTransform.pos.x) >> 1;
 				cameraTransform.pos.y += (levelSelectCam.pos.y - cameraTransform.pos.y) >> 1;

@@ -565,7 +565,7 @@ namespace Toy2
 
 				do
 				{
-					if (slot->state == 1 && ((1 << slotIdx) & SaveManager::g_save0Data.tokens[g_levelFileIndex]) == 0 && ShowTokenSparkle())
+					if (slot->state == 1 && ((1 << slotIdx) & SaveManager::g_save0Data.tokens[g_levelFileIndex]) == 0 && ShowTokenSparkle(slot->linkId))
 					{
 						Nu3D::Link::GetCurrentPosFixed(slot->linkId, &spawnPos);
 
@@ -666,7 +666,7 @@ namespace Toy2
 								{
 									case -1:
 										Gadget::g_unk830D48 = -Gadget::g_unk830D48;
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// a heart
 									case 0:
@@ -676,14 +676,14 @@ namespace Toy2
 										if (g_buzzActor.health > 14)
 											g_buzzActor.health = 14;
 
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// the cosmic shield
 									case 1:
 										CosmicShield(data);
 										soundId = -1;
 										hide = 0;
-										goto LABEL_64;
+										goto LBL_HIDE_PICKUP;
 
 									// a token
 									case 2: {
@@ -696,7 +696,7 @@ namespace Toy2
 											++slotIdx;
 
 											if (slot >= &g_pickupSlots[5])
-												goto LABEL_63;
+												goto LBL_SET_PICKUP_SOUND;
 										}
 
 										g_pickupSlots[slotIdx].state = 2;
@@ -704,7 +704,7 @@ namespace Toy2
 										g_unk830CC4 = 1;
 
 										SaveManager::g_save0Data.tokens[g_levelFileIndex] |= 1 << slotIdx;
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 									}
 
 									// an extra life
@@ -714,19 +714,19 @@ namespace Toy2
 										if (g_buzzActor.lives < 9)
 											++g_buzzActor.lives;
 
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// a pizza planet token of the level
 									case 4:
 										Token(data->props.linkId);
 										soundId = -1;
 										hide = 2;
-										goto LABEL_64;
+										goto LBL_HIDE_PICKUP;
 
 									// the rocket boots
 									case 5:
 										Buzz::ActivateRocketBoots(data);
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// the grapple
 									case 6:
@@ -761,7 +761,7 @@ namespace Toy2
 												Particles::SpawnCollectSparkle(pickupX32, pickupY32, pickupZ, 50);
 										}
 
-										goto LABEL_55;
+										goto LBL_RETAIN_TIMED_PICKUP;
 
 									// the disc launcher
 									case 7:
@@ -795,7 +795,7 @@ namespace Toy2
 												Particles::SpawnCollectSparkle(pickupX32, pickupY32, pickupZ, 50);
 										}
 
-										goto LABEL_55;
+										goto LBL_RETAIN_TIMED_PICKUP;
 
 									// the gravity boots
 									case 8:
@@ -826,22 +826,22 @@ namespace Toy2
 												Particles::SpawnCollectSparkle(pickupX32, pickupY32, pickupZ, 50);
 										}
 
-									LABEL_55:
+									LBL_RETAIN_TIMED_PICKUP:
 										g_unk830C90 = 400;
 										g_pendingPickupY = data->pos.y;
 										g_pendingPickup = data;
 
 										Nu3D::Link::SetScaleFromFixedOffsets(data->props.linkId, 0, 0, 0);
-										goto LABEL_64;
+										goto LBL_HIDE_PICKUP;
 
 									case 9:
 										++g_unk830D4C;
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// the green gun
 									case 10:
 										Buzz::g_greenGunCharge = 1200;
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 
 									// a coin
 									case 16: {
@@ -854,20 +854,20 @@ namespace Toy2
 										if (coinsCollected == 50)
 											AudioManager::PlaySoundEffect(79, 0);
 
-										goto LABEL_63;
+										goto LBL_SET_PICKUP_SOUND;
 									}
 
 									default:
-										goto LABEL_64;
+										goto LBL_HIDE_PICKUP;
 								}
 
-							LABEL_63:
+							LBL_SET_PICKUP_SOUND:
 								soundId = -1;
-							LABEL_64:
+							LBL_HIDE_PICKUP:
 								if (hide)
 								{
 									if (hide != 1)
-										goto LABEL_68;
+										goto LBL_NEXT_PICKUP;
 
 									Nu3D::Link::SetScaleFromFixedOffsets(data->props.linkId, 0, 0, 0);
 								}
@@ -877,7 +877,7 @@ namespace Toy2
 						}
 					}
 
-				LABEL_68:
+				LBL_NEXT_PICKUP:
 					++data;
 
 					if (! --remaining)
@@ -963,7 +963,7 @@ namespace Toy2
 				}
 				else if (g_unk830CC4 != 2)
 				{
-				LABEL_97:
+				LBL_UPDATE_TOKEN_CUTSCENE:
 					if (state == 9)
 					{
 						Camera::g_cutsceneTimer = 1000;
@@ -1034,7 +1034,7 @@ namespace Toy2
 				state = g_unk830CC4;
 
 				g_unk830C94 = 0;
-				goto LABEL_97;
+				goto LBL_UPDATE_TOKEN_CUTSCENE;
 			}
 		}
 	}

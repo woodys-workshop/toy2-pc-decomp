@@ -70,6 +70,7 @@
 #include "RawLoader.h"
 
 #include <WINDOWS.H>
+#include <STDDEF.H>
 #include <STDIO.H>
 #include <STRING.H>
 #include <STDLIB.H>
@@ -231,8 +232,8 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00500A58
 	SectorBackdropTexIdTable g_sectorBackdropTexTable = {
-		{ 36, 40, 41, 42, 43, 44, 45, 46, 47, 32 },
-		{ 88, 89, 90, 91, 92, 93, 94, 95 },
+		{ 36, 40, 41, 42, 43, 44, 45, 46, 47 },
+		{ 32, 88, 89, 90, 91, 92, 93, 94, 95 },
 	};
 
 	// GLOBAL: TOY2 0x00534550
@@ -330,7 +331,7 @@ namespace Toy2
 	int32_t g_unk830E38;
 
 	// GLOBAL: TOY2 0x00830D4C
-	int16_t g_unk830D4C;
+	int32_t g_unk830D4C;
 
 	// GLOBAL: TOY2 0x0050A0BC
 	int32_t g_unk50A0BC;
@@ -833,7 +834,7 @@ namespace Toy2
 				int32_t timer = g_returnedToTitle || ! InputManager::g_curButtonsPressed ? g_attractModeInputTimer : 2 * g_attractModeTimer;
 				g_attractModeInputTimer = timer - Renderer::g_frameDelta;
 
-				if (timer - Renderer::g_frameDelta <= 0 || (InputManager::g_curButtonsPressed & INPUT_SECRET_MENU) != 0)
+				if (g_attractModeInputTimer <= 0 || (InputManager::g_curButtonsPressed & INPUT_SECRET_MENU) != 0)
 				{
 					g_isPaused = 0;
 					g_levelTransition = 4;
@@ -848,7 +849,7 @@ namespace Toy2
 				devCamState = g_devCamState - frameDelta;
 
 				g_devCamState -= frameDelta;
-				goto LABEL_13;
+				goto LBL_CHECK_DEV_CAMERA_TIMER;
 			}
 
 			// holding the camera right and visor buttons for a while is a cheat
@@ -856,7 +857,7 @@ namespace Toy2
 			{
 				g_devCamState = 3780;
 
-				goto LABEL_25;
+				goto LBL_RESTORE_PAUSED_CAMERA;
 			}
 
 			devCamState = g_devCamState - frameDelta;
@@ -864,11 +865,11 @@ namespace Toy2
 
 			if (devCamState > 3600)
 			{
-			LABEL_13:
+			LBL_CHECK_DEV_CAMERA_TIMER:
 				if (devCamState > 0)
-					goto LABEL_25;
+					goto LBL_RESTORE_PAUSED_CAMERA;
 
-				goto LABEL_14;
+				goto LBL_ORBIT_PAUSED_CAMERA;
 			}
 
 			if (g_buzzActor.coinsCollected == 7)
@@ -884,7 +885,7 @@ namespace Toy2
 				g_devCamState = 0;
 			}
 
-		LABEL_14:
+		LBL_ORBIT_PAUSED_CAMERA:
 			if ((Camera::g_inCutscene & 1) == 0 && ! Camera::g_cameraState)
 			{
 				startPos.pos.x = g_buzzActor.posAngles.pos.x;
@@ -908,10 +909,10 @@ namespace Toy2
 				startPos.pos.y += displacement.pos.y;
 				startPos.pos.z += displacement.pos.z;
 
-				goto LABEL_28;
+				goto LBL_MOVE_PAUSED_CAMERA;
 			}
 
-		LABEL_25:
+		LBL_RESTORE_PAUSED_CAMERA:
 			x = g_unk830CB0.pos.x;
 			y = g_unk830CB0.pos.y;
 			z = g_unk830CB0.pos.z;
@@ -928,7 +929,7 @@ namespace Toy2
 
 			Camera::g_activeCameraTransform.angles.yaw += (angleDiff * frameDelta) / -16;
 
-		LABEL_28:
+		LBL_MOVE_PAUSED_CAMERA:
 			Camera::g_activeCameraTransform.pos.x += frameDelta * (Camera::g_activeCameraTransform.pos.x - x) / -16;
 			Camera::g_activeCameraTransform.pos.y += frameDelta * (Camera::g_activeCameraTransform.pos.y - y) / -16;
 			Camera::g_activeCameraTransform.pos.z += frameDelta * (Camera::g_activeCameraTransform.pos.z - z) / -16;
@@ -1532,8 +1533,10 @@ namespace Toy2
 			spawnFlag = 0;
 			tokenIndex = 0;
 			tintedOut = 0;
-			// $TODO: the frame counter is never initialised in the original, it starts as whatever was on the stack
+			// The retail frame seed is uninitialized.
+#ifdef APPLY_FIXES
 			frame = 0;
+#endif
 			g_randDatBufferPtr = g_randDatBuffer;
 			savedTokens[3] = (savedBits & 8u) >> 3;
 
@@ -1659,7 +1662,7 @@ namespace Toy2
 									if (++j >= 5)
 									{
 										tokenTimer -= Renderer::g_frameDelta;
-										goto LABEL_52;
+										goto LBL_SPAWN_SPARKLES;
 									}
 								}
 
@@ -1672,7 +1675,7 @@ namespace Toy2
 							tokenTimer -= Renderer::g_frameDelta;
 						}
 					}
-				LABEL_52:
+				LBL_SPAWN_SPARKLES:
 					if (spawnFlag)
 					{
 						rand = g_randDatBufferPtr;
@@ -1729,7 +1732,7 @@ namespace Toy2
 					if ((timer <= 180 && timer > 120) || (timer -= frameDelta, timer > 0))
 					{
 						if (timer > 23)
-							goto LABEL_72;
+							goto LBL_ADVANCE_FRAME;
 					}
 					else
 					{
@@ -1742,7 +1745,7 @@ namespace Toy2
 						frameDelta = Renderer::g_frameDelta;
 						tintedOut = 1;
 					}
-				LABEL_72:
+				LBL_ADVANCE_FRAME:
 					frame += frameDelta;
 
 					if (g_attractModeTimer >= 0)
@@ -2336,7 +2339,7 @@ namespace Toy2
 		char slotFileName[256];
 		char slotName[256];
 		char saveName[256];
-		char xOffsets[32];
+		int32_t xOffsets[8];
 
 		size_t slotNameSize;
 
@@ -2360,7 +2363,7 @@ namespace Toy2
 
 		// read the name of every save slot, and work out how far each one is pushed along the curve
 		size_t saveIndex = 0;
-		char* xOffset = xOffsets;
+		int32_t* xOffset = xOffsets;
 		SaveNameBuffer* saveNameBuffer = g_saveNameBuffers;
 
 		do
@@ -2389,14 +2392,16 @@ namespace Toy2
 				saveNameBuffer->name[0] = '\0';
 			}
 
-			*xOffset = (cos(saveIndex * 0.64269906 - 1.0) * 80.0);
+			*xOffset = (int32_t)(cos(saveIndex * 0.64269906f - 1.0) * 80.0);
 
 			++saveNameBuffer;
 
 			saveIndex = nextSaveIndex;
 
-			xOffset += 4;
+			++xOffset;
 		} while (saveNameBuffer < &g_saveNameBuffers[8]);
+
+		size_t selectedNameSize = saveIndex;
 
 		do
 		{
@@ -2466,8 +2471,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2528,8 +2533,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2537,7 +2542,7 @@ namespace Toy2
 
 						int32_t slot = 0;
 						int32_t slotY = 33;
-						char* slotXOffset = xOffsets;
+						int32_t* slotXOffset = xOffsets;
 						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
 
 						do
@@ -2553,7 +2558,7 @@ namespace Toy2
 							++nameBuffer;
 							++slot;
 							slotY += 23;
-							slotXOffset += 4;
+							++slotXOffset;
 						} while (nameBuffer < &g_saveNameBuffers[8]);
 
 						Renderer::DrawFormattedText(256, 25 * slot + 28, "jump:select  cancel:menu");
@@ -2585,12 +2590,12 @@ namespace Toy2
 
 								if (saveFile)
 								{
-									fread(&slotNameSize, 1, 4, saveFile);
+									fread(&selectedNameSize, 1, 4, saveFile);
 
-									if (slotNameSize)
+									if (selectedNameSize)
 									{
-										fread(slotName, 1, slotNameSize, saveFile);
-										slotName[slotNameSize] = 0;
+										fread(slotName, 1, selectedNameSize, saveFile);
+										slotName[selectedNameSize] = 0;
 									}
 
 									if (slotCursor == 98)
@@ -2624,8 +2629,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2633,7 +2638,7 @@ namespace Toy2
 
 						int32_t slot = 0;
 						int32_t slotY = 33;
-						char* slotXOffset = xOffsets;
+						int32_t* slotXOffset = xOffsets;
 						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
 
 						do
@@ -2649,7 +2654,7 @@ namespace Toy2
 							++nameBuffer;
 							++slot;
 							slotY += 23;
-							slotXOffset += 4;
+							++slotXOffset;
 						} while (nameBuffer < &g_saveNameBuffers[8]);
 
 						if (showSaveMenu)
@@ -2680,7 +2685,7 @@ namespace Toy2
 							{
 								int32_t tokenProgress = ComputeTokenProgress();
 
-								sprintf(saveName, "TOK %d LEV %d", (tokenProgress >> 16) & 0xFF, tokenProgress);
+								sprintf(saveName, "TOK %d LEV %d", (tokenProgress >> 16) & 0xFF, tokenProgress & 0xFF);
 								SaveManager::SaveToFile(slotCursor + 1, saveName);
 
 								saveMenuType = 3;
@@ -3569,8 +3574,8 @@ namespace Toy2
 			}
 			else
 			{
-				uint32_t l_textureId = g_sectorBackdropTexTable.secondary[sectorIdx - 1];
-				int32_t* l_id = &g_sectorBackdropTexTable.secondary[sectorIdx - 1];
+				uint32_t l_textureId = g_sectorBackdropTexTable.secondary[sectorIdx];
+				int32_t* l_id = &g_sectorBackdropTexTable.secondary[sectorIdx];
 
 				if (NGNLoader::GetTextureDataIndex(l_textureId))
 					g_nextBackdropId = *l_id;
@@ -4041,7 +4046,7 @@ namespace Toy2
 
 					if (caseOneFadeFrames <= 23)
 					{
-						if ((caseOneFadeFrames + Renderer::g_frameDelta) > 23)
+						if ((int32_t)(caseOneFadeFrames + Renderer::g_frameDelta) > 23)
 							Nu3D::Camera::SetTint(0, 0, 0, 12);
 					}
 
@@ -4053,7 +4058,7 @@ namespace Toy2
 
 				caseOneFadeFrames = 0;
 
-				if ((caseOneFadeFrames + Renderer::g_frameDelta) > 23)
+				if ((int32_t)(caseOneFadeFrames + Renderer::g_frameDelta) > 23)
 					Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 				goto LBL_CHECK_FADE_COMPLETE;
@@ -4107,9 +4112,9 @@ namespace Toy2
 								break;
 						}
 
-						if (caseSixFadeFrames)
+						if (caseSixFadeFrames <= 23)
 						{
-							if ((caseSixFadeFrames + Renderer::g_frameDelta) > 23)
+							if ((int32_t)(caseSixFadeFrames + Renderer::g_frameDelta) > 23)
 								Nu3D::Camera::SetTint(0, 0, 0, 12);
 						}
 
@@ -4128,7 +4133,7 @@ namespace Toy2
 
 					caseSixFadeFrames = 0;
 
-					if ((caseSixFadeFrames + Renderer::g_frameDelta) > 23)
+					if ((int32_t)(caseSixFadeFrames + Renderer::g_frameDelta) > 23)
 						Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 					goto LBL_CHECK_OR_COMPLETE;
@@ -4191,7 +4196,7 @@ namespace Toy2
 				defaultFadeFramesRemaining = 0;
 			}
 
-			if ((defaultFadeFramesRemaining + Renderer::g_frameDelta) > 23)
+			if ((int32_t)(defaultFadeFramesRemaining + Renderer::g_frameDelta) > 23)
 				Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 		} while (defaultFadeFramesRemaining);
@@ -4247,14 +4252,6 @@ namespace Toy2
 
 	namespace Ini
 	{
-		// a key name of the INI and the scancode it stands for
-		struct KeyNameEntry
-		{
-			uint16_t scancode;
-			uint16_t unk2;
-			uint16_t keyName;
-		};
-
 		// the position and the text of one entry of the key and gamepad configuration, ParseDefText replaces both
 		struct DefTextEntry
 		{
@@ -4296,6 +4293,13 @@ namespace Toy2
 			{ 0, 90, 86 },	   { 0, 91, 87 },	  { 0, 92, 88 },	 { 0, 93, 89 },			{ 0, 94, 90 },		{ 0, 64, 163 },		{ 0, 96, 37 },
 			{ 0, 97, 38 },	   { 0, 60, 42 },	  { 0, 95, 96 },	 { 65535, 65535, 255 },
 		};
+
+		STATIC_ASSERT(sizeof(uint16_t) == 2);
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+		STATIC_ASSERT(offsetof(KeyNameEntry, scancode) == 0);
+		STATIC_ASSERT(offsetof(KeyNameEntry, unk2) == 2);
+		STATIC_ASSERT(offsetof(KeyNameEntry, keyName) == 4);
+		STATIC_ASSERT(sizeof(g_keyNameTable) == 738);
 
 		// GLOBAL: TOY2 0x004EFFC8
 		DefTextEntry g_unk4EFFC8[14] = {
@@ -4343,14 +4347,14 @@ namespace Toy2
 			{ 130, 4, "load game", 0 },
 			{ 10, 200, "select game and press enter", 0 },
 			{ 10, 220, "press esc to go back", 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
 		};
 
 		// GLOBAL: TOY2 0x004F5524
@@ -7047,7 +7051,7 @@ namespace Toy2
 				}
 				else
 				{
-					Camera::g_inCutscene &= 0xFE;
+					Camera::g_inCutscene &= ~1;
 					g_buzzActor.actorFlags &= ~4;
 					g_unk830CC4 = 0;
 					Camera::g_cutsceneTimer = 0;
@@ -7163,22 +7167,22 @@ namespace Toy2
 					tokenColor = 0x80;
 				}
 
-				goto LABEL_78;
+				goto LBL_DRAW_TOKEN_ICON;
 			}
 
 			if (! g_isPaused)
 				AudioManager::PlaySoundEffect(94, 0);
 
-			if ((int16_t)g_unk830D4C < 0)
+			if (g_unk830D4C < 0)
 			{
-			LABEL_71:
+			LBL_DRAW_TOKEN_DIGITS:
 				digits = g_unk52AD64 - 100;
 				digitsLow = (g_unk52AD64 - 100) / 10;
 				Renderer::Sprite::DrawTile(offsetY + 243, slide6 + 24, 3, (g_unk52AD64 - 100) / 10);
 				Renderer::Sprite::DrawTile(offsetY + 257, slide6 + 24, 3, digits - 10 * digitsLow);
 				tokenColor = 0x80;
 
-			LABEL_78:
+			LBL_DRAW_TOKEN_ICON:
 				Renderer::Sprite::DrawColouredFixed(offsetX + 140, slide6 + 16, 26, 0, tokenColor, tokenColor, tokenColor);
 			}
 			else
@@ -7186,7 +7190,7 @@ namespace Toy2
 				offsetX = -20;
 				offsetY = -32;
 
-				if ((int16_t)g_unk830D4C == 5)
+				if (g_unk830D4C == 5)
 				{
 					pulse = g_tickAccumulators.tick32Acc & 0x1F;
 
@@ -7196,7 +7200,7 @@ namespace Toy2
 					tokenColor = 4 * pulse + 80;
 
 					if (g_tickAccumulators.tick32Acc < 0x10)
-						goto LABEL_70;
+						goto LBL_DRAW_QUEST_ICON;
 				}
 				else
 				{
@@ -7205,10 +7209,10 @@ namespace Toy2
 
 				Renderer::Sprite::DrawTile(302, slide6 + 32, 3, (int16_t)g_unk830D4C);
 
-			LABEL_70:
+			LBL_DRAW_QUEST_ICON:
 				Renderer::Sprite::DrawColouredFixed(160, slide6 + 16, 51, 0, tokenColor, tokenColor, tokenColor);
 
-				goto LABEL_71;
+				goto LBL_DRAW_TOKEN_DIGITS;
 			}
 		}
 
@@ -7260,7 +7264,7 @@ namespace Toy2
 				flicker = 0x80;
 			}
 
-			if (shown != 5 || g_tickAccumulators.tick32Acc >= 0x10)
+			if (shown != 5 || g_tickAccumulators.tick32Acc < 0x10)
 				Renderer::Sprite::DrawScaled(474 - (offset5 << 9) / 320, slide5 + 32, 20, shown + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
 
 			Renderer::Sprite::DrawColouredFixed(272 - offset5, slide5 + 16, 50, 0, flicker, flicker, flicker);
@@ -7445,11 +7449,11 @@ namespace Toy2
 					bossBar = 54;
 					g_unk52B7E0 = 54;
 
-					goto LABEL_153;
+					goto LBL_DRAW_BOSS_FILL;
 				}
 
 				if (g_unk52B7E0 > 10)
-					goto LABEL_153;
+					goto LBL_DRAW_BOSS_FILL;
 			}
 			else
 			{
@@ -7459,19 +7463,19 @@ namespace Toy2
 
 			if (g_tickAccumulators.tick16Acc >= 8)
 			{
-			LABEL_154:
+			LBL_DRAW_BOSS_FRAME:
 				Renderer::Sprite::DrawScaled(224, slide7Short + 16, 13, 0, 0x80, 0x80, 0x80, 96, 0x2000, 0x2000);
 
-				goto LABEL_155;
+				goto LBL_DRAW_DEMO_LABEL;
 			}
 
-		LABEL_153:
+		LBL_DRAW_BOSS_FILL:
 			Renderer::Sprite::DrawScaled(228, slide7Short + 20, 6, 0, 0x80, (uint8_t)(2 * bossBar), 0, 96, bossBar << 12, 0x4000);
 
-			goto LABEL_154;
+			goto LBL_DRAW_BOSS_FRAME;
 		}
 
-	LABEL_155:
+	LBL_DRAW_DEMO_LABEL:
 		if (g_demoMode == 1 && g_tickAccumulators.tick64Acc < 32)
 			Renderer::DrawString(112, "demo mode", 0x80, 0x80, 0, 0);
 	}
@@ -8830,7 +8834,7 @@ namespace Toy2
 	}
 
 	// FUNCTION: TOY2 0x004CD110
-	int32_t ShowTokenSparkle() { return 1; }
+	int32_t ShowTokenSparkle(int32_t linkId) { return 1; }
 }
 
 // $FUNC DEBUG
@@ -8867,6 +8871,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 
 	Toy2::g_levelFileIndex = 1;
 
+	memset(&D3DApp::g_windowData.stateCache, 0, sizeof(D3DApp::g_windowData.stateCache));
 	memset(&D3DApp::g_windowData, 0, sizeof(D3DApp::g_windowData));
 
 	D3DApp::g_windowData.hInstance = hInstance;
@@ -8904,19 +8909,18 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 	}
 
 	int32_t tokenCount = 0;
-	char* currentToken;
-	char* tokenEntries[8];
+	char* argv[10];
 
-	currentToken = strtok(cmdLine, " ");
+	argv[0] = strtok(cmdLine, " ");
 
-	if (currentToken)
+	if (argv[0])
 	{
 		tokenCount = 1;
 		char* nextToken = strtok(0, " ");
 
 		if (nextToken)
 		{
-			char** tokenArrayPtr = tokenEntries;
+			char** tokenArrayPtr = argv + 1;
 
 			do
 			{
@@ -8929,7 +8933,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 		}
 	}
 
-	Toy2::Run(tokenCount, &currentToken);
+	Toy2::Run(tokenCount, argv);
 
 	D3DApp::g_windowData.wndIsExiting = 1;
 
