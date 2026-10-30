@@ -59,10 +59,10 @@ namespace Nu3D
 			PortalBucket buckets[64];
 		};
 
-		extern uint8_t g_visibleAreaFlags[64];
+		extern int8_t g_visibleAreaFlags[64];
 		extern int32_t g_renderedScalerCount;
 		extern int32_t g_portalRecursionDepth;
-		extern uint8_t g_minPortalRecursionDepth;
+		extern int8_t g_minPortalRecursionDepth;
 		extern int32_t g_hiddenShapeId;
 		extern int32_t g_lastRenderableAreaIndex;
 		extern Link::DynamicScaler* g_portalMirrorScaler;
@@ -79,7 +79,7 @@ namespace Nu3D
 
 	namespace Portal
 	{
-		int32_t IsAreaVisible(uint8_t index);
+		int32_t IsAreaVisible(int32_t index);
 
 		STATIC_ASSERT(sizeof(AreaPortal) == 0x20);
 		STATIC_ASSERT(sizeof(PortalState) == 0x14);
