@@ -1081,9 +1081,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00481FB0
-		int32_t SweepTriangle(int32_t a1, Toy2::Collision::RaycastQuery* rayQuery, int32_t a3, int32_t a4)
+		int32_t SweepTriangle(int32_t triangleAddress, Toy2::Collision::RaycastQuery* rayQuery, int32_t radius, int32_t hitFlags)
 		{
-			CollisionTriangle* triangle = (CollisionTriangle*)a1;
+			CollisionTriangle* triangle = (CollisionTriangle*)triangleAddress;
 			// the normals of the two triangles of the face, the y of a normal is 0x7FFF when there is none
 			int16_t faceAdjacency[6];
 			int32_t segStart[3];
@@ -1113,19 +1113,20 @@ namespace Toy2
 				((triangle->unk24 * (rayQuery->origin.z - planeY) + planeX * (rayQuery->origin.y - 32 * triangle->v0y)
 				  + planeZ * (rayQuery->origin.x - 32 * triangle->v0x))
 				 >> 14)
-				- a3;
+				- radius;
 
 			endDistance =
 				((triangle->unk24 * (rayQuery->endpoint.z - planeY) + planeX * (rayQuery->endpoint.y - 32 * triangle->v0y)
 				  + planeZ * (rayQuery->endpoint.x - 32 * triangle->v0x))
 				 >> 14)
-				- a3;
+				- radius;
 
 			if (endDistance < 0 && distance >= 0)
 			{
-				hitX = rayQuery->origin.x + distance * (rayQuery->endpoint.x - rayQuery->origin.x) / (distance - endDistance) - ((a3 * planeZ) >> 14);
-				hitY = rayQuery->origin.y + distance * (rayQuery->endpoint.y - rayQuery->origin.y) / (distance - endDistance) - ((a3 * planeX) >> 14);
-				hitZ = rayQuery->origin.z + distance * (rayQuery->endpoint.z - rayQuery->origin.z) / (distance - endDistance) - ((a3 * triangle->unk24) >> 14);
+				hitX = rayQuery->origin.x + distance * (rayQuery->endpoint.x - rayQuery->origin.x) / (distance - endDistance) - ((radius * planeZ) >> 14);
+				hitY = rayQuery->origin.y + distance * (rayQuery->endpoint.y - rayQuery->origin.y) / (distance - endDistance) - ((radius * planeX) >> 14);
+				hitZ =
+					rayQuery->origin.z + distance * (rayQuery->endpoint.z - rayQuery->origin.z) / (distance - endDistance) - ((radius * triangle->unk24) >> 14);
 
 				if (Nu3D::Collision::IsPointInTriangle(
 						(hitX >> 5) - triangle->v0x,
@@ -1150,13 +1151,13 @@ namespace Toy2
 						memcpy(&rayQuery->hitNormal.x, &triangle->unk20, 4);
 						memcpy(&rayQuery->hitNormal.z, &triangle->unk24, 4);
 						rayQuery->hitFace = triangle;
-						rayQuery->hitFlags = a4;
+						rayQuery->hitFlags = hitFlags;
 					}
 				}
 			}
 
 			if (triangle->unk28 == 0x7FFF)
-				goto LABEL_20;
+				goto LBL_SKIP_SECOND_FACE;
 
 			planeY = 32 * triangle->e3z;
 			planeX = 32 * triangle->v0x;
@@ -1168,21 +1169,21 @@ namespace Toy2
 				((triangle->unk2A * (rayQuery->origin.z - planeY - planeZ) + triangle->unk28 * (rayQuery->origin.y - hitY - 32 * triangle->v0y)
 				  + triangle->unk26 * (rayQuery->origin.x - margin - planeX))
 				 >> 14)
-				- a3;
+				- radius;
 			endDistance2 =
 				((triangle->unk2A * (rayQuery->endpoint.z - planeY - planeZ) + triangle->unk28 * (rayQuery->endpoint.y - hitY - 32 * triangle->v0y)
 				  + triangle->unk26 * (rayQuery->endpoint.x - margin - planeX))
 				 >> 14)
-				- a3;
+				- radius;
 
 			if (endDistance2 < 0 && startDistance2 >= 0)
 			{
 				hitX = rayQuery->origin.x + startDistance2 * (rayQuery->endpoint.x - rayQuery->origin.x) / (startDistance2 - endDistance2)
-					- ((a3 * triangle->unk26) >> 14);
+					- ((radius * triangle->unk26) >> 14);
 				hitY = rayQuery->origin.y + startDistance2 * (rayQuery->endpoint.y - rayQuery->origin.y) / (startDistance2 - endDistance2)
-					- ((a3 * triangle->unk28) >> 14);
+					- ((radius * triangle->unk28) >> 14);
 				hitZ = rayQuery->origin.z + startDistance2 * (rayQuery->endpoint.z - rayQuery->origin.z) / (startDistance2 - endDistance2)
-					- ((a3 * triangle->unk2A) >> 14);
+					- ((radius * triangle->unk2A) >> 14);
 
 				if (Nu3D::Collision::IsPointInTriangle(
 						(hitX >> 5) - triangle->e3x - triangle->v0x,
@@ -1206,20 +1207,20 @@ namespace Toy2
 						memcpy(&rayQuery->hitNormal.x, &triangle->unk26, 4);
 						memcpy(&rayQuery->hitNormal.z, &triangle->unk2A, 4);
 						rayQuery->hitFace = triangle;
-						rayQuery->hitFlags = a4 | 0x4000;
+						rayQuery->hitFlags = hitFlags | 0x4000;
 						hit = 1;
 					}
 				}
 			}
 
 			if (startDistance2 > 256 && endDistance2 > 256)
-				goto LABEL_20;
+				goto LBL_SKIP_SECOND_FACE;
 
-			planeY = -256 - (a3 >> 1);
+			planeY = -256 - (radius >> 1);
 
 			if (startDistance2 < planeY && endDistance2 < planeY)
 			{
-			LABEL_20:
+			LBL_SKIP_SECOND_FACE:
 				useSecond = 0;
 			}
 			else
@@ -1231,7 +1232,7 @@ namespace Toy2
 
 			if (distance <= 256 || endDistance <= 256)
 			{
-				planeX = -256 - (a3 >> 1);
+				planeX = -256 - (radius >> 1);
 
 				if (distance >= planeX || endDistance >= planeX)
 					useFirst = 1;
@@ -1273,11 +1274,11 @@ namespace Toy2
 						segEnd[1] = rayQuery->endpoint.y - 32 * triangle->e3y - 32 * triangle->v0y;
 						segEnd[2] = rayQuery->endpoint.z - 32 * triangle->e3z - 32 * triangle->v0z;
 
-						if (SweepVertex(segStart, segEnd, rayQuery, a3 + 64, faceAdjacency))
+						if (SweepVertex(segStart, segEnd, rayQuery, radius + 64, faceAdjacency))
 						{
 							rayQuery->hitFace = triangle;
 							hit = 1;
-							rayQuery->hitFlags = a4 | 0x2000;
+							rayQuery->hitFlags = hitFlags | 0x2000;
 						}
 					}
 				}
@@ -1289,10 +1290,10 @@ namespace Toy2
 				segEnd[1] = rayQuery->endpoint.y - 32 * triangle->e2y - 32 * triangle->v0y;
 				segEnd[2] = rayQuery->endpoint.z - 32 * triangle->e2z - 32 * triangle->v0z;
 
-				if (SweepVertex(segStart, segEnd, rayQuery, a3 + 64, faceAdjacency))
+				if (SweepVertex(segStart, segEnd, rayQuery, radius + 64, faceAdjacency))
 				{
 					rayQuery->hitFace = triangle;
-					rayQuery->hitFlags = a4 | 0x2000;
+					rayQuery->hitFlags = hitFlags | 0x2000;
 					hit = 1;
 				}
 
@@ -1303,11 +1304,11 @@ namespace Toy2
 				segEnd[1] = rayQuery->endpoint.y - 32 * triangle->e1y - 32 * triangle->v0y;
 				segEnd[2] = rayQuery->endpoint.z - 32 * triangle->e1z - 32 * triangle->v0z;
 
-				if (SweepVertex(segStart, segEnd, rayQuery, a3 + 64, faceAdjacency))
+				if (SweepVertex(segStart, segEnd, rayQuery, radius + 64, faceAdjacency))
 				{
 					rayQuery->hitFace = triangle;
 					hit = 1;
-					rayQuery->hitFlags = a4 | 0x2000;
+					rayQuery->hitFlags = hitFlags | 0x2000;
 				}
 
 				if (sweepEdges)
@@ -1319,10 +1320,10 @@ namespace Toy2
 					segEnd[1] = rayQuery->endpoint.y - 32 * triangle->v0y;
 					segEnd[2] = rayQuery->endpoint.z - 32 * triangle->v0z;
 
-					if (SweepVertex(segStart, segEnd, rayQuery, a3 + 64, faceAdjacency))
+					if (SweepVertex(segStart, segEnd, rayQuery, radius + 64, faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
-						rayQuery->hitFlags = a4 | 0x2000;
+						rayQuery->hitFlags = hitFlags | 0x2000;
 						hit = 1;
 					}
 
@@ -1333,18 +1334,18 @@ namespace Toy2
 					segEnd[1] = rayQuery->endpoint.y - 32 * triangle->v0y;
 					segEnd[2] = rayQuery->endpoint.z - 32 * triangle->v0z;
 
-					if (SweepEdge(segStart, segEnd, triangle->e1x, triangle->e1y, triangle->e1z, rayQuery, a3 + 32, faceAdjacency))
+					if (SweepEdge(segStart, segEnd, triangle->e1x, triangle->e1y, triangle->e1z, rayQuery, radius + 32, faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
 						hit = 1;
-						rayQuery->hitFlags = a4 | 0x2000;
+						rayQuery->hitFlags = hitFlags | 0x2000;
 					}
 
-					if (SweepEdge(segStart, segEnd, triangle->e2x, triangle->e2y, triangle->e2z, rayQuery, a3 + 32, faceAdjacency))
+					if (SweepEdge(segStart, segEnd, triangle->e2x, triangle->e2y, triangle->e2z, rayQuery, radius + 32, faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
 						hit = 1;
-						rayQuery->hitFlags = a4 | 0x2000;
+						rayQuery->hitFlags = hitFlags | 0x2000;
 					}
 				}
 
@@ -1362,12 +1363,12 @@ namespace Toy2
 						triangle->e2y - triangle->e1y,
 						triangle->e2z - triangle->e1z,
 						rayQuery,
-						a3 + 32,
+						radius + 32,
 						faceAdjacency))
 				{
 					rayQuery->hitFace = triangle;
 					hit = 1;
-					rayQuery->hitFlags = a4 | 0x2000;
+					rayQuery->hitFlags = hitFlags | 0x2000;
 				}
 
 				if (triangle->unk28 != 0x7FFF && useSecond)
@@ -1386,12 +1387,12 @@ namespace Toy2
 							triangle->e2y - triangle->e3y,
 							triangle->e2z - triangle->e3z,
 							rayQuery,
-							a3 + 32,
+							radius + 32,
 							faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
 						hit = 1;
-						rayQuery->hitFlags = a4 | 0x2000;
+						rayQuery->hitFlags = hitFlags | 0x2000;
 					}
 
 					if (SweepEdge(
@@ -1401,11 +1402,11 @@ namespace Toy2
 							triangle->e1y - triangle->e3y,
 							triangle->e1z - triangle->e3z,
 							rayQuery,
-							a3 + 32,
+							radius + 32,
 							faceAdjacency))
 					{
 						rayQuery->hitFace = triangle;
-						rayQuery->hitFlags = a4 | 0x2000;
+						rayQuery->hitFlags = hitFlags | 0x2000;
 						return 1;
 					}
 				}
