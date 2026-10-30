@@ -1637,7 +1637,7 @@ namespace Toy2
 			int32_t boneY = bone->translation.y;
 			int32_t boneZ = bone->translation.z;
 
-			int32_t posX = actor->transform.pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
+			int32_t posX = actor->transform.pos.x + (boneZ * matrix->m02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
 			int32_t posY = actor->transform.pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
 			int32_t posZ = actor->transform.pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
 
