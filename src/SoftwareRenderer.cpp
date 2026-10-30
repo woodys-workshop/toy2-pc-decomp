@@ -2558,7 +2558,7 @@ namespace SoftwareRenderer
 	}
 
 	// STUB: TOY2 0x0047D210
-	void UnkFunc8() {}
+	void UnkFunc8(int32_t unusedState, int32_t unused) {}
 
 	// FUNCTION: TOY2 0x0047D540
 	int32_t UnkFunc6(uint32_t* pixels, int32_t width, int32_t height, int32_t byteGap, int32_t value)

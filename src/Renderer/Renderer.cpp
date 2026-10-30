@@ -2031,7 +2031,7 @@ namespace DevDraw
 		if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
 		{
 			if (SoftwareRenderer::g_unk559C40 != 1 || (Renderer::g_frameDelta & 1) == 0)
-				SoftwareRenderer::UnkFunc8();
+				SoftwareRenderer::UnkFunc8(SoftwareRenderer::g_unk839278, 0);
 
 			SoftwareRenderer::g_unk839280 = 0;
 
