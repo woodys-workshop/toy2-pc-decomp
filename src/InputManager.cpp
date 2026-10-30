@@ -1,5 +1,6 @@
 #include "InputManager.h"
 #include "Toy2/D3DApp.h"
+#include "Toy2/Toy2.h"
 #include "SaveManager.h"
 #include "Nu3D/Nu3D.h"
 
@@ -521,6 +522,61 @@ namespace InputManager
 
 			g_directInput->Release();
 		}
+	}
+
+	// FUNCTION: TOY2 0x00415500
+	int16_t __cdecl ScanCodeToGlyph(uint8_t scanCode)
+	{
+		for (int32_t index = 0; Toy2::Ini::g_keyNameTable[index].scancode != 0xFFFF; ++index)
+		{
+			if (Toy2::Ini::g_keyNameTable[index].scancode == scanCode)
+				return (int16_t)Toy2::Ini::g_keyNameTable[index].unk2;
+		}
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x00415540
+	int16_t __cdecl GlyphToScanCode(uint8_t glyph)
+	{
+		for (int32_t index = 0; Toy2::Ini::g_keyNameTable[index].scancode != 0xFFFF; ++index)
+		{
+			if (Toy2::Ini::g_keyNameTable[index].unk2 == glyph)
+				return (int16_t)Toy2::Ini::g_keyNameTable[index].scancode;
+		}
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x00415580
+	int16_t __cdecl CharacterToGlyph(uint8_t character)
+	{
+		for (int32_t index = 0; Toy2::Ini::g_keyNameTable[index].scancode != 0xFFFF; ++index)
+		{
+			if ((uint8_t)Toy2::Ini::g_keyNameTable[index].keyName == character)
+				return (int16_t)Toy2::Ini::g_keyNameTable[index].unk2;
+		}
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x004155C0
+	int16_t __cdecl GlyphToCharacter(uint8_t glyph)
+	{
+		for (int32_t index = 0; Toy2::Ini::g_keyNameTable[index].scancode != 0xFFFF; ++index)
+		{
+			if (Toy2::Ini::g_keyNameTable[index].unk2 == glyph)
+				return (uint8_t)Toy2::Ini::g_keyNameTable[index].keyName;
+		}
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x00415600
+	int16_t __cdecl ScanCodeToCharacter(uint8_t scanCode)
+	{
+		for (int32_t index = 0; Toy2::Ini::g_keyNameTable[index].scancode != 0xFFFF; ++index)
+		{
+			if (Toy2::Ini::g_keyNameTable[index].scancode == scanCode)
+				return (uint8_t)Toy2::Ini::g_keyNameTable[index].keyName;
+		}
+		return -1;
 	}
 
 	// FUNCTION: TOY2 0x00415800

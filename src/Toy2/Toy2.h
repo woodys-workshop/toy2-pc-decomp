@@ -199,6 +199,19 @@ namespace Toy2
 	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
 	STATIC_ASSERT(sizeof(SaveNameBuffer) == 0x100);
 
+	namespace Ini
+	{
+		struct KeyNameEntry
+		{
+			uint16_t scancode;
+			uint16_t unk2;
+			uint16_t keyName;
+		};
+
+		extern KeyNameEntry g_keyNameTable[123];
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+	}
+
 	namespace Game
 	{
 		void MainLoop();

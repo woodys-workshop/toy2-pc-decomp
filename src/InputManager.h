@@ -33,4 +33,5 @@ namespace InputManager
 	void UpdateDirectionInputState();
 
 	STATIC_ASSERT(sizeof(InputMapping) == 0x8);
+	int16_t __cdecl ScanCodeToCharacter(uint8_t scanCode);
 }

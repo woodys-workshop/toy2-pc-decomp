@@ -70,6 +70,7 @@
 #include "RawLoader.h"
 
 #include <WINDOWS.H>
+#include <STDDEF.H>
 #include <STDIO.H>
 #include <STRING.H>
 #include <STDLIB.H>
@@ -4247,14 +4248,6 @@ namespace Toy2
 
 	namespace Ini
 	{
-		// a key name of the INI and the scancode it stands for
-		struct KeyNameEntry
-		{
-			uint16_t scancode;
-			uint16_t unk2;
-			uint16_t keyName;
-		};
-
 		// the position and the text of one entry of the key and gamepad configuration, ParseDefText replaces both
 		struct DefTextEntry
 		{
@@ -4296,6 +4289,13 @@ namespace Toy2
 			{ 0, 90, 86 },	   { 0, 91, 87 },	  { 0, 92, 88 },	 { 0, 93, 89 },			{ 0, 94, 90 },		{ 0, 64, 163 },		{ 0, 96, 37 },
 			{ 0, 97, 38 },	   { 0, 60, 42 },	  { 0, 95, 96 },	 { 65535, 65535, 255 },
 		};
+
+		STATIC_ASSERT(sizeof(uint16_t) == 2);
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+		STATIC_ASSERT(offsetof(KeyNameEntry, scancode) == 0);
+		STATIC_ASSERT(offsetof(KeyNameEntry, unk2) == 2);
+		STATIC_ASSERT(offsetof(KeyNameEntry, keyName) == 4);
+		STATIC_ASSERT(sizeof(g_keyNameTable) == 738);
 
 		// GLOBAL: TOY2 0x004EFFC8
 		DefTextEntry g_unk4EFFC8[14] = {
