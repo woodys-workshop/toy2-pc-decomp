@@ -152,7 +152,7 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B4110
 	Font* Font::Build(const char* fontName, int32_t fontSize, const char* charSet)
 	{
-		unsigned int charSetLen;
+		uint32_t charSetLen;
 		HFONT fontHandle;
 		HDC dc;
 		Font* font;
@@ -188,7 +188,7 @@ namespace Nu3D
 		fontResult = 0;
 
 		if (! charSet)
-			charSet = " 01234567890-=!\"";
+			charSet = " 01234567890-=!\"\xA3$%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[]{};'#:@~,./<>?\\|";
 
 		charSetLen = strlen(charSet) + 1;
 		charSetLenMinusOne = charSetLen - 1;
@@ -312,7 +312,7 @@ namespace Nu3D
 				}
 
 				for (index = 0; index < numChars; ++index)
-					fontPtr->charToGlyphIndex[charSet[index]] = index;
+					fontPtr->charToGlyphIndex[(uint8_t)charSet[index]] = index;
 
 				SelectObject(dc, oldObject);
 				::SetTextColor(dc, textColor);
@@ -690,9 +690,9 @@ namespace Nu3D
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
 
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
-		height = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].height;
-		width = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].width * g_fontWidthScale;
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
+		height = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]].height;
+		width = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]].width * g_fontWidthScale;
 
 		posY = g_textCursorY - g_scaledFontAscent;
 
@@ -750,7 +750,7 @@ namespace Nu3D
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 		fontClipLeft = g_fontClipLeftAmount;
 		glyphInfo = &g_selectedFont->glyphs[glyphIndex];
 		width = g_selectedFont->glyphs[glyphIndex].width * g_fontWidthScale;
@@ -879,7 +879,7 @@ namespace Nu3D
 	{
 		int32_t glyphIndex;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
 		g_fontClipRightAmount = g_textCursorX + (int32_t)(g_selectedFont->glyphs[glyphIndex].width * g_fontWidthScale) - g_clipRectRight;
@@ -973,7 +973,7 @@ namespace Nu3D
 		device = DrawingDevice::GetD3DDevice();
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 		posY = (g_textCursorY - g_selectedFont->fontAscent);
 		g_upperFontVerts[0].position.x = (float)(g_textOffsetX + g_textCursorX);
 		g_upperFontVerts[0].position.y = posY;
@@ -1015,16 +1015,16 @@ namespace Nu3D
 		device = DrawingDevice::GetD3DDevice();
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 		clipMax = g_fontClipLeftAmount;
 		if (g_fontClipLeftAmount <= g_fontClipRightAmount)
 			clipMax = g_fontClipRightAmount;
-		if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].width)
+		if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]].width)
 		{
 			clipMax = g_fontClipBottomAmount;
 			if (g_fontClipTopAmount > g_fontClipBottomAmount)
 				clipMax = g_fontClipTopAmount;
-			if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].height)
+			if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]].height)
 			{
 				posY = (float)(g_textCursorY - g_selectedFont->fontAscent);
 				if (g_fontClipLeftAmount > 0)
@@ -1115,7 +1115,7 @@ namespace Nu3D
 	{
 		int32_t glyphIndex;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
 		g_fontClipRightAmount = g_textCursorX + g_selectedFont->glyphs[glyphIndex].width - g_clipRectRight;
 		g_fontClipTopAmount = g_clipRectTop + g_selectedFont->fontAscent - g_textCursorY;
