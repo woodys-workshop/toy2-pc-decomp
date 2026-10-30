@@ -933,6 +933,48 @@ namespace AudioManager
 		}
 	}
 
+	// FUNCTION: TOY2 0x0047D6E0
+	void LoadSoundPack1(int32_t packId)
+	{
+		char buffer[256];
+		if (packId >= 0 && packId <= 16)
+		{
+			char** names = g_sfxPack1[packId].wavList;
+			int32_t effectId = g_sfxPack1[packId].effectId;
+			while (*names)
+			{
+				if (**names)
+				{
+					sprintf(buffer, "%s.wav", *names);
+					LoadSoundEffect(buffer, effectId, 0);
+				}
+				++names;
+				++effectId;
+			}
+		}
+	}
+
+	// FUNCTION: TOY2 0x0047D750
+	void LoadSoundPack2(int32_t packId)
+	{
+		char buffer[256];
+		if (packId >= 0 && packId <= 16)
+		{
+			char** names = g_sfxPack2[packId].wavList;
+			int32_t effectId = g_sfxPack2[packId].effectId;
+			while (*names)
+			{
+				if (**names)
+				{
+					sprintf(buffer, "%s.wav", *names);
+					LoadSoundEffect(buffer, effectId, 0);
+				}
+				++names;
+				++effectId;
+			}
+		}
+	}
+
 	// FUNCTION: TOY2 0x004A3BC0
 	void ResetChannelsTable()
 	{
@@ -1015,6 +1057,223 @@ namespace AudioManager
 			return 0;
 		}
 
+	}
+
+	namespace Wave
+	{
+		// FUNCTION: TOY2 0x004A4240
+		MMRESULT CreateWriteFile(LPSTR filename, HMMIO* handle, const WAVEFORMATEX* format, MMCKINFO* formatChunk, MMCKINFO* riffChunk)
+		{
+			DWORD sampleCount = 0xFFFFFFFF;
+			MMCKINFO factChunk;
+			*handle = mmioOpenA(filename, 0, MMIO_READWRITE | MMIO_CREATE | MMIO_ALLOCBUF);
+			if (! *handle)
+				return 0xE104;
+
+			riffChunk->fccType = mmioFOURCC('W', 'A', 'V', 'E');
+			riffChunk->cksize = 0;
+			MMRESULT result = mmioCreateChunk(*handle, riffChunk, MMIO_CREATERIFF);
+			if (result)
+				return result;
+
+			formatChunk->ckid = mmioFOURCC('f', 'm', 't', ' ');
+			formatChunk->cksize = 16;
+			result = mmioCreateChunk(*handle, formatChunk, 0);
+			if (result)
+				return result;
+
+			if (format->wFormatTag == WAVE_FORMAT_PCM)
+			{
+				if (mmioWrite(*handle, (const char*)format, 16) != 16)
+					return 0xE104;
+			}
+			else if (mmioWrite(*handle, (const char*)format, 18 + format->cbSize) != 18 + format->cbSize)
+				return 0xE104;
+
+			result = mmioAscend(*handle, formatChunk, 0);
+			if (result)
+				return result;
+
+			factChunk.ckid = mmioFOURCC('f', 'a', 'c', 't');
+			factChunk.cksize = 0;
+			result = mmioCreateChunk(*handle, &factChunk, 0);
+			if (result)
+				return result;
+			if (mmioWrite(*handle, (const char*)&sampleCount, 4) != 4)
+				return 0xE104;
+			if (mmioAscend(*handle, &factChunk, 0))
+				return 0xE104;
+			return 0;
+		}
+
+		// FUNCTION: TOY2 0x004A4360
+		MMRESULT StartDataWrite(HMMIO* handle, MMCKINFO* dataChunk, MMIOINFO* info)
+		{
+			dataChunk->ckid = mmioFOURCC('d', 'a', 't', 'a');
+			dataChunk->cksize = 0;
+			MMRESULT result = mmioCreateChunk(*handle, dataChunk, 0);
+			if (! result)
+				result = mmioGetInfo(*handle, info, 0);
+			return result;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004A43A0
+	MMRESULT WaveWriteFile(HMMIO handle, DWORD bytesToWrite, const BYTE* source, void* unused, DWORD* actual, MMIOINFO* info)
+	{
+		MMRESULT result = 0;
+		*actual = 0;
+		for (DWORD index = 0; index < bytesToWrite; ++index)
+		{
+			if (info->pchNext == info->pchEndWrite)
+			{
+				info->dwFlags |= MMIO_DIRTY;
+				result = mmioAdvance(handle, info, MMIO_WRITE);
+				if (result)
+					break;
+			}
+			char* destination = info->pchNext;
+			*destination = source[index];
+			info->pchNext = destination + 1;
+			++*actual;
+		}
+		return result;
+	}
+
+	namespace Wave
+	{
+		// FUNCTION: TOY2 0x004A4410
+		MMRESULT FinalizeWrite(HMMIO* handle, MMCKINFO* dataChunk, MMCKINFO* riffChunk, MMIOINFO* info, DWORD sampleCount)
+		{
+			if (! *handle)
+				return 0;
+
+			info->dwFlags |= MMIO_DIRTY;
+			MMRESULT result = mmioSetInfo(*handle, info, 0);
+			if (result)
+				goto LBL_CLOSE_FILE;
+			result = mmioAscend(*handle, dataChunk, 0);
+			if (result)
+				goto LBL_CLOSE_FILE;
+			result = mmioAscend(*handle, riffChunk, 0);
+			if (result)
+				goto LBL_CLOSE_FILE;
+			mmioSeek(*handle, 0, SEEK_SET);
+			result = mmioDescend(*handle, riffChunk, 0, 0);
+			if (result)
+				goto LBL_CLOSE_FILE;
+
+			dataChunk->ckid = mmioFOURCC('f', 'a', 'c', 't');
+			if (! mmioDescend(*handle, dataChunk, riffChunk, MMIO_FINDCHUNK))
+			{
+				mmioWrite(*handle, (const char*)&sampleCount, 4);
+				mmioAscend(*handle, dataChunk, 0);
+			}
+			result = mmioAscend(*handle, riffChunk, 0);
+
+		LBL_CLOSE_FILE:
+			if (*handle)
+			{
+				mmioClose(*handle, 0);
+				*handle = 0;
+			}
+			return result;
+		}
+	}
+
+	namespace Wave
+	{
+		BOOL CopyChunk(HMMIO source, HMMIO destination, MMCKINFO* chunk);
+
+		// FUNCTION: TOY2 0x004A44F0
+		MMRESULT CopySelectedChunks(HMMIO* source, MMCKINFO* child, MMCKINFO* parent, HMMIO* destination)
+		{
+			MMRESULT result = 0;
+			if (mmioSeek(*source, parent->dwDataOffset + 4, SEEK_SET) == -1)
+			{
+				result = 0xE102;
+			}
+			else
+			{
+				while (! mmioDescend(*source, child, parent, 0))
+				{
+					if (child->dwDataOffset + child->cksize > parent->dwDataOffset + parent->cksize)
+						break;
+					if (child->ckid == mmioFOURCC('D', 'I', 'S', 'P') || child->ckid == mmioFOURCC('p', 'l', 's', 't'))
+						CopyChunk(*source, *destination, child);
+					mmioAscend(*source, child, 0);
+				}
+			}
+			mmioSeek(*source, parent->dwDataOffset + 4, SEEK_SET);
+			return result;
+		}
+
+		// FUNCTION: TOY2 0x004A45B0
+		BOOL CopyChunk(HMMIO source, HMMIO destination, MMCKINFO* chunk)
+		{
+			MMCKINFO destinationChunk;
+			BYTE* bytes = (BYTE*)GlobalLock(GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, chunk->cksize));
+			if (! bytes)
+				return 0;
+
+			destinationChunk.ckid = chunk->ckid;
+			destinationChunk.cksize = chunk->cksize;
+			if (mmioCreateChunk(destination, &destinationChunk, 0))
+				goto LBL_COPY_CHUNK_ERROR;
+			{
+				DWORD size = chunk->cksize;
+				if ((DWORD)mmioRead(source, (HPSTR)bytes, size) != size)
+					goto LBL_COPY_CHUNK_ERROR;
+				if ((DWORD)mmioWrite(destination, (const char*)bytes, size) != chunk->cksize)
+					goto LBL_COPY_CHUNK_ERROR;
+			}
+			if (mmioAscend(destination, &destinationChunk, 0))
+				goto LBL_COPY_CHUNK_ERROR;
+			GlobalUnlock(GlobalHandle(bytes));
+			GlobalFree(GlobalHandle(bytes));
+			return 1;
+
+		LBL_COPY_CHUNK_ERROR:
+			GlobalUnlock(GlobalHandle(bytes));
+			GlobalFree(GlobalHandle(bytes));
+			return 0;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004A47A0
+	MMRESULT WaveSaveFile(LPSTR filename, DWORD byteCount, DWORD sampleCount, const WAVEFORMATEX* format, const BYTE* source)
+	{
+		HMMIO handle;
+		MMCKINFO dataChunk;
+		MMCKINFO riffChunk;
+		MMIOINFO info;
+		MMRESULT result = Wave::CreateWriteFile(filename, &handle, format, &dataChunk, &riffChunk);
+		if (result)
+			return result;
+
+		dataChunk.ckid = mmioFOURCC('d', 'a', 't', 'a');
+		dataChunk.cksize = 0;
+		result = mmioCreateChunk(handle, &dataChunk, 0);
+		if (result)
+			return result;
+		result = mmioGetInfo(handle, &info, 0);
+		if (result)
+			return result;
+
+		for (DWORD index = 0; index < byteCount; ++index)
+		{
+			if (info.pchNext == info.pchEndWrite)
+			{
+				info.dwFlags |= MMIO_DIRTY;
+				result = mmioAdvance(handle, &info, MMIO_WRITE);
+				if (result)
+					return result;
+			}
+			char* destination = info.pchNext;
+			*destination = source[index];
+			info.pchNext = destination + 1;
+		}
+		return Wave::FinalizeWrite(&handle, &dataChunk, &riffChunk, &info, sampleCount);
 	}
 
 	// FUNCTION: TOY2 0x00413310
