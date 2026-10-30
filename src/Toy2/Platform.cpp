@@ -955,7 +955,12 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0048B640
-		BOOL HadBuzzContactThisFrame(int32_t platformIdx) { return (g_platformDescriptors[platformIdx].flags & 0x12) != 0; }
+		BOOL HadBuzzContactThisFrame(int32_t platformIdx)
+		{
+			if ((g_platformDescriptors[platformIdx].flags & 2) != 0 || (g_platformDescriptors[platformIdx].flags & 0x10) != 0)
+				return 1;
+			return 0;
+		}
 
 		// FUNCTION: TOY2 0x0048E200
 		void CopyVelocity(int32_t srcPlatform, int32_t dstPlatform)
