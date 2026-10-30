@@ -354,7 +354,7 @@ namespace Nu3D
 
 			if (Abs(row1[0]) <= Abs(row2[0]))
 			{
-				if (Abs(row2[0]) <= Abs(row0[0]))
+				if (!(Abs(row2[0]) <= Abs(row0[0])))
 				{
 					row0 = &source._31;
 					row2 = &source._11;
@@ -364,7 +364,7 @@ namespace Nu3D
 					output->_33 = 0.0f;
 				}
 			}
-			else if (Abs(row1[0]) <= Abs(row0[0]))
+			else if (!(Abs(row1[0]) <= Abs(row0[0])))
 			{
 				row0 = &source._21;
 				row1 = &source._11;
@@ -400,7 +400,7 @@ namespace Nu3D
 			output->_42 -= factor3 * output->_12;
 			output->_43 -= factor3 * output->_13;
 
-			if (Abs(row2[1]) <= Abs(row1[1]))
+			if (!(Abs(row2[1]) <= Abs(row1[1])))
 			{
 				float* rowSwap = row1;
 				row1 = row2;
