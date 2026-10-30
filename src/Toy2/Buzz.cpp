@@ -2553,11 +2553,11 @@ namespace Toy2
 
 			Collision::g_unk72912C = -1;
 
-			// The original mesh -1 type word aliases the response-strength low word.
+			// Volatile preserves the two-byte read of the original no-floor strength alias.
 			int16_t meshType;
 
 			if (Collision::g_groundContactMeshIdx == -1)
-				memcpy(&meshType, &Collision::g_unk7295A0, sizeof(meshType));
+				meshType = *(const volatile int16_t*)&Collision::g_unk7295A0;
 			else
 				meshType = Collision::g_collisionMeshInstances[Collision::g_groundContactMeshIdx].typeFlags;
 
