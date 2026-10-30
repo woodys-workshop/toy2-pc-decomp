@@ -26,6 +26,6 @@ namespace Nu3D
 		BOOL IsFloorWalkable();
 		int32_t GetSurfaceQuality(int32_t collisionState);
 		int32_t SweepAndSlide(Transform* startPos, Transform* displacement, int32_t collisionMask, int32_t useTopSector, int32_t radius);
-		int32_t SweepQuery(int32_t* a1, int32_t* a2, int32_t a3, int32_t a4);
+		int32_t SweepQuery(int32_t* startPosition, int32_t* displacement, int32_t cameraMode, int32_t queryMode);
 	}
 }
