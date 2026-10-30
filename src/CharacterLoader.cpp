@@ -28,7 +28,8 @@ namespace CharacterLoader
 
 	// the bone data that a character gets when it has no bone to attach to
 	// GLOBAL: TOY2 0x004F6EA0
-	int32_t g_unk4F6EA0 = 0xFF060000;
+	int16_t g_unk4F6EA0[8] = { 0, -250, 0, 1, 512, 256, 512, 250 };
+	STATIC_ASSERT(sizeof(g_unk4F6EA0) == 0x10);
 
 	// GLOBAL: TOY2 0x0053E6C8
 	void* g_attachBone[128];
