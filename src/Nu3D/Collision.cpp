@@ -466,10 +466,10 @@ namespace Nu3D
 			int32_t i;
 
 			// the rotated triangle, v0 is the base vertex, e1 and e2 and e3 are the offsets to the other vertices
-			int32_t v0x, v0y, v0z;
-			int32_t e1x, e1z, e2x, e2z, e3x, e3y, e3z;
-			int32_t n1x, n1y, n1z;
-			int32_t n2x, n2y, n2z;
+			int16_t v0x, v0y, v0z;
+			int16_t e1x, e1z, e2x, e2z, e3x, e3y, e3z;
+			int16_t n1x, n1y, n1z;
+			int16_t n2x, n2y, n2z;
 			int32_t edgeX;
 			int32_t edgeZ;
 			int32_t baseZ;
@@ -1041,8 +1041,9 @@ namespace Nu3D
 						hitX = position[0] + startDistance * direction[0] / (startDistance - endDistance);
 						hitZ = position[2] + startDistance * direction[2] / (startDistance - endDistance);
 
+						// NEG/JS tests the wrapped sign, including INT_MIN.
 						if (tangent.x * (hitX - 32 * segment[0]) + tangent.z * (hitZ - 32 * segment[2]) >= 0
-							&& tangent.x * (hitX - 32 * segment[3]) + tangent.z * (hitZ - 32 * segment[5]) <= 0)
+							&& 0U - (tangent.x * (hitX - 32U * segment[3]) + tangent.z * (hitZ - 32U * segment[5])) <= 0x7FFFFFFFU)
 						{
 							newBest = (startDistance << 14) / (startDistance - endDistance);
 
@@ -1264,7 +1265,7 @@ namespace Nu3D
 			if (SweepAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, position, displacement, radius) == 1)
 				++hitCount;
 
-			if (hitCount <= 0)
+			if ((int16_t)hitCount <= 0)
 			{
 				position[0] += displacement[0];
 				position[1] = displacement[1] + position[1];
@@ -1286,7 +1287,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x0048C030
-		int32_t RaycastAgainstCandidates(int32_t a1, int32_t* direction, int32_t* position)
+		int32_t RaycastAgainstCandidates(int32_t* direction, int32_t* position, int32_t forwardedMode)
 		{
 			Toy2::Collision::CollisionTriangle* triangle;
 			Toy2::Collision::CollisionMeshInstance* mesh;
@@ -1483,7 +1484,7 @@ namespace Nu3D
 			if (RaycastAgainstEdges(&bestDist, &hitT0, &hitT1, (uint32_t*)normalData, (int16_t*)&flipped, position, direction) == 1)
 				++result;
 
-			if (result <= 0 || flipped != 1)
+			if ((int16_t)result <= 0 || (int16_t)flipped != 1)
 				return 0;
 
 			distanceDiff = hitT0 - hitT1;
@@ -1744,11 +1745,11 @@ namespace Nu3D
 			// the platforms are always checked
 			platformMeshes = &Toy2::Collision::g_collisionMeshList[Toy2::Collision::g_unk7284A0];
 			speedSq = movement[2] / 16 * (movement[2] / 16) + movement[1] / 16 * (movement[1] / 16) + movement[0] / 16 * (movement[0] / 16);
-			speed = (int32_t)(16 * sqrt((double)speedSq));
+			speed = 16 * (int32_t)sqrt((double)speedSq);
 
 			for (platformCount = Toy2::Collision::g_unk7284A2; platformCount > 0; platformCount--, platformMeshes++)
 			{
-				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				mesh = &Toy2::Collision::g_collisionMeshInstances[(int16_t)*platformMeshes];
 				originY = mesh->origin.y;
 				originX = mesh->origin.x;
 				originZ = mesh->origin.z;
@@ -2177,7 +2178,7 @@ namespace Nu3D
 			{
 				localY = a1[1];
 				localX = a1[0];
-				mesh = &Toy2::Collision::g_collisionMeshInstances[*platformMeshes];
+				mesh = &Toy2::Collision::g_collisionMeshInstances[(int16_t)*platformMeshes];
 				originX = mesh->origin.x;
 				originZ = mesh->origin.z;
 				originY = mesh->origin.y;
@@ -2189,7 +2190,7 @@ namespace Nu3D
 					platformIdx = mesh->platformIdx;
 					platformReach = abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.x)
 						+ abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.y) + abs(Toy2::Platform::g_platformDescriptors[platformIdx].linVel.z)
-						+ (int32_t)(16 * sqrt((double)speedSq));
+						+ 16 * (int32_t)sqrt((double)speedSq);
 					doubleReach = 2 * platformReach;
 					nodeMargin = (platformReach + 15) / 16;
 
@@ -2351,7 +2352,7 @@ namespace Nu3D
 			query[2] = a1[2];
 			query[3] = a1[3];
 
-			i = RaycastAgainstCandidates(a4, movement, query);
+			i = RaycastAgainstCandidates(movement, query, a4);
 
 			a2[0] = query[0] - a1[0];
 			a2[1] = query[1] - a1[1];
