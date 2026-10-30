@@ -137,6 +137,8 @@ namespace SoftwareRenderer
 	void UnkFunc31();
 	void UnkFunc32();
 	void UnkFunc33();
+	void UnkFunc34(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band);
+	void UnkFunc35(BPolygon* polygon, int32_t count, uint32_t flags, uint32_t* texture, int32_t band);
 	void UnkFunc7();
 	void SetCameraNearFarZ(float cameraNearZ, float cameraFarZ);
 
