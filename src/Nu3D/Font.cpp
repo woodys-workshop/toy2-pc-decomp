@@ -630,13 +630,13 @@ namespace Nu3D
 							endPos += textCursorX - previousCursorX;
 							break;
 						case '\n':
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = startCursorX;
-							goto LABEL_11;
+							goto LBL_FINISH_LINE;
 						case '\r':
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = g_lineStartX;
-						LABEL_11:
+						LBL_FINISH_LINE:
 							g_textCursorX = textCursorX;
 							if (test <= endPos)
 								test = endPos;
@@ -658,7 +658,7 @@ namespace Nu3D
 					ch = *++textPtr;
 
 					if (! ch)
-						goto LABEL_19;
+						goto LBL_FINISH_TEXT;
 				}
 			}
 
@@ -668,7 +668,7 @@ namespace Nu3D
 		// $TODO: the original returns the string pointer when there is no font selected
 		test = (int32_t)string;
 		endPos = (int32_t)string;
-	LABEL_19:
+	LBL_FINISH_TEXT:
 
 		if (test <= endPos)
 			return (char*)endPos;
@@ -926,11 +926,11 @@ namespace Nu3D
 						case 10:
 							g_textCursorY += g_selectedFont->fontHeight;
 							textCursorX = startCursorX;
-							goto LABEL_11;
+							goto LBL_FINISH_LINE;
 						case 13:
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = g_lineStartX;
-						LABEL_11:
+						LBL_FINISH_LINE:
 							g_textCursorX = textCursorX;
 							if (test <= endPos)
 								test = endPos;
@@ -948,7 +948,7 @@ namespace Nu3D
 					}
 					ch = *++textPtr;
 					if (! ch)
-						goto LABEL_19;
+						goto LBL_FINISH_TEXT;
 				}
 			}
 			return (char*)endPos;
@@ -957,7 +957,7 @@ namespace Nu3D
 		// $TODO: the original returns the string pointer when there is no font selected
 		test = (int32_t)string;
 		endPos = (int32_t)string;
-	LABEL_19:
+	LBL_FINISH_TEXT:
 		if (test <= endPos)
 			return (char*)endPos;
 		return (char*)test;
