@@ -199,17 +199,18 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00451FD0 [MATCHED]
-		int32_t NormalizeToFixedPoint(Vector3I* v1, Vector3I* v2)
+		int32_t NormalizeToFixedPoint(Vector3I* input, Vector3I* output)
 		{
-			float z = v1->z;
-			float y = v1->y;
-			float x = v1->x;
+			float z = input->z;
+			float y = input->y;
+			float x = input->x;
 
-			float sqrtVal = sqrt(x * x + y * y + z * z);
+			// VC6 spills x to binary32 while retaining its exact FILD value for the product.
+			float magnitude = sqrt(x * x + y * y + z * z);
 
-			v2->x = (v1->x * 4096.0 / sqrtVal);
-			v2->y = (v1->y * 4096.0 / sqrtVal);
-			v2->z = (v1->z * 4096.0 / sqrtVal);
+			output->x = (int32_t)(int64_t)(x * 4096.0f / magnitude);
+			output->y = (int32_t)(int64_t)(input->y * 4096.0f / magnitude);
+			output->z = (int32_t)(int64_t)(input->z * 4096.0f / magnitude);
 
 			return 0;
 		}
@@ -311,24 +312,61 @@ namespace Nu3D
 			memcpy(output, &g_tempMatrix, sizeof(D3DMATRIX));
 		}
 
-		// FUNCTION: TOY2 0x004A9F60
+		// FUNCTION: TOY2 0x004A9F60 [MATCHED]
 		void MultiplyMatrix3x4(D3DMATRIX* output, D3DMATRIX* left, D3DMATRIX* right)
 		{
-			g_tempMatrix._11 = left->_13 * right->_31 + left->_11 * right->_11 + left->_12 * right->_21;
-			g_tempMatrix._12 = left->_13 * right->_32 + left->_11 * right->_12 + left->_12 * right->_22;
-			g_tempMatrix._13 = left->_13 * right->_33 + left->_11 * right->_13 + left->_12 * right->_23;
+			// Separate additions preserve the x87 sum order without partial-sum spills.
+			float sum = left->_11 * right->_11;
+			sum += left->_13 * right->_31;
+			sum += right->_21 * left->_12;
+			g_tempMatrix._11 = sum;
+			sum = left->_13 * right->_32;
+			sum += right->_22 * left->_12;
+			sum += right->_12 * left->_11;
+			g_tempMatrix._12 = sum;
+			sum = right->_33 * left->_13;
+			sum += right->_23 * left->_12;
+			sum += left->_11 * right->_13;
+			g_tempMatrix._13 = sum;
 			g_tempMatrix._14 = 0.0f;
-			g_tempMatrix._21 = left->_23 * right->_31 + left->_21 * right->_11 + left->_22 * right->_21;
-			g_tempMatrix._22 = left->_23 * right->_32 + left->_21 * right->_12 + left->_22 * right->_22;
-			g_tempMatrix._23 = left->_23 * right->_33 + left->_21 * right->_13 + left->_22 * right->_23;
+			sum = left->_23 * right->_31;
+			sum += left->_21 * right->_11;
+			sum += left->_22 * right->_21;
+			g_tempMatrix._21 = sum;
+			sum = left->_23 * right->_32;
+			sum += left->_22 * right->_22;
+			sum += right->_12 * left->_21;
+			g_tempMatrix._22 = sum;
+			sum = left->_22 * right->_23;
+			sum += left->_21 * right->_13;
+			sum += left->_23 * right->_33;
+			g_tempMatrix._23 = sum;
 			g_tempMatrix._24 = 0.0f;
-			g_tempMatrix._31 = left->_33 * right->_31 + left->_31 * right->_11 + left->_32 * right->_21;
-			g_tempMatrix._32 = left->_33 * right->_32 + left->_31 * right->_12 + left->_32 * right->_22;
-			g_tempMatrix._33 = left->_33 * right->_33 + left->_31 * right->_13 + left->_32 * right->_23;
+			sum = left->_33 * right->_31;
+			sum += left->_31 * right->_11;
+			sum += right->_21 * left->_32;
+			g_tempMatrix._31 = sum;
+			sum = left->_33 * right->_32;
+			sum += right->_12 * left->_31;
+			sum += right->_22 * left->_32;
+			g_tempMatrix._32 = sum;
+			sum = right->_23 * left->_32;
+			sum += left->_31 * right->_13;
+			sum += left->_33 * right->_33;
+			g_tempMatrix._33 = sum;
 			g_tempMatrix._34 = 0.0f;
-			g_tempMatrix._41 = left->_43 * right->_31 + left->_41 * right->_11 + left->_42 * right->_21 + right->_41;
-			g_tempMatrix._42 = left->_43 * right->_32 + left->_41 * right->_12 + left->_42 * right->_22 + right->_42;
-			g_tempMatrix._43 = left->_43 * right->_33 + left->_41 * right->_13 + left->_42 * right->_23 + right->_43;
+			sum = left->_42 * right->_21;
+			sum += left->_43 * right->_31;
+			sum += left->_41 * right->_11;
+			g_tempMatrix._41 = sum + right->_41;
+			sum = left->_42 * right->_22;
+			sum += left->_41 * right->_12;
+			sum += left->_43 * right->_32;
+			g_tempMatrix._42 = sum + right->_42;
+			sum = left->_41 * right->_13;
+			sum += right->_33 * left->_43;
+			sum += right->_23 * left->_42;
+			g_tempMatrix._43 = sum + right->_43;
 			g_tempMatrix._44 = 1.0f;
 
 			memcpy(output, &g_tempMatrix, sizeof(D3DMATRIX));
@@ -631,13 +669,13 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x004AAC40
 		void BuildMatrixFromDirection(D3DMATRIX* matrix, Vector3F* direction)
 		{
-			// the third row (forward) is replaced with the requested direction, then the other two rows are
-			// rebuilt via cross products so the matrix stays orthogonal. Each row keeps its original length.
+			// Rebuild the basis around the direction using the saved row lengths.
 			Vector3F* yAxis = (Vector3F*)&matrix->_21;
 			Vector3F* zAxis = (Vector3F*)&matrix->_31;
 
 			float xAxisOriginalMagnitude = matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13;
-			float yAxisOriginalMagnitude = yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23;
+			float yLengthXY = yAxis->x * yAxis->x + matrix->_22 * matrix->_22;
+			float yAxisOriginalMagnitude = yLengthXY + matrix->_23 * matrix->_23;
 
 			float zAxisScale = sqrt(
 				(zAxis->x * zAxis->x + matrix->_32 * matrix->_32 + matrix->_33 * matrix->_33)
@@ -649,8 +687,17 @@ namespace Nu3D
 
 			float dotProduct = DotProduct(yAxis, zAxis);
 
-			if (Abs(dotProduct) <= 0.86602539)
+			if (Abs(dotProduct) > 0.86602539f)
 			{
+				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
+
+				yLengthXY = yAxis->x * yAxis->x + matrix->_22 * matrix->_22;
+				float yScale = sqrt(yAxisOriginalMagnitude / (yLengthXY + matrix->_23 * matrix->_23));
+
+				yAxis->x = yScale * yAxis->x;
+				matrix->_22 = yScale * matrix->_22;
+				matrix->_23 = yScale * matrix->_23;
+
 				VertexCrossProduct((Vector3F*)&matrix->_11, yAxis, zAxis);
 
 				float xScale = sqrt(xAxisOriginalMagnitude / (matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13));
@@ -658,25 +705,9 @@ namespace Nu3D
 				matrix->_11 = xScale * matrix->_11;
 				matrix->_12 = xScale * matrix->_12;
 				matrix->_13 = xScale * matrix->_13;
-
-				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
-
-				float yScale = sqrt(yAxisOriginalMagnitude / (yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
-
-				yAxis->x = yScale * yAxis->x;
-				matrix->_22 = yScale * matrix->_22;
-				matrix->_23 = yScale * matrix->_23;
 			}
 			else
 			{
-				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
-
-				float yScale = sqrt(yAxisOriginalMagnitude / (yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
-
-				yAxis->x = yScale * yAxis->x;
-				matrix->_22 = yScale * matrix->_22;
-				matrix->_23 = yScale * matrix->_23;
-
 				VertexCrossProduct((Vector3F*)&matrix->_11, yAxis, zAxis);
 
 				float xScale = sqrt(xAxisOriginalMagnitude / (matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13));
@@ -684,13 +715,29 @@ namespace Nu3D
 				matrix->_11 = xScale * matrix->_11;
 				matrix->_12 = xScale * matrix->_12;
 				matrix->_13 = xScale * matrix->_13;
+
+				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
+
+				yLengthXY = yAxis->x * yAxis->x + matrix->_22 * matrix->_22;
+				float yScale = sqrt(yAxisOriginalMagnitude / (yLengthXY + matrix->_23 * matrix->_23));
+
+				yAxis->x = yScale * yAxis->x;
+				matrix->_22 = yScale * matrix->_22;
+				matrix->_23 = yScale * matrix->_23;
 			}
 		}
 
 		// FUNCTION: TOY2 0x00451F80
 		int32_t Cross2D(PointI16 point1, PointI16 point2, PointI16 point3)
 		{
-			return (point3.x - point2.x) * (point1.y - point2.y) - (point1.x - point2.x) * (point3.y - point2.y);
+			int32_t packed2 = *(int32_t*)&point2;
+			int32_t packed3 = *(int32_t*)&point3;
+			int32_t packed1 = *(int32_t*)&point1;
+			int32_t x2 = (int16_t)packed2;
+			int32_t y2 = (int16_t)(packed2 >> 16);
+			uint32_t product1 = (uint32_t)((int16_t)(packed1 >> 16) - y2) * ((int16_t)packed3 - x2);
+			uint32_t product2 = (uint32_t)((int16_t)(packed3 >> 16) - y2) * ((int16_t)packed1 - x2);
+			return (int32_t)(product1 - product2);
 		}
 
 		// FUNCTION: TOY2 0x00452040 [MATCHED]
