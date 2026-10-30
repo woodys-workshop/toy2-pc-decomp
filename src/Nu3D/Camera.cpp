@@ -170,7 +170,7 @@ namespace Nu3D
 		uint32_t g_prevMathScratch224;
 
 		// GLOBAL: TOY2 0x0054E058
-		Matrix3x3I16 g_prevCameraMatrix;
+		NineWords g_prevCameraMatrix;
 
 		// GLOBAL: TOY2 0x005546B4
 		int32_t g_cameraUnk_5546B4;
@@ -194,7 +194,7 @@ namespace Nu3D
 		int32_t g_cameraViewDirty;
 
 		// GLOBAL: TOY2 0x0054C100
-		Matrix3x3I16 g_cameraViewMatrix;
+		NineWords g_cameraViewMatrix;
 
 		// GLOBAL: TOY2 0x00882798
 		int32_t g_viewportWidth;
@@ -311,33 +311,30 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x004A1BE0
-		void FadeToTargetTint()
+		int32_t FadeToTargetTint()
 		{
 			int32_t anyChannelChanged = 0;
-			int32_t fadeStep = Renderer::g_frameDelta * g_targetTintFadeSpeed / 2;
+			int32_t fadeStep = (int32_t)(Renderer::g_frameDelta * g_targetTintFadeSpeed) / 2;
 
 			if (! fadeStep)
-			{
-				g_targetTintFadeSpeed = 0;
-				return;
-			}
+				goto LBL_FADE_DONE;
 
 			if (g_cameraTintBlue != g_targetTintBlue)
 			{
 				anyChannelChanged = 1;
 
-				if (g_cameraTintBlue >= g_targetTintBlue)
-				{
-					g_cameraTintBlue -= fadeStep;
-
-					if (g_cameraTintBlue >= g_targetTintBlue)
-						goto LBL_FADE_GREEN;
-				}
-				else
+				if (g_cameraTintBlue < g_targetTintBlue)
 				{
 					g_cameraTintBlue += fadeStep;
 
 					if (g_cameraTintBlue <= g_targetTintBlue)
+						goto LBL_FADE_GREEN;
+				}
+				else
+				{
+					g_cameraTintBlue -= fadeStep;
+
+					if (g_cameraTintBlue >= g_targetTintBlue)
 						goto LBL_FADE_GREEN;
 				}
 				g_cameraTintBlue = g_targetTintBlue;
@@ -350,17 +347,17 @@ namespace Nu3D
 
 			anyChannelChanged = 1;
 
-			if (g_cameraTintGreen >= g_targetTintGreen)
+			if (g_cameraTintGreen < g_targetTintGreen)
 			{
-				g_cameraTintGreen -= fadeStep;
-				if (g_cameraTintGreen >= g_targetTintGreen)
+				g_cameraTintGreen += fadeStep;
+				if (g_cameraTintGreen <= g_targetTintGreen)
 					goto LBL_FADE_RED;
 			}
 			else
 			{
-				g_cameraTintGreen += fadeStep;
+				g_cameraTintGreen -= fadeStep;
 
-				if (g_cameraTintGreen <= g_targetTintGreen)
+				if (g_cameraTintGreen >= g_targetTintGreen)
 					goto LBL_FADE_RED;
 			}
 
@@ -369,26 +366,26 @@ namespace Nu3D
 		LBL_FADE_RED:
 
 			if (g_cameraTintRed == g_targetTintRed)
-			{
-				if (anyChannelChanged)
-					return;
+				goto LBL_FADE_DONE;
 
-				g_targetTintFadeSpeed = 0;
-				return;
-			}
-
-			if (g_cameraTintRed >= g_targetTintRed)
-			{
-				g_cameraTintRed -= fadeStep;
-				if (g_cameraTintRed < g_targetTintRed)
-					g_cameraTintRed = g_targetTintRed;
-			}
-			else
+			if (g_cameraTintRed < g_targetTintRed)
 			{
 				g_cameraTintRed += fadeStep;
 				if (g_cameraTintRed > g_targetTintRed)
 					g_cameraTintRed = g_targetTintRed;
 			}
+			else
+			{
+				g_cameraTintRed -= fadeStep;
+				if (g_cameraTintRed < g_targetTintRed)
+					g_cameraTintRed = g_targetTintRed;
+			}
+			return 1;
+
+		LBL_FADE_DONE:
+			if (! anyChannelChanged)
+				g_targetTintFadeSpeed = 0;
+			return anyChannelChanged;
 		}
 
 		// FUNCTION: TOY2 0x004BB890 [MATCHED]
@@ -928,12 +925,11 @@ namespace Nu3D
 			int16_t roll = camTransform->roll;
 			euler.angles.yaw = negYaw;
 
-			// remember last frame's camera before overwriting it
+			// Preserve the most recent scratch-camera state.
 			g_prevCameraPos = *(Vector3I*)&mathScratch[221];
 			g_prevMathScratch224 = mathScratch[224];
 
-			// NOTE: the original copies 32 bytes here (and below), which also drags along 14 bytes of
-			// whatever sits after the matrix; only the 3x3 matrix itself is meaningful
+			// Packed copies include the opaque word and translation.
 			memcpy(&g_prevCameraMatrix, scratchMatrix, sizeof(g_prevCameraMatrix));
 
 			g_cameraRollCopy = roll;
@@ -949,16 +945,16 @@ namespace Nu3D
 
 			g_cameraViewDirty = 1;
 
-			Math::EulerToRotationMatrix(&euler, &g_cameraViewMatrix);
+			Math::EulerToRotationMatrix(&euler, &g_cameraViewMatrix.rotation);
 
 			if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
 			{
-				g_cameraViewMatrix.m00 = (g_viewportWidth * g_cameraViewMatrix.m00) / 320;
-				g_cameraViewMatrix.m01 = (g_viewportWidth * g_cameraViewMatrix.m01) / 320;
-				g_cameraViewMatrix.m02 = (g_viewportWidth * g_cameraViewMatrix.m02) / 320;
-				g_cameraViewMatrix.m10 = (g_viewportHeight * g_cameraViewMatrix.m10) / 240;
-				g_cameraViewMatrix.m11 = (g_viewportHeight * g_cameraViewMatrix.m11) / 240;
-				g_cameraViewMatrix.m12 = g_viewportHeight * g_cameraViewMatrix.m12 / 240;
+				g_cameraViewMatrix.rotation.m00 = (g_viewportWidth * g_cameraViewMatrix.rotation.m00) / 320;
+				g_cameraViewMatrix.rotation.m01 = (g_viewportWidth * g_cameraViewMatrix.rotation.m01) / 320;
+				g_cameraViewMatrix.rotation.m02 = (g_viewportWidth * g_cameraViewMatrix.rotation.m02) / 320;
+				g_cameraViewMatrix.rotation.m10 = (g_viewportHeight * g_cameraViewMatrix.rotation.m10) / 240;
+				g_cameraViewMatrix.rotation.m11 = (g_viewportHeight * g_cameraViewMatrix.rotation.m11) / 240;
+				g_cameraViewMatrix.rotation.m12 = g_viewportHeight * g_cameraViewMatrix.rotation.m12 / 240;
 			}
 
 			*(Vector3I*)&mathScratch[221] = camTransform->pos;
@@ -974,16 +970,16 @@ namespace Nu3D
 			int32_t sinA = Numerics::g_sinCosLUT[g_swayPhaseA & 0xFFF];
 			g_swayPhaseC += 13;
 			g_swayPhaseB += 24;
-			uint8_t newIndex = (g_swayHistoryIndex - 1) & 63;
+			int16_t newIndex = (g_swayHistoryIndex - 1) & 63;
 			g_swayHistoryIndex = newIndex;
 			int32_t prevIndex = (newIndex + 1) & 63;
 			int16_t prevHistory = g_swayHistory[prevIndex];
 			int16_t* prevHistoryPtr = &g_swayHistory[prevIndex];
 			int16_t velocity;
-			if (sinA / 16 + g_swayTarget - prevHistory <= 0)
-				velocity = 62 * g_swayVelocity / 64 - 16;
-			else
+			if (sinA / 16 + g_swayTarget - prevHistory > 0)
 				velocity = 62 * g_swayVelocity / 64 + 16;
+			else
+				velocity = 62 * g_swayVelocity / 64 - 16;
 			int32_t phaseC = g_swayPhaseC;
 			g_swayVelocity = velocity;
 			int32_t curIndex = newIndex & 0x3F;
@@ -991,15 +987,15 @@ namespace Nu3D
 			int32_t phaseCIndex = (phaseC >> 5) & 0x7F;
 			AnglesWithRoll* swayAngles = &g_swayAngleHistory[curIndex];
 			int16_t swayRoll;
-			if ((prevHistory + velocity) < 0)
-			{
-				swayAngles->angles.pitch = Numerics::g_sinCosLUT[phaseB & 0xFFF] / 1024 - Numerics::g_sinCosLUT[(phaseCIndex + 1024) & 0xFFF] / 512;
-				swayRoll = Numerics::g_sinCosLUT[(phaseB + 1024) & 0xFFF] / 1024 - Numerics::g_sinCosLUT[phaseCIndex] / 512;
-			}
-			else
+			if ((int16_t)(prevHistory + velocity) >= 0)
 			{
 				swayAngles->angles.pitch = Numerics::g_sinCosLUT[phaseB & 0xFFF] / 1024 + Numerics::g_sinCosLUT[(phaseCIndex + 1024) & 0xFFF] / 512;
 				swayRoll = Numerics::g_sinCosLUT[phaseCIndex] / 512 + Numerics::g_sinCosLUT[(phaseB + 1024) & 0xFFF] / 1024;
+			}
+			else
+			{
+				swayAngles->angles.pitch = Numerics::g_sinCosLUT[phaseB & 0xFFF] / 1024 - Numerics::g_sinCosLUT[(phaseCIndex + 1024) & 0xFFF] / 512;
+				swayRoll = Numerics::g_sinCosLUT[(phaseB + 1024) & 0xFFF] / 1024 - Numerics::g_sinCosLUT[phaseCIndex] / 512;
 			}
 			swayAngles->roll = swayRoll;
 			if (abs(sinA / 16 + g_swayTarget - *prevHistoryPtr) < 128)
@@ -1170,16 +1166,18 @@ namespace Nu3D
 
 				int32_t boundingSphereRadius = actor->boundingSphereRadius;
 
-				int32_t depth = (x * g_cameraViewMatrix.m20 + y * g_cameraViewMatrix.m21 + z * g_cameraViewMatrix.m22) / 0x20000;
+				int32_t depth = (x * g_cameraViewMatrix.rotation.m20 + y * g_cameraViewMatrix.rotation.m21 + z * g_cameraViewMatrix.rotation.m22) / 0x20000;
 
 				if (depth > -boundingSphereRadius)
 				{
 					int32_t scaledDepth = (depth << 8) / g_screenCenterX;
 
 					if (scaledDepth
-							> (abs((x * g_cameraViewMatrix.m00 + y * g_cameraViewMatrix.m01 + z * g_cameraViewMatrix.m02) / 0x20000) - boundingSphereRadius)
+							> (abs((x * g_cameraViewMatrix.rotation.m00 + y * g_cameraViewMatrix.rotation.m01 + z * g_cameraViewMatrix.rotation.m02) / 0x20000)
+							   - boundingSphereRadius)
 						&& scaledDepth
-							> (abs((x * g_cameraViewMatrix.m10 + y * g_cameraViewMatrix.m11 + z * g_cameraViewMatrix.m12) / 0x20000) - boundingSphereRadius))
+							> (abs((x * g_cameraViewMatrix.rotation.m10 + y * g_cameraViewMatrix.rotation.m11 + z * g_cameraViewMatrix.rotation.m12) / 0x20000)
+							   - boundingSphereRadius))
 					{
 						return 1;
 					}

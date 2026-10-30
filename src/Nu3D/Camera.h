@@ -40,15 +40,7 @@ namespace Nu3D
 
 		struct NineWords
 		{
-			int16_t unkWord1;
-			int16_t unkWord2;
-			int16_t unkWord3;
-			int16_t unkWord3_;
-			int16_t unkWord5;
-			int16_t unkWord6;
-			int16_t unkWord7;
-			int16_t unkWord8;
-			int16_t unkWord9;
+			Matrix3x3I16 rotation;
 			int16_t unkWord10;
 			int32_t unkInt1;
 			int32_t unkInt2;
@@ -114,7 +106,7 @@ namespace Nu3D
 
 		void SetTint(uint8_t blue, uint8_t green, uint8_t red, uint8_t fadeSpeed);
 		void InitViewMatrixGlobals();
-		void FadeToTargetTint();
+		int32_t FadeToTargetTint();
 		void ApplyTransformToCamera(ActiveCameraTransform* camera);
 		void ToggleCameraSkew(int32_t effect);
 		void SetSkewPhase(int32_t skewPhase);
