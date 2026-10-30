@@ -662,8 +662,7 @@ namespace Nu3D
 							--count;
 						} while (! lastIteration);
 
-						// quirk: the colour is the address of the level data heap (plus an offset), not a colour
-						Toy2::Lighting::SpawnLight(x, y, z, (int32_t)&Toy2::Levels::g_levelDataHeapBase[201752], 16, x);
+						Toy2::Lighting::SpawnLight(x, y, z, 0x00604000, 16, x);
 
 						break;
 
@@ -695,7 +694,7 @@ namespace Nu3D
 							++g_randDatBufferPtr;
 						} while (count);
 
-						goto LABEL_18;
+						goto LBL_PLAY_SOUND;
 
 					case 8:
 						count = 5;
@@ -729,7 +728,7 @@ namespace Nu3D
 							++g_randDatBufferPtr;
 						} while (count);
 
-					LABEL_18:
+					LBL_PLAY_SOUND:
 						AudioManager::PlaySoundEffect(11, &particle->pos);
 
 						break;

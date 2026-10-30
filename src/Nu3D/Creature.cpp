@@ -1,5 +1,6 @@
 #include "Nu3D/Creature.h"
 #include "NGNLoader/NGNLoader.h"
+#include <string.h>
 
 namespace Nu3D
 {
@@ -60,6 +61,25 @@ namespace Nu3D
 			free(creature->flagsList);
 
 		free(creature);
+	}
+
+	// FUNCTION: TOY2 0x004CA880
+	int32_t Creature::FindNodeIndex(Nu3D::Creature* creature, const char* name)
+	{
+		int32_t nodeIdx = creature->nodeCount;
+
+		if (creature->nodeNames != 0)
+		{
+			while (nodeIdx != 0)
+			{
+				--nodeIdx;
+
+				if (_strcmpi(name, creature->nodeNames[nodeIdx]) == 0)
+					return nodeIdx;
+			}
+		}
+
+		return -1;
 	}
 
 	// FUNCTION: TOY2 0x004CAB80
