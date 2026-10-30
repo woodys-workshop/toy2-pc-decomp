@@ -73,6 +73,8 @@ namespace Nu3D
 		void GetClipNormMatrix(D3DMATRIX* out);
 		void GetScreenSpaceMatrix(D3DMATRIX* out);
 		void SetClipRect(float left, float top, float right, float bottom);
+		void SetDepthRange(float minZ, float maxZ);
+		void SetClipOffset(float offsetX, float offsetY);
 		void CacheViewport(ViewportCache* viewportCache);
 		void RestoreViewportCache(ViewportCache* viewportCache);
 	}
@@ -82,6 +84,8 @@ namespace Nu3D
 		int32_t TestSphereAllPlanes(Vector3F* point, float distance);
 		int32_t TestSphereAllPlanesAlt(Vector3F* point, float distance);
 		int32_t TestSphereDepthPlanes(Vector3F* point, float distance);
+		int32_t ExchangeWinding(int32_t winding);
+		int32_t GetWinding();
 	}
 
 	STATIC_ASSERT(sizeof(Viewport::ViewportRect) == 0x10);

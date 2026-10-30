@@ -131,6 +131,15 @@ namespace Nu3D
 			output->right = g_viewClipRect.right;
 		}
 
+		// FUNCTION: TOY2 0x004B5550
+		void GetBaseViewportRect(ViewportRectAlt* output)
+		{
+			output->left = g_minViewportX;
+			memcpy(&output->top, &g_minViewportY, sizeof(float));
+			output->right = g_drawDeviceWidth + g_minViewportX - 1.0f;
+			output->bottom = g_drawDeviceHeight + g_minViewportY - 1.0f;
+		}
+
 		// FUNCTION: TOY2 0x004B5590 [MATCHED]
 		void GetViewportRect(ViewportRectAlt* output)
 		{
@@ -298,6 +307,27 @@ namespace Nu3D
 			}
 		}
 
+		// FUNCTION: TOY2 0x004B5A00
+		void SetDepthRange(float minZ, float maxZ)
+		{
+			memcpy(&g_pendingViewport.dvMinZ, &minZ, sizeof(float));
+			memcpy(&g_pendingViewport.dvMaxZ, &maxZ, sizeof(float));
+			DrawingDevice::SetViewport(&g_pendingViewport);
+			g_clipNormMatrixDirty = 1;
+			g_screenSpaceMatrixDirty = 1;
+		}
+
+		// FUNCTION: TOY2 0x004B5A30
+		void SetClipOffset(float offsetX, float offsetY)
+		{
+			memcpy(&g_clipOffsetX, &offsetX, sizeof(float));
+			// Keep the old X bits in the consumed argument slot.
+			memcpy(&offsetX, &g_currentViewportX, sizeof(float));
+			g_currentViewportX += 1.0f;
+			memcpy(&g_clipOffsetY, &offsetY, sizeof(float));
+			SetClipRect(offsetX, g_currentViewportY, g_currentViewportWidth + offsetX - 1.0f, g_currentViewportHeight + g_currentViewportY - 1.0f);
+		}
+
 		// FUNCTION: TOY2 0x004BAC70
 		void RestoreViewportCache(ViewportCache* viewportCache)
 		{
@@ -410,6 +440,17 @@ namespace Nu3D
 
 			return (1 << (2 * index)) | result;
 		}
+
+		// FUNCTION: TOY2 0x004BA380
+		int32_t ExchangeWinding(int32_t winding)
+		{
+			int32_t previous = Viewport::g_fustrumInfo.unkInt5;
+			Viewport::g_fustrumInfo.unkInt5 = winding;
+			return previous;
+		}
+
+		// FUNCTION: TOY2 0x004BA390
+		int32_t GetWinding() { return Viewport::g_fustrumInfo.unkInt5; }
 	}
 }
 
