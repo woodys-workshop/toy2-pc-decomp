@@ -1600,7 +1600,7 @@ namespace Toy2
 			CharacterLoader::g_unk53EECC = -1;
 
 			CharacterLoader::BoneTransform* bone =
-				&CharacterLoader::g_boneTransforms[boneIndex + *(uint16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
+				&CharacterLoader::g_boneTransforms[boneIndex + *(int16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
 
 			// the scratch space holds the angles first and the rotation matrix built from them after that
 			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];
