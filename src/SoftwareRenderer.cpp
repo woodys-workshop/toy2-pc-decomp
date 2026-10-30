@@ -89,6 +89,25 @@ namespace SoftwareRenderer
 	STATIC_ASSERT(sizeof(NativePrimitive) == 0x80);
 	STATIC_ASSERT(sizeof(PALETTEENTRY) == 4);
 
+	// Volatile aggregates keep VC6 spills out of the incoming argument cells.
+	struct NativeStretchArguments
+	{
+		int32_t x0, y0;
+		int32_t u0, startV;
+		int32_t x1, y1;
+		int32_t u1, endV;
+		int32_t page;
+	};
+
+	struct NativeGlyphArguments
+	{
+		int32_t x, y;
+		uint32_t colour, code;
+	};
+
+	STATIC_ASSERT(sizeof(NativeStretchArguments) == 0x24);
+	STATIC_ASSERT(sizeof(NativeGlyphArguments) == 0x10);
+
 	// GLOBAL: TOY2 0x0084CBE0
 	NativePrimitive* g_nativePrimitivePool;
 
@@ -869,23 +888,41 @@ namespace SoftwareRenderer
 	void PresentFrame() {}
 
 	// FUNCTION: TOY2 0x00490410
-	void UnkFunc67(int32_t x, int32_t y)
+	void UnkFunc67(volatile int32_t x, volatile int32_t y)
 	{
-		int32_t width = Toy2::g_hasStaticBackdrop ? g_nativeStaticBackdropWidth : g_nativeBackdropWidth;
-		int32_t quotient = x / width;
-		int32_t remainder = (int32_t)((uint32_t)x - (uint32_t)quotient * width);
-		volatile PointI& offsets = g_unk4F7400;
-		if (remainder < 0)
+		using Toy2::g_hasStaticBackdrop;
+		__asm
 		{
-			int32_t normalized = (int32_t)((1U - quotient) * width + x);
-			offsets.y = y;
-			offsets.x = normalized;
-			__asm mov eax, y
-			return;
+			mov eax, g_hasStaticBackdrop
+			test eax, eax
+			mov eax, offset g_nativeStaticBackdropWidth
+			jnz LBL_BACKDROP_WIDTH
+			mov eax, offset g_nativeBackdropWidth
+		LBL_BACKDROP_WIDTH:
+			mov ecx, [eax]
+			mov esi, x
+			mov eax, esi
+			cdq
+			idiv ecx
+			mov edx, esi
+			mov edi, eax
+			imul edi, ecx
+			sub edx, edi
+			jns LBL_BACKDROP_NONNEGATIVE
+			mov edx, 1
+			sub edx, eax
+			mov eax, y
+			imul edx, ecx
+			add edx, esi
+			mov dword ptr [g_unk4F7400 + 4], eax
+			mov dword ptr [g_unk4F7400], edx
+			jmp LBL_BACKDROP_DONE
+		LBL_BACKDROP_NONNEGATIVE:
+			mov ecx, y
+			mov dword ptr [g_unk4F7400], edx
+			mov dword ptr [g_unk4F7400 + 4], ecx
+		LBL_BACKDROP_DONE:
 		}
-		offsets.x = remainder;
-		offsets.y = y;
-		__asm mov eax, quotient
 	}
 
 	// STUB: TOY2 0x0048FB70
@@ -1051,9 +1088,9 @@ namespace SoftwareRenderer
 	// FUNCTION: TOY2 0x00470C70
 	void UnkFunc7()
 	{
-		int32_t redTint = Nu3D::Camera::g_cameraTintBlue;
-		int32_t blueTint = Nu3D::Camera::g_cameraTintRed;
-		int32_t greenTint = Nu3D::Camera::g_cameraTintGreen;
+		int32_t redTint = *(volatile int16_t*)&Nu3D::Camera::g_cameraTintBlue;
+		int32_t blueTint = *(volatile int16_t*)&Nu3D::Camera::g_cameraTintRed;
+		int32_t greenTint = *(volatile int16_t*)&Nu3D::Camera::g_cameraTintGreen;
 
 		for (int32_t index = 1; index < 256; ++index)
 		{
@@ -1327,10 +1364,10 @@ namespace SoftwareRenderer
 						uint16_t raw = texture[(int32_t)(rowOffset + ((int32_t)u >> 16))];
 						if (raw != 0x03E0)
 						{
-							uint16_t selected = g_nativeGreenTable[((raw >> 5) & 31) + greenOffset];
-							selected = (uint16_t)(selected + g_nativeRedTable[(raw >> 10) + redOffset]);
-							uint32_t previous = *destination;
-							selected = (uint16_t)(selected + g_nativeBlueTable[(raw & 31) + blueOffset]);
+							uint16_t selected = ((volatile uint16_t*)g_nativeGreenTable)[((raw >> 5) & 31) + greenOffset];
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeRedTable)[(raw >> 10) + redOffset]);
+							uint32_t previous = *(volatile uint16_t*)destination;
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeBlueTable)[(raw & 31) + blueOffset]);
 							uint32_t red = (previous & 0x7C00) + (selected & 0x7C00);
 							if (red > 0x7C00)
 								red = 0x7C00;
@@ -1401,10 +1438,10 @@ namespace SoftwareRenderer
 						uint16_t raw = texture[(int32_t)(rowOffset + ((int32_t)u >> 16))];
 						if (raw != 0x03E0)
 						{
-							uint16_t selected = g_nativeGreenTable[((raw >> 5) & 31) + greenOffset];
-							selected = (uint16_t)(selected + g_nativeRedTable[(raw >> 10) + redOffset]);
-							uint32_t previous = *destination;
-							selected = (uint16_t)(selected + g_nativeBlueTable[(raw & 31) + blueOffset]);
+							uint16_t selected = ((volatile uint16_t*)g_nativeGreenTable)[((raw >> 5) & 31) + greenOffset];
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeRedTable)[(raw >> 10) + redOffset]);
+							uint32_t previous = *(volatile uint16_t*)destination;
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeBlueTable)[(raw & 31) + blueOffset]);
 							int32_t red = (int32_t)(previous & 0x7C00) - (selected & 0x7C00);
 							if (red < 0x0400)
 								red = 0;
@@ -1668,10 +1705,10 @@ namespace SoftwareRenderer
 						uint16_t raw = texture[(int32_t)(rowOffset + ((int32_t)u >> 16))];
 						if (raw != 0x07C0)
 						{
-							uint16_t selected = g_nativeGreenTable[((raw >> 5) & 63) + greenOffset];
-							selected = (uint16_t)(selected + g_nativeRedTable[(raw >> 11) + redOffset]);
-							uint32_t previous = *destination;
-							selected = (uint16_t)(selected + g_nativeBlueTable[(raw & 31) + blueOffset]);
+							uint16_t selected = ((volatile uint16_t*)g_nativeGreenTable)[((raw >> 5) & 63) + greenOffset];
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeRedTable)[(raw >> 11) + redOffset]);
+							uint32_t previous = *(volatile uint16_t*)destination;
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeBlueTable)[(raw & 31) + blueOffset]);
 							uint32_t red = (previous & 0xF800) + (selected & 0xF800);
 							if (red > 0xF800)
 								red = 0xF800;
@@ -1742,10 +1779,10 @@ namespace SoftwareRenderer
 						uint16_t raw = texture[(int32_t)(rowOffset + ((int32_t)u >> 16))];
 						if (raw != 0x07C0)
 						{
-							uint16_t selected = g_nativeGreenTable[((raw >> 5) & 63) + greenOffset];
-							selected = (uint16_t)(selected + g_nativeRedTable[(raw >> 11) + redOffset]);
-							uint32_t previous = *destination;
-							selected = (uint16_t)(selected + g_nativeBlueTable[(raw & 31) + blueOffset]);
+							uint16_t selected = ((volatile uint16_t*)g_nativeGreenTable)[((raw >> 5) & 63) + greenOffset];
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeRedTable)[(raw >> 11) + redOffset]);
+							uint32_t previous = *(volatile uint16_t*)destination;
+							selected = (uint16_t)(selected + ((volatile uint16_t*)g_nativeBlueTable)[(raw & 31) + blueOffset]);
 							int32_t red = (int32_t)(previous & 0xF800) - (selected & 0xF800);
 							if (red < 0x0800)
 								red = 0;
@@ -1998,6 +2035,7 @@ namespace SoftwareRenderer
 	int32_t UnkFunc10()
 	{
 		uint8_t* output = g_nativeColourCube;
+		int32_t redSquare;
 		int32_t red;
 		for (red = 0; red < 256; red += 8)
 		{
@@ -2014,7 +2052,8 @@ namespace SoftwareRenderer
 						int32_t redDelta = (g_nativeBasePalette[candidate].peRed - red) * 4;
 						int32_t blueDelta = (g_nativeBasePalette[candidate].peBlue - blue) * 3;
 						int32_t totalDelta = blueDelta + greenDelta + redDelta;
-						int32_t distance = totalDelta * totalDelta + blueDelta * blueDelta + greenDelta * greenDelta + redDelta * redDelta;
+						redSquare = redDelta * redDelta;
+						int32_t distance = totalDelta * totalDelta + blueDelta * blueDelta + greenDelta * greenDelta + redSquare;
 
 						if (distance < bestDistance)
 						{
@@ -2028,14 +2067,21 @@ namespace SoftwareRenderer
 			}
 		}
 
-		return red;
+		__asm
+		{
+			mov eax, 256
+			mov ecx, output
+			mov edx, redSquare
+		}
 	}
 
 	// FUNCTION: TOY2 0x00470FB0
 	char* UnkFunc15()
 	{
-		PALETTEENTRY* source = g_nativeBasePalette;
+		volatile PALETTEENTRY* source = g_nativeBasePalette;
 		uint8_t* output = g_nativeTintTable;
+		int32_t blueIndex;
+		uint8_t* blueCube;
 		do
 		{
 			int32_t sourceGreen = source->peGreen;
@@ -2064,15 +2110,22 @@ namespace SoftwareRenderer
 						else if (blue > 255)
 							blue = 255;
 
-						*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + (blue >> 3)];
+						blueIndex = blue >> 3;
+						blueCube = g_nativeColourCube + blueIndex;
+						*output++ = blueCube[((red & ~7) * 32 + (green & ~7)) * 4];
 					}
 				}
 			}
 			++source;
 		} while (source < g_nativeBasePalette + 256);
 
-		// EAX holds the loop-end green-channel address.
-		return (char*)((uint32_t)source + 1);
+		__asm
+		{
+			mov eax, offset g_nativeBasePalette
+			add eax, 401h
+			mov ecx, blueIndex
+			mov edx, blueCube
+		}
 	}
 
 	// FUNCTION: TOY2 0x004710C0
@@ -2098,8 +2151,10 @@ namespace SoftwareRenderer
 	// FUNCTION: TOY2 0x00471190
 	char* UnkFunc13()
 	{
-		PALETTEENTRY* source = g_nativeBasePalette;
+		volatile PALETTEENTRY* source = g_nativeBasePalette;
 		uint8_t* output = g_nativeAddTable;
+		int32_t blueIndex;
+		uint8_t* blueCube;
 		do
 		{
 			int32_t sourceRed = source->peRed;
@@ -2107,9 +2162,10 @@ namespace SoftwareRenderer
 			int32_t sourceBlue = source->peBlue;
 			for (int32_t inner = 0; inner < 256; ++inner)
 			{
-				int32_t red = g_nativeBasePalette[inner].peRed + sourceRed;
-				int32_t green = g_nativeBasePalette[inner].peGreen + sourceGreen;
-				int32_t blue = g_nativeBasePalette[inner].peBlue + sourceBlue;
+				volatile PALETTEENTRY& entry = g_nativeBasePalette[inner];
+				int32_t red = entry.peRed + sourceRed;
+				int32_t green = entry.peGreen + sourceGreen;
+				int32_t blue = entry.peBlue + sourceBlue;
 				if (red > 255)
 					red = 255;
 				if (green > 255)
@@ -2117,12 +2173,20 @@ namespace SoftwareRenderer
 				if (blue > 255)
 					blue = 255;
 
-				*output++ = g_nativeColourCube[((red & ~7) * 32 + (green & ~7)) * 4 + (blue >> 3)];
+				blueIndex = blue >> 3;
+				blueCube = g_nativeColourCube + blueIndex;
+				*output++ = blueCube[((red & ~7) * 32 + (green & ~7)) * 4];
 			}
 			++source;
 		} while (source < g_nativeBasePalette + 256);
 
-		return (char*)((uint32_t)source + 1);
+		__asm
+		{
+			mov eax, offset g_nativeBasePalette
+			add eax, 401h
+			mov ecx, blueIndex
+			mov edx, blueCube
+		}
 	}
 
 	// FUNCTION: TOY2 0x00471250
@@ -2342,7 +2406,7 @@ namespace SoftwareRenderer
 						{
 							uint32_t sample = sourceScratch & 255;
 							uint8_t* tint = *(uint8_t* volatile*)&g_nativeTintTable;
-							uint8_t selected = tint[512 * sample + tintOffset];
+							uint8_t selected = ((volatile uint8_t*)tint)[512 * sample + tintOffset];
 							uint8_t* table = *(uint8_t* volatile*)&g_nativeAddTable;
 							uint8_t previous = *destination;
 							*destination = table[256 * selected + previous];
@@ -2397,7 +2461,7 @@ namespace SoftwareRenderer
 						{
 							uint32_t sample = sourceScratch & 255;
 							uint8_t* tint = *(uint8_t* volatile*)&g_nativeTintTable;
-							uint8_t selected = tint[512 * sample + tintOffset];
+							uint8_t selected = ((volatile uint8_t*)tint)[512 * sample + tintOffset];
 							uint8_t* table = *(uint8_t* volatile*)&g_nativeSubtractTable;
 							uint8_t previous = *destination;
 							*destination = table[256 * previous + selected];
@@ -2452,7 +2516,7 @@ namespace SoftwareRenderer
 						{
 							uint32_t sample = sourceScratch & 255;
 							uint8_t* tint = *(uint8_t* volatile*)&g_nativeTintTable;
-							uint8_t selected = tint[512 * sample + tintOffset];
+							uint8_t selected = ((volatile uint8_t*)tint)[512 * sample + tintOffset];
 							uint8_t* table = *(uint8_t* volatile*)&g_nativeBlend512;
 							uint8_t previous = *destination;
 							*destination = table[256 * selected + previous];
@@ -2690,9 +2754,20 @@ namespace SoftwareRenderer
 	// FUNCTION: TOY2 0x0047D120
 	void UnkFunc5()
 	{
-		if (g_unk830C60)
+		volatile uint32_t savedEDX;
+		__asm
 		{
-			__asm xor eax, eax
+			mov savedEDX, edx
+		}
+		int32_t latch = g_unk830C60;
+		if (latch)
+		{
+			__asm
+			{
+				xor eax, eax
+				mov ecx, latch
+				mov edx, savedEDX
+			}
 			return;
 		}
 		int32_t width = Nu3D::Camera::g_screenWidth;
@@ -2722,7 +2797,12 @@ namespace SoftwareRenderer
 		int32_t countdown = (int32_t)((uint32_t)g_nativeClearCountdown - 1);
 		g_unk830C60 = 1;
 		g_nativeClearCountdown = countdown;
-		__asm mov eax, countdown
+		__asm
+		{
+			mov eax, countdown
+			mov ecx, width
+			mov edx, gap
+		}
 	}
 
 	// STUB: TOY2 0x0047D210
@@ -2817,163 +2897,180 @@ namespace SoftwareRenderer
 	}
 
 	// FUNCTION: TOY2 0x004617D0
-	void DrawNativeStretch16(int32_t x0, int32_t y0, int32_t u0, int32_t startV, int32_t x1, int32_t y1, int32_t u1, int32_t endV, int32_t page)
+	void DrawNativeStretch16(volatile NativeStretchArguments arguments)
 	{
-		uint16_t* row = (uint16_t*)g_nativePixels + (int32_t)((uint32_t)g_nativePixelPitch * y0 + x0);
-		int32_t dx = (int32_t)((uint32_t)x1 - x0);
-		int32_t dy = (int32_t)((uint32_t)y1 - y0);
-		volatile int32_t* arguments;
-		__asm
-		{
-			lea eax, x0
-			mov arguments, eax
-		}
+		uint16_t* row = (uint16_t*)g_nativePixels + (int32_t)((uint32_t)g_nativePixelPitch * arguments.y0 + arguments.x0);
+		int32_t dx = (int32_t)((uint32_t)arguments.x1 - arguments.x0);
+		int32_t dy = (int32_t)((uint32_t)arguments.y1 - arguments.y0);
+		// These incoming cells retain the coordinate when its difference is zero.
 		if (dx)
-			arguments[1] = (int32_t)((uint32_t)u1 - u0) / dx;
+			arguments.y0 = (int32_t)((uint32_t)arguments.u1 - arguments.u0) / dx;
 		if (dy)
-			arguments[0] = (int32_t)((uint32_t)endV - startV) / dy;
+			arguments.x0 = (int32_t)((uint32_t)arguments.endV - arguments.startV) / dy;
 		uint32_t width = (uint32_t)dx + 1;
-		arguments[5] = (int32_t)((uint32_t)dy + 1);
+		arguments.y1 = (int32_t)((uint32_t)dy + 1);
 		uint32_t rows;
+		int32_t stepV, pitch;
 		do
 		{
-			uint32_t rowOffset = (((uint32_t)arguments[3] >> 16) & 255) << 8;
-			uint16_t* source = (uint16_t*)((uint8_t* volatile*)g_nativeTexturePages)[page] + rowOffset;
-			uint32_t u = u0;
+			uint32_t rowOffset = (uint32_t)((volatile uint8_t*)&arguments.startV)[2] << 8;
+			uint16_t* source = (uint16_t*)((uint8_t* volatile*)g_nativeTexturePages)[arguments.page] + rowOffset;
+			uint32_t u = arguments.u0;
 			uint16_t* destination = row;
 			uint32_t count = width;
 			do
 			{
-				u = (u + arguments[1]) & 0x00FFFFFF;
+				u = (u + arguments.y0) & 0x00FFFFFF;
 				*destination++ = source[u >> 16];
 			} while (--count);
-			int32_t stepV = arguments[0];
-			uint32_t nextV = (uint32_t)arguments[3] + stepV;
-			rows = arguments[5];
-			arguments[3] = (int32_t)nextV;
-			row += g_nativePixelPitch;
-			arguments[5] = (int32_t)--rows;
+			stepV = arguments.x0;
+			uint32_t nextV = (uint32_t)arguments.startV + stepV;
+			rows = arguments.y1;
+			arguments.startV = (int32_t)nextV;
+			pitch = *(volatile int32_t*)&g_nativePixelPitch;
+			row += pitch;
+			arguments.y1 = (int32_t)--rows;
 		} while (rows);
-		__asm xor eax, eax
+		__asm
+		{
+			xor eax, eax
+			mov ecx, stepV
+			mov edx, pitch
+		}
 	}
 
 	// FUNCTION: TOY2 0x00477DF0
-	void DrawNativeStretch8(int32_t x0, int32_t y0, int32_t u0, int32_t startV, int32_t x1, int32_t y1, int32_t u1, int32_t endV, int32_t page)
+	void DrawNativeStretch8(volatile NativeStretchArguments arguments)
 	{
-		uint8_t* row = g_nativePixels + (int32_t)((uint32_t)g_nativePixelPitch * y0 + x0);
-		int32_t dx = (int32_t)((uint32_t)x1 - x0);
-		int32_t dy = (int32_t)((uint32_t)y1 - y0);
-		volatile int32_t* arguments;
-		__asm
-		{
-			lea eax, x0
-			mov arguments, eax
-		}
+		uint8_t* row = g_nativePixels + (int32_t)((uint32_t)g_nativePixelPitch * arguments.y0 + arguments.x0);
+		int32_t dx = (int32_t)((uint32_t)arguments.x1 - arguments.x0);
+		int32_t dy = (int32_t)((uint32_t)arguments.y1 - arguments.y0);
 		if (dx)
-			arguments[1] = (int32_t)((uint32_t)u1 - u0) / dx;
+			arguments.y0 = (int32_t)((uint32_t)arguments.u1 - arguments.u0) / dx;
 		if (dy)
-			arguments[0] = (int32_t)((uint32_t)endV - startV) / dy;
+			arguments.x0 = (int32_t)((uint32_t)arguments.endV - arguments.startV) / dy;
 		uint32_t width = (uint32_t)dx + 1;
-		arguments[5] = (int32_t)((uint32_t)dy + 1);
+		arguments.y1 = (int32_t)((uint32_t)dy + 1);
 		uint32_t rows;
+		uint32_t nextV;
+		int32_t pitch;
 		do
 		{
-			uint32_t rowOffset = (((uint32_t)arguments[3] >> 16) & 255) << 8;
-			uint8_t* source = ((uint8_t* volatile*)g_nativeTexturePages)[page] + rowOffset;
-			uint32_t u = u0;
+			uint32_t rowOffset = (uint32_t)((volatile uint8_t*)&arguments.startV)[2] << 8;
+			uint8_t* source = ((uint8_t* volatile*)g_nativeTexturePages)[arguments.page] + rowOffset;
+			uint32_t u = arguments.u0;
 			uint8_t* destination = row;
 			uint32_t count = width;
 			do
 			{
-				u = (u + arguments[1]) & 0x00FFFFFF;
+				u = (u + arguments.y0) & 0x00FFFFFF;
 				*destination++ = source[u >> 16];
 			} while (--count);
-			int32_t stepV = arguments[0];
-			uint32_t nextV = (uint32_t)arguments[3] + stepV;
-			rows = arguments[5];
-			int32_t pitch = g_nativePixelPitch;
-			arguments[3] = (int32_t)nextV;
+			int32_t stepV = arguments.x0;
+			nextV = (uint32_t)arguments.startV + stepV;
+			rows = arguments.y1;
+			pitch = *(volatile int32_t*)&g_nativePixelPitch;
+			arguments.startV = (int32_t)nextV;
 			row += pitch;
-			arguments[5] = (int32_t)--rows;
+			arguments.y1 = (int32_t)--rows;
 		} while (rows);
-		__asm xor eax, eax
+		__asm
+		{
+			xor eax, eax
+			mov ecx, pitch
+			mov edx, nextV
+		}
 	}
 
 	// FUNCTION: TOY2 0x00462D00
-	int32_t DrawNativeGlyph16(int32_t x, int32_t y, uint32_t colour, uint32_t code)
+	int32_t DrawNativeGlyph16(volatile NativeGlyphArguments arguments)
 	{
-		uint8_t* glyph = g_nativeGlyphs[code & 255];
+		uint8_t* glyph = g_nativeGlyphs[arguments.code & 255];
+		int32_t drawX = arguments.x;
 		int32_t advance = glyph[35];
 		int32_t screenWidth = Nu3D::Camera::g_screenWidth;
-		volatile uint32_t* arguments;
+		uint32_t resultEDX = drawX;
+		arguments.code = (uint32_t)glyph;
+		do
+		{
+			if (drawX >= screenWidth || drawX <= -5)
+				break;
+			int32_t drawY = arguments.y;
+			int32_t screenHeight = Nu3D::Camera::g_screenHeight;
+			if (drawY >= screenHeight || drawY <= -7)
+				break;
+			uint16_t* destination = (uint16_t*)g_nativePixels;
+			int32_t width;
+			if (drawX < 0)
+			{
+				glyph -= drawX;
+				width = drawX + 5;
+				arguments.code = (uint32_t)glyph;
+			}
+			else
+			{
+				width = 5;
+				destination += drawX;
+			}
+			if (drawX > screenWidth - 5)
+				width += screenWidth - drawX - 5;
+			int32_t pitch = g_nativePixelPitch;
+			int32_t height;
+			if (drawY < 0)
+			{
+				glyph -= 5 * drawY;
+				height = drawY + 7;
+				arguments.code = (uint32_t)glyph;
+				screenHeight = *(volatile int32_t*)&Nu3D::Camera::g_screenHeight;
+			}
+			else
+			{
+				height = 7;
+				destination += (int32_t)((uint32_t)pitch * drawY);
+			}
+			if (drawY > screenHeight - 7)
+				height += screenHeight - drawY - 7;
+			resultEDX = height;
+			if (height > 0)
+			{
+				arguments.x = height;
+				uint16_t foreground;
+				__asm
+				{
+					lea eax, arguments
+					mov ax, word ptr [eax + 8]
+					mov foreground, ax
+				}
+				resultEDX = ((uint32_t)height & 0xFFFF0000) | foreground;
+				do
+				{
+					if (width > 0)
+					{
+						int32_t count = width;
+						do
+						{
+							if (*glyph++)
+							{
+								destination[pitch + 1] = 0;
+								*destination = foreground;
+								pitch = *(volatile int32_t*)&g_nativePixelPitch;
+							}
+							++destination;
+						} while (--count);
+					}
+					destination += pitch - width;
+					glyph += 5 - width;
+					height = (int32_t)((uint32_t)arguments.x - 1);
+					arguments.x = height;
+				} while (height);
+			}
+		} while (0);
 		__asm
 		{
-			lea eax, x
-			mov arguments, eax
+			mov eax, advance
+			mov ecx, advance
+			mov edx, resultEDX
 		}
-		arguments[3] = (uint32_t)glyph;
-		if (x >= screenWidth || x <= -5)
-			return advance;
-		int32_t screenHeight = Nu3D::Camera::g_screenHeight;
-		if (y >= screenHeight || y <= -7)
-			return advance;
-		uint16_t* destination = (uint16_t*)g_nativePixels;
-		int32_t width;
-		if (x < 0)
-		{
-			glyph -= x;
-			width = x + 5;
-			arguments[3] = (uint32_t)glyph;
-		}
-		else
-		{
-			width = 5;
-			destination += x;
-		}
-		if (x > screenWidth - 5)
-			width += screenWidth - x - 5;
-		int32_t pitch = g_nativePixelPitch;
-		int32_t height;
-		if (y < 0)
-		{
-			glyph -= 5 * y;
-			height = y + 7;
-			arguments[3] = (uint32_t)glyph;
-			screenHeight = Nu3D::Camera::g_screenHeight;
-		}
-		else
-		{
-			height = 7;
-			destination += (int32_t)((uint32_t)pitch * y);
-		}
-		if (y > screenHeight - 7)
-			height += screenHeight - y - 7;
-		if (height > 0)
-		{
-			arguments[0] = height;
-			uint16_t foreground = (uint16_t)colour;
-			do
-			{
-				if (width > 0)
-				{
-					int32_t count = width;
-					do
-					{
-						if (*glyph++)
-						{
-							destination[pitch + 1] = 0;
-							*destination = foreground;
-							pitch = g_nativePixelPitch;
-						}
-						++destination;
-					} while (--count);
-				}
-				destination += pitch - width;
-				glyph += 5 - width;
-				arguments[0] = --height;
-			} while (height);
-		}
-		return advance;
 	}
 
 	// FUNCTION: TOY2 0x00462EC0
@@ -3001,73 +3098,87 @@ namespace SoftwareRenderer
 	}
 
 	// FUNCTION: TOY2 0x00477BB0
-	int32_t DrawNativeGlyph8(int32_t x, int32_t y, uint32_t colour, uint32_t code)
+	int32_t DrawNativeGlyph8(volatile NativeGlyphArguments arguments)
 	{
-		uint8_t* glyph = g_nativeGlyphs[code & 255];
-		int32_t advance = glyph[35];
-		int32_t screenWidth = Nu3D::Camera::g_screenWidth;
-		volatile uint32_t* arguments;
+		volatile uint32_t resultECX;
 		__asm
 		{
-			lea eax, x
-			mov arguments, eax
+			mov resultECX, ecx
 		}
-		arguments[3] = advance;
-		if (x >= screenWidth || x <= -5)
-			return advance;
-		if (y >= Nu3D::Camera::g_screenHeight || y <= -7)
-			return advance;
-		uint8_t* destination = g_nativePixels;
-		int32_t width;
-		if (x < 0)
+		uint8_t* glyph = g_nativeGlyphs[arguments.code & 255];
+		int32_t drawX = arguments.x;
+		int32_t advance = glyph[35];
+		int32_t screenWidth = Nu3D::Camera::g_screenWidth;
+		int32_t resultEDX = drawX;
+		arguments.code = advance;
+		do
 		{
-			width = x + 5;
-			glyph -= x;
-		}
-		else
-		{
-			width = 5;
-			destination += x;
-		}
-		if (x > screenWidth - 5)
-			width += screenWidth - x - 5;
-		int32_t pitch = g_nativePixelPitch;
-		int32_t height;
-		if (y < 0)
-		{
-			height = y + 7;
-			glyph -= 5 * y;
-		}
-		else
-		{
-			height = 7;
-			destination += (int32_t)((uint32_t)pitch * y);
-		}
-		if (y > Nu3D::Camera::g_screenHeight - 7)
-			height += Nu3D::Camera::g_screenHeight - y - 7;
-		if (height > 0)
-		{
-			do
+			if (drawX >= screenWidth || drawX <= -5)
+				break;
+			int32_t drawY = arguments.y;
+			int32_t screenHeight = Nu3D::Camera::g_screenHeight;
+			resultECX = screenHeight;
+			if (drawY >= screenHeight || drawY <= -7)
+				break;
+			uint8_t* destination = g_nativePixels;
+			int32_t width;
+			if (drawX < 0)
 			{
-				if (width > 0)
+				width = drawX + 5;
+				glyph -= drawX;
+			}
+			else
+			{
+				width = 5;
+				destination += drawX;
+			}
+			if (drawX > screenWidth - 5)
+				width += screenWidth - drawX - 5;
+			int32_t pitch = g_nativePixelPitch;
+			int32_t height;
+			if (drawY < 0)
+			{
+				height = drawY + 7;
+				glyph -= 5 * drawY;
+			}
+			else
+			{
+				height = 7;
+				destination += (int32_t)((uint32_t)pitch * drawY);
+			}
+			if (drawY > *(volatile int32_t*)&Nu3D::Camera::g_screenHeight - 7)
+				height += *(volatile int32_t*)&Nu3D::Camera::g_screenHeight - drawY - 7;
+			if (height > 0)
+			{
+				do
 				{
-					int32_t count = width;
-					do
+					if (width > 0)
 					{
-						if (*glyph++)
+						int32_t count = width;
+						do
 						{
-							destination[pitch + 1] = g_nativeColourCube[0];
-							*destination = *(volatile uint8_t*)&arguments[2];
-							pitch = g_nativePixelPitch;
-						}
-						++destination;
-					} while (--count);
-				}
-				destination += pitch - width;
-				glyph += 5 - width;
-			} while (--height);
+							if (*glyph++)
+							{
+								destination[pitch + 1] = g_nativeColourCube[0];
+								*destination = *(volatile uint8_t*)&arguments.colour;
+								pitch = *(volatile int32_t*)&g_nativePixelPitch;
+							}
+							++destination;
+						} while (--count);
+					}
+					destination += pitch - width;
+					glyph += 5 - width;
+				} while (--height);
+			}
+			resultECX = (uint32_t)destination;
+			resultEDX = height;
+		} while (0);
+		__asm
+		{
+			mov eax, arguments.code
+			mov ecx, resultECX
+			mov edx, resultEDX
 		}
-		return advance;
 	}
 
 	// FUNCTION: TOY2 0x004AC1F0
