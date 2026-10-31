@@ -7616,42 +7616,49 @@ namespace Toy2
 				MoveableObject::InitTable(0);
 				Collectables::Init(0, 0);
 				Weather::Init();
-				BombsAway::g_unk52F75C = 4096;
-				BombsAway::g_unk52F6F0 = 4096;
-				BombsAway::g_unk52F730 = g_levelActors[0].actorPhase;
-				BombsAway::g_unk52F758 = 180;
-				BombsAway::g_unk52F718 = 180;
-				BombsAway::g_unk52F71C = 180;
-				BombsAway::g_unk52F70C = Camera::g_cutsceneTimer;
+				
+				BombsAway::g_targetSize = 4096;
+				BombsAway::g_damageLevel = 4096;
+				BombsAway::g_lastBossPhase = g_levelActors[0].actorPhase;
+				BombsAway::g_hitCutsceneLength = 180;
+				BombsAway::g_introSoundTimer = 180;
+				BombsAway::g_tauntTimer = 180;
+				BombsAway::g_prevCutsceneTimer = Camera::g_cutsceneTimer;
+
 				g_levelActors[0].actorFlags |= 0x800u;
 				g_levelActors[0].transform.angles.yaw = 2048;
 				g_levelActors[0].targetYaw = 2048;
-				BombsAway::g_unk52F704 = 1;
-				BombsAway::g_unk52F754 = 0;
-				BombsAway::g_unk52F714 = 0;
-				BombsAway::g_unk52F6F8 = 0;
-				BombsAway::g_unk52F6F4 = 0;
-				BombsAway::g_unk52F6FC = 0;
-				BombsAway::g_unk52F724 = 0;
-				BombsAway::g_unk52F720 = 0;
-				BombsAway::g_unk52F710 = 0;
-				BombsAway::g_unk52F748 = 0;
-				BombsAway::g_unk52F750 = 0;
-				BombsAway::g_unk52F74C = 0;
-				BombsAway::g_unk52F708 = 200;
-				BombsAway::g_unk52F700 = 20000;
+
+				BombsAway::g_currentSize = 1;
+				BombsAway::g_bossState = 0;
+				BombsAway::g_unusedInt = 0;
+				BombsAway::g_wobblePhase = 0;
+				BombsAway::g_dropY = 0;
+				BombsAway::g_dropVelocity = 0;
+				BombsAway::g_textureScrollU = 0;
+				BombsAway::g_textureScrollV = 0;
+				BombsAway::g_hitFlashTimer = 0;
+				BombsAway::g_tintPhaseR = 0;
+				BombsAway::g_tintPhaseG = 0;
+				BombsAway::g_tintPhaseB = 0;
+				BombsAway::g_flashTimer = 200;
+				BombsAway::g_flashSoundDelay = 20000;
+
 				g_levelActors[0].unkShort4 = 0;
 				g_levelActors[0].transform.pos.z += 0x10000;
 				g_levelActors[0].actorTint.r = 0x2000;
 				g_levelActors[0].actorTint.g = 0x2000;
 				g_levelActors[0].actorTint.b = 0x2000;
 				g_levelActors[0].unkVar10 = 1000;
+
 				Nu3D::Link::SetScaleFromFixedOffsets(50, 0, 0, 0);
-				BombsAway::g_unk52F72C = Levels::g_recordData[63]->data[0].y;
+				BombsAway::g_savedRecordY = Levels::g_recordData[63]->data[0].y;
 				Levels::g_recordData[63]->data[0].y = 0x80000000;
-				BombsAway::g_unk52F6F4 = g_levelActors[0].transform.pos.y - 11000;
+				BombsAway::g_dropY = g_levelActors[0].transform.pos.y - 11000;
+
 				Nu3D::Link::SetPositionRawAndCommit(
 					0, g_levelActors[0].transform.pos.x >> 5, g_levelActors[0].transform.pos.y - 11000, g_levelActors[0].transform.pos.z >> 5);
+
 				Nu3D::Link::SetScaleFromFixedOffsets(0, 5000, 5000, 5000);
 				break;
 			case 4:

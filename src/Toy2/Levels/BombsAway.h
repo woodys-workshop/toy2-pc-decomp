@@ -7,30 +7,30 @@ namespace Toy2
 {
 	namespace BombsAway
 	{
+		extern int32_t g_damageLevel;
+		extern int32_t g_dropY;
+		extern int32_t g_wobblePhase;
+		extern int32_t g_dropVelocity;
+		extern int32_t g_flashSoundDelay;
+		extern int32_t g_currentSize;
+		extern int32_t g_flashTimer;
+		extern int32_t g_prevCutsceneTimer;
+		extern int32_t g_hitFlashTimer;
+		extern int32_t g_unusedInt;
+		extern int32_t g_introSoundTimer;
+		extern int32_t g_tauntTimer;
+		extern int32_t g_textureScrollV;
+		extern int32_t g_textureScrollU;
+		extern int32_t g_savedRecordY;
+		extern int32_t g_tintPhaseR;
+		extern int32_t g_tintPhaseB;
+		extern int32_t g_tintPhaseG;
+		extern int32_t g_bossState;
+		extern int32_t g_hitCutsceneLength;
+		extern int32_t g_targetSize;
+		extern int32_t g_lastBossPhase;
+
 		void Interactions();
 
-		extern int32_t g_unk52F6F0;
-		extern int32_t g_unk52F6F4;
-		extern int32_t g_unk52F6F8;
-		extern int32_t g_unk52F6FC;
-		extern int32_t g_unk52F700;
-		extern int32_t g_unk52F704;
-		extern int32_t g_unk52F708;
-		extern int32_t g_unk52F70C;
-		extern int32_t g_unk52F710;
-		extern int32_t g_unk52F714;
-		extern int32_t g_unk52F718;
-		extern int32_t g_unk52F71C;
-		extern int32_t g_unk52F720;
-		extern int32_t g_unk52F724;
-		extern int32_t g_unk52F72C;
-		extern int32_t g_unk52F748;
-		extern int32_t g_unk52F74C;
-		extern int32_t g_unk52F750;
-		extern int32_t g_unk52F754;
-		extern int32_t g_unk52F758;
-		extern int32_t g_unk52F75C;
-		extern int32_t g_unk52F730;
-		extern Vector3I g_unk52F738;
 	}
 }
