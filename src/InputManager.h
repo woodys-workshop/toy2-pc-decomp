@@ -17,6 +17,7 @@ namespace InputManager
 	extern int16_t g_prevDirectionInputState;
 	extern int16_t g_directionInputState2Frames;
 	extern int16_t g_directionInputState3Frames;
+	extern uint8_t g_inputStates[256];
 	extern uint8_t g_previousInputStates[256];
 	extern int32_t g_directionalInputCount;
 	extern int32_t g_analogInputX;
@@ -28,6 +29,7 @@ namespace InputManager
 	int32_t GetPressedInput();
 	char* GetGameControlName(ToyInputCodes index);
 	void Cleanup();
+	// Consumes press edges from the shared input history.
 	int32_t FindKeyReleased();
 	int32_t GetCurButtonsPressed();
 	void UpdateDirectionInputState();

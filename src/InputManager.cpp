@@ -3,6 +3,7 @@
 #include "SaveManager.h"
 #include "Nu3D/Nu3D.h"
 
+#include <stddef.h>
 #include <DINPUT.H>
 
 namespace InputManager
@@ -90,6 +91,9 @@ namespace InputManager
 
 	// GLOBAL: TOY2 0x00529CD8
 	DIJOYSTATE g_joystickState;
+
+	STATIC_ASSERT(sizeof(DIJOYSTATE) == 80);
+	STATIC_ASSERT(offsetof(DIJOYSTATE, rgbButtons) == 48);
 
 	// GLOBAL: TOY2 0x00529CB4
 	LPDIRECTINPUTDEVICE2A g_dInputUnused[4];
@@ -207,7 +211,7 @@ namespace InputManager
 		if (! DirectInputCreateA(D3DApp::g_windowData.hInstance, 0x0500, &g_directInput, 0))
 		{
 			// clang-format off
-			if (! g_directInput->CreateDevice(GUID_SysKeyboard, &g_directInputDevice, 0) 
+			if (! g_directInput->CreateDevice(GUID_SysKeyboard, &g_directInputDevice, 0)
 				&& ! g_directInputDevice->SetDataFormat(&c_dfDIKeyboard)
 				&& ! g_directInputDevice->SetCooperativeLevel(D3DApp::g_windowData.mainHwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE) && ! g_directInputDevice->Acquire())
 			{
@@ -229,7 +233,7 @@ namespace InputManager
 							LPDIRECTINPUTDEVICE2A* curDevice = &g_directInputDevices[deviceIdx];
 
 							if (! devices[deviceIdx]->QueryInterface(IID_IDirectInputDevice2A, (LPVOID*)curDevice)
-								&& ! (*curDevice)->SetDataFormat(&c_dfDIJoystick) 
+								&& ! (*curDevice)->SetDataFormat(&c_dfDIJoystick)
 								&& ! (*curDevice)->SetCooperativeLevel(D3DApp::g_windowData.mainHwnd, DISCL_FOREGROUND | DISCL_EXCLUSIVE)
 								&& ! (*curDevice)->Acquire())
 							{
@@ -372,7 +376,7 @@ namespace InputManager
 			{
 				int32_t dInputCode = joystickMapping->dInputCode;
 
-				if (joystickMapping->dInputCode >= 0x400 && dInputCode < 0x41F && g_previousInputStates[dInputCode + 40])
+				if (joystickMapping->dInputCode >= 0x400 && dInputCode < 0x41F && g_joystickState.rgbButtons[dInputCode - 0x400])
 					joystickButtons |= (uint16_t)(joystickMapping->gameControlId);
 
 				++joystickMapping;
@@ -385,13 +389,13 @@ namespace InputManager
 			g_directionalInputCount = 1;
 			g_joystickConnected = 1;
 
-			int32_t joystickYAxis;
-			int32_t joystickXAxis;
+			int32_t joystickX;
+			int32_t joystickY;
 
 			if ((g_joystickDirectionLockState & 3) == 2)
 			{
-				joystickYAxis = (((g_joystickState.lX >> 8) & 0xFF) - 128) << 8;
-				if (joystickYAxis <= -11200 || joystickYAxis >= 11200)
+				joystickX = (((g_joystickState.lX >> 8) & 0xFF) - 128) << 8;
+				if (joystickX <= -11200 || joystickX >= 11200)
 				{
 					directionLockState = g_joystickDirectionLockState & 12;
 					g_joystickDirectionLockState &= 12u;
@@ -399,47 +403,47 @@ namespace InputManager
 			}
 			else
 			{
-				joystickYAxis = (((g_joystickState.lX >> 8) & 0xFF) - 128) << 8;
+				joystickX = (((g_joystickState.lX >> 8) & 0xFF) - 128) << 8;
 			}
 
 			if ((directionLockState & 0xC) == 8)
 			{
-				joystickXAxis = (128 - ((g_joystickState.lY >> 8) & 0xFF)) << 8;
+				joystickY = (128 - ((g_joystickState.lY >> 8) & 0xFF)) << 8;
 
-				if (joystickXAxis <= -11200 || joystickXAxis >= 11200)
+				if (joystickY <= -11200 || joystickY >= 11200)
 					g_joystickDirectionLockState = directionLockState & 3;
 			}
 			else
 			{
-				joystickXAxis = (128 - ((g_joystickState.lY >> 8) & 0xFF)) << 8;
+				joystickY = (128 - ((g_joystickState.lY >> 8) & 0xFF)) << 8;
 			}
 
 			int32_t dirFlags = 0;
 			int32_t anyDirectionActive = 0;
 			g_joystickDirectionFlags = 0;
 
-			if (joystickYAxis < -11200)
+			if (joystickX < -11200)
 			{
 				dirFlags = 128;
 				anyDirectionActive = 1;
 				g_joystickDirectionFlags = 128;
 			}
 
-			if (joystickYAxis > 11200)
+			if (joystickX > 11200)
 			{
 				dirFlags |= 32;
 				anyDirectionActive = 1;
 				g_joystickDirectionFlags = dirFlags;
 			}
 
-			if (joystickXAxis < -11200)
+			if (joystickY < -11200)
 			{
 				dirFlags |= 64;
 				anyDirectionActive = 1;
 				g_joystickDirectionFlags = dirFlags;
 			}
 
-			if (joystickXAxis <= 11200)
+			if (joystickY <= 11200)
 			{
 				if (! anyDirectionActive)
 					return;
@@ -450,8 +454,8 @@ namespace InputManager
 				g_joystickDirectionFlags = dirFlags;
 			}
 
-			g_analogInputX = joystickYAxis;
-			g_analogInputY = joystickXAxis;
+			g_analogInputX = joystickX;
+			g_analogInputY = joystickY;
 
 			g_buttonsPressed = dirFlags | joystickButtons;
 		}

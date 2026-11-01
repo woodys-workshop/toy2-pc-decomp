@@ -4299,25 +4299,6 @@ namespace Toy2
 
 	namespace Ini
 	{
-		// a key name of the INI and the scancode it stands for
-		struct KeyNameEntry
-		{
-			uint16_t scancode;
-			uint16_t unk2;
-			uint16_t keyName;
-		};
-
-		// the position and the text of one entry of the key and gamepad configuration, ParseDefText replaces both
-		struct DefTextEntry
-		{
-			int32_t x;
-			int32_t y;
-			int32_t unk8;
-			char* text;
-			int32_t unk10;
-			int32_t unk14;
-		};
-
 		// the position and the text of one message, ParseDefText replaces both
 		struct DefTextMessage
 		{
@@ -4349,6 +4330,13 @@ namespace Toy2
 			{ 0, 97, 38 },	   { 0, 60, 42 },	  { 0, 95, 96 },	 { 65535, 65535, 255 },
 		};
 
+		STATIC_ASSERT(sizeof(uint16_t) == 2);
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+		STATIC_ASSERT(offsetof(KeyNameEntry, scancode) == 0);
+		STATIC_ASSERT(offsetof(KeyNameEntry, unk2) == 2);
+		STATIC_ASSERT(offsetof(KeyNameEntry, keyName) == 4);
+		STATIC_ASSERT(sizeof(g_keyNameTable) == 738);
+
 		// GLOBAL: TOY2 0x004EFFC8
 		DefTextEntry g_unk4EFFC8[14] = {
 			{ 60, 40, 0, "forward", 0 },		   { 60, 60, 0, "back", 0 },		 { 60, 80, 0, "left", 0 },		  { 60, 100, 0, "right", 0 },
@@ -4365,8 +4353,8 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x004F0150
 		DefTextEntry g_unk4F0150[10] = {
-			{ 40, 40, 0, "fire/get/drop", 0 },	   { 40, 60, 0, "jump/change", 256 }, { 40, 80, 0, "seed color", 512 }, { 40, 100, 0, "camera", 768 },
-			{ 200, 40, 0, "lock camera", 1024 },   { 200, 60, 0, "walk", 1280 },	  { 200, 80, 0, "kick", 1536 },		{ 80, 180, 0, "keyboard", 0 },
+			{ 40, 40, 0, "fire/get/drop", 0, 0 },  { 40, 60, 0, "jump/change", 0, 1 }, { 40, 80, 0, "seed color", 0, 2 }, { 40, 100, 0, "camera", 0, 3 },
+			{ 200, 40, 0, "lock camera", 0, 4 },   { 200, 60, 0, "walk", 0, 5 },	   { 200, 80, 0, "kick", 0, 6 },	  { 80, 180, 0, "keyboard", 0 },
 			{ 80, 200, 0, "restore defaults", 0 }, { 80, 220, 0, "accept", 0 },
 		};
 
@@ -4395,14 +4383,14 @@ namespace Toy2
 			{ 130, 4, "load game", 0 },
 			{ 10, 200, "select game and press enter", 0 },
 			{ 10, 220, "press esc to go back", 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
-			{ 0, 0, 0, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
+			{ 0, 0, g_emptyStr, 0 },
 		};
 
 		// GLOBAL: TOY2 0x004F5524

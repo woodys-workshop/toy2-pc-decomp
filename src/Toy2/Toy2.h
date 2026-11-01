@@ -1,5 +1,6 @@
 #pragma once
 
+#include <STDDEF.H>
 #include "Common.h"
 #include "Numerics.h"
 #include "Toy2/Buzz.h"
@@ -198,6 +199,37 @@ namespace Toy2
 	STATIC_ASSERT(sizeof(SpawnLocation) == 0x10);
 	STATIC_ASSERT(sizeof(BeamShot) == 0x2C);
 	STATIC_ASSERT(sizeof(SaveNameBuffer) == 0x100);
+
+	namespace Ini
+	{
+		struct DefTextEntry
+		{
+			int32_t x;
+			int32_t y;
+			int32_t unk8;
+			char* text;
+			int8_t glyph;
+			uint8_t binding;
+			uint16_t unused12;
+			int32_t unk14;
+		};
+
+		struct KeyNameEntry
+		{
+			uint16_t scancode;
+			uint16_t unk2;
+			uint16_t keyName;
+		};
+
+		extern KeyNameEntry g_keyNameTable[123];
+		extern DefTextEntry* g_unk4F0114[15];
+		extern DefTextEntry* g_unk4F023C[11];
+		STATIC_ASSERT(sizeof(KeyNameEntry) == 6);
+		STATIC_ASSERT(sizeof(DefTextEntry) == 0x18);
+		STATIC_ASSERT(offsetof(DefTextEntry, glyph) == 0x10);
+		STATIC_ASSERT(offsetof(DefTextEntry, binding) == 0x11);
+		STATIC_ASSERT(offsetof(DefTextEntry, unused12) == 0x12);
+	}
 
 	namespace Game
 	{

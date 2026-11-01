@@ -185,6 +185,7 @@ enum ToyInputCodes
 	TOY_INPUT_JOY27 = 0x419,
 	TOY_INPUT_JOY28 = 0x41A,
 	TOY_INPUT_JOY29 = 0x41B,
+	// Input discovery uses these legacy POV codes for buttons 28-31.
 	TOY_INPUT_POVUP = 0x41C,
 	TOY_INPUT_POVRIGHT = 0x41D,
 	TOY_INPUT_POVDOWN = 0x41E,
