@@ -28,9 +28,9 @@ namespace Renderer
 			int32_t segmentLength,
 			Transform* origin,
 			Transform* direction,
-			uint8_t tintB,
+			uint8_t red,
 			uint8_t tintG,
-			uint8_t tintR)
+			uint8_t blue)
 		{
 			RGBA color;
 			Vector3F vec5;
@@ -52,10 +52,10 @@ namespace Renderer
 			if (texData != 0)
 				NGNLoader::RetrieveTextureData(texData, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-			// NOTE: the IDB's RGBA has the red channel in the first byte, ours has the blue channel there. The first byte gets tintR
-			color.b = tintR;
+			// Packed color is 0xAARRGGBB.
+			color.b = blue;
 			color.g = tintG;
-			color.r = tintB;
+			color.r = red;
 			color.a = 0xFF;
 
 			Nu3D::Math::GetPositionVector(&Nu3D::Camera::g_secondaryCamera.matrix, &vec2);
@@ -133,9 +133,9 @@ namespace Renderer
 			int32_t segementLength,
 			Transform* origin,
 			Transform* direction,
-			uint8_t tintB,
-			uint8_t tintG,
-			uint8_t tintR)
+			int32_t red,
+			int32_t tintG,
+			int32_t blue)
 		{
 			int32_t count = g_beamRequestCount;
 
@@ -150,9 +150,9 @@ namespace Renderer
 				g_beamRequests[index].segmentLength = segementLength;
 				g_beamRequests[index].origin = *origin;
 				g_beamRequests[index].direction = *direction;
-				g_beamRequests[index].tintB = tintB;
+				g_beamRequests[index].tintB = red;
 				g_beamRequests[index].tintG = tintG;
-				g_beamRequests[index].tintR = tintR;
+				g_beamRequests[index].tintR = blue;
 			}
 		}
 	}

@@ -113,8 +113,8 @@ namespace Toy2
 	void RespawnCosmicShield();
 	Toy2::BeamShot* SpawnBeamShot(
 		int32_t beamType,
-		int16_t aimYaw,
-		int16_t aimPitch,
+		int32_t aimYaw,
+		int32_t aimPitch,
 		Transform* origin,
 		Transform* headOffset,
 		int32_t range,

@@ -8638,15 +8638,15 @@ namespace Toy2
 	// FUNCTION: TOY2 0x004A5D30
 	Toy2::BeamShot* SpawnBeamShot(
 		int32_t beamType,
-		int16_t aimYaw,
-		int16_t aimPitch,
+		int32_t aimYaw,
+		int32_t aimPitch,
 		Transform* origin,
 		Transform* headOffset,
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor)
 	{
 		int32_t oldestLife = 1000;
-		BeamShot* beamShot = 0;
+		BeamShot* beamShot;
 		int32_t index = 0;
 
 		// reuse the first free slot, otherwise the one that is closest to expiring
@@ -8747,7 +8747,7 @@ namespace Toy2
 							pitch = 64;
 						}
 
-						aimPitch = (int16_t)pitch;
+						aimPitch = pitch;
 					}
 					else
 					{
