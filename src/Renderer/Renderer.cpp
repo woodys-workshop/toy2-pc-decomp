@@ -22,6 +22,7 @@
 #include <WINDOWS.H>
 #include <STDARG.H>
 #include <STDIO.H>
+#include <STDLIB.H>
 #include <STRING.H>
 
 namespace Renderer
@@ -531,10 +532,10 @@ namespace Renderer
 		if (outSurfaceDesc.wMaxSimultaneousTextures >= g_maxSimultaneousTexturesMax)
 			g_maxSimultaneousTextures = g_maxSimultaneousTexturesMax;
 
-		if ((outSurfaceDesc.dpcTriCaps.dwShadeCaps & 0x4000) != 0)
+		if ((outSurfaceDesc.dpcTriCaps.dwShadeCaps & 0x4000) == 0)
 		{
-			if ((outSurfaceDesc.dpcTriCaps.dwDestBlendCaps & 2) == 0)
-				g_destBlendMode = 6;
+			g_srcBlendMode = 2;
+			g_destBlendMode = 2;
 
 			if ((outSurfaceDesc.dpcTriCaps.dwDestBlendCaps & 8) == 0)
 			{
@@ -544,8 +545,8 @@ namespace Renderer
 		}
 		else
 		{
-			g_srcBlendMode = 2;
-			g_destBlendMode = 2;
+			if ((outSurfaceDesc.dpcTriCaps.dwDestBlendCaps & 2) == 0)
+				g_destBlendMode = 6;
 
 			if ((outSurfaceDesc.dpcTriCaps.dwDestBlendCaps & 8) == 0)
 			{
@@ -574,11 +575,9 @@ namespace Renderer
 		Renderer::Sprite::ResetQueue();
 
 		SoftwareRenderer::InitialisePrimarySurface();
-
-		DECOMP_PRINT(("Finished Renderer::InitResources\n"));
 	}
 
-	// FUNCTION: TOY2 0x004B37F0
+	// FUNCTION: TOY2 0x004B37F0 [MATCHED]
 	void Cleanup()
 	{
 		for (Nu3D::Patch* patch = Nu3D::g_patchListHead; Nu3D::g_patchListHead; patch = Nu3D::g_patchListHead)
@@ -848,28 +847,8 @@ namespace Renderer
 			{
 				SoftwareRenderer::PresentFrame();
 			}
-			else if (DrawingDevice::PresentFrame() == DDERR_SURFACELOST)
-			{
-				DrawingDevice::CD3DFramework* device = DrawingDevice::g_drawingDevice;
-
-				LPDIRECTDRAWSURFACE4 frontBuffer = DrawingDevice::g_drawingDevice->m_pddsFrontBuffer;
-
-				if (frontBuffer && frontBuffer->IsLost())
-					device->m_pddsFrontBuffer->Restore();
-
-				LPDIRECTDRAWSURFACE4 backBuffer = device->m_pddsBackBuffer;
-
-				if (backBuffer && backBuffer->IsLost())
-					device->m_pddsBackBuffer->Restore();
-
-				LPDIRECTDRAWSURFACE4 zBuffer = device->m_pddsZBuffer;
-
-				if (zBuffer)
-				{
-					if (zBuffer->IsLost())
-						device->m_pddsZBuffer->Restore();
-				}
-			}
+			else
+				DrawingDevice::PresentAndRestoreSurfaces();
 		}
 	}
 

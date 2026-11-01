@@ -290,19 +290,13 @@ namespace DrawingDevice
 		{
 			SetRect(&m_rcViewportRect, 0, 0, displayMode->surfaceDesc.dwWidth, displayMode->surfaceDesc.dwHeight);
 
-			m_rcScreenRect.left = m_rcViewportRect.left;
-			m_rcScreenRect.top = m_rcViewportRect.top;
-
-			DWORD dmFlags = 0;
-
-			m_rcScreenRect.right = m_rcViewportRect.right;
+			m_rcScreenRect = m_rcViewportRect;
 			m_dwRenderWidth = m_rcViewportRect.right;
-
-			m_rcScreenRect.bottom = m_rcViewportRect.bottom;
 			m_dwRenderHeight = m_rcViewportRect.bottom;
 
-			if (m_rcViewportRect.right == 320 && m_rcViewportRect.bottom == 200)
-				dmFlags = displayMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount == 8;
+			DWORD dmFlags = 0;
+			if (m_rcViewportRect.right == 320 && m_rcViewportRect.bottom == 200 && displayMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount == 8)
+				dmFlags = 1;
 
 			if (m_pDD->SetDisplayMode(
 					m_rcViewportRect.right,
@@ -321,7 +315,7 @@ namespace DrawingDevice
 			{
 				d3dDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE | DDSCAPS_FLIP | DDSCAPS_COMPLEX;
 				d3dDesc.dwBackBufferCount = 1;
-				d3dDesc.dwFlags |= D3DDD_LINECAPS;
+				d3dDesc.dwFlags |= DDSD_BACKBUFFERCOUNT;
 			}
 
 			HRESULT frontBufferResult = m_pDD->CreateSurface(&d3dDesc, &m_pddsFrontBuffer, 0);
@@ -330,11 +324,7 @@ namespace DrawingDevice
 				return frontBufferResult != DDERR_OUTOFVIDEOMEMORY ? 0x82000007 : DDERR_OUTOFVIDEOMEMORY;
 
 			if ((flags & 2) == 0)
-			{
-				m_pddsRenderTarget = m_pddsFrontBuffer;
-				m_pddsRenderTarget->AddRef();
-				return 0;
-			}
+				goto LBL_ASSIGN_RT;
 
 			DDSCAPS2 ddsCaps;
 			ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
@@ -351,7 +341,7 @@ namespace DrawingDevice
 			GetClientRect(m_hWnd, &m_rcScreenRect);
 
 			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset;
-			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportTopOffset - DrawingDevice::g_viewportBottomOffset;
+			m_rcScreenRect.bottom = m_rcScreenRect.bottom - DrawingDevice::g_viewportBottomOffset;
 
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect);
 			ClientToScreen(m_hWnd, (LPPOINT)&m_rcScreenRect.right);
@@ -383,20 +373,22 @@ namespace DrawingDevice
 				clipper = 0;
 			}
 
-			if ((flags & 2) == 0)
+			if ((flags & 2) != 0)
+			{
+				d3dDesc.dwHeight = m_dwRenderHeight;
+				d3dDesc.dwWidth = m_dwRenderWidth;
+
+				d3dDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+				d3dDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
+
+				surfaceResult = m_pDD->CreateSurface(&d3dDesc, &m_pddsBackBuffer, 0);
+			}
+			else
 			{
 				ClientToScreen(m_hWnd, (LPPOINT)&m_rcViewportRect);
 				ClientToScreen(m_hWnd, (LPPOINT)&m_rcViewportRect.right);
 				goto LBL_ASSIGN_RT;
 			}
-
-			d3dDesc.dwHeight = m_dwRenderHeight;
-			d3dDesc.dwWidth = m_dwRenderWidth;
-
-			d3dDesc.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
-			d3dDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE;
-
-			surfaceResult = m_pDD->CreateSurface(&d3dDesc, &m_pddsBackBuffer, 0);
 		}
 
 		if (surfaceResult < 0)
@@ -404,14 +396,11 @@ namespace DrawingDevice
 
 	LBL_ASSIGN_RT:
 
-		if ((flags & 2) == 0)
-		{
+		if ((flags & 2) != 0)
+			m_pddsRenderTarget = m_pddsBackBuffer;
+		else
 			m_pddsRenderTarget = m_pddsFrontBuffer;
-			m_pddsRenderTarget->AddRef();
-			return 0;
-		}
 
-		m_pddsRenderTarget = m_pddsBackBuffer;
 		m_pddsRenderTarget->AddRef();
 
 		return 0;
@@ -472,6 +461,25 @@ namespace DrawingDevice
 		return 0x82000006;
 	}
 
+	// FUNCTION: TOY2 0x004AF5F0 [MATCHED]
+	HRESULT CD3DFramework::PresentFrame()
+	{
+		LPDIRECTDRAWSURFACE4 frontBuffer = m_pddsFrontBuffer;
+
+		if (! frontBuffer)
+			return 0x8200000E;
+
+		LPDIRECTDRAWSURFACE4 backBuffer = m_pddsBackBuffer;
+
+		if (! backBuffer)
+			return frontBuffer->IsLost();
+
+		if (m_bIsFullscreen)
+			return frontBuffer->Flip(0, 1);
+
+		return frontBuffer->Blt(&m_rcScreenRect, backBuffer, &m_rcViewportRect, DDBLT_WAIT, 0);
+	}
+
 	// FUNCTION: TOY2 0x004AF640
 	int32_t CD3DFramework::RestoreToGDISurface(int32_t refreshWindow)
 	{
@@ -488,6 +496,21 @@ namespace DrawingDevice
 				}
 			}
 		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AF680 [MATCHED]
+	HRESULT CD3DFramework::RestoreSurfaces()
+	{
+		if (m_pddsFrontBuffer && m_pddsFrontBuffer->IsLost())
+			m_pddsFrontBuffer->Restore();
+
+		if (m_pddsBackBuffer && m_pddsBackBuffer->IsLost())
+			m_pddsBackBuffer->Restore();
+
+		if (m_pddsZBuffer && m_pddsZBuffer->IsLost())
+			m_pddsZBuffer->Restore();
 
 		return 0;
 	}
@@ -747,23 +770,21 @@ namespace DrawingDevice
 			return -1;
 	}
 
-	// FUNCTION: TOY2 0x004ABD40
-	HRESULT PresentFrame()
+	// FUNCTION: TOY2 0x004ABD40 [MATCHED]
+	HRESULT PresentFrame() { return g_drawingDevice->PresentFrame(); }
+
+	// FUNCTION: TOY2 0x004ABD30 [MATCHED]
+	HRESULT RestoreSurfaces() { return g_drawingDevice->RestoreSurfaces(); }
+
+	// FUNCTION: TOY2 0x004ABAB0 [MATCHED]
+	HRESULT PresentAndRestoreSurfaces()
 	{
-		LPDIRECTDRAWSURFACE4 frontBuffer = g_drawingDevice->m_pddsFrontBuffer;
+		HRESULT result = PresentFrame();
 
-		if (! frontBuffer)
-			return 0x8200000E;
+		if (result == DDERR_SURFACELOST)
+			return RestoreSurfaces();
 
-		LPDIRECTDRAWSURFACE4 backBuffer = g_drawingDevice->m_pddsBackBuffer;
-
-		if (! backBuffer)
-			return frontBuffer->IsLost();
-
-		if (g_drawingDevice->m_bIsFullscreen)
-			return frontBuffer->Flip(0, 1);
-
-		return frontBuffer->Blt(&g_drawingDevice->m_rcScreenRect, backBuffer, &g_drawingDevice->m_rcViewportRect, DDBLT_WAIT, 0);
+		return result;
 	}
 
 	// FUNCTION: TOY2 0x004ABAD0

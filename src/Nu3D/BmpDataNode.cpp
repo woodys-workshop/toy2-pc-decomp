@@ -702,7 +702,7 @@ namespace Nu3D
 		HRESULT lockResult;
 		do
 		{
-			lockResult = ddSurface->Lock(0, &surfaceDesc, DDLOCK_WAIT, 0);
+			lockResult = ddSurface->Lock(0, &surfaceDesc, DDLOCK_NOSYSLOCK, 0);
 		} while (lockResult == DDERR_WASSTILLDRAWING);
 
 		if (lockResult < 0)
@@ -938,7 +938,7 @@ namespace Nu3D
 	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return Nu3D::GetBmpDataNodeByName(texName); }
 
 	// FUNCTION: TOY2 0x004AD1C0 [MATCHED]
-	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode)
+	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice)
 	{
 		if (bmpNode)
 		{
@@ -962,7 +962,8 @@ namespace Nu3D
 			textureData->color.b = 0;
 			textureData->bmpDataNode = 0;
 
-			if (DrawingDevice::GetD3DDevice())
+			LPDIRECT3DDEVICE3 device = DrawingDevice::GetD3DDevice();
+			if (device)
 			{
 				if (! Nu3D::BuildBmpNode(bmpHandle, texName, 0, flags))
 				{
@@ -971,7 +972,7 @@ namespace Nu3D
 
 					if (bmpDataNode)
 					{
-						Nu3D::InitBmpNodeSurface(bmpDataNode);
+						Nu3D::InitBmpNodeSurface(bmpDataNode, device);
 						return textureData->textureIndex;
 					}
 				}

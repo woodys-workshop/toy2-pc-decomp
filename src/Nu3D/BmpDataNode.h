@@ -22,10 +22,10 @@ namespace Nu3D
 		uint32_t bitmapWidth;
 		uint32_t bitmapHeight;
 		HBITMAP bitmapHandle;
-		int32_t unkVar1;
-		int32_t unkVar2;
-		int32_t unkVar3;
-		int32_t unkVar4;
+		int32_t slotCopyMode;
+		uint32_t slotIndex;
+		LPDIRECTDRAWSURFACE4 slotSurface;
+		LPDIRECTDRAWSURFACE4 stagingSurface;
 		char texName[80];
 		int32_t unkVar5;
 		int32_t flags;
@@ -60,6 +60,7 @@ namespace Nu3D
 	extern BmpDataNode* g_currentBmpDataNode;
 
 	void SetMinTexSize(int32_t minTexSize);
+	int32_t InitBmpNodeSurface(BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice);
 	BmpDataNode* LoadTextureByStream(FILE* handle, const char* rawTexStr, int32_t flags);
 	Nu3D::BmpDataNode* LoadLocalBmpTexture(const char* rawTexStr, int32_t flags);
 	HRESULT SetTexture(int32_t stageIndex, BmpDataNode* bmpDataNode);
