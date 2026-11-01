@@ -8,10 +8,24 @@ namespace Toy2
 {
 	namespace Gadget
 	{
-		// GLOBAL: TOY2 0x00503A1E
-		int16_t g_unk503A1E[19] = {
-			(int16_t)0xF4B0, 0x0000, (int16_t)0xF4B0, 0x0108, 0x0000, 0x0000, 0x0409, 0x0000, 0x0000, 0x0201,
-			0x0000,			 0x0000, 0x1004,		  0x0000, 0x0000, 0x0805, 0x0000, 0x0000, 0x0000,
+		// GLOBAL: TOY2 0x00503A24
+		LevelGadget g_levelGadgets[16] = {
+			{ 8, UNLOCK_SHIELD },
+			{ 0, 0 },
+			{ 0, 0 },
+			{ 9, UNLOCK_DISC },
+			{ 0, 0 },
+			{ 0, 0 },
+			{ 1, UNLOCK_ROCKET },
+			{ 0, 0 },
+			{ 0, 0 },
+			{ 4, UNLOCK_GRAPPLE },
+			{ 0, 0 },
+			{ 0, 0 },
+			{ 5, UNLOCK_HOVER },
+			{ 0, 0 },
+			{ 0, 0 },
+			{ 0, 0 }
 		};
 
 		// each table is a list of 4 byte entries (level, unknown, link id, unknown) ended by 0xFF
@@ -68,7 +82,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004A2080
 		void InitLevelUnlockGeometry()
 		{
-			uint8_t unlockMask = (uint8_t)(g_unk503A1E[g_levelFileIndex + 2] >> 8);
+			uint8_t unlockMask = g_levelGadgets[g_levelFileIndex - 1].unlockMask;
 
 			g_unk830D1C = 0;
 			g_unk830C98 = 200;
@@ -142,7 +156,7 @@ namespace Toy2
 			}
 			else
 			{
-				int32_t nodeIdx = (uint8_t)g_unk503A1E[g_levelFileIndex + 2];
+				int32_t nodeIdx = g_levelGadgets[g_levelFileIndex - 1].nodeIdx;
 
 				g_unk830D48 = nodeIdx;
 

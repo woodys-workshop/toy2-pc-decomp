@@ -15,7 +15,13 @@ namespace Toy2
 			UNLOCK_GRAPPLE = 0x10,
 		};
 
-		extern int16_t g_unk503A1E[19];
+		struct LevelGadget
+		{
+			uint8_t nodeIdx;
+			uint8_t unlockMask;
+		};
+
+		extern LevelGadget g_levelGadgets[16];
 		extern uint8_t g_shieldUnlockTable[16];
 		extern uint8_t g_rocketUnlockTable[80];
 		extern uint8_t g_discUnlockTable[20];
@@ -31,5 +37,7 @@ namespace Toy2
 
 		void InitLevelUnlockGeometry();
 		void ApplyUnlockToGeometry(uint8_t* table, int32_t showScale);
+
+		STATIC_ASSERT(sizeof(LevelGadget) == 0x2);
 	}
 }

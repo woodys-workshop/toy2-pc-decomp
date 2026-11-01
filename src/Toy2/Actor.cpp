@@ -1900,7 +1900,7 @@ namespace Toy2
 
 					Dialogue::Begin(actorIdx, recordIdx, textFoundPiece, camAngleValue, camAngle, -1);
 					Gadget::g_unk830D48 = 0;
-					int32_t unlock = (uint8_t)(Gadget::g_unk503A1E[g_levelFileIndex + 2] >> 8);
+					int32_t unlock = Gadget::g_levelGadgets[g_levelFileIndex - 1].unlockMask;
 
 					g_playerUnlocks |= unlock;
 

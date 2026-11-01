@@ -475,13 +475,34 @@ namespace Toy2
 
 	// the number of entries of every pause menu
 	// GLOBAL: TOY2 0x005039BC
-	uint8_t g_scrollCountsPerMenu[10] = { 4, 2, 2, 2, 2, 0, 0, 0, 0, 0 };
+	uint8_t g_scrollCountsPerMenu[5] = { 4, 2, 2, 2, 2 };
 
 	// GLOBAL: TOY2 0x00502750
 	char g_sfxVolumeStr[15] = "sfx **********";
 
 	// GLOBAL: TOY2 0x00502760
 	char g_bgmVolumeStr[15] = "bgm **********";
+}
+
+namespace InputManager
+{
+	// FUNCTION: TOY2 0x0049EBA0 [MATCHED]
+	void UpdateDirectionInputState()
+	{
+		int32_t cameraIndex = 3 * (SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_MASK);
+
+		g_directionInputState = g_curButtonsPressed & 0xFFF;
+
+		// $TODO: Selectors 8-63 read past the original mask table; the neighboring layout is unresolved.
+		if (g_curButtonsPressed & g_camMasks[cameraIndex])
+			g_directionInputState |= DIR_CAM_REVERSE;
+
+		if (g_curButtonsPressed & g_camMasks[cameraIndex + 1])
+			g_directionInputState |= DIR_CAM_FLAG2;
+
+		if (g_curButtonsPressed & g_camMasks[cameraIndex + 2])
+			g_directionInputState |= DIR_CAM_FLAG3;
+	}
 }
 
 namespace Toy2
