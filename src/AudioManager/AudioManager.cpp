@@ -318,28 +318,21 @@ namespace AudioManager
 	};
 
 	// GLOBAL: TOY2 0x005036F0
-	int16_t g_soundScript1[28] = { 2, 0, 0, 41, 6144, 64, 2, 41, 7040, 64, 2, 41, 7680, 64, 10, 41, 7680, 48, 10, 41, 7680, 32, 10, 41, 7680, 16, 10, -1 };
-
-	// GLOBAL: TOY2 0x00503728
-	int16_t g_soundScript2[24] = { 0, 0, 0, 32, 5120, 96, 12, 32, 4608, 96, 15, 32, 5376, 96, 10, 33, 4864, 96, 16, 33, 4096, 96, 18, -1 };
-
-	// GLOBAL: TOY2 0x00503758
-	int16_t g_soundScript3[22] = { 0, 0, 0, 41, 4608, 64, 4, 41, 5504, 64, 4, 41, 6144, 64, 4, 41, 5504, 64, 4, -2, 16, 0 };
-
-	// GLOBAL: TOY2 0x00503784
-	int16_t g_soundScript4[24] = { 0, 0, 0, 91, 5120, 94, 20, 91, 5504, 94, 20, 91, 4864, 94, 20, 91, 5760, 94, 20, 91, 4736, 94, 20, -1 };
-
-	// GLOBAL: TOY2 0x005037B4
-	int16_t g_soundScript5[44] = {
-		0, 0,  0,	 41, 4864, 64, 5,	 41, 4352, 64, 5,	 41, 4864, 64, 5,	 41, 5248, 64, 5,	 41, 4864, 64,
-		5, 41, 5248, 64, 5,	   41, 5888, 64, 10,   41, 5888, 48, 10,   41, 5888, 32, 10,   41, 5888, 16, 10,   -1
+	int16_t g_soundScriptData[156] = {
+		2,	  0,  0,	41, 6144, 64, 2,	41, 7040, 64, 2,	41, 7680, 64, 10,	41, 7680, 48, 10,	41, 7680, 32, 10,	41, 7680, 16,
+		10,	  -1, 0,	0,	0,	  32, 5120, 96, 12,	  32, 4608, 96, 15,	  32, 5376, 96, 10,	  33, 4864, 96, 16,	  33, 4096, 96, 18,	  -1,
+		0,	  0,  0,	41, 4608, 64, 4,	41, 5504, 64, 4,	41, 6144, 64, 4,	41, 5504, 64, 4,	-2, 16,	  0,  0,	0,	0,	  91,
+		5120, 94, 20,	91, 5504, 94, 20,	91, 4864, 94, 20,	91, 5760, 94, 20,	91, 4736, 94, 20,	-1, 0,	  0,  0,	41, 4864, 64,
+		5,	  41, 4352, 64, 5,	  41, 4864, 64, 5,	  41, 5248, 64, 5,	  41, 4864, 64, 5,	  41, 5248, 64, 5,	  41, 5888, 64, 10,	  41,
+		5888, 48, 10,	41, 5888, 32, 10,	41, 5888, 16, 10,	-1, 0,	  0,  0,	41, 4608, 64, 10,	41, 4608, 64, 10,	-2, 16,	  0
 	};
 
-	// GLOBAL: TOY2 0x0050380C
-	int16_t g_soundScript6[14] = { 0, 0, 0, 41, 4608, 64, 10, 41, 4608, 64, 10, -2, 16, 0 };
-
 	// GLOBAL: TOY2 0x00503828
-	int16_t* g_soundScripts[6] = { g_soundScript1, g_soundScript2, g_soundScript3, g_soundScript4, g_soundScript5, g_soundScript6 };
+	int16_t* g_soundScripts[6] = {
+		g_soundScriptData, g_soundScriptData + 28, g_soundScriptData + 52, g_soundScriptData + 74, g_soundScriptData + 98, g_soundScriptData + 142
+	};
+
+	STATIC_ASSERT(sizeof(g_soundScriptData) == 312);
 
 	// GLOBAL: TOY2 0x004FCDC4
 	char* g_sfxWavList4FCDC4[71] = {
@@ -2477,7 +2470,44 @@ namespace AudioManager
 	// FUNCTION: TOY2 0x0049E660
 	void PlaySoundEffect(int32_t effectId, Vector3I* worldPos)
 	{
-		if (effectId >= 0)
+		if (effectId < 0)
+		{
+			int32_t player = Toy2::g_curSequencePlayer;
+			Toy2::SoundSequencePlayer* sequence = &Toy2::g_soundSequencePlayers[player];
+
+			sequence->pos.x = worldPos->x;
+			sequence->pos.y = worldPos->y;
+			sequence->pos.z = worldPos->z;
+			sequence->scriptCursor = g_soundScripts[-effectId - 1];
+			sequence->countdown = 0;
+
+			int16_t* scriptCursor = sequence->scriptCursor;
+			sequence->scriptCursor = scriptCursor + 3;
+
+			int16_t feedbackA = *scriptCursor;
+
+			if (*scriptCursor || scriptCursor[1])
+			{
+				if (Toy2::g_feedbackTimerA < 2 * feedbackA)
+					Toy2::g_feedbackTimerA = 2 * feedbackA;
+
+				int16_t feedbackB = scriptCursor[1];
+
+				if (Toy2::g_feedbackTimerB < 2 * feedbackB)
+					Toy2::g_feedbackTimerB = 2 * feedbackB;
+
+				int16_t feedbackC = scriptCursor[2];
+
+				if (Toy2::g_feedbackTimerA_sub < 2 * feedbackC)
+					Toy2::g_feedbackTimerA_sub = 2 * feedbackC;
+			}
+
+			Toy2::g_curSequencePlayer = player + 1;
+
+			if (player + 1 >= 7)
+				Toy2::g_curSequencePlayer = 0;
+		}
+		else
 		{
 			SoundEffectPreset* soundPreset = &g_soundEffectPresets[effectId];
 
@@ -2512,7 +2542,7 @@ namespace AudioManager
 					int16_t randomShift = soundPreset->unkWord5;
 
 					if (randomShift >= 0)
-						pitch += (8 * *g_randDatBufferPtr++) >> randomShift;
+						pitch += (8 * *g_randDatBufferPtr++) >> (randomShift & 31);
 				}
 				else
 				{
@@ -2561,45 +2591,6 @@ namespace AudioManager
 			if (Toy2::g_feedbackTimerA_sub < feedback)
 				Toy2::g_feedbackTimerA_sub = feedback;
 		}
-		else
-		{
-			int32_t player = Toy2::g_curSequencePlayer;
-			int32_t index = Toy2::g_curSequencePlayer;
-
-			Toy2::g_soundSequencePlayers[index].pos.x = worldPos->x;
-			Toy2::g_soundSequencePlayers[index].pos.y = worldPos->y;
-			Toy2::g_soundSequencePlayers[index].pos.z = worldPos->z;
-			Toy2::g_soundSequencePlayers[index].scriptCursor = g_soundScripts[-effectId - 1];
-
-			Toy2::g_soundSequencePlayers[index].countdown = 0;
-
-			int16_t* scriptCursor = Toy2::g_soundSequencePlayers[index].scriptCursor;
-
-			Toy2::g_soundSequencePlayers[index].scriptCursor = scriptCursor + 3;
-
-			int16_t feedbackA = *scriptCursor;
-
-			if (*scriptCursor || scriptCursor[1])
-			{
-				if (Toy2::g_feedbackTimerA < 2 * feedbackA)
-					Toy2::g_feedbackTimerA = 2 * feedbackA;
-
-				int16_t feedbackB = scriptCursor[1];
-
-				if (Toy2::g_feedbackTimerB < 2 * feedbackB)
-					Toy2::g_feedbackTimerB = 2 * feedbackB;
-
-				int16_t feedbackC = scriptCursor[2];
-
-				if (Toy2::g_feedbackTimerA_sub < 2 * feedbackC)
-					Toy2::g_feedbackTimerA_sub = 2 * feedbackC;
-			}
-
-			Toy2::g_curSequencePlayer = player + 1;
-
-			if (player + 1 >= 7)
-				Toy2::g_curSequencePlayer = 0;
-		}
 	}
 
 	// FUNCTION: TOY2 0x0049E910
@@ -2643,49 +2634,41 @@ namespace AudioManager
 	void UpdateSoundSequences()
 	{
 		// the original stops at the address of g_freezeBuzz, which is behind the 8 players
-		for (int32_t player = 0; player < 8; player++)
-		{
-			Toy2::SoundSequencePlayer* sequence = &Toy2::g_soundSequencePlayers[player];
+		Toy2::SoundSequencePlayer* sequence = Toy2::g_soundSequencePlayers;
 
+		do
+		{
 			if (sequence->scriptCursor)
 			{
-				sequence->countdown -= Renderer::g_frameDelta;
+				sequence->countdown -= (uint16_t)Renderer::g_frameDelta;
 
-				if ((sequence->countdown & 0x8000u) != 0)
+				if ((int16_t)sequence->countdown < 0)
 				{
 					int16_t* scriptCursor = sequence->scriptCursor;
-					int16_t command = *sequence->scriptCursor;
+					int16_t command = *scriptCursor;
 
-					if (command >= 0)
+					while (command < 0)
 					{
-					LABEL_9:
-						PlayOneShotSound3D(*scriptCursor - 1, scriptCursor[1], scriptCursor[2], &sequence->pos);
+						if (command == -1)
+							sequence->scriptCursor = 0;
 
-						sequence->countdown = scriptCursor[3];
-						sequence->scriptCursor += 4;
+						if (*scriptCursor != -2)
+							goto LBL_NEXT_SEQUENCE;
+
+						scriptCursor = sequence->scriptCursor - scriptCursor[1];
+						sequence->scriptCursor = scriptCursor;
+						command = *scriptCursor;
 					}
-					else
-					{
-						while (1)
-						{
-							if (command == -1)
-								sequence->scriptCursor = 0;
 
-							if (*scriptCursor != -2)
-								break;
-
-							scriptCursor = &sequence->scriptCursor[-scriptCursor[1]];
-							sequence->scriptCursor = scriptCursor;
-
-							command = *scriptCursor;
-
-							if (*scriptCursor >= 0)
-								goto LABEL_9;
-						}
-					}
+					PlayOneShotSound3D(*scriptCursor - 1, scriptCursor[1], scriptCursor[2], &sequence->pos);
+					sequence->countdown = scriptCursor[3];
+					sequence->scriptCursor += 4;
 				}
 			}
-		}
+
+		LBL_NEXT_SEQUENCE:
+			++sequence;
+		} while (sequence < &Toy2::g_soundSequencePlayers[8]);
 	}
 
 	// FUNCTION: TOY2 0x004A3BE0
@@ -2725,7 +2708,7 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x004A3C80
-	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos)
+	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos, int32_t unused)
 	{
 		int32_t leftVolume;
 		int32_t rightVolume;
@@ -2842,7 +2825,8 @@ namespace AudioManager
 				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
 				g_soundEffectPresets[soundIndex].pitch,
 				g_soundEffectPresets[soundIndex].volume,
-				&owner->transform.pos);
+				&owner->transform.pos,
+				0);
 		}
 
 		// FUNCTION: TOY2 0x0049EA90
@@ -2853,7 +2837,8 @@ namespace AudioManager
 				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
 				g_soundEffectPresets[soundIndex].pitch,
 				g_soundEffectPresets[soundIndex].volume,
-				&owner->transform.pos);
+				&owner->transform.pos,
+				1);
 		}
 	}
 }

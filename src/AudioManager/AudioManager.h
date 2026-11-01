@@ -45,7 +45,7 @@ namespace AudioManager
 	void ClearSequence7Cursor();
 	void UpdateSoundSequences();
 	void UpdateChannels();
-	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos);
+	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos, int32_t unused = 0);
 	int32_t IsActorSoundPlaying(Toy2::Buzz::Toy2BuzzActor* buzzActor);
 	void SetVolumes(int32_t musicVolume, int32_t soundVolume);
 
