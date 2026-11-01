@@ -330,7 +330,7 @@ namespace Toy2
 	int32_t g_unk830E38;
 
 	// GLOBAL: TOY2 0x00830D4C
-	int16_t g_unk830D4C;
+	int32_t g_unk830D4C;
 
 	// GLOBAL: TOY2 0x0050A0BC
 	int32_t g_unk50A0BC;
@@ -6789,7 +6789,7 @@ namespace Toy2
 				}
 				else
 				{
-					Camera::g_inCutscene &= 0xFE;
+					Camera::g_inCutscene &= ~1;
 					g_buzzActor.actorFlags &= ~4;
 					g_unk830CC4 = 0;
 					Camera::g_cutsceneTimer = 0;
@@ -6905,22 +6905,22 @@ namespace Toy2
 					tokenColor = 0x80;
 				}
 
-				goto LABEL_78;
+				goto LBL_DRAW_CHALLENGE_ICON;
 			}
 
 			if (! g_isPaused)
 				AudioManager::PlaySoundEffect(94, 0);
 
-			if ((int16_t)g_unk830D4C < 0)
+			if (g_unk830D4C < 0)
 			{
-			LABEL_71:
+			LBL_DRAW_CHALLENGE_TIMER_DIGITS:
 				digits = g_unk52AD64 - 100;
 				digitsLow = (g_unk52AD64 - 100) / 10;
 				Renderer::Sprite::DrawTile(offsetY + 243, slide6 + 24, 3, (g_unk52AD64 - 100) / 10);
 				Renderer::Sprite::DrawTile(offsetY + 257, slide6 + 24, 3, digits - 10 * digitsLow);
 				tokenColor = 0x80;
 
-			LABEL_78:
+			LBL_DRAW_CHALLENGE_ICON:
 				Renderer::Sprite::DrawColouredFixed(offsetX + 140, slide6 + 16, 26, 0, tokenColor, tokenColor, tokenColor);
 			}
 			else
@@ -6928,7 +6928,7 @@ namespace Toy2
 				offsetX = -20;
 				offsetY = -32;
 
-				if ((int16_t)g_unk830D4C == 5)
+				if (g_unk830D4C == 5)
 				{
 					pulse = g_tickAccumulators.tick32Acc & 0x1F;
 
@@ -6938,7 +6938,7 @@ namespace Toy2
 					tokenColor = 4 * pulse + 80;
 
 					if (g_tickAccumulators.tick32Acc < 0x10)
-						goto LABEL_70;
+						goto LBL_DRAW_QUEST_ICON;
 				}
 				else
 				{
@@ -6947,10 +6947,10 @@ namespace Toy2
 
 				Renderer::Sprite::DrawTile(302, slide6 + 32, 3, (int16_t)g_unk830D4C);
 
-			LABEL_70:
+			LBL_DRAW_QUEST_ICON:
 				Renderer::Sprite::DrawColouredFixed(160, slide6 + 16, 51, 0, tokenColor, tokenColor, tokenColor);
 
-				goto LABEL_71;
+				goto LBL_DRAW_CHALLENGE_TIMER_DIGITS;
 			}
 		}
 
@@ -7002,7 +7002,7 @@ namespace Toy2
 				flicker = 0x80;
 			}
 
-			if (shown != 5 || g_tickAccumulators.tick32Acc >= 0x10)
+			if (shown != 5 || g_tickAccumulators.tick32Acc < 0x10)
 				Renderer::Sprite::DrawScaled(474 - (offset5 << 9) / 320, slide5 + 32, 20, shown + 26, 0xFF, 0xFF, 0xFF, 96, 4096, 4096);
 
 			Renderer::Sprite::DrawColouredFixed(272 - offset5, slide5 + 16, 50, 0, flicker, flicker, flicker);
@@ -7187,11 +7187,11 @@ namespace Toy2
 					bossBar = 54;
 					g_unk52B7E0 = 54;
 
-					goto LABEL_153;
+					goto LBL_DRAW_BOSS_FILL;
 				}
 
 				if (g_unk52B7E0 > 10)
-					goto LABEL_153;
+					goto LBL_DRAW_BOSS_FILL;
 			}
 			else
 			{
@@ -7201,19 +7201,19 @@ namespace Toy2
 
 			if (g_tickAccumulators.tick16Acc >= 8)
 			{
-			LABEL_154:
+			LBL_DRAW_BOSS_FRAME:
 				Renderer::Sprite::DrawScaled(224, slide7Short + 16, 13, 0, 0x80, 0x80, 0x80, 96, 0x2000, 0x2000);
 
-				goto LABEL_155;
+				goto LBL_DRAW_DEMO_LABEL;
 			}
 
-		LABEL_153:
+		LBL_DRAW_BOSS_FILL:
 			Renderer::Sprite::DrawScaled(228, slide7Short + 20, 6, 0, 0x80, (uint8_t)(2 * bossBar), 0, 96, bossBar << 12, 0x4000);
 
-			goto LABEL_154;
+			goto LBL_DRAW_BOSS_FRAME;
 		}
 
-	LABEL_155:
+	LBL_DRAW_DEMO_LABEL:
 		if (g_demoMode == 1 && g_tickAccumulators.tick64Acc < 32)
 			Renderer::DrawString(112, "demo mode", 0x80, 0x80, 0, 0);
 	}
@@ -8164,7 +8164,7 @@ namespace Toy2
 	}
 
 	// FUNCTION: TOY2 0x004CD110
-	int32_t ShowTokenSparkle() { return 1; }
+	int32_t ShowTokenSparkle(int32_t linkId) { return 1; }
 }
 
 // $FUNC DEBUG

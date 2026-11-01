@@ -271,7 +271,7 @@ namespace Toy2
 		{
 			int32_t l_index;
 			Levels::Type63* l_data;
-			int32_t l_unk;
+			int16_t l_unk;
 			Transform l_pos;
 
 			l_index = 0;
