@@ -8,10 +8,10 @@
 namespace FileUtils
 {
 	// GLOBAL: TOY2 0x00882F40
-	char g_pathRegValue[512];
+	char g_pathRegValue[513];
 
 	// GLOBAL: TOY2 0x00883144
-	char g_cdPathRegValue[512];
+	char g_cdPathRegValue[513];
 
 	// GLOBAL: TOY2 0x00882F3C
 	int32_t g_registryKeysRead;

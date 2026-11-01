@@ -31,7 +31,7 @@ namespace AudioManager
 	void StopAndFlush();
 	void Init();
 	int32_t IsStreamActive();
-	void SetVolumesProcessed(int32_t musicVolume, int32_t sfxVolume);
+	void SetVolumesProcessed(int32_t musicSliderIndex, int32_t sfxSliderIndex);
 	void FlushSoundVoices();
 	int32_t StopAndWait();
 	void LoadSfxPackForLevel(int32_t levelId);

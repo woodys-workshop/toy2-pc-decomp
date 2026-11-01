@@ -442,7 +442,7 @@ namespace RawLoader
 
 		if ((Toy2::Levels::g_levelLoadConfig & 0x800) != 0 && (resumePtr = g_resumePacketPtr) != 0)
 		{
-			buffer = reinterpret_cast<uint8_t*>(fileName); // ?
+			buffer = (uint8_t*)fileName; // ?
 		}
 		else
 		{
@@ -484,12 +484,12 @@ namespace RawLoader
 		{
 			DecompressBuffer(buffer, decompBuffer);
 
-			if (*reinterpret_cast<uint32_t*>(decompBuffer) == 35)
+			if (*(uint32_t*)decompBuffer == 35)
 			{
 				memcpy(g_creatureListRam, decompBuffer + 4, sizeof(g_creatureListRam));
 				Logger::Log("LOAD: Type 35, CreatListRam.\n");
 			}
-			else if (*reinterpret_cast<uint32_t*>(decompBuffer) == 36)
+			else if (*(uint32_t*)decompBuffer == 36)
 			{
 				// omitted
 				// $TODO: implement this portion, don't know if it actually does anything

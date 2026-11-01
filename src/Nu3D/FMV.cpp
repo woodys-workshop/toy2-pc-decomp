@@ -97,7 +97,7 @@ namespace Nu3D
 			}
 		}
 
-		// FUNCTION: TOY2 0x004DBB80 [MATCHED]
+		// FUNCTION: TOY2 0x004DBB80
 		HRESULT Seek(FMVInstance* fmv, int32_t streamTime) { return fmv->multiStream->Seek((STREAM_TIME)10000000 * streamTime); }
 
 		// FUNCTION: TOY2 0x004DB950 [MATCHED]

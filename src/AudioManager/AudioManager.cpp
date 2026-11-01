@@ -530,16 +530,14 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x0047D8E0
-	int32_t IsEffectPlaying(int32_t bufferIndex)
+	int32_t IsEffectPlaying(DWORD bufferIndex)
 	{
-		DWORD status;
-
 		if (! g_directSoundInit)
 			return 0;
 
-		g_lastDSoundError = g_soundEffectBuffers[bufferIndex]->GetStatus(&status);
+		g_lastDSoundError = g_soundEffectBuffers[bufferIndex]->GetStatus(&bufferIndex);
 
-		return status;
+		return bufferIndex;
 	}
 
 	// FUNCTION: TOY2 0x0047E3C0 [MATCHED]
@@ -986,7 +984,7 @@ namespace AudioManager
 
 	namespace Wave
 	{
-		// FUNCTION: TOY2 0x004A40F0
+		// FUNCTION: TOY2 0x004A40F0 [MATCHED]
 		MMRESULT SeekToChunk(HMMIO* musicHandle, LPMMCKINFO info, MMCKINFO* infoParent)
 		{
 			mmioSeek(*musicHandle, infoParent->dwDataOffset + 4, 0);
@@ -1340,7 +1338,7 @@ namespace AudioManager
 		}
 
 		// FUNCTION: TOY2 0x00437010
-		DWORD WINAPI ThreadProc(LPVOID context)
+		DWORD __cdecl ThreadProc()
 		{
 			g_streamThreadReady = 1;
 
@@ -1442,7 +1440,7 @@ namespace AudioManager
 				goto LBL_STREAM_STOP;
 			}
 
-			if (! CreateThread(0, 0, ThreadProc, 0, 0, &threadId))
+			if (! CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadProc, 0, 0, &threadId))
 			{
 				if (g_streamHandles.threadSemaphore)
 					CloseHandle(g_streamHandles.threadSemaphore);
@@ -1498,7 +1496,7 @@ namespace AudioManager
 
 			if (g_directSound)
 			{
-				g_directSound->SetCooperativeLevel(D3DApp::g_windowData.mainHwnd, DSSCL_PRIORITY);
+				g_directSound->SetCooperativeLevel(D3DApp::g_windowData.mainHwnd, DSSCL_EXCLUSIVE);
 				g_directSoundInit = 1;
 
 				if (IsStreamActive())
@@ -1579,9 +1577,9 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x0049E8D0
-	void SetVolumesProcessed(int32_t musicVolume, int32_t sfxVolume)
+	void SetVolumesProcessed(int32_t musicSliderIndex, int32_t sfxSliderIndex)
 	{
-		SetVolumes(2 * Toy2::g_musicSliderToAmplitude[musicVolume] / 3, 3 * Toy2::g_soundSliderToAmplitude[sfxVolume] / 2);
+		SetVolumes(2 * Toy2::g_musicSliderToAmplitude[musicSliderIndex] / 3, 3 * Toy2::g_soundSliderToAmplitude[sfxSliderIndex] / 2);
 	}
 
 	// FUNCTION: TOY2 0x004A3EF0
@@ -2011,7 +2009,7 @@ namespace AudioManager
 
 		StopAndWait();
 
-		if (index > 21)
+		if (index >= 22 || index < 0)
 			return 0;
 
 		FileUtils::AppendCDPath(fileName);

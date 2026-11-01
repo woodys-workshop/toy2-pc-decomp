@@ -3190,79 +3190,81 @@ namespace Toy2
 		{
 			case 0:
 				movieName = "dlogo";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 1:
 				movieName = "tt";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 2:
 				movieName = "acti";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 10:
 				movieName = "1st trailer";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 11:
 				movieName = "l 01 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 12:
 				movieName = "l 02 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 13:
 				movieName = "l 03 bo";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 14:
 				movieName = "l 04 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 15:
 				movieName = "l 05 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 16:
 				movieName = "l 06 bo";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 17:
 				movieName = "l 07 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 18:
 				movieName = "l 08 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 19:
 				movieName = "l 09 bo";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 20:
 				movieName = "l 10 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 21:
 				movieName = "l 11 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 22:
 				movieName = "l 12 bo";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 23:
 				movieName = "l 13 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 24:
 				movieName = "l 14 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 25:
 				movieName = "l 15 bo 1";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 26:
 				movieName = "l 12 in";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 27:
 				movieName = "l 15 bo 2";
-				goto LABEL_24;
+				goto LBL_PLAY_MOVIE;
 			case 28:
 				movieName = "end 01";
-			LABEL_24:
-				strcat(filePath, movieName);
-				strcat(filePath, ".dll");
+			LBL_PLAY_MOVIE:
+				{
+					strcat(filePath, movieName);
+					strcat(filePath, ".dll");
 
-				AudioManager::ReleaseBuffers();
-				exited = Nu3D::FMV::PlayMovie(filePath);
-				AudioManager::Init();
+					AudioManager::ReleaseBuffers();
+					exited = Nu3D::FMV::PlayMovie(filePath);
+					AudioManager::Init();
 
-				result = exited;
-				break;
+					result = exited;
+					break;
+				}
 			default:
 				result = 0;
 				break;
@@ -3289,8 +3291,9 @@ namespace Toy2
 			g_cpuTicks = g_cpuSpeed / (abs((int32_t)(timeGetTime() - g_cpuTime)) + 1);
 
 			do
+			{
 				g_cpuTicks = 1000 / (abs((int32_t)(timeGetTime() - g_cpuTime)) + 1);
-			while (g_cpuTicks > 60);
+			} while (g_cpuTicks > 60);
 
 			--counter;
 		} while (counter);

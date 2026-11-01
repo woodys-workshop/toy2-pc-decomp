@@ -467,15 +467,9 @@ namespace D3DApp
 		{
 			int32_t lastError = GetLastError();
 
-			char* buffer = NULL;
+			char* buffer;
 			FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-				0,
-				lastError,
-				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				buffer,
-				0,
-				0);
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, 0);
 			MessageBoxA(0, buffer, "GetLastError", MB_ICONINFORMATION);
 			LocalFree(buffer);
 			return 0;
@@ -854,7 +848,7 @@ namespace D3DApp
 			{
 				if (msg == WM_MOVING && g_pcStruct.fullscreenMode)
 				{
-					GetWindowRect(hWnd, reinterpret_cast<RECT*>(lParam));
+					GetWindowRect(hWnd, (RECT*)lParam);
 
 					*lParamPtr = 1;
 					*wParamPtr = 1;
@@ -884,7 +878,7 @@ namespace D3DApp
 						break;
 					case WM_GETMINMAXINFO:
 
-						MINMAXINFO* minMaxInfo = reinterpret_cast<MINMAXINFO*>(lParam);
+						MINMAXINFO* minMaxInfo = (MINMAXINFO*)lParam;
 
 						if (g_pcStruct.fullscreenMode)
 						{
