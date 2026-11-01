@@ -5,6 +5,19 @@
 
 namespace RawLoader
 {
+	struct Backdrop
+	{
+		int32_t width;
+		int32_t height;
+		int32_t verticalOffset;
+		RGB32 topColor;
+		RGB32 bottomColor;
+		int32_t unknown24;
+		int32_t unknown28;
+	};
+
+	STATIC_ASSERT(sizeof(Backdrop) == 0x2C);
+
 	struct CreatureListRam
 	{
 		struct EntityControl
@@ -31,6 +44,8 @@ namespace RawLoader
 		uint8_t speedTarget;
 	};
 
+	extern Backdrop g_backdrop;
+	extern Backdrop g_staticBackdrop;
 	extern CreatureListRam g_creatureListRam[64];
 
 	void LoadPacketData(char* fileName);

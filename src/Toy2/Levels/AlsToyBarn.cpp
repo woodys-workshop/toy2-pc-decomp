@@ -17,6 +17,7 @@
 #include "AudioManager/AudioManager.h"
 #include "Random.h"
 #include "Nullsub.h"
+#include "RawLoader.h"
 
 namespace Toy2
 {
@@ -181,9 +182,6 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052FA50
 		int32_t g_unk52FA50;
 
-		// GLOBAL: TOY2 0x004F73B4
-		RGB32 g_type36Color = { 118, 175, 158 };
-
 		// FUNCTION: TOY2 0x00421090
 		void Initialize()
 		{
@@ -246,7 +244,7 @@ namespace Toy2
 			Platform::GetOrigin(11, &origin);
 			Platform::SetOrigin(11, origin.x + 25280, origin.y, origin.z);
 			Nu3D::Link::SetPositionRawAndCommit(14, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
-			MainMenu::g_menuClearColor = g_type36Color;
+			MainMenu::g_menuClearColor = RawLoader::g_backdrop.topColor;
 		}
 
 		// FUNCTION: TOY2 0x00420F70
