@@ -84,13 +84,13 @@ namespace Toy2
 			int32_t v5;
 			int16_t v6;
 			int32_t v7;
-			int16_t v8;
+			int16_t firstProbeYaw;
 			int32_t GroundHeight;
-			int32_t v10;
-			int32_t v11;
+			int32_t secondProbeCosine;
+			int32_t secondGroundHeight;
 			int32_t v12;
 			int32_t v13;
-			Transform a1;
+			Transform effectPos;
 
 			AudioManager::PlaySoundEffect(103, 0);
 			g_unk52F9A8 = (g_unk52F9A8 - 1) & 1;
@@ -327,36 +327,41 @@ namespace Toy2
 
 					if (g_tickState[6] && g_unk52F9A0 < 550)
 					{
-						v8 = g_levelActors[0].transform.angles.yaw - 128;
-						a1.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128) & 0xFFF];
-						a1.pos.y = g_levelActors[0].transform.pos.y;
+						firstProbeYaw = g_levelActors[0].transform.angles.yaw - 128;
+						effectPos.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128) & 0xFFF];
+						effectPos.pos.y = g_levelActors[0].transform.pos.y;
 
-						a1.pos.z = g_levelActors[0].transform.pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128 + 1024) & 0xFFF];
+						effectPos.pos.z =
+							g_levelActors[0].transform.pos.z + 4 * Numerics::g_sinCosLUT[(g_levelActors[0].transform.angles.yaw - 128 + 1024) & 0xFFF];
 
-						GroundHeight = Nu3D::Collision::GetGroundHeight(&a1, 0);
+						GroundHeight = Nu3D::Collision::GetGroundHeight(&effectPos, 0);
 
-						a1.pos.y = GroundHeight;
+						effectPos.pos.y = GroundHeight;
 
 						if (GroundHeight != 0x80000000)
 						{
-							Nu3D::Particles::SpawnFromPreset(a1.pos.x, GroundHeight, a1.pos.z, 123, 2);
-							Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
+							Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, GroundHeight, effectPos.pos.z, 123, 2);
+							Nu3D::Particles::ParticleInstance* particle =
+								Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, effectPos.pos.y, effectPos.pos.z, 124, 1);
+							particle->rotSpeed = *g_randDatBufferPtr;
 							++g_randDatBufferPtr;
 						}
 
-						v10 = Numerics::g_sinCosLUT[(v8 + 1280) & 0xFFF];
+						secondProbeCosine = Numerics::g_sinCosLUT[(firstProbeYaw + 1280) & 0xFFF];
 
-						a1.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(v8 + 256) & 0xFFF];
-						a1.pos.y = g_levelActors[0].transform.pos.y;
-						a1.pos.z = g_levelActors[0].transform.pos.z + 4 * v10;
+						effectPos.pos.x = g_levelActors[0].transform.pos.x + 4 * Numerics::g_sinCosLUT[(firstProbeYaw + 256) & 0xFFF];
+						effectPos.pos.y = g_levelActors[0].transform.pos.y;
+						effectPos.pos.z = g_levelActors[0].transform.pos.z + 4 * secondProbeCosine;
 
-						v11 = Nu3D::Collision::GetGroundHeight(&a1, 0);
-						a1.pos.y = v11;
+						secondGroundHeight = Nu3D::Collision::GetGroundHeight(&effectPos, 0);
+						effectPos.pos.y = secondGroundHeight;
 
-						if (v11 != 0x80000000)
+						if (secondGroundHeight != 0x80000000)
 						{
-							Nu3D::Particles::SpawnFromPreset(a1.pos.x, v11, a1.pos.z, 123, 2);
-							Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 124, 1)->rotSpeed = *g_randDatBufferPtr;
+							Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, secondGroundHeight, effectPos.pos.z, 123, 2);
+							Nu3D::Particles::ParticleInstance* particle =
+								Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, effectPos.pos.y, effectPos.pos.z, 124, 1);
+							particle->rotSpeed = *g_randDatBufferPtr;
 							++g_randDatBufferPtr;
 						}
 
@@ -417,31 +422,34 @@ namespace Toy2
 			{
 				if (g_tickState[2])
 				{
-					a1.pos.x = 500;
-					a1.pos.y = -400;
-					a1.pos.z = 0;
+					effectPos.pos.x = 500;
+					effectPos.pos.y = -400;
+					effectPos.pos.z = 0;
 
-					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
+					Actor::ResolveBoneAttachmentPos((Vector3I*)&effectPos, g_levelActors, 0);
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, effectPos.pos.y, effectPos.pos.z, 17, 2);
+					particle->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
 
-					a1.pos.x = -500;
+					effectPos.pos.x = -500;
 					++g_randDatBufferPtr;
-					a1.pos.y = -400;
-					a1.pos.z = 0;
+					effectPos.pos.y = -400;
+					effectPos.pos.z = 0;
 
-					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 17, 2)->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
+					Actor::ResolveBoneAttachmentPos((Vector3I*)&effectPos, g_levelActors, 0);
+					particle = Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, effectPos.pos.y, effectPos.pos.z, 17, 2);
+					particle->rotSpeed = (*g_randDatBufferPtr & 0x1F) - 16;
 					++g_randDatBufferPtr;
 				}
 
 				if (g_levelActors[0].actorPhase <= 10 && g_tickState[7])
 				{
-					a1.pos.x = 0;
-					a1.pos.y = 0;
-					a1.pos.z = -200;
+					effectPos.pos.x = 0;
+					effectPos.pos.y = 0;
+					effectPos.pos.z = -200;
 
-					Actor::ResolveBoneAttachmentPos((Vector3I*)&a1, g_levelActors, 0);
-					Nu3D::Particles::SpawnFromPreset(a1.pos.x, a1.pos.y, a1.pos.z, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+					Actor::ResolveBoneAttachmentPos((Vector3I*)&effectPos, g_levelActors, 0);
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(effectPos.pos.x, effectPos.pos.y, effectPos.pos.z, 35, 14);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 				}
 			}

@@ -692,15 +692,13 @@ namespace Toy2
 					}
 					else
 					{
-						bool last;
-
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
-							last = burstCount == 1;
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14);
+							particle->rotSpeed = *g_randDatBufferPtr - 128;
 							++g_randDatBufferPtr;
 							--burstCount;
-						} while (! last);
+						} while (burstCount);
 
 						Lighting::SpawnLight(spawnX, spawnY, spawnZ, 0xF08000, 32, (int32_t)actor);
 						AudioManager::PlaySoundEffect(10, &actor->transform.pos);

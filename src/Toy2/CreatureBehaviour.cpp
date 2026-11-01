@@ -432,7 +432,9 @@ namespace Toy2
 
 					do
 					{
-						Nu3D::Particles::SpawnFromPreset(position.pos.x, position.pos.y, position.pos.z, 100, 15)->rotSpeed = *g_randDatBufferPtr - 128;
+						Nu3D::Particles::ParticleInstance* burstParticle =
+							Nu3D::Particles::SpawnFromPreset(position.pos.x, position.pos.y, position.pos.z, 100, 15);
+						burstParticle->rotSpeed = *g_randDatBufferPtr - 128;
 						--count;
 						++g_randDatBufferPtr;
 					} while (count);
@@ -537,7 +539,8 @@ namespace Toy2
 
 						do
 						{
-							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+							Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14);
+							particle->rotSpeed = *g_randDatBufferPtr - 128;
 							++g_randDatBufferPtr;
 							--count;
 						} while (count);
@@ -587,7 +590,8 @@ namespace Toy2
 
 				if (g_tickState[7])
 				{
-					Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 17, 10)->rotSpeed = *g_randDatBufferPtr - 128;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 17, 10);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 				}
 
@@ -595,7 +599,8 @@ namespace Toy2
 
 				if (randomBits && (actor->unkVar7 & 0xFFFF0000) == 0xE0000)
 				{
-					Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 4, 4)->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 4, 4);
+					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					++g_randDatBufferPtr;
 				}
 			}
@@ -629,7 +634,7 @@ namespace Toy2
 				pitch = AudioManager::g_pitchArray[1];
 
 				if (AudioManager::g_pitchArray[1] <= 512)
-					goto LABEL_46;
+					goto LBL_CHECK_MOVEMENT_SOUND;
 
 				pitch = (int16_t)(-32 * Renderer::g_frameDelta + AudioManager::g_pitchArray[1]);
 			}
@@ -640,7 +645,7 @@ namespace Toy2
 
 			AudioManager::g_pitchArray[1] = pitch;
 
-		LABEL_46:
+		LBL_CHECK_MOVEMENT_SOUND:
 			if (actor->actorPhase >= 10 && pitch > 512)
 				AudioManager::PlaySoundEffect(53, &actor->transform.pos);
 		}
@@ -715,22 +720,22 @@ namespace Toy2
 
 				if (g_tickState[4] && (state == 1 || abs(context->localStrafeSpeed) > 0x200))
 				{
-					Nu3D::Particles::SpawnFromPreset(
+					Nu3D::Particles::ParticleInstance* firstParticle = Nu3D::Particles::SpawnFromPreset(
 						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
 						actor->transform.pos.y - 2048,
 						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1408) & 0xFFF] >> 1),
 						42,
-						10)
-						->rotSpeed = *g_randDatBufferPtr - 128;
+						10);
+					firstParticle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
-					Nu3D::Particles::SpawnFromPreset(
+					Nu3D::Particles::ParticleInstance* secondParticle = Nu3D::Particles::SpawnFromPreset(
 						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
 						actor->transform.pos.y - 2048,
 						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 640) & 0xFFF] >> 1),
 						42,
-						10)
-						->rotSpeed = *g_randDatBufferPtr - 128;
+						10);
+					secondParticle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					AudioManager::PlaySoundEffect(54, &actor->transform.pos);
@@ -859,22 +864,22 @@ namespace Toy2
 
 				if (g_tickState[4] && (state == 1 || abs(context->localStrafeSpeed) > 0x200))
 				{
-					Nu3D::Particles::SpawnFromPreset(
+					Nu3D::Particles::ParticleInstance* firstParticle = Nu3D::Particles::SpawnFromPreset(
 						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
 						actor->transform.pos.y - 2048,
 						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1408) & 0xFFF] >> 1),
 						42,
-						10)
-						->rotSpeed = *g_randDatBufferPtr - 128;
+						10);
+					firstParticle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
-					Nu3D::Particles::SpawnFromPreset(
+					Nu3D::Particles::ParticleInstance* secondParticle = Nu3D::Particles::SpawnFromPreset(
 						(Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 1664) & 0xFFF] >> 1) + actor->transform.pos.x,
 						actor->transform.pos.y - 2048,
 						actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw - 640) & 0xFFF] >> 1),
 						42,
-						10)
-						->rotSpeed = *g_randDatBufferPtr - 128;
+						10);
+					secondParticle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 
 					AudioManager::PlaySoundEffect(54, &actor->transform.pos);
@@ -1465,7 +1470,7 @@ namespace Toy2
 						actor->actorTint.r = 0x2000;
 						actor->actorTint.g = 0x2000;
 						actor->actorTint.b = 0x2000;
-						goto LABEL_14;
+						goto LBL_CHECK_DEATH;
 					}
 				}
 				else
@@ -1478,7 +1483,7 @@ namespace Toy2
 			}
 
 			actor->useTint = 0;
-		LABEL_14:
+		LBL_CHECK_DEATH:
 			if (actor->actorPhase < 10 && AlsToyBarn::g_unk52FA14 == 2)
 			{
 				count = 5;
@@ -1492,7 +1497,8 @@ namespace Toy2
 
 				do
 				{
-					Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+					particle = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 					--count;
 				} while (count);
@@ -1504,7 +1510,7 @@ namespace Toy2
 			}
 			else if (AlsToyBarn::g_unk52FA14 < 3)
 			{
-				goto LABEL_31;
+				goto LBL_UPDATE_HEALTH_BAR;
 			}
 
 			if (g_curSectorCopy1 == 4)
@@ -1538,11 +1544,12 @@ namespace Toy2
 
 				if (randomBits && (actor->unkVar7 & 0xFFFF0000) == 0xA0000)
 				{
-					Nu3D::Particles::SpawnFromPreset(fireX, fireY, fireZ, 4, 4)->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+					particle = Nu3D::Particles::SpawnFromPreset(fireX, fireY, fireZ, 4, 4);
+					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					++g_randDatBufferPtr;
 				}
 			}
-		LABEL_31:
+		LBL_UPDATE_HEALTH_BAR:
 			if (AlsToyBarn::g_unk52FA14 == 2)
 			{
 				g_unk52B7E0 = 54 * (actor->actorPhase - 9) / 20;
@@ -1618,7 +1625,7 @@ namespace Toy2
 			}
 
 			if (AlsSpaceLand::g_unk52FAE0 <= 1)
-				goto LABEL_11;
+				goto LBL_CLEAR_TINT;
 
 			AlsSpaceLand::g_unk52FA8C -= Renderer::g_frameDelta;
 
@@ -1629,21 +1636,21 @@ namespace Toy2
 				if (AlsSpaceLand::g_unk52FAE0 == 2)
 					*(uint8_t*)&actor->creatureRam->defenseMode = 7;
 
-				goto LABEL_11;
+				goto LBL_CLEAR_TINT;
 			}
 
 			if (! flash)
 			{
-			LABEL_11:
+			LBL_CLEAR_TINT:
 				actor->useTint = 0;
-				goto LABEL_12;
+				goto LBL_UPDATE_FIGHT;
 			}
 
 			actor->useTint = 1;
 			actor->actorTint.r = 0x2000;
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
-		LABEL_12:
+		LBL_UPDATE_FIGHT:
 			if (AlsSpaceLand::g_unk52FAE0 == 2)
 			{
 				AlsSpaceLand::g_unk52FB9C -= Renderer::g_frameDelta;
@@ -1740,7 +1747,8 @@ namespace Toy2
 
 				do
 				{
-					Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 35, 14);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 					--count;
 				} while (count);
@@ -1763,7 +1771,7 @@ namespace Toy2
 				if (primaryAnimIdx || abs(context->localStrafeSpeed) <= 0x200)
 				{
 					if (! wheelState)
-						goto LABEL_46;
+						goto LBL_EMIT_TRAIL;
 				}
 				else
 				{
@@ -1800,18 +1808,18 @@ namespace Toy2
 
 				AudioManager::PlaySoundEffect(54, &actor->transform.pos);
 			}
-		LABEL_46:
+		LBL_EMIT_TRAIL:
 			if (actor->primaryAnimIdx == 2)
 			{
 				if (g_tickState[7])
 				{
-					Nu3D::Particles::SpawnFromPreset(
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(
 						actor->transform.pos.x - Numerics::g_sinCosLUT[actor->transform.angles.yaw] / 3,
 						actor->transform.pos.y - 0x2000,
 						actor->transform.pos.z - Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] / 3,
 						17,
-						10)
-						->rotSpeed = *g_randDatBufferPtr - 128;
+						10);
+					particle->rotSpeed = *g_randDatBufferPtr - 128;
 					++g_randDatBufferPtr;
 				}
 			}
@@ -2026,7 +2034,7 @@ namespace Toy2
 			}
 
 			if (AlsPenthouse::g_unk52FD40 != 2)
-				goto LABEL_8;
+				goto LBL_CLEAR_TINT;
 
 			AlsPenthouse::g_unk52FD10 -= Renderer::g_frameDelta;
 
@@ -2034,19 +2042,19 @@ namespace Toy2
 			{
 				AlsPenthouse::g_unk52FD10 = 0;
 				*(uint8_t*)&actor->creatureRam->defenseMode = 7;
-			LABEL_8:
+			LBL_CLEAR_TINT:
 				actor->useTint = 0;
-				goto LABEL_9;
+				goto LBL_UPDATE_ATTACK;
 			}
 
 			if (! flash)
-				goto LABEL_8;
+				goto LBL_CLEAR_TINT;
 
 			actor->useTint = 1;
 			actor->actorTint.r = 0x2000;
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
-		LABEL_9:
+		LBL_UPDATE_ATTACK:
 			if (g_buzzActor.posAngles.pos.y < 113825 || g_buzzActor.posAngles.pos.y > 140293)
 			{
 				actor->motionTargetPos.x = actor->boundary.x;
@@ -2078,7 +2086,7 @@ namespace Toy2
 				if (actor->unkShort4 > 0)
 				{
 					if (! fired)
-						goto LABEL_25;
+						goto LBL_UPDATE_FIGHT;
 				}
 				else
 				{
@@ -2111,13 +2119,14 @@ namespace Toy2
 
 					do
 					{
-						Nu3D::Particles::SpawnFromPreset(spawnPos.x, spawnPos.y, spawnPos.z, 100, 15)->rotSpeed = *g_randDatBufferPtr - 128;
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnPos.x, spawnPos.y, spawnPos.z, 100, 15);
+						particle->rotSpeed = *g_randDatBufferPtr - 128;
 						--count;
 						++g_randDatBufferPtr;
 					} while (count);
 				}
 			}
-		LABEL_25:
+		LBL_UPDATE_FIGHT:
 			if (AlsPenthouse::g_unk52FD40 == 2)
 			{
 				g_unk52B7E0 = 54 * (actor->actorPhase - 9) / 20;
@@ -2576,7 +2585,7 @@ namespace Toy2
 						actor->actorTint.r = 0x2000;
 						actor->actorTint.g = 0x2000;
 						actor->actorTint.b = 0x2000;
-						goto LABEL_9;
+						goto LBL_UPDATE_ATTACK;
 					}
 				}
 				else
@@ -2587,7 +2596,7 @@ namespace Toy2
 			}
 
 			actor->useTint = 0;
-		LABEL_9:
+		LBL_UPDATE_ATTACK:
 			int16_t shotTimer = actor->unkShort4;
 
 			if (shotTimer)
@@ -2607,7 +2616,7 @@ namespace Toy2
 				if (actor->unkShort4 > 0)
 				{
 					if (! fired)
-						goto LABEL_20;
+						goto LBL_CHECK_DEATH;
 				}
 				else
 				{
@@ -2640,13 +2649,14 @@ namespace Toy2
 
 					do
 					{
-						Nu3D::Particles::SpawnFromPreset(spawnPos.x, spawnPos.y, spawnPos.z, 100, 15)->rotSpeed = *g_randDatBufferPtr - 128;
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(spawnPos.x, spawnPos.y, spawnPos.z, 100, 15);
+						particle->rotSpeed = *g_randDatBufferPtr - 128;
 						--count;
 						++g_randDatBufferPtr;
 					} while (count);
 				}
 			}
-		LABEL_20:
+		LBL_CHECK_DEATH:
 			if (actor->actorPhase < 10 && FinalShowdown::g_unk530004 == 2)
 			{
 				actor->movementData = Actor::g_movementData[33] + 52;

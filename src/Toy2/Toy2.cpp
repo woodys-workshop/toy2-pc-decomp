@@ -1419,7 +1419,8 @@ namespace Toy2
 							int32_t spawnY = curActor->transform.pos.y + attachOffset[1] + 32 * (*g_randDatBufferPtr++ - 128);
 							int32_t spawnZ = curActor->transform.pos.z + attachOffset[2] + 32 * (*g_randDatBufferPtr++ - 128);
 
-							Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 37, 1)->rotSpeed = *g_randDatBufferPtr - 128;
+							Nu3D::Particles::ParticleInstance* trail = Nu3D::Particles::SpawnFromPreset(spawnX, spawnY, spawnZ, 37, 1);
+							trail->rotSpeed = *g_randDatBufferPtr - 128;
 							++g_randDatBufferPtr;
 						}
 
@@ -1429,6 +1430,7 @@ namespace Toy2
 						{
 							curActor->unkVar29 = 0;
 							Actor::Kill(curActor, 2);
+							// Revisit the actor swapped into this list slot.
 							--nextActorPtr;
 						}
 					}
@@ -8841,8 +8843,9 @@ namespace Toy2
 
 			do
 			{
-				Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 4, 4)->lifetime =
-					2 * (*g_randDatBufferPtr & 0xF) + 24;
+				Nu3D::Particles::ParticleInstance* spark =
+					Nu3D::Particles::SpawnFromPreset(beamShot->originPos.x, beamShot->originPos.y, beamShot->originPos.z, 4, 4);
+				spark->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 
 				--sparkCount;
 				++g_randDatBufferPtr;
