@@ -48,13 +48,13 @@ namespace NGNLoader
 		int32_t g_curVertexFlags;
 
 		// GLOBAL: TOY2 0x00B0092C
-		int16_t g_primVertexData[10000];
+		uint16_t g_primVertexData[10000];
 
 		// GLOBAL: TOY2 0x00B06BA0
 		Nu3D::Vertex g_processedPrimVerts[2000];
 
 		// GLOBAL: TOY2 0x00AFBB0C
-		int16_t g_indexDataConversion[17702];
+		uint16_t g_indexDataConversion[17702];
 
 		// GLOBAL: TOY2 0x00508A6C
 		int32_t g_drawTypeConversion[8] = { 0, 0, 2, 1, 3, 5, 4, -1 };
@@ -81,13 +81,13 @@ namespace NGNLoader
 		// FUNCTION: TOY2 0x004CB320
 		int32_t ExtractShapeTextures(FILE* stream)
 		{
-			int16_t nameTableCount;
-			int16_t texCount;
+			uint16_t nameTableCount;
+			uint16_t texCount;
 			uint8_t nameTableCountOffset;
 			uint8_t nameTableLength;
 
-			fread(&nameTableCount, sizeof(int16_t), 1, stream);
-			fread(&texCount, sizeof(int16_t), 1, stream);
+			fread(&nameTableCount, sizeof(uint16_t), 1, stream);
+			fread(&texCount, sizeof(uint16_t), 1, stream);
 			fread(&nameTableCountOffset, sizeof(uint8_t), 1, stream);
 			fread(&nameTableLength, sizeof(uint8_t), 1, stream);
 
@@ -117,7 +117,7 @@ namespace NGNLoader
 					++buffer;
 
 					++i;
-					offset += nameTableCountOffset + 1;
+					offset += texDataLength + 1;
 				} while (i < nameTableCount);
 			}
 
@@ -321,7 +321,7 @@ namespace NGNLoader
 				Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 428)("Given vertex count of %d exceeds maximum allowed (%d)", vertexCount, 2000);
 
 			g_curVertexCount = vertexCount;
-			g_curVertexFlags = (uint8_t)vertexFlags;
+			g_curVertexFlags = vertexFlags;
 
 			int32_t vertexSize = vertexDataLength;
 
@@ -337,7 +337,7 @@ namespace NGNLoader
 			if (vertexFlags & 8)
 				vertexSize -= 4; // specular color
 
-			int32_t sizeCheck = vertexSize - 8 * (vertexFlags >> 4); // texcoord sets, 8 bytes each
+			int32_t sizeCheck = vertexSize - 8 * ((vertexFlags >> 4) & 0xF); // texcoord sets, 8 bytes each
 
 			if (sizeCheck < 0)
 				Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 449)("Given vertex size is not big enough to contain specified data");
@@ -465,8 +465,8 @@ namespace NGNLoader
 			fread(&primitiveCount, sizeof(uint32_t), 1, stream);
 
 			uint32_t type;
-			int16_t materialIndex;
-			int16_t primCount;
+			uint16_t materialIndex;
+			uint16_t primCount;
 			Nu3D::Primitive* primObject = 0;
 			int32_t localVertCount;
 			int32_t verticesSize;
@@ -477,13 +477,13 @@ namespace NGNLoader
 				while (true)
 				{
 					fread(&type, sizeof(uint32_t), 1, stream);
-					fread(&materialIndex, sizeof(int16_t), 1, stream);
-					fread(&primCount, sizeof(int16_t), 1, stream);
+					fread(&materialIndex, sizeof(uint16_t), 1, stream);
+					fread(&primCount, sizeof(uint16_t), 1, stream);
 
 					if (primCount >= 10000)
 						Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 607)("primitive count %d has exceeded maximum allowed %d", primCount, 10000);
 
-					fread(g_primVertexData, sizeof(int16_t), primCount, stream);
+					fread(g_primVertexData, sizeof(uint16_t), primCount, stream);
 
 					if (type)
 					{
@@ -510,8 +510,8 @@ namespace NGNLoader
 				localVertCount = 0;
 
 				int32_t curVertIdx = 0;
-				int16_t* indexData;
-				int16_t indexCount;
+				uint16_t* indexData;
+				uint16_t indexCount;
 				int32_t primVertexIndex;
 
 				if (primCount)
@@ -520,7 +520,7 @@ namespace NGNLoader
 
 					do
 					{
-						int16_t* primVertexData = &g_primVertexData[curVertex];
+						uint16_t* primVertexData = &g_primVertexData[curVertex];
 
 						if (*primVertexData >= g_curVertexCount)
 							Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 617)("out of range vrt id");
@@ -590,12 +590,12 @@ namespace NGNLoader
 
 					if (g_isHardwareRendering)
 					{
-						int16_t* primVertexData = &g_primVertexData[primCount];
+						uint16_t* primVertexData = &g_primVertexData[primCount];
 						int32_t newIndexCount = 3 * primCount / 2;
 
 						for (indexData = &g_indexDataConversion[newIndexCount]; indexData != g_indexDataConversion; indexData[5] = primVertexData[3])
 						{
-							int16_t quadVertIdx = *(primVertexData - 4);
+							uint16_t quadVertIdx = *(primVertexData - 4);
 
 							primVertexData -= 4;
 							indexData -= 6;
@@ -800,7 +800,7 @@ namespace NGNLoader
 						goto LBL_NEXT_PRIM;
 					}
 
-					int16_t* primConvertData = &g_primVertexData[primVertexIndex];
+					uint16_t* primConvertData = &g_primVertexData[primVertexIndex];
 
 					do
 					{
@@ -888,6 +888,7 @@ namespace NGNLoader
 							break;
 
 						default:
+							Logger::GetErrorHandler("C:\\projects\\nu3d\\objload.c", 1002)("err");
 							fseek(stream, size, SEEK_CUR);
 							break;
 					}

@@ -11,6 +11,7 @@
 #include "NGNLoader/ObjectLoad.h"
 
 #include <windows.h>
+#include <stddef.h>
 #include <string.h>
 
 namespace NGNLoader
@@ -265,7 +266,7 @@ namespace NGNLoader
 		int32_t textureCount;
 		fread(&textureCount, sizeof(int32_t), 1, stream);
 
-		for (int32_t textureIndex = textureCount; textureIndex > 0; --textureIndex)
+		for (uint32_t textureIndex = textureCount; textureIndex != 0; --textureIndex)
 		{
 			uint32_t dataOffset;
 			uint32_t rawTexStrLen;
@@ -307,7 +308,7 @@ namespace NGNLoader
 
 			int32_t index = GetOrAllocateTexture(&texParams);
 
-			if (textureId < 64)
+			if (textureId >= 0 && textureId < 64)
 			{
 				ngnImage->textureEntries[textureId].isBGR = isBGR;
 				ngnImage->textureEntries[textureId].textureDataIndex = index;
@@ -316,7 +317,7 @@ namespace NGNLoader
 	}
 
 	// FUNCTION: TOY2 0x004C3EB0
-	void ParseLinker(FILE* stream, NGNImage* ngnImage)
+	int32_t ParseLinker(FILE* stream, NGNImage* ngnImage)
 	{
 		int32_t maxLinkId;
 		int32_t linkCount;
@@ -331,7 +332,7 @@ namespace NGNLoader
 		ngnImage->links = linkerArray;
 
 		if (! linkerArray)
-			return;
+			return 0;
 
 		int32_t count = 0;
 
@@ -343,10 +344,10 @@ namespace NGNLoader
 		{
 			do
 			{
-				uint16_t linkId;
+				int16_t linkId;
 				uint16_t shapeId;
 
-				fread(&linkId, sizeof(uint16_t), 1, stream);
+				fread(&linkId, sizeof(int16_t), 1, stream);
 				fread(&shapeId, sizeof(uint16_t), 1, stream);
 
 				if (linkId >= 0 && linkId < maxLinkId)
@@ -385,6 +386,8 @@ namespace NGNLoader
 
 			} while (count < linkCount);
 		}
+
+		return linkCount;
 	}
 
 	// FUNCTION: TOY2 0x004CA040
@@ -484,15 +487,14 @@ namespace NGNLoader
 
 				if (patch)
 				{
-					// NOTE: the original writes every other short of indexData, the last two writes land in the fields that follow it
 					int16_t* sourceIndices = indices1;
-					int16_t* indexData = patch->indexData;
+					int32_t* indexData = patch->indexData;
 					int32_t maxIndices = 4;
 
 					do
 					{
-						*(int32_t*)indexData = *sourceIndices;
-						indexData += 2;
+						*indexData = *sourceIndices;
+						++indexData;
 						++sourceIndices;
 						--maxIndices;
 					} while (maxIndices);
@@ -553,16 +555,16 @@ namespace NGNLoader
 							break;
 
 						default:
-							goto LABEL_51;
+							goto LBL_UNKNOWN_CHUNK;
 					}
 
-					goto NEXT_CHUNK_LBL;
+					goto LBL_NEXT_CHUNK;
 				}
 
 				if (chunkId == 516)
 				{
 					ExtractAnimations(stream, creature, chunkSize);
-					goto NEXT_CHUNK_LBL;
+					goto LBL_NEXT_CHUNK;
 				}
 
 				if (chunkId > 513)
@@ -595,7 +597,7 @@ namespace NGNLoader
 							}
 						}
 
-						goto NEXT_CHUNK_LBL;
+						goto LBL_NEXT_CHUNK;
 					}
 
 					// the shapes of the nodes
@@ -604,7 +606,7 @@ namespace NGNLoader
 						creature->dataFlags |= 4;
 
 						creature->primitives = (Nu3D::Primitive**)malloc(4 * creature->nodeCount);
-						creature->unkVar10 = (int32_t**)malloc(4 * creature->nodeCount);
+						creature->parentIndices = (int32_t*)malloc(4 * creature->nodeCount);
 
 						if (creature->primitives)
 						{
@@ -618,17 +620,17 @@ namespace NGNLoader
 
 									fread(&nodeFlags, 1, 2, stream);
 
-									creature->unkVar10[nodeIndex] = 0;
+									creature->parentIndices[nodeIndex] = 0;
 
-									fread(&creature->unkVar10[nodeIndex], 1, 2, stream);
+									fread(&creature->parentIndices[nodeIndex], 1, 2, stream);
 
 									if (nodeFlags & 1)
 									{
 										if (nodeFlags & 2)
-											creature->flagsList[nodeIndex] = (int32_t*)((int32_t)creature->flagsList[nodeIndex] | 2);
+											creature->nodeFlags[nodeIndex] |= 2;
 
 										if (nodeFlags & 4)
-											creature->flagsList[nodeIndex] = (int32_t*)((int32_t)creature->flagsList[nodeIndex] | 4);
+											creature->nodeFlags[nodeIndex] |= 4;
 
 										creature->primitives[nodeIndex] = ObjectLoad::ExtractShapeData(stream);
 
@@ -662,15 +664,15 @@ namespace NGNLoader
 									creature->dataFlags = 0;
 									fread(&creature->nodeCount, 1, 4, stream);
 
-									creature->flagsList = (int32_t**)malloc(4 * creature->nodeCount);
+									creature->nodeFlags = (int32_t*)malloc(4 * creature->nodeCount);
 
-									if (creature->flagsList)
-										memset(creature->flagsList, 0, 4 * creature->nodeCount);
+									if (creature->nodeFlags)
+										memset(creature->nodeFlags, 0, 4 * creature->nodeCount);
 								}
 							}
 							else
 							{
-							LABEL_51:
+							LBL_UNKNOWN_CHUNK:
 								Logger::GetErrorHandler("C:\\projects\\nu3d\\hobjload.c", 354)("err");
 								fseek(stream, chunkSize, 1);
 							}
@@ -680,7 +682,7 @@ namespace NGNLoader
 							exitLoop = 1;
 						}
 
-						goto NEXT_CHUNK_LBL;
+						goto LBL_NEXT_CHUNK;
 					}
 
 					// the matrices of the nodes
@@ -706,7 +708,7 @@ namespace NGNLoader
 					}
 				}
 
-			NEXT_CHUNK_LBL:
+			LBL_NEXT_CHUNK:
 				if (ftell(stream) != nextChunkOffset)
 					fseek(stream, nextChunkOffset, 0);
 			} while (! exitLoop && fread(&chunkId, 4, 1, stream));
@@ -723,7 +725,7 @@ namespace NGNLoader
 
 		ngnImage->creatureCount = creatureCount;
 
-		if (creatureCount > 0)
+		if (creatureCount)
 		{
 			Nu3D::Creature** creatureArray = (Nu3D::Creature**)malloc(sizeof(Nu3D::Creature*) * creatureCount);
 			ngnImage->creatureData = creatureArray;
@@ -736,14 +738,14 @@ namespace NGNLoader
 			uint8_t creatureValidFlags[512];
 			memset(creatureValidFlags, 0, creatureCount);
 
-			if (creatureCount > 0)
+			if ((int32_t)creatureCount > 0)
 			{
-				int32_t count;
+				int32_t count = 0;
 
 				do
 				{
-					uint8_t charNameLen;
-					fread(&charNameLen, 1, sizeof(uint8_t), stream);
+					int8_t charNameLen;
+					fread(&charNameLen, 1, sizeof(int8_t), stream);
 
 					if (charNameLen)
 					{
@@ -754,10 +756,10 @@ namespace NGNLoader
 
 					++count;
 
-				} while (count < creatureCount);
+				} while (count < (int32_t)creatureCount);
 			}
 
-			for (int32_t index = 0; index < creatureCount; ++index)
+			for (int32_t index = 0; index < (int32_t)creatureCount; ++index)
 			{
 				if (creatureValidFlags[index])
 					ngnImage->creatureData[index] = ExtractCreatureData(stream);
@@ -1348,11 +1350,8 @@ namespace NGNLoader
 	{
 		FreeAllBmpDataNodes();
 
-		// $TODO: This method is really confusing because of some compiler optimizations
-		// It works as of right now but needs attention when we go instruction match
-
 		uint32_t textureDataCount = 1;
-		NGNTextureData* dataFreeListPtr = &g_textureDataFreeList[1];
+		NGNTextureData* dataFreeListPtr = g_textureDataFreeList;
 
 		do
 		{
@@ -1364,11 +1363,11 @@ namespace NGNLoader
 
 		} while (dataFreeListPtr < &g_textureDataFreeList[1999]);
 
-		g_textureDataFreeList[1].textureIndex = 1;
-		g_textureDataFreeList[1].prev = 0;
-		g_textureDataFreeList[textureDataCount].next = 0;
+		g_textureDataFreeList[0].textureIndex = 1;
+		g_textureDataFreeList[0].prev = 0;
+		g_textureDataFreeList[textureDataCount - 1].next = 0;
 
-		g_textureData.freeList = &g_textureDataFreeList[1];
+		g_textureData.freeList = g_textureDataFreeList;
 		g_textureData.activeList = 0;
 
 		uint32_t textureCacheCount = 1;
@@ -1390,7 +1389,7 @@ namespace NGNLoader
 		g_textureCache.freeList = g_textureCacheFreeList;
 		g_textureCache.activeList = 0;
 
-		g_textureDataFreeList[1999].next = 0;
+		g_textureCacheFreeList[999].next = 0;
 	}
 
 	// FUNCTION: TOY2 0x0044FF50 [MATCHED]
@@ -1450,7 +1449,18 @@ namespace NGNLoader
 	}
 
 	// FUNCTION: TOY2 0x004BB0E0
-	NGNTextureData* GetTextureDataByIndex(uint32_t texDataIndex) { return &g_textureDataFreeList[texDataIndex]; }
+	NGNTextureData* GetTextureDataByIndex(uint32_t texDataIndex)
+	{
+		STATIC_ASSERT(sizeof(NGNTextureData) == sizeof(Nu3D::Viewport::FustrumInfo));
+		STATIC_ASSERT(offsetof(NGNTextureData, isTex14) == offsetof(Nu3D::Viewport::FustrumInfo, unkInt3));
+
+		// ID zero aliases the frustum before the retail texture pool.
+		// $TODO: Recreate that shared layout before removing this branch.
+		if (! texDataIndex)
+			return (NGNTextureData*)&Nu3D::Viewport::g_fustrumInfo;
+
+		return &g_textureDataFreeList[texDataIndex - 1];
+	}
 
 	// FUNCTION: TOY2 0x004BB5E0
 	void RetrieveTextureData(
@@ -1463,7 +1473,7 @@ namespace NGNLoader
 	{
 		if (texDataIndex)
 		{
-			Nu3D::BmpDataNode* bmpDataNode = g_textureDataFreeList[texDataIndex].bmpDataNode;
+			Nu3D::BmpDataNode* bmpDataNode = g_textureDataFreeList[texDataIndex - 1].bmpDataNode;
 
 			if (bmpDataNode)
 			{
@@ -1489,7 +1499,7 @@ namespace NGNLoader
 	HBITMAP GetBmpHandle(int32_t index)
 	{
 		if (index)
-			return g_textureDataFreeList[index].bmpDataNode->bitmapHandle;
+			return g_textureDataFreeList[index - 1].bmpDataNode->bitmapHandle;
 		else
 			return 0;
 	}
@@ -1498,7 +1508,7 @@ namespace NGNLoader
 	int32_t CopyToDDSurfaceByIndex(int32_t texIndex, LPDIRECTDRAWSURFACE4 ddSurface)
 	{
 		if (texIndex)
-			return Nu3D::CopyToDDSurface(g_textureDataFreeList[texIndex].bmpDataNode, ddSurface);
+			return Nu3D::CopyToDDSurface(g_textureDataFreeList[texIndex - 1].bmpDataNode, ddSurface);
 		else
 			return 0;
 	}
@@ -1563,4 +1573,6 @@ namespace NGNLoader
 		Nu3D::FreeAllBmpDataNodes_T();
 	}
 
+	STATIC_ASSERT(sizeof(Vector3F) == 0xC);
+	STATIC_ASSERT(sizeof(((NGNImage*)0)->data266) == 0x200);
 }
