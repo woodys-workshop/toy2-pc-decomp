@@ -19,13 +19,13 @@ namespace Toy2
 		Actor::Toy2Actor** g_animActorList;
 
 		// GLOBAL: TOY2 0x00E4D98C
-		int32_t g_unkE4D98C;
+		int32_t g_isLastActor;
 
 		// GLOBAL: TOY2 0x00E4D990
-		int32_t g_unkE4D990;
+		int32_t g_applyCachedNodeOffset;
 
 		// GLOBAL: TOY2 0x00E4D9A4
-		int32_t g_unkE4D9A4;
+		int32_t g_cachedOffsetNode;
 
 		// GLOBAL: TOY2 0x00508D00
 		int32_t g_specialNodeValue = -1;
@@ -43,13 +43,13 @@ namespace Toy2
 		Vector3I g_nodeAngles[2048];
 
 		// GLOBAL: TOY2 0x00B223E0
-		int16_t* g_unkB223E0;
+		int16_t* g_nodeKeyOffsets;
 
 		// GLOBAL: TOY2 0x00B423E8
-		uint8_t* g_unkB423E8;
+		uint8_t* g_nodeScaleFlags;
 
 		// GLOBAL: TOY2 0x00B423EC
-		uint8_t* g_unkB423EC;
+		uint8_t* g_keyFrames;
 
 		// GLOBAL: TOY2 0x00546D70
 		int16_t g_unk546D70;
@@ -74,7 +74,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004CD140
-		void GetRootWorldPos(Vector3F* out, int32_t index)
+		void TransformByCachedLocalNode(Vector3F* out, int32_t index)
 		{
 			if (g_curAnimCreature != 0)
 				Nu3D::Math::TransformPointByMatrix(out, out, &g_localBoneMatrices[index + 32 * g_curActorAnimSlot]);
@@ -90,17 +90,17 @@ namespace Toy2
 			else
 				headerSize = 12;
 
-			g_unkB223E0 = (int16_t*)((uint8_t*)animData + headerSize);
-			g_unkB423E8 = (uint8_t*)animData + headerSize + 2 * (uint16_t)animData[5];
-			g_unkB423EC = g_unkB423E8 + (uint16_t)animData[6];
+			g_nodeKeyOffsets = (int16_t*)((uint8_t*)animData + headerSize);
+			g_nodeScaleFlags = (uint8_t*)animData + headerSize + 2 * (uint16_t)animData[5];
+			g_keyFrames = g_nodeScaleFlags + (uint16_t)animData[6];
 		}
 
 		// FUNCTION: TOY2 0x004CD1B0
-		int32_t SampleNodeTransform(int32_t curNode, uint16_t* animData, uint32_t unk, D3DMATRIX* matrix)
+		int32_t SampleNodeTransform(int32_t curNode, uint16_t* animData, uint32_t time, D3DMATRIX* matrix)
 		{
-			int32_t frac = unk & 0xFFFF;
-			float fracScale = (float)frac * 0.000015259022f;
-			int32_t frame = unk >> 16;
+			int32_t frac = time & 0xFFFF;
+			float fracScale = (float)frac * (1.0f / 65535.0f);
+			int32_t frame = time >> 16;
 
 			if ((uint32_t)frame > (uint32_t)(animData[2] - 2))
 				frame = animData[2] - 2;
@@ -111,14 +111,14 @@ namespace Toy2
 				nextFrame = frame;
 
 			int32_t stride = animData[4];
-			int16_t* frameA = (int16_t*)(g_unkB423EC + 2 * frame * stride);
-			int32_t boneOffset = g_unkB223E0[curNode];
+			int16_t* frameA = (int16_t*)(g_keyFrames + 2 * frame * stride);
+			int32_t boneOffset = g_nodeKeyOffsets[curNode];
 
 			if (boneOffset == -3 || boneOffset == -2 || boneOffset == -1)
 				return 0;
 
 			int16_t* keyA = frameA + boneOffset;
-			int16_t* keyB = (int16_t*)g_unkB423EC + (boneOffset + nextFrame * stride);
+			int16_t* keyB = (int16_t*)g_keyFrames + (boneOffset + nextFrame * stride);
 
 			Vector3F offset;
 			Vector3F scale;
@@ -171,11 +171,11 @@ namespace Toy2
 			}
 			else
 			{
-				offset.x = (float)(keyA[0] >> 2);
-				offset.y = (float)(keyA[1] >> 2);
-				offset.z = (float)(keyA[2] >> 2);
+				offset.x = (float)(int16_t)(keyA[0] >> 2);
+				offset.y = (float)(int16_t)(keyA[1] >> 2);
+				offset.z = (float)(int16_t)(keyA[2] >> 2);
 
-				// NOTE: the original takes the low two bits of the angles from the next key here
+				// Zero-fraction rotations combine A's packed bits with B's low bits.
 				packed = (uint16_t)keyA[3] + ((uint16_t)keyA[4] << 16);
 				pitchB = ((packed >> 14) & 0xFFC0) | (16 * (keyB[0] & 3));
 				yawB = ((packed >> 4) & 0xFFC0) | (16 * (keyB[1] & 3));
@@ -187,7 +187,8 @@ namespace Toy2
 				Nu3D::Math::MatrixRotateRoll(&rotA, rollB);
 			}
 
-			if (((1 << (curNode % 8)) & g_unkB423E8[curNode / 8]) != 0)
+			// Scale-mask bytes sign-extend before the variable bit test.
+			if (((1 << (curNode % 8)) & (int8_t)g_nodeScaleFlags[curNode / 8]) != 0)
 			{
 				if (frac)
 				{
@@ -200,15 +201,15 @@ namespace Toy2
 					a = keyA[7];
 					int32_t z = a + ((frac * (keyB[7] - a)) >> 16);
 
-					scale.x = scale.x * 0.00024414062f;
-					scale.y = scale.y * 0.00024414062f;
-					scale.z = (float)(z * 0.00024414062);
+					scale.x = scale.x * 0.000244140625f;
+					scale.y = scale.y * 0.000244140625f;
+					scale.z = (float)z * 0.000244140625f;
 				}
 				else
 				{
-					scale.x = (float)(keyA[5] * 0.00024414062);
-					scale.y = (float)(keyA[6] * 0.00024414062);
-					scale.z = (float)(keyA[7] * 0.00024414062);
+					scale.x = (float)keyA[5] * 0.000244140625f;
+					scale.y = (float)keyA[6] * 0.000244140625f;
+					scale.z = (float)keyA[7] * 0.000244140625f;
 				}
 			}
 			else
@@ -221,11 +222,11 @@ namespace Toy2
 			int32_t rootNode = (int16_t)animData[7];
 
 			if (rootNode == curNode)
-				g_unkE4D9A4 = rootNode;
+				g_cachedOffsetNode = rootNode;
 			else
-				rootNode = g_unkE4D9A4;
+				rootNode = g_cachedOffsetNode;
 
-			if (g_unkE4D990)
+			if (g_applyCachedNodeOffset)
 			{
 				if (rootNode)
 				{
@@ -234,7 +235,7 @@ namespace Toy2
 					rootPos.y = -200.0f;
 					rootPos.z = 0.0f;
 
-					GetRootWorldPos(&rootPos, rootNode);
+					TransformByCachedLocalNode(&rootPos, rootNode);
 
 					offset.x = rootPos.x + offset.x;
 					offset.y = rootPos.y + offset.y + 200.0f;
@@ -250,21 +251,21 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004CD7B0
-		void EvaluateClipToMatrices(int32_t index, Nu3D::Creature* creature, D3DMATRIX* targetMatrix, int16_t* animData, uint32_t unk, int32_t flag)
+		void EvaluateClipToMatrices(int32_t index, Nu3D::Creature* creature, D3DMATRIX* targetMatrix, int16_t* animData, uint32_t time, int32_t initialize)
 		{
 			int32_t curNode = 0;
 			D3DMATRIX localMatrix;
 
 			if (animData)
 			{
-				if (flag)
+				if (initialize)
 				{
-					g_unkE4D9A4 = 0;
-					g_unkE4D990 = 0;
+					g_cachedOffsetNode = 0;
+					g_applyCachedNodeOffset = 0;
 				}
 				else
 				{
-					g_unkE4D990 = g_unkE4D98C;
+					g_applyCachedNodeOffset = g_isLastActor;
 				}
 
 				ParseHeader(animData);
@@ -275,12 +276,12 @@ namespace Toy2
 					{
 						Nu3D::Math::BuildIdentityMatrix(&localMatrix);
 
-						if (curNode == g_specialNodeValue || SampleNodeTransform(curNode, (uint16_t*)animData, unk, &localMatrix) || flag)
+						if (curNode == g_specialNodeValue || SampleNodeTransform(curNode, (uint16_t*)animData, time, &localMatrix) || initialize)
 						{
 							int32_t matrixIdx = curNode + 32 * index;
 
 							memcpy(&g_localBoneMatrices[matrixIdx], &localMatrix, sizeof(D3DMATRIX));
-							Nu3D::Math::MultiplyMatrix3x4(&Nu3D::g_nodeMatrices[0].matrices[matrixIdx], &localMatrix, targetMatrix);
+							Nu3D::Math::MultiplyMatrix3x4((D3DMATRIX*)Nu3D::g_nodeMatrices + matrixIdx, &localMatrix, targetMatrix);
 						}
 
 						++curNode;
@@ -299,7 +300,7 @@ namespace Toy2
 			Vector3F offset;
 			Vector3I* nodeAngle;
 			Nu3D::NodeMatricesInner* nodeMatrices;
-			float v22;
+			float secondaryYOffset;
 			int32_t slot;
 			D3DMATRIX matrix1;
 			D3DMATRIX matrix2;
@@ -318,7 +319,7 @@ namespace Toy2
 
 				while (1)
 				{
-					g_unkE4D98C = actorNext[1] == 0;
+					g_isLastActor = actorNext[1] == 0;
 					selectedActor = *list;
 					creature = NGNLoader::g_ngnImage->creatureData[(*list)->creatureId];
 
@@ -330,29 +331,25 @@ namespace Toy2
 						Nu3D::Math::BuildIdentityMatrix(&matrix1);
 						Nu3D::Math::BuildIdentityMatrix(&matrix2);
 
-						v22 = 0.0f;
-						offset.x = (float)(selectedActor->unkVar12 * 0.00024414062);
-						offset.y = (float)(selectedActor->unkVar12_ * 0.00024414062);
-						offset.z = (float)(selectedActor->unkVar13 * 0.00024414062);
+						secondaryYOffset = 0.0f;
+						offset.x = (float)selectedActor->unkVar12 * 0.000244140625f;
+						offset.y = (float)selectedActor->unkVar12_ * 0.000244140625f;
+						offset.z = (float)selectedActor->unkVar13 * 0.000244140625f;
 
-						int16_t unkVar13_ = selectedActor->unkVar13_;
-						bool applyScale1 = false;
+						int16_t scaleControl = selectedActor->unkVar13_;
 
-						if (unkVar13_)
+						if (scaleControl)
 						{
-							if ((uint16_t)unkVar13_ == 0x8000)
-							{
+							if ((uint16_t)scaleControl == 0x8000)
 								Nu3D::Math::MatrixApplyScale(&matrix2, &offset);
-								applyScale1 = true;
-							}
-							else if ((unkVar13_ & 1) != 0)
-							{
-								v22 = (float)((1.0f - offset.y) * unkVar13_);
-								applyScale1 = true;
-							}
 
-							if (applyScale1)
+							if ((uint16_t)scaleControl == 0x8000 || (scaleControl & 1) != 0)
+							{
+								if ((uint16_t)scaleControl != 0x8000)
+									secondaryYOffset = (1.0f - offset.y) * scaleControl;
+
 								Nu3D::Math::MatrixApplyScale(&matrix1, &offset);
+							}
 						}
 
 						Nu3D::Math::MatrixRotatePitch(&matrix1, 16 * selectedActor->transform.angles.pitch);
@@ -363,11 +360,11 @@ namespace Toy2
 						Nu3D::Math::MatrixRotateYaw(&matrix2, 16 * (selectedActor->transform.angles.yaw + 2048));
 						Nu3D::Math::MatrixRotateRoll(&matrix2, 16 * selectedActor->rollAngle);
 
-						offset.x = (float)(selectedActor->transform.pos.x * 0.03125);
-						offset.y = (float)(selectedActor->transform.pos.y * 0.03125);
-						offset.z = (float)(selectedActor->transform.pos.z * 0.03125);
+						offset.x = (float)selectedActor->transform.pos.x * 0.03125f;
+						offset.y = (float)selectedActor->transform.pos.y * 0.03125f;
+						offset.z = (float)selectedActor->transform.pos.z * 0.03125f;
 						Nu3D::Math::AddWorldSpaceTransform(&matrix2, &offset);
-						offset.y = v22 + offset.y;
+						offset.y = secondaryYOffset + offset.y;
 						Nu3D::Math::AddWorldSpaceTransform(&matrix1, &offset);
 
 						if (selectedActor->secondaryAnimIdx != -1)
@@ -449,51 +446,48 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0043BA80
 		void EvaluateClip(int16_t* clipHeader, int32_t time, int32_t baseBone, uint8_t track)
 		{
-			int32_t headerSize;
+			int16_t headerSize;
 
-			if (*clipHeader >= 0)
+			if (*clipHeader < 0)
 			{
-				headerSize = 12;
-				CharacterLoader::g_unk53E4C0 = 0;
-				CharacterLoader::g_unk53EED8 = 12;
+				headerSize = -*clipHeader;
+				CharacterLoader::g_unk53EED8 = headerSize;
+				CharacterLoader::g_unk53E4C0 = 1;
 			}
 			else
 			{
-				headerSize = -*clipHeader;
-				CharacterLoader::g_unk53EED8 = (int16_t)headerSize;
-				CharacterLoader::g_unk53E4C0 = 1;
+				headerSize = 12;
+				CharacterLoader::g_unk53E4C0 = 0;
+				CharacterLoader::g_unk53EED8 = headerSize;
 			}
 
 			CharacterLoader::g_unk53EEC8 = (uint8_t*)clipHeader + headerSize;
 			CharacterLoader::g_unk53E4C4 = (uint8_t*)clipHeader + headerSize + 2 * (uint16_t)clipHeader[5];
 
-			int32_t frame = time >> 16;
-			int32_t frac = time & 0xFFFF;
+			int32_t frame = (int16_t)(time >> 16);
 
 			if (frame <= (clipHeader[2] & 0x7FFF))
 			{
 				uint8_t* frameBase = (uint8_t*)clipHeader + headerSize + 2 * (uint16_t)clipHeader[5] + (uint16_t)clipHeader[6];
 				uint8_t* frameA = frameBase + 2 * frame * (uint16_t)clipHeader[4];
-				int32_t boneSlot = CharacterLoader::g_unk53EECC;
-				int32_t boneEnd;
 				int32_t curBone;
+				int32_t boneEnd;
 
-				if (CharacterLoader::g_unk53EECC < 0)
+				if (CharacterLoader::g_unk53EECC >= 0)
 				{
-					curBone = 0;
-					boneSlot = 0;
-					boneEnd = (uint16_t)clipHeader[3];
+					curBone = CharacterLoader::g_unk53EECC;
+					boneEnd = curBone + 1;
+					baseBone += curBone;
 				}
 				else
 				{
-					curBone = CharacterLoader::g_unk53EECC;
-					boneEnd = CharacterLoader::g_unk53EECC + 1;
-					baseBone += CharacterLoader::g_unk53EECC;
+					curBone = 0;
+					boneEnd = (uint16_t)clipHeader[3];
 				}
 
-				for (; boneSlot < boneEnd; curBone = boneSlot)
+				for (; curBone < boneEnd; ++curBone)
 				{
-					int32_t boneValue = *((int16_t*)CharacterLoader::g_unk53EEC8 + boneSlot);
+					int32_t boneValue = *((int16_t*)CharacterLoader::g_unk53EEC8 + curBone);
 
 					if (boneValue == -3)
 					{
@@ -505,6 +499,7 @@ namespace Toy2
 
 						boneTransform->track = track;
 
+						boneValue = *((int16_t*)CharacterLoader::g_unk53EEC8 + curBone);
 						int16_t* keyA = (int16_t*)(frameA + 2 * boneValue);
 						int16_t* keyB;
 
@@ -515,6 +510,7 @@ namespace Toy2
 
 						if ((int16_t)time)
 						{
+							int32_t frac = time & 0xFFFF;
 							int32_t a = keyA[0] >> 2;
 							boneTransform->translation.x = a + ((frac * ((keyB[0] >> 2) - a)) >> 16);
 
@@ -576,7 +572,7 @@ namespace Toy2
 							point.z = 0;
 							point.y = -200;
 
-							TransformByBone(&point, (Actor::Toy2Actor*)&g_buzzActor, baseBone);
+							TransformByBone(&point, (Actor::Toy2Actor*)&g_buzzActor, (int16_t)baseBone);
 
 							g_unk53E4BC = (int16_t)point.z;
 							g_unk53E4B8 = (int16_t)point.x;
@@ -595,6 +591,7 @@ namespace Toy2
 						{
 							if ((int16_t)time)
 							{
+								int32_t frac = time & 0xFFFF;
 								boneTransform->unkInt7 = keyA[5] + ((frac * (keyB[5] - keyA[5])) >> 16);
 								boneTransform->unkInt7_ = keyA[6] + ((frac * (keyB[6] - keyA[6])) >> 16);
 
@@ -618,12 +615,8 @@ namespace Toy2
 							boneTransform->unkByte1 = 0;
 						}
 
-						boneSlot = curBone;
-
 						++baseBone;
 					}
-
-					++boneSlot;
 				}
 
 				if (g_unk546D70)

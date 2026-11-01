@@ -295,17 +295,17 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004011D0
 		void UpdateAnimationState()
 		{
-			int32_t v0;
-			int32_t v1;
-			int32_t v8;
-			int32_t v10;
-			uint32_t v11;
-			uint8_t* v9;
-			uint16_t unkVar33;
-			int32_t v13;
-			int32_t v15;
-			int32_t v16;
-			int32_t v17;
+			int32_t idleSoundTimer;
+			int32_t animationState;
+			int32_t animTableIndex;
+			int32_t trackAdvance;
+			uint32_t trackFrame;
+			uint8_t* eventTrack;
+			uint16_t trackFraction;
+			int32_t secondaryFrame;
+			int32_t primaryFrame;
+			int32_t secondaryAnim;
+			int32_t primaryAnim;
 			int32_t groundHeight;
 			Transform probePos;
 
@@ -313,83 +313,83 @@ namespace Toy2
 			{
 				for (;;)
 				{
-					v0 = g_unk50A0BC - Renderer::g_frameDelta;
+					idleSoundTimer = g_unk50A0BC - Renderer::g_frameDelta;
 					g_unk50A0BC -= Renderer::g_frameDelta;
 
 					if (g_unk50A0BC <= 0)
 					{
-						v0 = 0;
+						idleSoundTimer = 0;
 						g_unk50A0BC = 0;
 					}
 
 					if (! g_buzzActor.unkShort40)
 					{
-						v1 = g_buzzActor.unkVar37;
+						animationState = g_buzzActor.unkVar37;
 						g_unk50A098 = 0;
 
 						switch (g_buzzActor.unkVar37)
 						{
 							case 0xA:
 							case 0xB:
-								v1 = 0;
+								animationState = 0;
 								break;
 
 							case 2:
 								if (g_buzzActor.gravityVel <= 0)
-									goto LABEL_55;
+									goto LBL_CHECK_FALL_STATE;
 
-								v1 = 3;
+								animationState = 3;
 								break;
 
 							case 5:
-								v1 = 4;
+								animationState = 4;
 								break;
 
 							default:
-								goto LABEL_55;
+								goto LBL_CHECK_FALL_STATE;
 						}
 
-						g_buzzActor.unkVar37 = v1;
+						g_buzzActor.unkVar37 = animationState;
 
-					LABEL_55:
+					LBL_CHECK_FALL_STATE:
 						if (g_unk53C838 == 80)
 						{
-							v1 = 12;
-							goto LABEL_57;
+							animationState = 12;
+							goto LBL_STORE_ANIMATION_STATE;
 						}
 
-						goto LABEL_58;
+						goto LBL_APPLY_ACTION_ANIMATIONS;
 					}
 
-					v1 = g_buzzActor.unkVar37;
+					animationState = g_buzzActor.unkVar37;
 
 					if (g_buzzActor.unkVar37 == 3)
 					{
-						v1 = 4;
+						animationState = 4;
 						g_buzzActor.unkVar37 = 4;
 					}
 
 					if (g_buzzActor.unkVar30 < 512 && abs(g_buzzActor.unkVar31) < 512
 						&& ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) == 0 || g_unk53C664 == 30))
 					{
-						if (v1 == 4)
+						if (animationState == 4)
 						{
 							g_unk50A098 = 0;
-							goto LABEL_58;
+							goto LBL_APPLY_ACTION_ANIMATIONS;
 						}
 
-						v1 = g_unk50A098;
+						animationState = g_unk50A098;
 
 						if (g_unk50A098)
-							goto LABEL_23;
+							goto LBL_CHECK_IDLE_STATE;
 
-						v1 = 1;
+						animationState = 1;
 						g_unk50A098 = 1;
 
 						if (((g_buzzActor.actorFlags & 0x100) != 0 && g_currentFluidType >= 2) || g_buzzActor.floorYPos - g_buzzActor.posAngles.pos.y <= 4096
 							|| g_buzzActor.floorYPos == 0x80000000)
 						{
-						LABEL_25:
+						LBL_SELECT_IDLE_VARIATION:
 							if ((g_buzzActor.unkVar33 & 0xFFFF0000) == 0xE0000)
 							{
 								uint8_t roll = *g_randDatBufferPtr & 3;
@@ -397,11 +397,11 @@ namespace Toy2
 
 								if (! roll)
 								{
-									v1 = (*next & 1) + 28;
-									g_unk50A098 = v1;
+									animationState = (*next & 1) + 28;
+									g_unk50A098 = animationState;
 									g_randDatBufferPtr = next + 1;
 
-									if (! v0)
+									if (! idleSoundTimer)
 									{
 										g_unk50A0BC = 1800;
 
@@ -409,11 +409,11 @@ namespace Toy2
 										{
 											g_unk50A0B0 = (g_unk50A0B0 != 207) + 206;
 											AudioManager::Preset::PlayOneShotSound(g_unk50A0B0, (Actor::Toy2Actor*)&g_buzzActor);
-											v1 = g_unk50A098;
+											animationState = g_unk50A098;
 										}
 									}
 
-									goto LABEL_33;
+									goto LBL_CANCEL_IDLE_VARIATION;
 								}
 							}
 						}
@@ -427,8 +427,8 @@ namespace Toy2
 
 							if (groundHeight - g_buzzActor.posAngles.pos.y > 4096 && groundHeight != 0x80000000)
 							{
-								v1 = 10;
-								goto LABEL_38;
+								animationState = 10;
+								goto LBL_STORE_IDLE_STATE;
 							}
 
 							probePos.pos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 2);
@@ -438,114 +438,114 @@ namespace Toy2
 
 							if (groundHeight - g_buzzActor.posAngles.pos.y > 4096 && groundHeight != 0x80000000)
 							{
-								v1 = 11;
-								goto LABEL_38;
+								animationState = 11;
+								goto LBL_STORE_IDLE_STATE;
 							}
 
-							v1 = g_unk50A098;
+							animationState = g_unk50A098;
 
-						LABEL_23:
-							if (v1 == 1)
+						LBL_CHECK_IDLE_STATE:
+							if (animationState == 1)
 							{
-								v0 = g_unk50A0BC;
-								goto LABEL_25;
+								idleSoundTimer = g_unk50A0BC;
+								goto LBL_SELECT_IDLE_VARIATION;
 							}
 
-						LABEL_33:
-							if (v1 >= 28 && (g_fireChargeTimer > 0 || g_unk53C83C || g_unk53C650))
+						LBL_CANCEL_IDLE_VARIATION:
+							if (animationState >= 28 && (g_fireChargeTimer > 0 || g_unk53C83C || g_unk53C650))
 							{
-								v1 = 1;
-							LABEL_38:
-								g_unk50A098 = v1;
+								animationState = 1;
+							LBL_STORE_IDLE_STATE:
+								g_unk50A098 = animationState;
 							}
 						}
 
 						if ((Camera::g_inCutscene & 1) != 0)
 						{
-							v1 = 1;
+							animationState = 1;
 							g_unk50A098 = 1;
 						}
 
-						g_buzzActor.unkVar37 = v1;
+						g_buzzActor.unkVar37 = animationState;
 
 						if (g_buzzSlipTimer)
 						{
-							v1 = 18;
-						LABEL_57:
-							g_buzzActor.unkVar37 = v1;
-							goto LABEL_58;
+							animationState = 18;
+						LBL_STORE_ANIMATION_STATE:
+							g_buzzActor.unkVar37 = animationState;
+							goto LBL_APPLY_ACTION_ANIMATIONS;
 						}
 
-						goto LABEL_58;
+						goto LBL_APPLY_ACTION_ANIMATIONS;
 					}
 
-					v1 = 0;
+					animationState = 0;
 					g_unk50A098 = 0;
 					g_buzzActor.unkVar37 = 0;
 
 					if (g_buzzSlipTimer)
 					{
-						v1 = 18;
-						goto LABEL_57;
+						animationState = 18;
+						goto LBL_STORE_ANIMATION_STATE;
 					}
 
-				LABEL_58:
-					if (g_unk53C66C && v1 != 8)
+				LBL_APPLY_ACTION_ANIMATIONS:
+					if (g_unk53C66C && animationState != 8)
 					{
-						v1 = 26;
+						animationState = 26;
 						g_buzzActor.unkVar37 = 26;
 					}
 
 					if (g_curMoveableObject)
 					{
-						v1 = 25;
+						animationState = 25;
 						g_buzzActor.unkVar37 = 25;
 					}
 
 					if (g_unk53C618 == 2)
 					{
-						v1 = 17;
+						animationState = 17;
 						g_buzzActor.unkVar37 = 17;
 					}
 
 					if (g_grappleState == 2 && g_grappleProgress >= 10)
 					{
-						v1 = 30;
+						animationState = 30;
 						g_buzzActor.unkVar37 = 30;
 					}
 
 					if (g_gravityBootsDuration)
 					{
-						v1 = 31;
+						animationState = 31;
 						g_buzzActor.unkVar37 = 31;
 					}
 
 					if (g_unk53C608)
 					{
-						v1 = 19;
+						animationState = 19;
 						g_buzzActor.unkVar37 = 19;
 					}
 
-					if (g_unk53C818 && (g_buzzActor.unkShort40 || ! v1))
+					if (g_unk53C818 && (g_buzzActor.unkShort40 || ! animationState))
 					{
-						v1 = 32;
+						animationState = 32;
 						g_buzzActor.unkVar37 = 32;
 					}
 
 					if (g_unk53C83C < 0)
 					{
-						v1 = (g_unk53C83C > -120) + 19;
-						g_buzzActor.unkVar37 = v1;
+						animationState = (g_unk53C83C > -120) + 19;
+						g_buzzActor.unkVar37 = animationState;
 					}
 
 					if (g_unk53C668 > 0)
 					{
-						v1 = 15;
+						animationState = 15;
 						g_buzzActor.unkVar37 = 15;
 
 						if ((g_unk53C668 & 2) != 0)
 						{
-							v1 = 14;
+							animationState = 14;
 							g_buzzActor.unkVar37 = 14;
 						}
 
@@ -553,37 +553,37 @@ namespace Toy2
 						{
 							g_buzzActor.unkVar37 = 16;
 							AudioManager::PlaySoundEffect(35, &g_buzzActor.posAngles.pos);
-							v1 = g_buzzActor.unkVar37;
+							animationState = g_buzzActor.unkVar37;
 						}
 					}
 
 					if (g_unk53C660)
 					{
-						v1 = 9;
+						animationState = 9;
 						g_buzzActor.unkVar37 = 9;
 					}
 
 					if (g_groundSlamTicker > 0)
 					{
-						v1 = 23;
+						animationState = 23;
 						g_buzzActor.unkVar37 = 23;
 					}
 
 					if (g_groundSlamTicker < -14)
 					{
-						v1 = 24;
+						animationState = 24;
 						g_buzzActor.unkVar37 = 24;
 					}
 
 					if (g_unk53C838 < 0)
 					{
-						v1 = 13;
+						animationState = 13;
 						g_buzzActor.unkVar37 = 13;
 					}
 
 					if (g_rocketBootsDuration)
 					{
-						v1 = 10;
+						animationState = 10;
 						g_buzzActor.unkVar37 = 10;
 					}
 
@@ -595,102 +595,103 @@ namespace Toy2
 						}
 						else
 						{
-							v1 = 5;
+							animationState = 5;
 							g_buzzActor.unkVar37 = 5;
 						}
 					}
 
 					if (g_levelTransition == 2)
 					{
-						v1 = 7;
+						animationState = 7;
 					}
 					else
 					{
 						if (g_levelTransition != 1)
-							goto LABEL_102;
+							goto LBL_SELECT_EVENT_TRACK;
 
-						v1 = 27;
+						animationState = 27;
 					}
 
-					g_buzzActor.unkVar37 = v1;
+					g_buzzActor.unkVar37 = animationState;
 
-				LABEL_102:
-					v8 = v1;
-					v9 = g_buzzAnimTable[v1].track;
+				LBL_SELECT_EVENT_TRACK:
+					animTableIndex = animationState;
+					eventTrack = g_buzzAnimTable[animationState].track;
 
-					if (v1 != g_buzzActor.unkVar38)
+					if (animationState != g_buzzActor.unkVar38)
 					{
-						unkVar33 = 0;
+						trackFraction = 0;
 						g_buzzActor.unkVar33 = 0;
-						g_buzzActor.unkVar38 = v8;
-						v11 = *v9;
-						goto LABEL_113;
+						g_buzzActor.unkVar38 = animTableIndex;
+						trackFrame = *eventTrack;
+						goto LBL_EVALUATE_ANIMATION;
 					}
 
-					v10 = Renderer::g_frameDelta * g_buzzAnimTable[v1].speed;
+					trackAdvance = Renderer::g_frameDelta * g_buzzAnimTable[animationState].speed;
 
-					if (v10 < 0)
+					if (trackAdvance < 0)
 					{
-						v10 = (int32_t)-(v10 * sqrt((double)(g_buzzActor.unkVar30 * g_buzzActor.unkVar30 + g_buzzActor.unkVar31 * g_buzzActor.unkVar31)));
+						trackAdvance = -(
+							trackAdvance * (int32_t)sqrt((double)(g_buzzActor.unkVar30 * g_buzzActor.unkVar30 + g_buzzActor.unkVar31 * g_buzzActor.unkVar31)));
 
-						if (v10 < 0)
+						if (trackAdvance < 0)
 						{
-							v10 = 0;
+							trackAdvance = 0;
 							break;
 						}
 					}
 
-					if (v10 <= 0xFFFF)
+					if (trackAdvance <= 0xFFFF)
 						break;
 
 					for (;;)
 					{
-						v10 -= 0x10000;
+						trackAdvance -= 0x10000;
 						g_buzzActor.unkVar33 += 0x10000;
 
-						if (Animation::StepEventTrack(v9) == -1)
+						if (Animation::StepEventTrack(eventTrack) == -1)
 							break;
 
-						if (v10 <= 0xFFFF)
-							goto LABEL_109;
+						if (trackAdvance <= 0xFFFF)
+							goto LBL_ADVANCE_EVENT_TRACK;
 					}
 				}
 
-			LABEL_109:
-				g_buzzActor.unkVar33 += v10;
-				v11 = Animation::StepEventTrack(v9);
-			} while (v11 == -1);
+			LBL_ADVANCE_EVENT_TRACK:
+				g_buzzActor.unkVar33 += trackAdvance;
+				trackFrame = Animation::StepEventTrack(eventTrack);
+			} while (trackFrame == -1);
 
-			unkVar33 = (uint16_t)g_buzzActor.unkVar33;
+			trackFraction = (uint16_t)g_buzzActor.unkVar33;
 
-		LABEL_113:
-			v13 = (v11 << 16) + unkVar33;
+		LBL_EVALUATE_ANIMATION:
+			secondaryFrame = (trackFrame << 16) + trackFraction;
 
-			*(int32_t*)&g_buzzActor.unkWord13 = v13;
+			*(int32_t*)&g_buzzActor.unkWord13 = secondaryFrame;
 
-			v15 = v13;
-			v16 = g_buzzAnimTable[v8].secondaryAnim;
-			v17 = g_buzzAnimTable[v8].primaryAnim;
+			primaryFrame = secondaryFrame;
+			secondaryAnim = g_buzzAnimTable[animTableIndex].secondaryAnim;
+			primaryAnim = g_buzzAnimTable[animTableIndex].primaryAnim;
 
 			if (g_unk53C650 > 0)
 			{
-				if (v17 == v16)
+				if (primaryAnim == secondaryAnim)
 				{
 					g_unk53C650 = 0;
 				}
 				else
 				{
-					v17 = 9;
-					v15 = (48 - g_unk53C650) << 15;
+					primaryAnim = 9;
+					primaryFrame = (48 - g_unk53C650) << 15;
 				}
 			}
 
 			if (g_fireChargeTimer > 0)
 			{
-				if (v17 != v16 || Camera::g_cameraState == 4)
+				if (primaryAnim != secondaryAnim || Camera::g_cameraState == 4)
 				{
-					v17 = 26;
-					v15 = ((g_fireChargeTimer & 1) + 2 * g_buzzAnimTracks[0x254 + g_fireChargeTimer / 2]) << 15;
+					primaryAnim = 26;
+					primaryFrame = ((g_fireChargeTimer & 1) + 2 * g_buzzAnimTracks[0x254 + g_fireChargeTimer / 2]) << 15;
 				}
 				else
 				{
@@ -698,19 +699,19 @@ namespace Toy2
 				}
 			}
 
-			g_buzzActor.primaryAnimIdx = v17;
-			g_buzzActor.unkVar7 = v15;
-			g_buzzActor.secondaryAnimIdx = v16;
-			g_buzzActor.unkVar8 = v13;
+			g_buzzActor.primaryAnimIdx = primaryAnim;
+			g_buzzActor.unkVar7 = primaryFrame;
+			g_buzzActor.secondaryAnimIdx = secondaryAnim;
+			g_buzzActor.unkVar8 = secondaryFrame;
 
-			if (v17 == v16)
-				g_buzzActor.unkVar8 = v15;
+			if (primaryAnim == secondaryAnim)
+				g_buzzActor.unkVar8 = primaryFrame;
 			else
-				Animation::EvaluateClip(*(int16_t**)(CharacterLoader::g_unk547CD4[0] + 4 * v16 + 8), v13, 0, 0);
+				Animation::EvaluateClip(*(int16_t**)(CharacterLoader::g_unk547CD4[0] + 4 * secondaryAnim + 8), secondaryFrame, 0, 0);
 
 			Animation::g_unk546D70 = 1;
 
-			Animation::EvaluateClip(*(int16_t**)(CharacterLoader::g_unk547CD4[0] + 4 * v17 + 8), v15, 0, 1);
+			Animation::EvaluateClip(*(int16_t**)(CharacterLoader::g_unk547CD4[0] + 4 * primaryAnim + 8), primaryFrame, 0, 1);
 
 			Animation::g_unk546D70 = 0;
 

@@ -399,11 +399,6 @@ namespace Toy2
 			0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0xFF, 0x01, 0x00, 0x00
 		};
 
-		// GLOBAL: TOY2 0x004E0570
-		uint8_t g_unk4E0570[24] = {
-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x16
-		};
-
 		// NOTE: indexed by creatureId - 1, the original indexes from 0x004E05EE
 		// GLOBAL: TOY2 0x004E05F0
 		int16_t g_unk4E05F0[62] = {
@@ -415,11 +410,12 @@ namespace Toy2
 		// GLOBAL: TOY2 0x0052FE34
 		int32_t g_unk52FE34;
 
-		// GLOBAL: TOY2 0x004E0588
-		uint8_t* g_unk4E0588[26] = {
-			(uint8_t*)0xBFF, g_unk4E0374, g_unk4E0390, g_unk4E03A0, g_unk4E03A4, g_unk4E03B0, g_unk4E03BC, g_unk4E03C4, g_unk4E03D8,
-			g_unk4E03FC,	 g_unk4E0418, g_unk4E0420, g_unk4E0434, g_unk4E0444, g_unk4E044C, g_unk4E0454, g_unk4E0460, g_unk4E0474,
-			g_unk4E0480,	 g_unk4E0494, g_unk4E04A0, g_unk4E04B4, g_unk4E04C8, g_unk4E04F0, g_unk4E053C, g_unk4E0570
+		// GLOBAL: TOY2 0x004E0570
+		CreatureAnimationSequences g_unk4E0588 = {
+			{ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x16 },
+			{ (uint8_t*)0xBFF, g_unk4E0374, g_unk4E0390, g_unk4E03A0, g_unk4E03A4, g_unk4E03B0, g_unk4E03BC, g_unk4E03C4,			g_unk4E03D8,
+			  g_unk4E03FC,	   g_unk4E0418, g_unk4E0420, g_unk4E0434, g_unk4E0444, g_unk4E044C, g_unk4E0454, g_unk4E0460,			g_unk4E0474,
+			  g_unk4E0480,	   g_unk4E0494, g_unk4E04A0, g_unk4E04B4, g_unk4E04C8, g_unk4E04F0, g_unk4E053C, (uint8_t*)&g_unk4E0588 }
 		};
 
 		// FUNCTION: TOY2 0x00407150
@@ -490,14 +486,14 @@ namespace Toy2
 
 				if (*sequence == 0xFF)
 				{
-					if (sequence[1] == 1)
+					if (sequence[1] != 1)
 					{
-						actor->unkVar30 = (int32_t)(sequence - 1);
-						actor->unkVar7 |= 0xFFFF;
+						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
 					}
 					else
 					{
-						actor->unkVar30 = (int32_t)(sequence - sequence[1]);
+						actor->unkVar30 = (int32_t)(sequence - 1);
+						actor->unkVar7 |= 0xFFFF;
 					}
 				}
 
@@ -1598,7 +1594,7 @@ namespace Toy2
 			CharacterLoader::g_unk53EECC = -1;
 
 			CharacterLoader::BoneTransform* bone =
-				&CharacterLoader::g_boneTransforms[boneIndex + *(uint16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
+				&CharacterLoader::g_boneTransforms[boneIndex + *(int16_t*)(CharacterLoader::g_unk547CD4[actor->creatureId] + 4)];
 
 			// the scratch space holds the angles first and the rotation matrix built from them after that
 			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];
@@ -1634,7 +1630,7 @@ namespace Toy2
 			int32_t boneY = bone->translation.y;
 			int32_t boneZ = bone->translation.z;
 
-			int32_t posX = actor->transform.pos.x + (boneZ * scaledM02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
+			int32_t posX = actor->transform.pos.x + (boneZ * matrix->m02 + boneY * matrix->m01 + bone->translation.x * matrix->m00) / 128;
 			int32_t posY = actor->transform.pos.y + (boneZ * matrix->m12 + boneY * matrix->m11 + bone->translation.x * matrix->m10) / 128;
 			int32_t posZ = actor->transform.pos.z + (boneZ * matrix->m22 + boneY * matrix->m21 + bone->translation.x * matrix->m20) / 128;
 

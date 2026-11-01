@@ -4,6 +4,7 @@
 #include "RawLoader.h"
 #include "Numerics.h"
 #include <windows.h>
+#include <stddef.h>
 
 namespace Toy2
 {
@@ -115,6 +116,7 @@ namespace Toy2
 				int16_t localForwardSpeed;
 			};
 
+			// The context is borrowed for one callback invocation.
 			typedef void (*ActorBehaviourFn)(ActorBehaviourContext* ctx);
 
 			Transform transform;
@@ -161,10 +163,19 @@ namespace Toy2
 			RawLoader::CreatureListRam* creatureRam;
 		};
 
+		struct CreatureAnimationSequences
+		{
+			uint8_t sequence25Frames[24];
+			// Slot zero contains sequence 25's FF 0B terminator and two padding bytes.
+			uint8_t* sequences[26];
+
+			uint8_t* operator[](int32_t index) const { return sequences[index]; }
+		};
+
 		extern Toy2Actor* g_activeActors[65];
 		extern Toy2Actor* g_activeActorArray[64];
 		extern uint16_t* g_movementData[44];
-		extern uint8_t* g_unk4E0588[26];
+		extern CreatureAnimationSequences g_unk4E0588;
 		extern int32_t g_unk50A54C;
 		extern int32_t g_unk52FE34;
 
@@ -192,5 +203,11 @@ namespace Toy2
 
 		STATIC_ASSERT(sizeof(Toy2Actor) == 0x9C);
 		STATIC_ASSERT(sizeof(Toy2Actor::ActorBehaviourContext) == 0xC);
+		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, updateFlags) == 0x4);
+		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, targetFlags) == 0x6);
+		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, localStrafeSpeed) == 0x8);
+		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, localForwardSpeed) == 0xA);
+		STATIC_ASSERT(offsetof(CreatureAnimationSequences, sequences) == 0x18);
+		STATIC_ASSERT(sizeof(CreatureAnimationSequences) == 0x80);
 	}
 }
