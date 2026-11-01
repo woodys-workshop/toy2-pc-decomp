@@ -18,7 +18,7 @@ namespace Toy2
 		{
 			uint8_t linkId;
 			uint8_t flags;
-			uint16_t floorPos;
+			int16_t floorPos;
 		};
 
 		struct Type63
@@ -207,6 +207,7 @@ namespace Toy2
 		void Method3(int32_t a1, int32_t a2);
 
 		STATIC_ASSERT(sizeof(RecordData) == 0x4);
+		STATIC_ASSERT(sizeof(Type63Properties) == 0x4);
 		STATIC_ASSERT(sizeof(Type63) == 0x10);
 		STATIC_ASSERT(sizeof(ModelTypeData_A) == 0x24);
 		STATIC_ASSERT(sizeof(ModelTypeData_B) == 0x20);

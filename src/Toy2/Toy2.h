@@ -119,7 +119,7 @@ namespace Toy2
 		Transform* headOffset,
 		int32_t range,
 		Toy2::Actor::Toy2Actor* autoAimActor);
-	int32_t ShowTokenSparkle();
+	int32_t ShowTokenSparkle(int32_t linkId);
 	void CheckForQuit();
 
 	extern ToyCfg g_toyCfgData;
@@ -179,7 +179,7 @@ namespace Toy2
 	extern int32_t g_unk830CC4;
 	extern int32_t g_unk830C90;
 	extern int32_t g_unk830C94;
-	extern int16_t g_unk830D4C;
+	extern int32_t g_unk830D4C;
 	extern int32_t g_collectionCount;
 	extern int32_t g_unk52F2F8;
 	extern Nu3D::Particles::ParticleInstance* g_unk830E2C;
