@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include <stddef.h>
 
 namespace CharacterLoader
 {
@@ -81,6 +82,18 @@ namespace CharacterLoader
 	void Start(int32_t* value, uint8_t** buffer, uint8_t* creatureList);
 
 	STATIC_ASSERT(sizeof(BoneTransform) == 0x6C);
+	STATIC_ASSERT(offsetof(BoneTransform, unkInt4) == 0xC);
+	STATIC_ASSERT(offsetof(BoneTransform, unkInt9) == 0x20);
+	STATIC_ASSERT(offsetof(BoneTransform, unkVec5) == 0x28);
+	STATIC_ASSERT(offsetof(BoneTransform, unkInt14) == 0x34);
+	STATIC_ASSERT(offsetof(BoneTransform, unkInt14_) == 0x36);
 	STATIC_ASSERT(sizeof(CharacterBoundData) == 0x8);
 	STATIC_ASSERT(sizeof(CharacterAllEntry) == 0x4C);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, type) == 0x10);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, trackKind) == 0x1A);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, boundX) == 0x2C);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, unk32) == 0x32);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, unk3A) == 0x3A);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, unk42) == 0x42);
+	STATIC_ASSERT(offsetof(CharacterAllEntry, flags46) == 0x46);
 }

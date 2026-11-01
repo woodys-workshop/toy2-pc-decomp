@@ -28,7 +28,8 @@ namespace CharacterLoader
 
 	// the bone data that a character gets when it has no bone to attach to
 	// GLOBAL: TOY2 0x004F6EA0
-	int32_t g_unk4F6EA0 = 0xFF060000;
+	int16_t g_unk4F6EA0[8] = { 0, -250, 0, 1, 512, 256, 512, 250 };
+	STATIC_ASSERT(sizeof(g_unk4F6EA0) == 0x10);
 
 	// GLOBAL: TOY2 0x0053E6C8
 	void* g_attachBone[128];
@@ -77,9 +78,9 @@ namespace CharacterLoader
 	int32_t g_unk559DF0;
 
 	// FUNCTION: TOY2 0x0043ABC0
-	uint16_t* LoadFirstSection(int32_t a1, char a2)
+	uint16_t* LoadFirstSection(int32_t fileData, char parseHeader)
 	{
-		uint8_t* file = (uint8_t*)a1;
+		uint8_t* file = (uint8_t*)fileData;
 		int16_t i = 0;
 		uint16_t* firstSection = 0;
 
@@ -101,9 +102,9 @@ namespace CharacterLoader
 				++i;
 			} while (i < *(int16_t*)(file + 2));
 
-			if (firstSection && a2)
+			if (firstSection && parseHeader)
 			{
-				int32_t headerSize;
+				int16_t headerSize;
 
 				if ((int16_t)firstSection[0] >= 0)
 				{
@@ -114,7 +115,7 @@ namespace CharacterLoader
 				else
 				{
 					headerSize = -(int16_t)firstSection[0];
-					g_unk53EED8 = (int16_t)headerSize;
+					g_unk53EED8 = headerSize;
 					g_unk53E4C0 = 1;
 				}
 
@@ -316,18 +317,14 @@ namespace CharacterLoader
 		return boneCount;
 	}
 
-	// $TODO: the quads of a bone are 48 bytes: a flag byte at +3, 4 vertices of 3 shorts at +4 with a stride of 8, and 4 dwords at +0 / +0x24 / +0x28 / +0x2C
-	// that belong to the vertices. The original has the 4 rotations of the quad written out as straight line code, they are loops here.
+	// Quad vertices and their DWORD payloads rotate together; packet bytes +3 and +0x2F stay in place.
 	// FUNCTION: TOY2 0x0043C750
-	void LoadSecondSection(int16_t a1)
+	void LoadSecondSection(int32_t boneBase)
 	{
 		int32_t i;
 		int32_t j;
 		int32_t r;
-		int32_t c;
-		int32_t d;
 		uint8_t* extra = 0;
-		uint8_t* extraBase = 0;
 		uint8_t* boneExtra = 0;
 		uint8_t* foundExtra = 0;
 
@@ -341,11 +338,11 @@ namespace CharacterLoader
 		{
 			do
 			{
-				uint32_t value = *(uint16_t*)(marker + 2);
+				int32_t value = *(uint16_t*)(marker + 2);
 
-				*(int16_t*)(marker + 2) = (int16_t)(value % 100 + 100 * (a1 + value / 100) - 100);
+				*(int16_t*)(marker + 2) = (int16_t)(value % 100 + 100 * (boneBase + value / 100) - 100);
 
-				uint32_t groupOffset = (uint16_t)(value % 100 + 100 * (a1 + value / 100) - 100) % 100;
+				int32_t groupOffset = *(uint16_t*)(marker + 2) % 100;
 				int32_t groupIdx = g_unk547CD0 + groupOffset;
 
 				if (groupIdx >= (int16_t)lastGroupIdx)
@@ -416,26 +413,30 @@ namespace CharacterLoader
 
 							if (count > 0)
 							{
-								// the edge of the quad has to run the same way as the edge of the group
+								// Match the group's directed edges.
 								do
 								{
-									for (r = 0; r < 4; r++)
-									{
-										int32_t matched = 1;
-
-										for (c = 0; c < 3; c++)
-										{
-											if (abs(quadVerts[4 * r + c] - groupVerts[4 * j + c]) >= 2
-												|| abs(quadVerts[4 * ((r + 1) % 4) + c] - groupVerts[4 * (j + 1) + c]) >= 2)
-											{
-												matched = 0;
-												break;
-											}
-										}
-
-										if (matched)
-											break;
-									}
+									if (abs(quadVerts[0] - groupVerts[4 * j]) < 2 && abs(quadVerts[1] - groupVerts[4 * j + 1]) < 2
+										&& abs(quadVerts[2] - groupVerts[4 * j + 2]) < 2 && abs(quadVerts[4] - groupVerts[4 * j + 4]) < 2
+										&& abs(quadVerts[5] - groupVerts[4 * j + 5]) < 2 && abs(quadVerts[6] - groupVerts[4 * j + 6]) < 2)
+										r = 0;
+									else if (
+										abs(quadVerts[4] - groupVerts[4 * j]) < 2 && abs(quadVerts[5] - groupVerts[4 * j + 1]) < 2
+										&& abs(quadVerts[6] - groupVerts[4 * j + 2]) < 2 && abs(quadVerts[8] - groupVerts[4 * j + 4]) < 2
+										&& abs(quadVerts[9] - groupVerts[4 * j + 5]) < 2 && abs(quadVerts[10] - groupVerts[4 * j + 6]) < 2)
+										r = 1;
+									else if (
+										abs(quadVerts[8] - groupVerts[4 * j]) < 2 && abs(quadVerts[9] - groupVerts[4 * j + 1]) < 2
+										&& abs(quadVerts[10] - groupVerts[4 * j + 2]) < 2 && abs(quadVerts[12] - groupVerts[4 * j + 4]) < 2
+										&& abs(quadVerts[13] - groupVerts[4 * j + 5]) < 2 && abs(quadVerts[14] - groupVerts[4 * j + 6]) < 2)
+										r = 2;
+									else if (
+										abs(quadVerts[12] - groupVerts[4 * j]) < 2 && abs(quadVerts[13] - groupVerts[4 * j + 1]) < 2
+										&& abs(quadVerts[14] - groupVerts[4 * j + 2]) < 2 && abs(quadVerts[0] - groupVerts[4 * j + 4]) < 2
+										&& abs(quadVerts[1] - groupVerts[4 * j + 5]) < 2 && abs(quadVerts[2] - groupVerts[4 * j + 6]) < 2)
+										r = 3;
+									else
+										r = 4;
 
 									if (r < 4)
 									{
@@ -443,20 +444,66 @@ namespace CharacterLoader
 										{
 											uint32_t old[12];
 											uint32_t* rotated = (uint32_t*)quad;
-											int32_t perVertex[4];
-
-											perVertex[0] = 0;
-											perVertex[1] = 9;
-											perVertex[2] = 10;
-											perVertex[3] = 11;
 
 											memcpy(old, quad, 48);
 
-											for (d = 1; d <= 8; d++)
-												rotated[d] = old[1 + (d - 1 + 2 * r) % 8];
-
-											for (d = 0; d < 4; d++)
-												rotated[perVertex[d]] = old[perVertex[(d + r) % 4]];
+											if (r == 1)
+											{
+												rotated[1] = old[3];
+												rotated[2] = old[4];
+												rotated[3] = old[5];
+												rotated[4] = old[6];
+												rotated[5] = old[7];
+												rotated[6] = old[8];
+												rotated[7] = old[1];
+												rotated[8] = old[2];
+												rotated[0] = old[9];
+												*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[9];
+												rotated[9] = old[10];
+												*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[13];
+												rotated[11] = old[0];
+												*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[5];
+												rotated[10] = old[11];
+												*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[17];
+											}
+											else if (r == 2)
+											{
+												rotated[1] = old[5];
+												rotated[2] = old[6];
+												rotated[3] = old[7];
+												rotated[4] = old[8];
+												rotated[5] = old[1];
+												rotated[6] = old[2];
+												rotated[7] = old[3];
+												rotated[8] = old[4];
+												rotated[0] = old[10];
+												*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[13];
+												rotated[9] = old[11];
+												*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[17];
+												rotated[11] = old[9];
+												*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[9];
+												rotated[10] = old[0];
+												*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[5];
+											}
+											else
+											{
+												rotated[1] = old[7];
+												rotated[2] = old[8];
+												rotated[3] = old[1];
+												rotated[4] = old[2];
+												rotated[5] = old[3];
+												rotated[6] = old[4];
+												rotated[7] = old[5];
+												rotated[8] = old[6];
+												rotated[0] = old[11];
+												*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[17];
+												rotated[9] = old[0];
+												*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[5];
+												rotated[11] = old[10];
+												*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[13];
+												rotated[10] = old[9];
+												*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[9];
+											}
 
 											quad[3] = ((uint8_t*)old)[3];
 											quad[0x2F] = ((uint8_t*)old)[0x2F];
@@ -467,8 +514,27 @@ namespace CharacterLoader
 
 												memcpy(oldExtra, extra, 8);
 
-												for (d = 0; d < 4; d++)
-													((uint16_t*)extra)[d] = oldExtra[(d + r) % 4];
+												if (r == 1)
+												{
+													((uint16_t*)extra)[0] = oldExtra[1];
+													((uint16_t*)extra)[1] = oldExtra[2];
+													((uint16_t*)extra)[2] = oldExtra[3];
+													((uint16_t*)extra)[3] = oldExtra[0];
+												}
+												else if (r == 2)
+												{
+													((uint16_t*)extra)[0] = oldExtra[2];
+													((uint16_t*)extra)[1] = oldExtra[3];
+													((uint16_t*)extra)[2] = oldExtra[0];
+													((uint16_t*)extra)[3] = oldExtra[1];
+												}
+												else
+												{
+													((uint16_t*)extra)[0] = oldExtra[3];
+													((uint16_t*)extra)[1] = oldExtra[0];
+													((uint16_t*)extra)[2] = oldExtra[1];
+													((uint16_t*)extra)[3] = oldExtra[2];
+												}
 											}
 										}
 
@@ -488,26 +554,30 @@ namespace CharacterLoader
 
 								if (count > 0)
 								{
-									// the edge of the quad runs the other way
+									// Match edges with the opposite direction.
 									do
 									{
-										for (r = 0; r < 4; r++)
-										{
-											int32_t matched = 1;
-
-											for (c = 0; c < 3; c++)
-											{
-												if (abs(quadVerts[4 * r + c] - groupVerts[4 * (j + 1) + c]) >= 2
-													|| abs(quadVerts[4 * ((r + 1) % 4) + c] - groupVerts[4 * j + c]) >= 2)
-												{
-													matched = 0;
-													break;
-												}
-											}
-
-											if (matched)
-												break;
-										}
+										if (abs(quadVerts[0] - groupVerts[4 * j + 4]) < 2 && abs(quadVerts[1] - groupVerts[4 * j + 5]) < 2
+											&& abs(quadVerts[2] - groupVerts[4 * j + 6]) < 2 && abs(quadVerts[4] - groupVerts[4 * j]) < 2
+											&& abs(quadVerts[5] - groupVerts[4 * j + 1]) < 2 && abs(quadVerts[6] - groupVerts[4 * j + 2]) < 2)
+											r = 0;
+										else if (
+											abs(quadVerts[4] - groupVerts[4 * j + 4]) < 2 && abs(quadVerts[5] - groupVerts[4 * j + 5]) < 2
+											&& abs(quadVerts[6] - groupVerts[4 * j + 6]) < 2 && abs(quadVerts[8] - groupVerts[4 * j]) < 2
+											&& abs(quadVerts[9] - groupVerts[4 * j + 1]) < 2 && abs(quadVerts[10] - groupVerts[4 * j + 2]) < 2)
+											r = 1;
+										else if (
+											abs(quadVerts[8] - groupVerts[4 * j + 4]) < 2 && abs(quadVerts[9] - groupVerts[4 * j + 5]) < 2
+											&& abs(quadVerts[10] - groupVerts[4 * j + 6]) < 2 && abs(quadVerts[12] - groupVerts[4 * j]) < 2
+											&& abs(quadVerts[13] - groupVerts[4 * j + 1]) < 2 && abs(quadVerts[14] - groupVerts[4 * j + 2]) < 2)
+											r = 2;
+										else if (
+											abs(quadVerts[12] - groupVerts[4 * j + 4]) < 2 && abs(quadVerts[13] - groupVerts[4 * j + 5]) < 2
+											&& abs(quadVerts[14] - groupVerts[4 * j + 6]) < 2 && abs(quadVerts[0] - groupVerts[4 * j]) < 2
+											&& abs(quadVerts[1] - groupVerts[4 * j + 1]) < 2 && abs(quadVerts[2] - groupVerts[4 * j + 2]) < 2)
+											r = 3;
+										else
+											r = 4;
 
 										if (r < 4)
 										{
@@ -515,20 +585,66 @@ namespace CharacterLoader
 											{
 												uint32_t old[12];
 												uint32_t* rotated = (uint32_t*)quad;
-												int32_t perVertex[4];
-
-												perVertex[0] = 0;
-												perVertex[1] = 9;
-												perVertex[2] = 10;
-												perVertex[3] = 11;
 
 												memcpy(old, quad, 48);
 
-												for (d = 1; d <= 8; d++)
-													rotated[d] = old[1 + (d - 1 + 2 * r) % 8];
-
-												for (d = 0; d < 4; d++)
-													rotated[perVertex[d]] = old[perVertex[(d + r) % 4]];
+												if (r == 1)
+												{
+													rotated[1] = old[3];
+													rotated[2] = old[4];
+													rotated[3] = old[5];
+													rotated[4] = old[6];
+													rotated[5] = old[7];
+													rotated[6] = old[8];
+													rotated[7] = old[1];
+													rotated[8] = old[2];
+													rotated[0] = old[9];
+													*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[9];
+													rotated[9] = old[10];
+													*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[13];
+													rotated[11] = old[0];
+													*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[5];
+													rotated[10] = old[11];
+													*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[17];
+												}
+												else if (r == 2)
+												{
+													rotated[1] = old[5];
+													rotated[2] = old[6];
+													rotated[3] = old[7];
+													rotated[4] = old[8];
+													rotated[5] = old[1];
+													rotated[6] = old[2];
+													rotated[7] = old[3];
+													rotated[8] = old[4];
+													rotated[0] = old[10];
+													*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[13];
+													rotated[9] = old[11];
+													*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[17];
+													rotated[11] = old[9];
+													*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[9];
+													rotated[10] = old[0];
+													*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[5];
+												}
+												else
+												{
+													rotated[1] = old[7];
+													rotated[2] = old[8];
+													rotated[3] = old[1];
+													rotated[4] = old[2];
+													rotated[5] = old[3];
+													rotated[6] = old[4];
+													rotated[7] = old[5];
+													rotated[8] = old[6];
+													rotated[0] = old[11];
+													*(uint16_t*)(quad + 0xA) = ((uint16_t*)old)[17];
+													rotated[9] = old[0];
+													*(uint16_t*)(quad + 0x12) = ((uint16_t*)old)[5];
+													rotated[11] = old[10];
+													*(uint16_t*)(quad + 0x22) = ((uint16_t*)old)[13];
+													rotated[10] = old[9];
+													*(uint16_t*)(quad + 0x1A) = ((uint16_t*)old)[9];
+												}
 
 												quad[3] = ((uint8_t*)old)[3];
 												quad[0x2F] = ((uint8_t*)old)[0x2F];
@@ -539,8 +655,27 @@ namespace CharacterLoader
 
 													memcpy(oldExtra, extra, 8);
 
-													for (d = 0; d < 4; d++)
-														((uint16_t*)extra)[d] = oldExtra[(d + r) % 4];
+													if (r == 1)
+													{
+														((uint16_t*)extra)[0] = oldExtra[1];
+														((uint16_t*)extra)[1] = oldExtra[2];
+														((uint16_t*)extra)[2] = oldExtra[3];
+														((uint16_t*)extra)[3] = oldExtra[0];
+													}
+													else if (r == 2)
+													{
+														((uint16_t*)extra)[0] = oldExtra[2];
+														((uint16_t*)extra)[1] = oldExtra[3];
+														((uint16_t*)extra)[2] = oldExtra[0];
+														((uint16_t*)extra)[3] = oldExtra[1];
+													}
+													else
+													{
+														((uint16_t*)extra)[0] = oldExtra[3];
+														((uint16_t*)extra)[1] = oldExtra[0];
+														((uint16_t*)extra)[2] = oldExtra[1];
+														((uint16_t*)extra)[3] = oldExtra[2];
+													}
 												}
 											}
 
@@ -552,10 +687,10 @@ namespace CharacterLoader
 										count = *(uint16_t*)group;
 									} while (j < count);
 								}
-
-								if ((int16_t)matchResult < 0)
-									bone->unkVec5.y = 1;
 							}
+
+							if ((int16_t)matchResult < 0)
+								bone->unkVec5.y = 1;
 
 							uint8_t more = quad[0x33];
 
