@@ -21,6 +21,7 @@ namespace InputManager
 	extern int32_t g_directionalInputCount;
 	extern int32_t g_analogInputX;
 	extern int32_t g_analogInputY;
+	extern int16_t g_camMasks[24];
 
 	void Init();
 	uint8_t IsKeyPressed(int32_t inputCode);

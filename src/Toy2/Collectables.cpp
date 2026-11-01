@@ -33,10 +33,12 @@ namespace Toy2
 
 		// the directions the pieces of a collected token fly in
 		// GLOBAL: TOY2 0x005039C4
-		int16_t g_gameStruct5[48] = {
-			0,	  4096, 0, 0,	  -4096, 0, 4096, 0,	 0, -4096, 0,	  0,	2896, 2896, 0,	   2896, -2896, 0,	  -2896, 2896,	0,	   -2896, -2896, 0,
-			2896, 2896, 0, -2896, 2896,	 0, 2896, -2896, 0, -2896, -2896, 2896, 0,	  2896, -2896, 0,	 2896,	2896, 0,	 -2896, -2896, 0,	  -2896
+		Vector3I16 g_gameStruct5[16] = {
+			{ 0, 4096, 0 },		{ 0, -4096, 0 },	 { 4096, 0, 0 },	 { -4096, 0, 0 },	 { 2896, 2896, 0 },	 { 2896, -2896, 0 },
+			{ -2896, 2896, 0 }, { -2896, -2896, 0 }, { 0, 2896, 2896 },	 { 0, -2896, 2896 }, { 0, 2896, -2896 }, { 0, -2896, -2896 },
+			{ 2896, 0, 2896 },	{ -2896, 0, 2896 },	 { 2896, 0, -2896 }, { -2896, 0, -2896 }
 		};
+		STATIC_ASSERT(sizeof(g_gameStruct5) == 0x60);
 
 		// the gravity of Buzz while the level ends
 		// GLOBAL: TOY2 0x00830D28
@@ -910,19 +912,15 @@ namespace Toy2
 						AudioManager::PlaySoundEffect(51, 0);
 						Nu3D::Link::GetCurrentPosFixed(timerSlot->linkId, &spawnPos);
 
-						int16_t* direction = &g_gameStruct5[1];
-
-						do
+						for (int32_t i = 0; i < 16; ++i)
 						{
 							int32_t random = *g_randDatBufferPtr - 128;
-							int32_t directionZ = direction[1];
+							int32_t directionZ = g_gameStruct5[i].z;
 							++g_randDatBufferPtr;
 
 							Nu3D::Particles::SpawnInstance(
-								spawnPos.x, spawnPos.y, spawnPos.z, direction[-1] / 4, direction[0] / 4, directionZ / 4, 32, 0, random, 43);
-
-							direction += 3;
-						} while (direction < &g_gameStruct5[49]);
+								spawnPos.x, spawnPos.y, spawnPos.z, g_gameStruct5[i].x / 4, g_gameStruct5[i].y / 4, directionZ / 4, 32, 0, random, 43);
+						}
 					}
 
 					int32_t scale;

@@ -119,9 +119,10 @@ namespace InputManager
 	int32_t g_joystickDirectionFlags;
 
 	// GLOBAL: TOY2 0x00503860
-	int16_t g_camMasks[14] = {
-		INPUT_FIRE, INPUT_JUMP,	  INPUT_SPIN, INPUT_JUMP, INPUT_FIRE,	INPUT_CANCEL, INPUT_JUMP,
-		INPUT_SPIN, INPUT_CANCEL, INPUT_FIRE, INPUT_JUMP, INPUT_CANCEL, INPUT_SPIN,	  INPUT_JUMP
+	int16_t g_camMasks[24] = {
+		(int16_t)INPUT_FIRE, INPUT_JUMP,		  INPUT_SPIN, INPUT_JUMP,	(int16_t)INPUT_FIRE, INPUT_CANCEL, INPUT_JUMP,	 INPUT_SPIN,
+		INPUT_CANCEL,		 (int16_t)INPUT_FIRE, INPUT_JUMP, INPUT_CANCEL, INPUT_SPIN,			 INPUT_JUMP,   INPUT_CANCEL, INPUT_JUMP,
+		(int16_t)INPUT_FIRE, INPUT_SPIN,		  INPUT_JUMP, INPUT_SPIN,	(int16_t)INPUT_FIRE, INPUT_SPIN,   INPUT_JUMP,	 (int16_t)INPUT_FIRE
 	};
 
 	// clang-format off
@@ -559,21 +560,4 @@ namespace InputManager
 
 	// FUNCTION: TOY2 0x00498620 [MATCHED]
 	int32_t GetCurButtonsPressed() { return g_curButtonsPressed; }
-
-	// FUNCTION: TOY2 0x0049EBA0
-	void UpdateDirectionInputState()
-	{
-		int32_t cameraIndex = 3 * (SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_MASK);
-
-		g_directionInputState = g_curButtonsPressed & 0xFFF;
-
-		if (g_curButtonsPressed & g_camMasks[cameraIndex])
-			g_directionInputState |= DIR_CAM_REVERSE;
-
-		if (g_curButtonsPressed & g_camMasks[cameraIndex + 1])
-			g_directionInputState |= DIR_CAM_FLAG2;
-
-		if (g_curButtonsPressed & g_camMasks[cameraIndex + 2])
-			g_directionInputState |= DIR_CAM_FLAG3;
-	}
 }

@@ -532,15 +532,15 @@ namespace Toy2
 
 			int32_t lightIdx = g_levelFileIndex;
 
-			Lighting::g_levelLightDefs[lightIdx].offset.x = transform.pos.x >> 2;
-			Lighting::g_levelLightDefs[lightIdx].offset.y = transform.pos.y >> 2;
-			Lighting::g_levelLightDefs[lightIdx].offset.z = transform.pos.z >> 2;
+			Lighting::g_levelLightDefs[lightIdx - 1].offset.x = transform.pos.x >> 2;
+			Lighting::g_levelLightDefs[lightIdx - 1].offset.y = transform.pos.y >> 2;
+			Lighting::g_levelLightDefs[lightIdx - 1].offset.z = transform.pos.z >> 2;
 
 			transform.pos.x >>= 2;
 			transform.pos.y >>= 2;
 			transform.pos.z >>= 2;
 
-			Lighting::g_levelLightDefs[lightIdx].packedColor = 0xC0C000;
+			Lighting::g_levelLightDefs[lightIdx - 1].packedColor = 0xC0C000;
 
 			Weather::StepPrecipitation(256, 4096, 50);
 
