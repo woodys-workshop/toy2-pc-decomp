@@ -833,7 +833,7 @@ namespace Toy2
 				int32_t timer = g_returnedToTitle || ! InputManager::g_curButtonsPressed ? g_attractModeInputTimer : 2 * g_attractModeTimer;
 				g_attractModeInputTimer = timer - Renderer::g_frameDelta;
 
-				if (timer - Renderer::g_frameDelta <= 0 || (InputManager::g_curButtonsPressed & INPUT_SECRET_MENU) != 0)
+				if (g_attractModeInputTimer <= 0 || (InputManager::g_curButtonsPressed & INPUT_SECRET_MENU) != 0)
 				{
 					g_isPaused = 0;
 					g_levelTransition = 4;
@@ -848,7 +848,7 @@ namespace Toy2
 				devCamState = g_devCamState - frameDelta;
 
 				g_devCamState -= frameDelta;
-				goto LABEL_13;
+				goto LBL_CHECK_PAUSE_CAMERA_TIMER;
 			}
 
 			// holding the camera right and visor buttons for a while is a cheat
@@ -856,7 +856,7 @@ namespace Toy2
 			{
 				g_devCamState = 3780;
 
-				goto LABEL_25;
+				goto LBL_RESTORE_PAUSED_CAMERA;
 			}
 
 			devCamState = g_devCamState - frameDelta;
@@ -864,11 +864,11 @@ namespace Toy2
 
 			if (devCamState > 3600)
 			{
-			LABEL_13:
+			LBL_CHECK_PAUSE_CAMERA_TIMER:
 				if (devCamState > 0)
-					goto LABEL_25;
+					goto LBL_RESTORE_PAUSED_CAMERA;
 
-				goto LABEL_14;
+				goto LBL_ORBIT_PAUSED_CAMERA;
 			}
 
 			if (g_buzzActor.coinsCollected == 7)
@@ -884,7 +884,7 @@ namespace Toy2
 				g_devCamState = 0;
 			}
 
-		LABEL_14:
+		LBL_ORBIT_PAUSED_CAMERA:
 			if ((Camera::g_inCutscene & 1) == 0 && ! Camera::g_cameraState)
 			{
 				startPos.pos.x = g_buzzActor.posAngles.pos.x;
@@ -908,10 +908,10 @@ namespace Toy2
 				startPos.pos.y += displacement.pos.y;
 				startPos.pos.z += displacement.pos.z;
 
-				goto LABEL_28;
+				goto LBL_MOVE_PAUSED_CAMERA;
 			}
 
-		LABEL_25:
+		LBL_RESTORE_PAUSED_CAMERA:
 			x = g_unk830CB0.pos.x;
 			y = g_unk830CB0.pos.y;
 			z = g_unk830CB0.pos.z;
@@ -928,7 +928,7 @@ namespace Toy2
 
 			Camera::g_activeCameraTransform.angles.yaw += (angleDiff * frameDelta) / -16;
 
-		LABEL_28:
+		LBL_MOVE_PAUSED_CAMERA:
 			Camera::g_activeCameraTransform.pos.x += frameDelta * (Camera::g_activeCameraTransform.pos.x - x) / -16;
 			Camera::g_activeCameraTransform.pos.y += frameDelta * (Camera::g_activeCameraTransform.pos.y - y) / -16;
 			Camera::g_activeCameraTransform.pos.z += frameDelta * (Camera::g_activeCameraTransform.pos.z - z) / -16;
@@ -4041,7 +4041,7 @@ namespace Toy2
 
 					if (caseOneFadeFrames <= 23)
 					{
-						if ((caseOneFadeFrames + Renderer::g_frameDelta) > 23)
+						if ((int32_t)(caseOneFadeFrames + Renderer::g_frameDelta) > 23)
 							Nu3D::Camera::SetTint(0, 0, 0, 12);
 					}
 
@@ -4053,7 +4053,7 @@ namespace Toy2
 
 				caseOneFadeFrames = 0;
 
-				if ((caseOneFadeFrames + Renderer::g_frameDelta) > 23)
+				if ((int32_t)(caseOneFadeFrames + Renderer::g_frameDelta) > 23)
 					Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 				goto LBL_CHECK_FADE_COMPLETE;
@@ -4107,9 +4107,9 @@ namespace Toy2
 								break;
 						}
 
-						if (caseSixFadeFrames)
+						if (caseSixFadeFrames <= 23)
 						{
-							if ((caseSixFadeFrames + Renderer::g_frameDelta) > 23)
+							if ((int32_t)(caseSixFadeFrames + Renderer::g_frameDelta) > 23)
 								Nu3D::Camera::SetTint(0, 0, 0, 12);
 						}
 
@@ -4128,7 +4128,7 @@ namespace Toy2
 
 					caseSixFadeFrames = 0;
 
-					if ((caseSixFadeFrames + Renderer::g_frameDelta) > 23)
+					if ((int32_t)(caseSixFadeFrames + Renderer::g_frameDelta) > 23)
 						Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 					goto LBL_CHECK_OR_COMPLETE;
@@ -4191,7 +4191,7 @@ namespace Toy2
 				defaultFadeFramesRemaining = 0;
 			}
 
-			if ((defaultFadeFramesRemaining + Renderer::g_frameDelta) > 23)
+			if ((int32_t)(defaultFadeFramesRemaining + Renderer::g_frameDelta) > 23)
 				Nu3D::Camera::SetTint(0, 0, 0, 12);
 
 		} while (defaultFadeFramesRemaining);
@@ -6390,7 +6390,7 @@ namespace Toy2
 		int32_t result = 0;
 		int32_t moreBelow = 0;
 
-		g_inputSuppressFrames = 30 / Renderer::g_frameDelta;
+		g_inputSuppressFrames = 30 / (int32_t)Renderer::g_frameDelta;
 
 		if (SaveManager::GetControlSettingId(TOY_INPUT_ESC) != -1)
 		{
@@ -6444,19 +6444,19 @@ namespace Toy2
 							{
 								case INPUT_LEFT:
 									Renderer::DrawMenuTextScaled(160, y, "C", 0, 0, 2048);
-									goto LABEL_31;
+									goto LBL_NEXT_CONTROL_ROW;
 								case INPUT_CANCEL:
 									controlNameStr = InputManager::GetGameControlName(TOY_INPUT_ESC);
 									Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
-									goto LABEL_31;
+									goto LBL_NEXT_CONTROL_ROW;
 								case INPUT_JUMP:
 									controlNameStr = InputManager::GetGameControlName(TOY_INPUT_F2);
 									Renderer::DrawMenuTextScaled(160, y, controlNameStr, 0, 0, 2048);
-									goto LABEL_31;
+									goto LBL_NEXT_CONTROL_ROW;
 							}
-						LABEL_27:
+						LBL_DRAW_UNKNOWN_CONTROL_NAME:
 							Renderer::DrawMenuTextScaled(160, y, "???", 0, 0, 2048);
-							goto LABEL_31;
+							goto LBL_NEXT_CONTROL_ROW;
 						}
 
 						if (control->id == INPUT_DOWN)
@@ -6478,12 +6478,12 @@ namespace Toy2
 									Renderer::DrawMenuTextScaled(160, y, "D", 0, 0, 2048);
 									break;
 								default:
-									goto LABEL_27;
+									goto LBL_DRAW_UNKNOWN_CONTROL_NAME;
 							}
 						}
 					}
 				}
-			LABEL_31:
+			LBL_NEXT_CONTROL_ROW:
 
 				nextId = control[1].id;
 				++control;
@@ -6524,7 +6524,7 @@ namespace Toy2
 						if (pressedInput > TOY_INPUT_CAPITALB
 							|| (pressedInput != TOY_INPUT_CAPITALB && pressedInput != TOY_INPUT_CAPITALC && pressedInput != TOY_INPUT_CAPITALD))
 						{
-						LABEL_75:
+						LBL_ASSIGN_CONTROL_BINDING:
 							SaveManager::ClearBindByControlId((GameControlId)g_gameControls[g_controlSettingsScrollIndex].id);
 							SaveManager::ClearBindByInputCode((ToyInputCodes)pressedInput);
 							g_controlDelay = 30;
@@ -6560,7 +6560,7 @@ namespace Toy2
 							case TOY_INPUT_F15:
 								break;
 							default:
-								goto LABEL_75;
+								goto LBL_ASSIGN_CONTROL_BINDING;
 						}
 					}
 				}
@@ -8038,7 +8038,7 @@ namespace Toy2
 	{
 		uint8_t tickAcc = Renderer::g_frameDelta + g_tickAccumulators.tick2Acc;
 		uint8_t tickCount = 0;
-		bool lessThanPeriod = (Renderer::g_frameDelta + g_tickAccumulators.tick2Acc) < 2u;
+		bool lessThanPeriod = tickAcc < 2u;
 
 		g_tickState[1] = Renderer::g_frameDelta;
 		g_tickState[2] = 0;
@@ -8199,7 +8199,7 @@ namespace Toy2
 			|| (transitionTimer = g_levelTransitionTimer - Renderer::g_frameDelta, g_levelTransitionTimer = transitionTimer, transitionTimer >= 0))
 		{
 			if (transitionTimer >= 46)
-				goto LABEL_43;
+				goto LBL_FADE_TO_TARGET;
 		}
 		else
 		{
@@ -8207,7 +8207,7 @@ namespace Toy2
 			g_levelTransitionTimer = 0;
 		}
 
-		if (Renderer::g_frameDelta + transitionTimer >= 46 && g_levelTransition > 0)
+		if ((int32_t)(Renderer::g_frameDelta + transitionTimer) >= 46 && g_levelTransition > 0)
 		{
 			Nu3D::Camera::g_targetTintBlue = 0;
 			Nu3D::Camera::g_targetTintGreen = 0;
@@ -8216,7 +8216,7 @@ namespace Toy2
 			Nu3D::Camera::g_tintBlend = -1;
 		}
 
-	LABEL_43:
+	LBL_FADE_TO_TARGET:
 		Nu3D::Camera::FadeToTargetTint();
 	}
 

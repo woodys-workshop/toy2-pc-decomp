@@ -656,16 +656,14 @@ namespace Renderer
 		g_virtualScreenHeight = 256.0;
 	}
 
-	// FUNCTION: TOY2 0x00490860 [MATCHED]
+	// FUNCTION: TOY2 0x00490860
 	void DoFrameDelay(int32_t isGameplayFrame)
 	{
 #ifdef APPLY_FIXES
 		ApplyFixes::LockFrameRate();
 		return;
 #endif
-		g_lastFrameTimestamp = Nu3D::GetHighResolutionTime();
-
-		// This method does the FPS delay for each frame, it is the source of all pain
+		// Measure elapsed time from the prior frame's terminal timestamp.
 		int32_t hrt = Nu3D::GetHighResolutionTime();
 		int32_t elapsedMs = hrt - g_lastFrameTimestamp;
 
