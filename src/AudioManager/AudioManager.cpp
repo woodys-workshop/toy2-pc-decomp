@@ -200,7 +200,7 @@ namespace AudioManager
 	int32_t g_unk726230;
 
 	// GLOBAL: TOY2 0x00726234
-	int16_t g_soundEffectSampleRates[128];
+	uint16_t g_soundEffectSampleRates[128];
 
 	// GLOBAL: TOY2 0x00726334
 	DWORD g_writeCursor;
@@ -560,28 +560,30 @@ namespace AudioManager
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x0047E420
+	// FUNCTION: TOY2 0x0047E420 [MATCHED]
 	int32_t CreateDirectSoundBuffer(IDirectSound* directSound, IDirectSoundBuffer** soundBuffer, DWORD bufferBytes)
 	{
-		WAVEFORMATEX waveFormat;
+		PCMWAVEFORMAT waveFormat;
 		DSBUFFERDESC bufferDesc;
+
+		STATIC_ASSERT(sizeof(waveFormat) == 0x10);
+		STATIC_ASSERT(sizeof(bufferDesc) == 0x14);
 
 		memset(&waveFormat, 0, sizeof(waveFormat));
 
-		waveFormat.wFormatTag = g_audioConfig->formatTag;
-		waveFormat.nChannels = g_audioConfig->channels;
-		waveFormat.nSamplesPerSec = g_audioConfig->sampleRate;
+		waveFormat.wf.wFormatTag = g_audioConfig->formatTag;
+		waveFormat.wf.nChannels = g_audioConfig->channels;
+		waveFormat.wf.nSamplesPerSec = g_audioConfig->sampleRate;
 
-		waveFormat.nBlockAlign = g_audioConfig->blockAlign;
-		waveFormat.nAvgBytesPerSec = g_audioConfig->avgBytesPerSec;
+		waveFormat.wf.nBlockAlign = g_audioConfig->blockAlign;
+		waveFormat.wf.nAvgBytesPerSec = g_audioConfig->avgBytesPerSec;
 		waveFormat.wBitsPerSample = g_audioConfig->bitsPerSample;
 
-		bufferDesc.dwFlags = 0;
-		bufferDesc.dwBufferBytes = bufferBytes;
-		bufferDesc.dwReserved = 0;
+		memset(&bufferDesc, 0, sizeof(bufferDesc));
 		bufferDesc.dwSize = 20;
-		bufferDesc.lpwfxFormat = &waveFormat;
 		bufferDesc.dwFlags = 32992;
+		bufferDesc.dwBufferBytes = bufferBytes;
+		bufferDesc.lpwfxFormat = (LPWAVEFORMATEX)&waveFormat;
 
 		if (! directSound->CreateSoundBuffer(&bufferDesc, soundBuffer, 0))
 			return 1;
@@ -709,7 +711,7 @@ namespace AudioManager
 			if (! fileHandle || (fclose(fileHandle), hmmio = mmioOpenA(fileName, 0, MMIO_ALLOCBUF | MMIO_READ), hmmio == 0))
 			{
 				result = 57600;
-				goto LABEL_24;
+				goto LBL_CLOSE_FILE;
 			}
 
 			result = mmioDescend(hmmio, outRiffChunk, 0, 0);
@@ -717,7 +719,7 @@ namespace AudioManager
 			if (! result)
 			{
 				if (outRiffChunk->ckid != mmioFOURCC('R', 'I', 'F', 'F') || outRiffChunk->fccType != mmioFOURCC('W', 'A', 'V', 'E'))
-					goto INVALID_FORMAT;
+					goto LBL_INVALID_FORMAT;
 
 				fmtChunkInfo.ckid = mmioFOURCC('f', 'm', 't', ' ');
 				result = mmioDescend(hmmio, &fmtChunkInfo, outRiffChunk, MMIO_FINDCHUNK);
@@ -726,9 +728,9 @@ namespace AudioManager
 				{
 					if (fmtChunkInfo.cksize < 16)
 					{
-					INVALID_FORMAT:
+					LBL_INVALID_FORMAT:
 						result = 57601;
-						goto LABEL_24;
+						goto LBL_CLOSE_FILE;
 					}
 
 					if (mmioRead(hmmio, (HPSTR)&waveFormatHeader, 16) == 16)
@@ -742,7 +744,7 @@ namespace AudioManager
 							if (mmioRead(hmmio, (HPSTR)&extraFormatBytes, 2) != 2)
 							{
 								result = 57602;
-								goto LABEL_24;
+								goto LBL_CLOSE_FILE;
 							}
 						}
 
@@ -781,7 +783,7 @@ namespace AudioManager
 				}
 			}
 
-		LABEL_24:
+		LBL_CLOSE_FILE:
 			if (*outWaveFormat)
 			{
 				GlobalFree(*outWaveFormat);
@@ -1852,7 +1854,7 @@ namespace AudioManager
 		int32_t rightChannel = rightVolume;
 		DWORD highestCursor = 0;
 		int32_t bestBuffer = -1;
-		DWORD sampleRate = g_soundEffectSampleRates[soundIndex];
+		WORD sampleRate = g_soundEffectSampleRates[soundIndex];
 		LONG pan = 10000 * (rightVolume - leftVolume) / 128;
 
 		if (pan <= 10000)
@@ -1882,7 +1884,7 @@ namespace AudioManager
 				++state;
 
 				if (voice >= 6)
-					goto LABEL_57;
+					goto LBL_SELECT_PLAYBACK_BUFFER;
 			}
 
 			int32_t found = voice + bufferIndex;
@@ -1914,7 +1916,7 @@ namespace AudioManager
 		{
 			owner = (void*)1;
 
-		LABEL_57:
+		LBL_SELECT_PLAYBACK_BUFFER:
 			int32_t voiceCount = 0;
 
 			do
