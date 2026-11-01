@@ -680,7 +680,8 @@ namespace CharacterLoader
 				strcat(fullFilePath, ".anm");
 
 				fileContents = *levelData;
-				*levelData += 4 * ((FileUtils::LoadFile(fullFilePath, fileContents) + 3) / 4);
+				int32_t fileSize = FileUtils::LoadFile(fullFilePath, fileContents);
+				*levelData += 4 * ((fileSize + 3) / 4);
 			}
 
 			g_unk547CD4[creatureId] = fileContents;

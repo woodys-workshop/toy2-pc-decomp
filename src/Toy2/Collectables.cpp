@@ -931,7 +931,8 @@ namespace Toy2
 					{
 						// the index is before the start of the table when the timer is 96, the original reads whatever is there
 						if (collectTimer <= 96)
-							scale = Numerics::g_sinCosLUT[12160 - 128 * collectTimer] / 4;
+							// $TODO: Match the .data section layout for collectTimer == 96, which reads 256 bytes before g_sinCosLUT.
+							scale = Numerics::g_sinCosLUT[(95 - collectTimer) * 128] / 4;
 						else
 							scale = 0;
 					}
