@@ -38,10 +38,11 @@ namespace Toy2
 			"can quickly get back into the tree."
 		};
 
+		// $TODO: The original loader reads past this unterminated table; adjacent data placement is unresolved.
 		// GLOBAL: TOY2 0x004F153C
-		// the original table has no terminator and runs into the collectable table that follows it
-		Collectables::TokenTableEntry
-			g_unk4F153C[2] = { { 70, 12, "the soldier will surrender if you quickly ^stomp^ on the ^molehills^ that he is near.", 2048 }, { -1, 0, 0, 0 } };
+		Collectables::TokenTableEntry g_unk4F153C[1] = {
+			{ 70, 12, "the soldier will surrender if you quickly ^stomp^ on the ^molehills^ that he is near.", 2048 }
+		};
 
 		// GLOBAL: TOY2 0x004F154C
 		int16_t g_unk4F154C[6] = { 51, 49, 50, 48, 52, 0 };
