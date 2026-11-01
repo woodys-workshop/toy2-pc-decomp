@@ -2072,62 +2072,8 @@ namespace Toy2
 			int32_t rollDelta;
 			int16_t roll;
 			int16_t yaw;
-			uint16_t pitch;
 
-			if (g_inCutscene & 1)
-			{
-				if (g_cutsceneFrameTimer < 24)
-				{
-					g_cutsceneFrameTimer += Renderer::g_frameDelta;
-
-					if (g_cutsceneFrameTimer >= 24)
-						g_cutsceneFrameTimer = 24;
-				}
-
-				GameplayMode(&g_gameplayCameraState);
-				SmoothToTarget(&g_scriptedCameraState);
-
-				blendTimer = g_cameraBlendTimer;
-
-				if (g_cameraBlendTimer > 0)
-				{
-					g_activeCameraTransform.pos.x =
-						g_scriptedCameraState.pos.x + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.x - g_scriptedCameraState.pos.x)) >> 6);
-					g_activeCameraTransform.pos.y =
-						g_scriptedCameraState.pos.y + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.y - g_scriptedCameraState.pos.y)) >> 6);
-					g_activeCameraTransform.pos.z =
-						g_scriptedCameraState.pos.z + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.z - g_scriptedCameraState.pos.z)) >> 6);
-
-					pitchDelta = (g_activeCameraTransform.angles.pitch - g_scriptedCameraState.angles.pitch) & 0xFFF;
-
-					if (pitchDelta >= 0x800)
-						pitchDelta -= 4096;
-
-					yawDelta = (g_activeCameraTransform.angles.yaw - g_scriptedCameraState.angles.yaw) & 0xFFF;
-
-					if (yawDelta >= 0x800)
-						yawDelta -= 4096;
-
-					roll = g_scriptedCameraRoll;
-					rollDelta = (g_activeCameraTransform.roll - g_scriptedCameraRoll) & 0xFFF;
-
-					if (rollDelta >= 0x800)
-						rollDelta -= 4096;
-
-					pitch = (g_scriptedCameraState.angles.pitch + ((pitchDelta * g_cameraBlendTimer) >> 6)) & 0xFFF;
-					yaw = g_scriptedCameraState.angles.yaw + ((yawDelta * g_cameraBlendTimer) >> 6);
-
-					g_activeCameraTransform.angles.pitch = pitch;
-					goto LABEL_25;
-				}
-
-				g_activeCameraTransform.pos.x = g_scriptedCameraState.pos.x;
-				g_activeCameraTransform.pos.y = g_scriptedCameraState.pos.y;
-				g_activeCameraTransform.pos.z = g_scriptedCameraState.pos.z;
-				g_activeCameraTransform.angles = g_scriptedCameraState.angles;
-				g_activeCameraTransform.roll = g_scriptedCameraRoll;
-			}
-			else
+			if ((g_inCutscene & 1) == 0)
 			{
 				if (g_cutsceneFrameTimer > 0)
 				{
@@ -2144,50 +2090,99 @@ namespace Toy2
 
 				blendTimer = g_cameraBlendTimer;
 
-				if (g_cameraBlendTimer > 0)
+				if (blendTimer <= 0)
 				{
-					g_activeCameraTransform.pos.x =
-						g_gameplayCameraState.pos.x + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.x - g_gameplayCameraState.pos.x)) >> 6);
-					g_activeCameraTransform.pos.y =
-						g_gameplayCameraState.pos.y + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.y - g_gameplayCameraState.pos.y)) >> 6);
-					g_activeCameraTransform.pos.z =
-						g_gameplayCameraState.pos.z + ((g_cameraBlendTimer * (g_activeCameraTransform.pos.z - g_gameplayCameraState.pos.z)) >> 6);
-
-					pitchDelta = (g_activeCameraTransform.angles.pitch - g_gameplayCameraState.angles.pitch) & 0xFFF;
-
-					if (pitchDelta >= 0x800)
-						pitchDelta -= 4096;
-
-					yawDelta = (g_activeCameraTransform.angles.yaw - g_gameplayCameraState.angles.yaw) & 0xFFF;
-
-					if (yawDelta >= 0x800)
-						yawDelta -= 4096;
-
-					roll = g_gameplayCameraState.roll;
-					rollDelta = (g_activeCameraTransform.roll - g_gameplayCameraState.roll) & 0xFFF;
-
-					if (rollDelta >= 0x800)
-						rollDelta -= 4096;
-
-					pitch = (g_gameplayCameraState.angles.pitch + ((pitchDelta * g_cameraBlendTimer) >> 6)) & 0xFFF;
-					yaw = g_gameplayCameraState.angles.yaw + ((yawDelta * g_cameraBlendTimer) >> 6);
-
-					g_activeCameraTransform.angles.pitch = pitch;
-
-				LABEL_25:
-					g_activeCameraTransform.angles.yaw = yaw & 0xFFF;
-					g_activeCameraTransform.roll = (roll + ((rollDelta * blendTimer) >> 6)) & 0xFFF;
-					g_cameraBlendTimer = blendTimer - Renderer::g_frameDelta;
-
+					g_activeCameraTransform.pos.x = g_gameplayCameraState.pos.x;
+					g_activeCameraTransform.pos.y = g_gameplayCameraState.pos.y;
+					g_activeCameraTransform.pos.z = g_gameplayCameraState.pos.z;
+					g_activeCameraTransform.angles.pitch = g_gameplayCameraState.angles.pitch;
+					g_activeCameraTransform.angles.yaw = g_gameplayCameraState.angles.yaw;
+					g_activeCameraTransform.roll = g_gameplayCameraState.roll;
 					return;
 				}
 
-				g_activeCameraTransform.pos.x = g_gameplayCameraState.pos.x;
-				g_activeCameraTransform.pos.y = g_gameplayCameraState.pos.y;
-				g_activeCameraTransform.pos.z = g_gameplayCameraState.pos.z;
-				g_activeCameraTransform.angles = g_gameplayCameraState.angles;
-				g_activeCameraTransform.roll = g_gameplayCameraState.roll;
+				g_activeCameraTransform.pos.x =
+					g_gameplayCameraState.pos.x + ((blendTimer * (g_activeCameraTransform.pos.x - g_gameplayCameraState.pos.x)) >> 6);
+				g_activeCameraTransform.pos.y =
+					g_gameplayCameraState.pos.y + ((blendTimer * (g_activeCameraTransform.pos.y - g_gameplayCameraState.pos.y)) >> 6);
+				g_activeCameraTransform.pos.z =
+					g_gameplayCameraState.pos.z + ((blendTimer * (g_activeCameraTransform.pos.z - g_gameplayCameraState.pos.z)) >> 6);
+
+				pitchDelta = (g_activeCameraTransform.angles.pitch - g_gameplayCameraState.angles.pitch) & 0xFFF;
+
+				if (pitchDelta >= 2048)
+					pitchDelta -= 4096;
+
+				yawDelta = (g_activeCameraTransform.angles.yaw - g_gameplayCameraState.angles.yaw) & 0xFFF;
+
+				if (yawDelta >= 2048)
+					yawDelta -= 4096;
+
+				roll = g_gameplayCameraState.roll;
+				rollDelta = (g_activeCameraTransform.roll - roll) & 0xFFF;
+
+				if (rollDelta >= 2048)
+					rollDelta -= 4096;
+
+				g_activeCameraTransform.angles.pitch = (g_gameplayCameraState.angles.pitch + ((pitchDelta * blendTimer) >> 6)) & 0xFFF;
+				yaw = g_gameplayCameraState.angles.yaw + ((yawDelta * blendTimer) >> 6);
 			}
+			else
+			{
+				if (g_cutsceneFrameTimer < 24)
+				{
+					g_cutsceneFrameTimer += Renderer::g_frameDelta;
+
+					if (g_cutsceneFrameTimer >= 24)
+						g_cutsceneFrameTimer = 24;
+				}
+
+				GameplayMode(&g_gameplayCameraState);
+				SmoothToTarget(&g_scriptedCameraState);
+
+				blendTimer = g_cameraBlendTimer;
+
+				if (blendTimer <= 0)
+				{
+					g_activeCameraTransform.pos.x = g_scriptedCameraState.pos.x;
+					g_activeCameraTransform.pos.y = g_scriptedCameraState.pos.y;
+					g_activeCameraTransform.pos.z = g_scriptedCameraState.pos.z;
+					g_activeCameraTransform.angles.pitch = g_scriptedCameraState.angles.pitch;
+					g_activeCameraTransform.angles.yaw = g_scriptedCameraState.angles.yaw;
+					g_activeCameraTransform.roll = g_scriptedCameraRoll;
+					return;
+				}
+
+				g_activeCameraTransform.pos.x =
+					g_scriptedCameraState.pos.x + ((blendTimer * (g_activeCameraTransform.pos.x - g_scriptedCameraState.pos.x)) >> 6);
+				g_activeCameraTransform.pos.y =
+					g_scriptedCameraState.pos.y + ((blendTimer * (g_activeCameraTransform.pos.y - g_scriptedCameraState.pos.y)) >> 6);
+				g_activeCameraTransform.pos.z =
+					g_scriptedCameraState.pos.z + ((blendTimer * (g_activeCameraTransform.pos.z - g_scriptedCameraState.pos.z)) >> 6);
+
+				pitchDelta = (g_activeCameraTransform.angles.pitch - g_scriptedCameraState.angles.pitch) & 0xFFF;
+
+				if (pitchDelta >= 2048)
+					pitchDelta -= 4096;
+
+				yawDelta = (g_activeCameraTransform.angles.yaw - g_scriptedCameraState.angles.yaw) & 0xFFF;
+
+				if (yawDelta >= 2048)
+					yawDelta -= 4096;
+
+				roll = g_scriptedCameraRoll;
+				rollDelta = (g_activeCameraTransform.roll - roll) & 0xFFF;
+
+				if (rollDelta >= 2048)
+					rollDelta -= 4096;
+
+				g_activeCameraTransform.angles.pitch = (g_scriptedCameraState.angles.pitch + ((pitchDelta * blendTimer) >> 6)) & 0xFFF;
+				yaw = g_scriptedCameraState.angles.yaw + ((yawDelta * blendTimer) >> 6);
+			}
+
+			g_activeCameraTransform.angles.yaw = yaw & 0xFFF;
+			g_activeCameraTransform.roll = (roll + ((rollDelta * blendTimer) >> 6)) & 0xFFF;
+			g_cameraBlendTimer = blendTimer - Renderer::g_frameDelta;
 		}
 
 		// FUNCTION: TOY2 0x00435F30
