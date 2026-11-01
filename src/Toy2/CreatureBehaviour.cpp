@@ -580,7 +580,7 @@ namespace Toy2
 
 			if (actor->primaryAnimIdx == 7)
 			{
-				if ((actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
+				if ((int32_t)(actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
 					Collectables::Activate(4, 0);
 
 				int32_t yawAngle = actor->transform.angles.yaw;
@@ -695,7 +695,6 @@ namespace Toy2
 			{
 				Actor::UpdatePrimaryAnimation(actor);
 
-				// $TODO: the original multiplies by a register whose upper half was never cleared, only the low 16 bits are used here
 				int32_t forwardSpeed = context->localForwardSpeed;
 
 				if (forwardSpeed > 0)
@@ -839,7 +838,6 @@ namespace Toy2
 			{
 				Actor::UpdatePrimaryAnimation(actor);
 
-				// $TODO: the original multiplies by a register whose upper half was never cleared, only the low 16 bits are used here
 				int32_t forwardSpeed = context->localForwardSpeed;
 
 				if (forwardSpeed > 0)
