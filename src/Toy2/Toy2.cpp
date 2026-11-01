@@ -1478,6 +1478,7 @@ namespace Toy2
 			int32_t spawnFlag;
 			int32_t tokenIndex;
 			int32_t tintedOut;
+			// $BUG: The original game leaves the frame counter uninitialized.
 			int32_t frame;
 			int32_t newTokens;
 			int32_t i;
@@ -1534,8 +1535,6 @@ namespace Toy2
 			spawnFlag = 0;
 			tokenIndex = 0;
 			tintedOut = 0;
-			// $TODO: the frame counter is never initialised in the original, it starts as whatever was on the stack
-			frame = 0;
 			g_randDatBufferPtr = g_randDatBuffer;
 			savedTokens[3] = (savedBits & 8u) >> 3;
 
@@ -1591,11 +1590,11 @@ namespace Toy2
 						}
 					}
 
-					Renderer::Sprite::DrawScaledFixed(44, 60, 82, 15, 255, 255, 255, 255, 2048, 2048);
-					Renderer::Sprite::DrawScaledFixed(96, 60, 82, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
-					Renderer::Sprite::DrawScaledFixed(148, 60, 82, 16, 255, 255, 255, 255, 2048, 2048);
-					Renderer::Sprite::DrawScaledFixed(200, 60, 82, 17, 255, 255, 255, 255, 2048, 2048);
-					Renderer::Sprite::DrawScaledFixed(252, 60, 83, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaled(44, 60, 82, 15, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaled(96, 60, 82, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaled(148, 60, 82, 16, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaled(200, 60, 82, 17, 255, 255, 255, 255, 2048, 2048);
+					Renderer::Sprite::DrawScaled(252, 60, 83, g_levelIndex, 255, 255, 255, 255, 2048, 2048);
 
 					for (i = 0; i < 5; ++i)
 					{
@@ -1608,9 +1607,9 @@ namespace Toy2
 					for (i = 0; i < 5; ++i)
 					{
 						if ((g_playerUnlocks & unlockMasks[i]) != 0)
-							Renderer::Sprite::DrawScaledFixed(40 * i + 68, 173, 81, i, 255, 255, 255, 255, 2048, 2048);
+							Renderer::Sprite::DrawScaled(40 * i + 68, 173, 81, i, 255, 255, 255, 255, 2048, 2048);
 						else
-							Renderer::Sprite::DrawScaledFixed(40 * i + 68, 173, 81, i, 0, 0, 0, 0, 2048, 2048);
+							Renderer::Sprite::DrawScaled(40 * i + 68, 173, 81, i, 0, 0, 0, 0, 2048, 2048);
 					}
 
 					Renderer::Sprite::DrawTile(92, 118, 78, (frame + 2 * i) & 0xF);
@@ -1661,7 +1660,7 @@ namespace Toy2
 									if (++j >= 5)
 									{
 										tokenTimer -= Renderer::g_frameDelta;
-										goto LABEL_52;
+										goto LBL_SPAWN_SPARKLES;
 									}
 								}
 
@@ -1674,7 +1673,7 @@ namespace Toy2
 							tokenTimer -= Renderer::g_frameDelta;
 						}
 					}
-				LABEL_52:
+				LBL_SPAWN_SPARKLES:
 					if (spawnFlag)
 					{
 						rand = g_randDatBufferPtr;
@@ -1731,7 +1730,7 @@ namespace Toy2
 					if ((timer <= 180 && timer > 120) || (timer -= frameDelta, timer > 0))
 					{
 						if (timer > 23)
-							goto LABEL_72;
+							goto LBL_ADVANCE_FRAME;
 					}
 					else
 					{
@@ -1744,7 +1743,7 @@ namespace Toy2
 						frameDelta = Renderer::g_frameDelta;
 						tintedOut = 1;
 					}
-				LABEL_72:
+				LBL_ADVANCE_FRAME:
 					frame += frameDelta;
 
 					if (g_attractModeTimer >= 0)
@@ -4042,7 +4041,7 @@ namespace Toy2
 			blink = (Renderer::g_frameDelta + blink) & 0x3F;
 
 			if (blink > 30)
-				Renderer::Sprite::DrawScaledFixed(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
+				Renderer::Sprite::DrawScaled(96, 200, 128, 0, 255, 255, 255, 255, 2048, 2048);
 
 			MainMenu::RenderMenu();
 		} while (exitTimer);

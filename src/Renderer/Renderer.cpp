@@ -970,10 +970,10 @@ namespace Renderer
 			}
 
 			RGBA brightenColor;
-			brightenColor.b = brightenBlue;
+			brightenColor.r = brightenBlue;
 			brightenColor.g = brightenGreen;
 			brightenColor.a = -1 - brightenGreen;
-			brightenColor.r = brightenRed;
+			brightenColor.b = brightenRed;
 
 			uvTopLeft.x = 0.0;
 			uvTopLeft.y = 0.0;
@@ -1049,9 +1049,9 @@ namespace Renderer
 
 		RGBA darkenColor;
 		darkenColor.a = -1 - darkenGreen;
-		darkenColor.b = darkenBlue;
+		darkenColor.r = darkenBlue;
 		darkenColor.g = darkenGreen;
-		darkenColor.r = darkenRed;
+		darkenColor.b = darkenRed;
 
 		int32_t texDataIndex;
 
@@ -1448,7 +1448,6 @@ namespace Renderer
 		uvBottomRight.x = 1.0;
 		uvBottomRight.y = 1.0;
 
-		// the bars slide in/out over 25 frames, the timer is how far along they currently are
 		if (! g_enableCinematicBars)
 		{
 			int32_t timer = g_letterboxTimer - g_frameDelta;
@@ -1481,7 +1480,7 @@ namespace Renderer
 			}
 		}
 
-		float height = g_letterboxTimer * 0.0040000002;
+		float height = g_letterboxTimer * 0.004f;
 
 		RGBA black;
 		black.value = 0xFF000000;
@@ -1751,7 +1750,7 @@ namespace Renderer
 
 				default:
 					// quirk: only lowercase letters and digits have a tile, upper case letters wrap around
-					if (character > '9')
+					if ((uint8_t)character > '9')
 						fontIndex = character - 97;
 					else
 						fontIndex = character - 22;
@@ -1776,7 +1775,7 @@ namespace Renderer
 
 		vsprintf(buffer, format, argList);
 
-		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255);
+		Sprite::DrawBitmapText(buffer, screenY, screenX, 255, 255, 255, 0x60);
 	}
 
 	// FUNCTION: TOY2 0x004AFD30

@@ -3,7 +3,6 @@
 #include "Common.h"
 #include <windows.h>
 
-// Looks like these methods are purely for debug methods that are never called
 namespace Nu3D
 {
 	struct GlyphInfo
