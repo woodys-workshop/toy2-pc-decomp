@@ -2917,7 +2917,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2928,7 +2933,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2939,7 +2949,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2950,7 +2965,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2961,7 +2981,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2972,7 +2997,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2983,7 +3013,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -2994,7 +3029,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -3005,7 +3045,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -3016,7 +3061,12 @@ namespace Toy2
 				fileName = strstr(levelName, ".raw");
 
 				if (fileName)
-					goto LBL_MAKENGN_IMAGE;
+				{
+					strcpy(fileName, ".ngn");
+					NGNLoader::SetNewImage(levelName);
+					NGNLoader::DetectBackdropTextures();
+					return;
+				}
 
 				break;
 
@@ -3028,10 +3078,10 @@ namespace Toy2
 
 				if (fileName)
 				{
-				LBL_MAKENGN_IMAGE:
 					strcpy(fileName, ".ngn");
 					NGNLoader::SetNewImage(levelName);
 					NGNLoader::DetectBackdropTextures();
+					return;
 				}
 
 				break;
