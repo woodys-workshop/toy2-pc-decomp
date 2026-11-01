@@ -94,7 +94,9 @@ namespace DrawingDevice
 		HRESULT CreateZBuffer();
 		HRESULT CreateD3DDevice(const CLSID* guid);
 		HRESULT CreateAndSetViewport();
+		HRESULT PresentFrame();
 		int32_t RestoreToGDISurface(int32_t refreshWindow);
+		HRESULT RestoreSurfaces();
 		int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surfaceOut);
 
 		static HRESULT Build(HWND hWnd, GUID* guid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, uint8_t flags);
@@ -135,6 +137,8 @@ namespace DrawingDevice
 	HRESULT ClearScreen(DWORD clearFlags, D3DCOLOR clearColor);
 	HRESULT BeginScene();
 	HRESULT PresentFrame();
+	HRESULT RestoreSurfaces();
+	HRESULT PresentAndRestoreSurfaces();
 	void EndScene();
 	HRESULT BindTexWithStage(int32_t textureIndex, int32_t stageIndex);
 	HRESULT BindTexToStage0(int32_t textureIndex);
