@@ -33,11 +33,10 @@ namespace NGNLoader
 	{
 		if (ngnImage)
 		{
-			// the texture entries hold a pointer in their first unused field
 			for (int32_t i = 0; i < 64; i++)
 			{
-				if (ngnImage->textureEntries[i].unused1)
-					free((void*)ngnImage->textureEntries[i].unused1);
+				if (ngnImage->textureEntries[i].unknownAllocation)
+					free((void*)ngnImage->textureEntries[i].unknownAllocation);
 			}
 
 			if (ngnImage->creatureData)

@@ -36,9 +36,7 @@ namespace Nu3D
 		int32_t materialId;
 		PatchVertices patchVertices;
 		int32_t unkVar11;
-		int16_t indexData[4];
-		int32_t unkVar14;
-		int32_t unkVar15;
+		int32_t indexData[4];
 
 		static void Remove(Patch* patch);
 		static Patch* AllocAndResize(int32_t verticesSize, int32_t unknown);
@@ -50,4 +48,6 @@ namespace Nu3D
 
 	STATIC_ASSERT(sizeof(Patch) == 0x3C);
 	STATIC_ASSERT(sizeof(Patch::PatchVertices) == 0x14);
+	STATIC_ASSERT(sizeof(((Patch*)0)->indexData) == 0x10);
+	STATIC_ASSERT(sizeof(((Patch*)0)->indexData[0]) == 0x4);
 }

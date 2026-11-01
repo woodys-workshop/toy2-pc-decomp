@@ -195,8 +195,8 @@ namespace Nu3D
 				{
 					if (creature->primitives[curNode])
 					{
-						// the flags are stored in the pointer slots, bit 0 is hidden, bit 1 is ignore the node matrix, bit 2 is the vertex modulation
-						int32_t flags = (int32_t)creature->flagsList[curNode];
+						// Bit 0 hides the node, bit 1 faces the camera, and bit 2 enables modulation.
+						int32_t flags = creature->nodeFlags[curNode];
 
 						if ((flags & 1) == 0)
 						{
@@ -205,7 +205,7 @@ namespace Nu3D
 							if ((flags & 4) != 0)
 								previousModulation = Renderer::Set9F5FF8(1);
 
-							if (((int32_t)creature->flagsList[curNode] & 2) != 0)
+							if ((creature->nodeFlags[curNode] & 2) != 0)
 							{
 								D3DMATRIX localMatrix;
 
@@ -223,7 +223,7 @@ namespace Nu3D
 								Renderer::RenderPrimitive(creature->primitives[curNode], matrix, renderStage);
 							}
 
-							if (((int32_t)creature->flagsList[curNode] & 4) != 0)
+							if ((creature->nodeFlags[curNode] & 4) != 0)
 								Renderer::Set9F5FF8(previousModulation);
 						}
 					}

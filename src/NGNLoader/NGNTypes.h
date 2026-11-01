@@ -28,8 +28,8 @@ namespace NGNLoader
 	{
 		int32_t isBGR;
 		int32_t textureDataIndex;
-		int32_t unused1;
-		int32_t unused2;
+		int32_t unknownAllocation;
+		int32_t unknownValue;
 	};
 
 	struct Type266Entry
@@ -121,6 +121,7 @@ namespace NGNLoader
 	};
 
 	STATIC_ASSERT(sizeof(NGNImage) == 0x67C);
+	STATIC_ASSERT(sizeof(NGNTextureParams) == 0x1C);
 	STATIC_ASSERT(sizeof(NGNTextureData) == 0x1C);
 	STATIC_ASSERT(sizeof(NGNTextureDataSentinal) == 0x8);
 	STATIC_ASSERT(sizeof(NGNTextureCache) == 0x128);

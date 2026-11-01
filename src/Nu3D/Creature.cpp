@@ -69,18 +69,17 @@ namespace Nu3D
 
 		if (nodeIdx >= 0 && nodeIdx < creature->nodeCount)
 		{
-			int32_t** flagsList = creature->flagsList;
+			int32_t* flagsList = creature->nodeFlags;
 
 			if (flagsList)
 			{
-				// the flags are stored in the pointer slots, bit 0 means hidden
-				int32_t previous = ~(int32_t)flagsList[nodeIdx];
-				flagsList[nodeIdx] = (int32_t*)((int32_t)flagsList[nodeIdx] & 0xFFFFFFFE);
+				int32_t previous = ~flagsList[nodeIdx];
+				flagsList[nodeIdx] &= ~1;
 
 				result = previous & 1;
 
 				if (! visible)
-					creature->flagsList[nodeIdx] = (int32_t*)((int32_t)creature->flagsList[nodeIdx] | 1);
+					creature->nodeFlags[nodeIdx] |= 1;
 			}
 		}
 

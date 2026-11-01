@@ -24,8 +24,16 @@ namespace Nu3D
 		char** nodeNames;
 		Primitive** primitives;
 		Patch* patch;
-		int32_t** flagsList;
-		int32_t** unkVar10;
+		union
+		{
+			int32_t* nodeFlags;
+			int32_t** flagsList;
+		};
+		union
+		{
+			int32_t* parentIndices;
+			int32_t** unkVar10;
+		};
 		void** animData;
 		int32_t animCount;
 
