@@ -12,6 +12,12 @@
 
 namespace RawLoader
 {
+	// GLOBAL: TOY2 0x004F73A8
+	Backdrop g_backdrop = { 256, 128, 32, { 118, 175, 158 }, { 72, 56, 40 }, 64, 0 };
+
+	// GLOBAL: TOY2 0x004F73D4
+	Backdrop g_staticBackdrop = { 128, 160, 32, { 118, 175, 158 }, { 72, 56, 40 }, 64, 0 };
+
 	// GLOBAL: TOY2 0x005D2BE0
 	uint8_t* g_resumePacketPtr;
 
@@ -27,8 +33,11 @@ namespace RawLoader
 	// GLOBAL: TOY2 0x00703C04
 	int32_t g_unusedBuffer3[129];
 
+	// GLOBAL: TOY2 0x00559EDA
+	uint16_t g_backdropSourceFlags;
+
 	// GLOBAL: TOY2 0x00559EDC
-	uint8_t g_unusedBuffer4[516];
+	uint8_t* g_unusedBuffer4[129];
 
 	// GLOBAL: TOY2 0x0055A11C
 	int32_t g_unused1;
@@ -37,13 +46,19 @@ namespace RawLoader
 	int16_t g_unused2;
 
 	// GLOBAL: TOY2 0x0055A13C
-	int16_t g_unused3;
+	int32_t g_unused3;
 
 	// GLOBAL: TOY2 0x005D2BE4
 	uint16_t* g_unused4;
 
 	// GLOBAL: TOY2 0x00703BE8
 	uint16_t g_type36Data1[4];
+
+	// GLOBAL: TOY2 0x005D2ADC
+	int16_t g_backdropSourceWidth;
+
+	// GLOBAL: TOY2 0x00559E7C
+	int16_t g_backdropSourceHeight;
 
 	// FUNCTION: TOY2 0x0047B170
 	void DecompressBuffer(uint8_t* inBuffer, uint8_t* outBuffer)
@@ -436,13 +451,14 @@ namespace RawLoader
 		uint8_t* buffer;
 		uint8_t* resumePtr;
 		uint8_t* decompBuffer;
-		uint8_t* packetCursor;
+		int32_t tail24;
+		int32_t tail28;
 
 		Logger::Log("ROUTINE : Loading packet data %s, level %d.\n", fileName, Toy2::g_levelFileIndex);
 
 		if ((Toy2::Levels::g_levelLoadConfig & 0x800) != 0 && (resumePtr = g_resumePacketPtr) != 0)
 		{
-			buffer = reinterpret_cast<uint8_t*>(fileName); // ?
+			buffer = (uint8_t*)fileName; // ?
 		}
 		else
 		{
@@ -454,11 +470,12 @@ namespace RawLoader
 			memset(g_unusedBuffer2, 0, sizeof(g_unusedBuffer2));
 
 			resumePtr = g_resumePacketPtr;
-			packetCursor = buffer;
 
 			memset(g_unusedBuffer3, 0, sizeof(g_unusedBuffer3));
 
 			g_unused1 = 0x80000000;
+			tail24 = 0;
+			tail28 = 0;
 			g_unused2 = 0;
 			g_unused3 = 0;
 
@@ -474,7 +491,6 @@ namespace RawLoader
 		if ((Toy2::Levels::g_levelLoadConfig & 0x800) != 0 && resumePtr)
 		{
 			buffer = resumePtr;
-			packetCursor = resumePtr;
 		}
 
 		decompBuffer = Toy2::Levels::g_levelLoadArena;
@@ -484,26 +500,45 @@ namespace RawLoader
 		{
 			DecompressBuffer(buffer, decompBuffer);
 
-			if (*reinterpret_cast<uint32_t*>(decompBuffer) == 35)
+			if (*(uint32_t*)decompBuffer == 35)
 			{
+				memset(g_creatureListRam, 0, sizeof(g_creatureListRam));
 				memcpy(g_creatureListRam, decompBuffer + 4, sizeof(g_creatureListRam));
 				Logger::Log("LOAD: Type 35, CreatListRam.\n");
 			}
-			else if (*reinterpret_cast<uint32_t*>(decompBuffer) == 36)
+			else if (*(uint32_t*)decompBuffer == 36)
 			{
-				// omitted
-				// $TODO: implement this portion, don't know if it actually does anything
+				int16_t width = *(int16_t*)(decompBuffer + 8);
+				g_backdropSourceWidth = width;
+				int16_t height = *(int16_t*)(decompBuffer + 10);
+				g_backdropSourceHeight = height;
+				int16_t pixelOffsetBytes = *(int16_t*)(decompBuffer + 12);
+				g_type36Data1[0] = pixelOffsetBytes;
+				g_backdropSourceFlags = *(uint16_t*)(decompBuffer + 14);
+
+				g_backdrop.width = width;
+				g_backdrop.height = height;
+				g_backdrop.verticalOffset = *(int32_t*)(decompBuffer + 4);
+
+				int32_t pixelOffsetWords = pixelOffsetBytes / 2;
+				uint8_t* firstPixel = decompBuffer + pixelOffsetWords * 2 + 16;
+				uint8_t* lastPixel = decompBuffer + pixelOffsetWords * 2 + width * height + 15;
+				g_backdrop.topColor.r = decompBuffer[*firstPixel * 3 + 16];
+				g_backdrop.topColor.g = decompBuffer[*firstPixel * 3 + 17];
+				g_backdrop.topColor.b = decompBuffer[*firstPixel * 3 + 18];
+				g_backdrop.bottomColor.r = decompBuffer[*lastPixel * 3 + 16];
+				g_backdrop.bottomColor.g = decompBuffer[*lastPixel * 3 + 17];
+				g_backdrop.bottomColor.b = decompBuffer[*lastPixel * 3 + 18];
+				g_backdrop.unknown24 = (int16_t)tail24;
+				g_backdrop.unknown28 = (int16_t)tail28;
 			}
 
-			int32_t packetPayloadSize = (buffer[6] + ((buffer[5] + (buffer[4] << 8)) << 8)) << 8;
-			uint8_t* packetBodyBase = &buffer[buffer[7]];
-
-			buffer = &packetBodyBase[packetPayloadSize + 14];
-			packetCursor = buffer;
+			uint32_t packetPayloadSize = (uint32_t)buffer[4] << 24 | (uint32_t)buffer[5] << 16 | (uint32_t)buffer[6] << 8 | buffer[7];
+			buffer += packetPayloadSize + 14;
 
 			if ((Toy2::Levels::g_levelLoadConfig & 0x800) != 0)
 			{
-				g_resumePacketPtr = &packetBodyBase[packetPayloadSize + 14];
+				g_resumePacketPtr = buffer;
 				++resumeCounter;
 			}
 		}

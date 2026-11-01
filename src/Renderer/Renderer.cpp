@@ -17,6 +17,7 @@
 #include "Logger.h"
 #include "Nullsub.h"
 #include "Nu3D/Nu3D.h"
+#include "RawLoader.h"
 
 #include <WINDOWS.H>
 #include <STDARG.H>
@@ -201,13 +202,10 @@ namespace Renderer
 	float g_farRenderDistance = 1000000.0;
 
 	// GLOBAL: TOY2 0x00830C4C
-	float g_parallaxPrevVertInput;
+	int32_t g_parallaxPrevVertInput;
 
 	// GLOBAL: TOY2 0x00731F24
 	float g_parallaxScrollDelta;
-
-	// GLOBAL: TOY2 0x004F73B0
-	int32_t g_parallaxVertOffset = 32;
 
 	// GLOBAL: TOY2 0x0050A1F8
 	int32_t g_enableCinematicBars;
@@ -1388,14 +1386,14 @@ namespace Renderer
 			g_parallaxTexFirstPixel.value = *textureData;
 			g_parallaxTexLastPixel.value = textureData[textureHeight * textureWidth - 1];
 
-			g_parallaxTexWidthRatio = bitmapWidth / g_virtualScreenWidth;
-			g_parallaxTexHeightRatio = bitmapHeight / g_virtualScreenHeight;
+			g_parallaxTexWidthRatio = (int32_t)bitmapWidth / g_virtualScreenWidth;
+			g_parallaxTexHeightRatio = (int32_t)bitmapHeight / g_virtualScreenHeight;
 
 			// the yaw input is a 16-bit angle, work out how far it moved since last frame (accounting for wrap around)
-			double verticalInput = verticalScroll;
+			double verticalInput = (uint16_t)verticalScroll;
 			int32_t verticalDelta = (int32_t)(verticalInput - g_parallaxPrevVertInput);
 
-			g_parallaxPrevVertInput = verticalInput;
+			g_parallaxPrevVertInput = (int32_t)verticalInput;
 
 			if (verticalDelta > 32768)
 				verticalDelta -= 65536;
@@ -1403,9 +1401,9 @@ namespace Renderer
 			if (verticalDelta < -32768)
 				verticalDelta += 65536;
 
-			g_parallaxScrollDelta = verticalDelta * 0.000015258789 * 4.1887903;
+			g_parallaxScrollDelta = verticalDelta * 0.0000152587890625f * 4.1887903f;
 
-			double horizontalPos = g_parallaxCurHorizScroll + g_parallaxScrollDelta;
+			double horizontalPos = (double)g_parallaxCurHorizScroll + g_parallaxScrollDelta;
 
 			g_parallaxCurHorizScroll = horizontalPos;
 
@@ -1430,9 +1428,9 @@ namespace Renderer
 				g_parallaxCurHorizScroll = horizontalPos;
 			}
 
-			g_parallaxHorizOffset = horizontalScroll * 0.000015258789;
-			g_parallaxHorizOffset =
-				g_parallaxHorizOffset / (Nu3D::Camera::g_primaryCamera->aspectHOverW * 0.23873241) + g_parallaxVertOffset / g_virtualScreenHeight;
+			g_parallaxHorizOffset = horizontalScroll * 0.0000152587890625f;
+			g_parallaxHorizOffset = (double)g_parallaxHorizOffset / ((double)Nu3D::Camera::g_primaryCamera->aspectHOverW * 0.23873241f)
+				+ (double)RawLoader::g_backdrop.verticalOffset / g_virtualScreenHeight;
 		}
 	}
 
