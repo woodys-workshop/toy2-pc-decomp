@@ -1373,24 +1373,17 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004045E0
 		void GameplayMode(Toy2::Camera::GameplayCameraState* state)
 		{
-			int32_t frameDelta = Renderer::g_frameDelta;
 			int32_t snapToTarget = 0;
-			int32_t moving = 0;
-
-			int32_t speedMultiplier;
-			int32_t newDistance;
-			int32_t standing;
-			int32_t v62;
-			int32_t v84;
-			int32_t v94;
+			BOOL contactIsPlatformMesh = Collision::IsMeshMoving();
+			int32_t frameDelta = Renderer::g_frameDelta;
 			int32_t cameraPos[4];
 			Transform startPos;
 			Transform probePos;
+			Transform lowerProbePos;
 			Transform displacement;
 
-			if (Collision::IsMeshMoving() && g_buzzActor.collisionFlags)
+			if (contactIsPlatformMesh && g_buzzActor.collisionFlags)
 			{
-				speedMultiplier = frameDelta;
 				g_unk50A4E0 += 2 * frameDelta;
 
 				if (g_unk50A4E0 > 192)
@@ -1398,7 +1391,6 @@ namespace Toy2
 			}
 			else
 			{
-				speedMultiplier = frameDelta;
 				g_unk50A4E0 -= frameDelta;
 
 				if (g_unk50A4E0 < 0)
@@ -1406,737 +1398,513 @@ namespace Toy2
 			}
 
 			int32_t buzzZ = g_buzzActor.posAngles.pos.z;
-			int32_t stateDistance = state->distance;
 			int32_t buzzY = g_buzzActor.posAngles.pos.y;
 			int32_t buzzX = g_buzzActor.posAngles.pos.x;
-			int32_t cameraDistance = g_buzzCameraDistance;
 
-			if (stateDistance > g_buzzCameraDistance)
+			if (state->distance > g_buzzCameraDistance)
 			{
-				newDistance = stateDistance - 32 * speedMultiplier;
-				state->distance = newDistance;
+				state->distance -= 32 * frameDelta;
 
-				cameraDistance = g_buzzCameraDistance;
-
-				if (newDistance >= g_buzzCameraDistance)
-				{
-					speedMultiplier = frameDelta;
-				}
-				else
-				{
+				if (state->distance < g_buzzCameraDistance)
 					state->distance = g_buzzCameraDistance;
-					speedMultiplier = frameDelta;
-					cameraDistance = g_buzzCameraDistance;
-				}
 			}
 
-			stateDistance = state->distance;
-
-			if (stateDistance < cameraDistance)
+			if (state->distance < g_buzzCameraDistance)
 			{
-				newDistance = 32 * speedMultiplier + stateDistance;
-				state->distance = newDistance;
+				state->distance += 32 * frameDelta;
 
-				if (newDistance > g_buzzCameraDistance)
+				if (state->distance > g_buzzCameraDistance)
 					state->distance = g_buzzCameraDistance;
-
-				speedMultiplier = frameDelta;
 			}
 
-			standing = (abs(g_buzzActor.velX) < 4 && abs(g_buzzActor.velForward) < 4 && ! Buzz::g_unk53C660 && g_buzzActor.unkShort40)
-				|| (Buzz::g_unk53C668 > 0 && g_buzzActor.unkVar37 == 15);
+			int32_t moving = ! (
+				(abs(g_buzzActor.velX) < 4 && abs(g_buzzActor.velForward) < 4 && ! Buzz::g_unk53C660 && g_buzzActor.unkShort40)
+				|| (Buzz::g_unk53C668 > 0 && g_buzzActor.unkVar37 == 15));
 
-			if (standing)
+			if (! moving)
 			{
-				int32_t v13;
+				int32_t recenter = 0;
+				int32_t turnSpeed = 10;
+				g_unk50A534 += frameDelta;
+				int32_t idleCameraTimer = g_unk50A534;
 
-				// Buzz stands still, the camera can be turned around him
-				int32_t v7 = 0;
-				moving = 0;
-				g_unk50A534 += speedMultiplier;
-				int32_t v8 = g_unk50A534;
-
-				if (g_unk50A534 - speedMultiplier < 66 && g_unk50A534 >= 66)
+				if (idleCameraTimer - frameDelta < 66 && idleCameraTimer >= 66)
 				{
-					v8 = g_unk50A534 + 66;
-					g_unk50A534 += 66;
+					idleCameraTimer += 66;
+					g_unk50A534 = idleCameraTimer;
 				}
 
-				if (v8 >= 240)
+				if (idleCameraTimer >= 240)
 				{
-					v8 = 240;
-					v7 = 1;
+					idleCameraTimer = 240;
+					recenter = 1;
 					g_unk50A534 = 240;
 				}
 
-				if ((SaveManager::g_save0Data.cameraType & 0x40) != 0)
-					goto LABEL_32;
-
-				if ((InputManager::g_curButtonsPressed & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0
-					&& (InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) == 0)
+				if ((SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_ACTIVE) == 0)
 				{
-					snapToTarget = 1;
-					state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
-					speedMultiplier = frameDelta;
-					v8 = g_unk50A534;
+					if ((InputManager::g_curButtonsPressed & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0
+						&& (InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) == 0)
+					{
+						snapToTarget = 1;
+						state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+					}
 				}
 
 				if ((SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_ACTIVE) != 0)
 				{
-					int32_t v9;
-					int32_t v11;
+					int32_t minimumTurn = 320;
 
-				LABEL_32:
 					if ((InputManager::g_directionInputState & (DIR_CAMERA_LEFT | DIR_CAMERA_RIGHT)) != 0)
 					{
-						int32_t v10;
-
-						v9 = 640;
+						int32_t turn;
+						minimumTurn = 640;
 
 						if ((InputManager::g_directionInputState & DIR_CAMERA_RIGHT) != 0)
-							v10 = 32 * speedMultiplier / 2 + g_buzzActor.facingAngle;
+							turn = 32 * frameDelta / 2;
 						else
-							v10 = -32 * speedMultiplier / 2 + g_buzzActor.facingAngle;
+							turn = -32 * frameDelta / 2;
 
-						g_buzzActor.facingAngle = v10 & 0xFFF;
-						g_buzzActor.posAngles.angles.yaw = v10 & 0xFFF;
-					}
-					else
-					{
-						v9 = 320;
+						g_buzzActor.facingAngle = (g_buzzActor.facingAngle + turn) & 0xFFF;
+						g_buzzActor.posAngles.angles.yaw = g_buzzActor.facingAngle;
 					}
 
-					if (v8 >= 100)
+					if (idleCameraTimer < 100)
 					{
-						v11 = g_unk50A4E4;
-					}
-					else
-					{
-						v8 = 100;
+						idleCameraTimer = 100;
 						g_unk50A534 = 100;
-						v11 = (g_buzzActor.facingAngle - state->orbitYaw) & 0xFFF;
-						g_unk50A4E4 = v11;
+						g_unk50A4E4 = (g_buzzActor.facingAngle - state->orbitYaw) & 0xFFF;
 
-						if (v11 > 0x800)
-						{
-							v11 -= 4095;
-							g_unk50A4E4 = v11;
-						}
+						if (g_unk50A4E4 > 2048)
+							g_unk50A4E4 -= 4095;
 					}
 
-					if (abs(v11) < v9)
-					{
-						v11 = v9;
-						g_unk50A4E4 = v9;
-					}
+					if (abs(g_unk50A4E4) < minimumTurn)
+						g_unk50A4E4 = minimumTurn;
 
-					if (v8 > 164)
-					{
-						v11 = v9;
-						g_unk50A4E4 = v9;
-					}
+					if (idleCameraTimer > 164)
+						g_unk50A4E4 = minimumTurn;
 
-					int32_t v12 = v8 - 100;
+					int32_t ramp = idleCameraTimer - 100;
 
-					if (v8 - 100 > 8)
-						v12 = 8;
+					if (ramp > 8)
+						ramp = 8;
 
-					v7 = 1;
-					v13 = abs(v12 * v11) / 384;
+					recenter = 1;
+					turnSpeed = abs(ramp * g_unk50A4E4) / 384;
 				}
-				else
+
+				if (recenter)
 				{
-					v13 = 10;
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
 
-					if (! v7)
-						goto LABEL_58;
-				}
+					if (yawDelta >= 2048)
+						yawDelta -= 4096;
 
-				int32_t v15;
-				v15 = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
-
-				if (v15 >= 0x800)
-					v15 -= 4096;
-
-				if (v15 >= 0)
-				{
-					if (v15 <= 0 || (state->orbitYaw = state->orbitYaw - speedMultiplier * v13, speedMultiplier = frameDelta, v15 - v13 * frameDelta > 0))
+					if (yawDelta < 0)
 					{
-					LABEL_58:
-						if ((SaveManager::g_save0Data.cameraType & 0x40) == 0)
-						{
-							int32_t v16 = 0;
+						state->orbitYaw += frameDelta * turnSpeed;
 
-							if ((InputManager::g_directionInputState & 0x100) != 0)
-								v16 = 32 * speedMultiplier / 2;
+						if (yawDelta + frameDelta * turnSpeed >= 0)
+							state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+					}
+					else if (yawDelta > 0)
+					{
+						state->orbitYaw -= frameDelta * turnSpeed;
 
-							if ((InputManager::g_directionInputState & 0x200) != 0)
-								v16 = -32 * speedMultiplier / 2;
-
-							if (v16)
-							{
-								g_unk50A534 = 66;
-								state->orbitYaw += v16;
-								v7 = 1;
-							}
-						}
-
-						state->orbitYaw &= 0xFFF;
-
-						if (! v7)
-							goto LABEL_72;
-
-						int32_t v18;
-						v18 = state->orbitPitch;
-
-						if (v18 <= 64)
-						{
-							if (Buzz::g_unk53C668 > 0)
-								goto LABEL_72;
-
-							int32_t v19;
-							v19 = v18 + 8 * frameDelta;
-							state->orbitPitch = v19;
-
-							if (v19 < 64)
-								goto LABEL_72;
-						}
-						else
-						{
-							v18 = v18 - 8 * frameDelta;
-							state->orbitPitch = v18;
-
-							if (v18 > 64)
-							{
-								int32_t v34;
-
-							LABEL_72:
-								int32_t v21 = state->followY - ((state->followY - buzzY + 4096) >> 5);
-								state->followY = v21;
-
-								int32_t v22 = state->smoothedY - frameDelta * (state->smoothedY - v21) / 16;
-								state->smoothedY = v22;
-
-								if (g_unk50A4E0)
-									state->smoothedY = buzzY - (256 - g_unk50A4E0) * ((buzzY - v22 - 4096) / 256) - 4096;
-
-								if (g_unk50A118.x != 0x80000000)
-								{
-									int32_t v24;
-
-									v24 = (state->orbitYaw
-										   - Nu3D::Math::CartesianToFixedAngle(
-											   g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z))
-										& 0xFFF;
-
-									if (v24 >= 2048)
-										v24 -= 4096;
-
-									state->orbitYaw = state->orbitYaw - (v24 >> 3);
-									g_unk50A118.x = 0x80000000;
-								}
-
-								int32_t v25 = state->orbitPitch;
-								int32_t v26 = state->orbitYaw;
-
-								int32_t v27 = g_buzzCameraDistance * Numerics::g_sinCosLUT[(v25 - 2048) & 0xFFF];
-								int32_t v28 = (g_buzzCameraDistance * Numerics::g_sinCosLUT[(v25 + 1024) & 0xFFF]) >> 14;
-
-								int32_t v29 = v28 * Numerics::g_sinCosLUT[(v26 + 1024) & 0xFFF];
-								int32_t v30 = v28 * Numerics::g_sinCosLUT[v26 & 0xFFF];
-
-								cameraPos[0] = buzzX;
-								cameraPos[1] = buzzY - 7936;
-								v27 >>= 9;
-
-								int32_t v31 = -(v29 >> 9);
-								int32_t v32 = -(v30 >> 9);
-								int32_t v100 = v27 + state->smoothedY - buzzY;
-
-								cameraPos[2] = buzzZ;
-								PrepareCameraCollisionCandidates(cameraPos, v32, v100, v31, 2000);
-
-								startPos.pos.x = cameraPos[0];
-								startPos.pos.z = cameraPos[2];
-								startPos.pos.y = cameraPos[1];
-								displacement.pos.x = v32;
-								displacement.pos.y = v27 + state->smoothedY - buzzY;
-								displacement.pos.z = v31;
-
-								if (g_unk50A534 >= 66)
-									v34 = 2840;
-								else
-									v34 = 80 * (g_unk50A534 / 2) + 200;
-
-								if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, v34))
-								{
-									int32_t v35;
-
-									v35 = (int32_t)sqrt((
-										double)((displacement.pos.y >> 5) * (displacement.pos.y >> 5) + (displacement.pos.x >> 5) * (displacement.pos.x >> 5)
-												+ (displacement.pos.z >> 5) * (displacement.pos.z >> 5)));
-									state->distance = v35;
-
-									if (v35 < 10)
-										state->distance = 10;
-								}
-
-								goto LABEL_194;
-							}
-						}
-
-						state->orbitPitch = 64;
-						goto LABEL_72;
+						if (yawDelta - frameDelta * turnSpeed <= 0)
+							state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
 					}
 				}
-				else
-				{
-					state->orbitYaw = state->orbitYaw + speedMultiplier * v13;
-					speedMultiplier = frameDelta;
 
-					if (v15 + v13 * frameDelta < 0)
-						goto LABEL_58;
+				if ((SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_ACTIVE) == 0)
+				{
+					int32_t turn = 0;
+
+					if ((InputManager::g_directionInputState & DIR_CAMERA_LEFT) != 0)
+						turn = 32 * frameDelta / 2;
+
+					if ((InputManager::g_directionInputState & DIR_CAMERA_RIGHT) != 0)
+						turn = -32 * frameDelta / 2;
+
+					if (turn)
+					{
+						g_unk50A534 = 66;
+						state->orbitYaw += turn;
+						recenter = 1;
+					}
 				}
 
-				state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				state->orbitYaw &= 0xFFF;
 
-				speedMultiplier = frameDelta;
-				goto LABEL_58;
-			}
+				if (recenter)
+				{
+					if (state->orbitPitch > 64)
+					{
+						state->orbitPitch -= 8 * frameDelta;
 
-			// Buzz moves, the camera follows him
-			g_unk50A534 = 0;
-			moving = 1;
+						if (state->orbitPitch <= 64)
+							state->orbitPitch = 64;
+					}
+					else if (Buzz::g_unk53C668 <= 0)
+					{
+						state->orbitPitch += 8 * frameDelta;
 
-			if (g_buzzActor.posAngles.pos.y > state->followY + 0x4000)
-			{
-				state->followY = g_buzzActor.posAngles.pos.y - 0x4000;
-				speedMultiplier = frameDelta;
-			}
+						if (state->orbitPitch >= 64)
+							state->orbitPitch = 64;
+					}
+				}
 
-			if (g_buzzActor.posAngles.pos.y < state->followY - 0x4000)
-			{
-				state->followY = g_buzzActor.posAngles.pos.y + 0x4000;
-				speedMultiplier = frameDelta;
-			}
-
-			if ((g_buzzActor.unkShort40 && g_buzzActor.unkVar30) || g_buzzActor.posAngles.pos.y < state->followY + 4096)
-			{
 				state->followY -= (state->followY - g_buzzActor.posAngles.pos.y + 4096) >> 5;
-				speedMultiplier = frameDelta;
-			}
+				state->smoothedY -= frameDelta * (state->smoothedY - state->followY) / 16;
 
-			int32_t v36;
-			v36 = state->smoothedY - speedMultiplier * (state->smoothedY - state->followY) / 16;
-			state->smoothedY = v36;
+				if (g_unk50A4E0)
+					state->smoothedY =
+						g_buzzActor.posAngles.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.posAngles.pos.y - state->smoothedY - 4096) / 256) - 4096;
 
-			if (g_unk50A4E0)
-				state->smoothedY = g_buzzActor.posAngles.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.posAngles.pos.y - v36 - 4096) / 256) - 4096;
-
-			if (g_gravityBootsDuration && state->smoothedY > g_buzzActor.posAngles.pos.y - 4096)
-				state->smoothedY = g_buzzActor.posAngles.pos.y - 4096;
-
-			if ((SaveManager::g_save0Data.cameraType & 64) != 0)
-			{
-				int32_t v38;
-
-				v38 = 42;
-				int32_t v39;
-				v39 = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
-
-				if (v39 >= 0x800)
-					v39 -= 4096;
-
-				if (abs(v39) > 1536)
+				if (g_unk50A118.x != 0x80000000)
 				{
-					int32_t v40;
+					int16_t orbitYaw = state->orbitYaw;
+					int32_t yawDelta =
+						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z))
+						& 0xFFF;
 
-					v40 = 2048;
+					if (yawDelta >= 2048)
+						yawDelta -= 4096;
 
-					if (v39 <= 0)
-						v40 = -2048;
-
-					v39 = 3 * (v40 - v39);
+					state->orbitYaw = orbitYaw - (yawDelta >> 3);
+					g_unk50A118.x = 0x80000000;
 				}
 
-				if (Buzz::g_buzzSlipTimer)
-					v38 = 96;
+				int32_t orbitPitch = state->orbitPitch;
+				int32_t orbitYaw = state->orbitYaw;
+				int32_t horizontalDistance = (g_buzzCameraDistance * Numerics::g_sinCosLUT[(orbitPitch + 1024) & 0xFFF]) >> 14;
+				int32_t offsetY = (g_buzzCameraDistance * Numerics::g_sinCosLUT[(orbitPitch - 2048) & 0xFFF]) >> 9;
+				int32_t offsetZ = -((horizontalDistance * Numerics::g_sinCosLUT[(orbitYaw + 1024) & 0xFFF]) >> 9);
+				int32_t offsetX = -((horizontalDistance * Numerics::g_sinCosLUT[orbitYaw & 0xFFF]) >> 9);
 
-				state->orbitYaw -= v39 * frameDelta / (2 * v38);
+				cameraPos[0] = buzzX;
+				cameraPos[1] = buzzY - 7936;
+				cameraPos[2] = buzzZ;
+				PrepareCameraCollisionCandidates(cameraPos, offsetX, offsetY + state->smoothedY - buzzY, offsetZ, 2000);
+
+				startPos.pos.x = cameraPos[0];
+				startPos.pos.z = cameraPos[2];
+				startPos.pos.y = cameraPos[1];
+				displacement.pos.x = offsetX;
+				displacement.pos.y = offsetY + state->smoothedY - buzzY;
+				displacement.pos.z = offsetZ;
+
+				int32_t radius = 2840;
+
+				if (g_unk50A534 < 66)
+					radius = 80 * (g_unk50A534 / 2) + 200;
+
+				if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, radius))
+				{
+					int32_t x = displacement.pos.x >> 5;
+					int32_t y = displacement.pos.y >> 5;
+					int32_t z = displacement.pos.z >> 5;
+					state->distance = (int32_t)sqrt((double)(z * z + x * x + y * y));
+
+					if (state->distance < 10)
+						state->distance = 10;
+				}
 			}
 			else
 			{
-				int32_t v37;
+				g_unk50A534 = 0;
 
-				v37 = 0;
+				if (g_buzzActor.posAngles.pos.y > state->followY + 0x4000)
+					state->followY = g_buzzActor.posAngles.pos.y - 0x4000;
 
-				if ((InputManager::g_directionInputState & 0x100) != 0 && (g_unk50A12C & 9) == 0)
-					v37 = 32 * frameDelta / 2;
+				if (g_buzzActor.posAngles.pos.y < state->followY - 0x4000)
+					state->followY = g_buzzActor.posAngles.pos.y + 0x4000;
 
-				if ((InputManager::g_directionInputState & 0x200) != 0 && (g_unk50A12C & 0xA) == 0)
-					v37 = -32 * frameDelta / 2;
+				if ((g_buzzActor.unkShort40 && g_buzzActor.unkVar30) || g_buzzActor.posAngles.pos.y < state->followY + 4096)
+					state->followY -= (state->followY - g_buzzActor.posAngles.pos.y + 4096) >> 5;
 
-				state->orbitYaw += v37;
+				state->smoothedY -= frameDelta * (state->smoothedY - state->followY) / 16;
 
-				if ((InputManager::g_curButtonsPressed & 0x1000) != 0 && (InputManager::g_prevButtonsPressed & 0x1000) == 0)
-					state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
-			}
+				if (g_unk50A4E0)
+					state->smoothedY =
+						g_buzzActor.posAngles.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.posAngles.pos.y - state->smoothedY - 4096) / 256) - 4096;
 
-			if (Buzz::g_unk53C618 || g_rocketBootsDuration || Buzz::g_unk53C818 || g_grappleState == 2 || (g_buzzActor.actorFlags & 0x40) != 0)
-			{
-				int32_t v41;
+				if (g_gravityBootsDuration && state->smoothedY > g_buzzActor.posAngles.pos.y - 4096)
+					state->smoothedY = g_buzzActor.posAngles.pos.y - 4096;
 
-				v41 = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+				if ((SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_ACTIVE) != 0)
+				{
+					int32_t turnDivisor = 42;
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
 
-				if (v41 >= 0x800)
-					v41 -= 4096;
+					if (yawDelta >= 2048)
+						yawDelta -= 4096;
 
-				if (abs(v41) > 512)
-					v41 = v41 >= 0 ? 512 : -512;
-
-				state->orbitYaw -= v41 * frameDelta / 32;
-			}
-
-			int32_t v42;
-			v42 = state->orbitPitch;
-			state->orbitYaw &= 0xFFF;
-			stateDistance = state->distance;
-			int32_t v43;
-			v43 = state->orbitYaw;
-
-			int32_t probeFlags;
-			probeFlags = 0;
-
-			int32_t v44;
-			v44 = stateDistance * Numerics::g_sinCosLUT[(v42 - 2048) & 0xFFF];
-			int32_t v45;
-			v45 = (stateDistance * Numerics::g_sinCosLUT[(v42 + 1024) & 0xFFF]) >> 14;
-			int32_t v46;
-			v46 = v45 * Numerics::g_sinCosLUT[v43 & 0xFFF];
-			int32_t v47;
-			v47 = v45 * Numerics::g_sinCosLUT[(v43 + 1024) & 0xFFF];
-
-			cameraPos[0] = buzzX;
-			cameraPos[1] = buzzY - 4096;
-			int32_t v48;
-			v48 = v44 >> 9;
-			int32_t v49;
-			v49 = -(v47 >> 9);
-			int32_t v50;
-			v50 = -(v46 >> 9);
-			int32_t v102;
-			v102 = v48 + state->smoothedY - buzzY;
-			cameraPos[2] = buzzZ;
-
-			PrepareCameraCollisionCandidates(cameraPos, v50, v102, v49, 2000);
-
-			int32_t v51;
-			v51 = Numerics::g_sinCosLUT[(v43 - 2048) & 0xFFF];
-			int32_t v103;
-			v103 = Numerics::g_sinCosLUT[(v43 + 1024) & 0xFFF] >> 3;
-			startPos.pos.x = cameraPos[0] - v103;
-			startPos.pos.y = cameraPos[1] - 3840;
-			int32_t v104;
-			v104 = v51 >> 3;
-
-			startPos.pos.z = cameraPos[2] - (v51 >> 3);
-			displacement.pos.x = v50 - v103;
-			displacement.pos.y = state->smoothedY - buzzY + v48 - 2048;
-			displacement.pos.z = v49 - (v51 >> 3);
-
-			if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, 200))
-			{
-				probeFlags = 1;
-
-				if (Collision::g_floorSlope.y > 12000)
-					probeFlags = 9;
-
-				startPos.pos.x += displacement.pos.x;
-				startPos.pos.z += displacement.pos.z;
-			}
-
-			probePos.pos.x = v103 + cameraPos[0];
-			probePos.pos.y = cameraPos[1] - 3840;
-
-			displacement.pos.x = v50 + v103;
-			probePos.pos.z = v104 + cameraPos[2];
-			int32_t v53;
-			v53 = state->smoothedY - buzzY;
-			displacement.pos.z = v49 + v104;
-			displacement.pos.y = v53 + v48 - 2048;
-
-			if (Nu3D::Collision::SweepAndSlide(&probePos, &displacement, 0x8000, 1, 200))
-			{
-				probeFlags |= 2;
-
-				if (Collision::g_floorSlope.y > 12000)
-					probeFlags |= 8;
-
-				probePos.pos.x += displacement.pos.x;
-				probePos.pos.z += displacement.pos.z;
-			}
-
-			startPos.pos.x = cameraPos[0];
-			startPos.pos.y = cameraPos[1] + 3072;
-			startPos.pos.z = cameraPos[2];
-			displacement.pos.x = v50;
-			displacement.pos.y = v48 + state->smoothedY - buzzY;
-			displacement.pos.z = v49;
-
-			int32_t v58;
-			v58 = probeFlags;
-
-			if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, 200))
-				v58 = (v58 & ~0xFF) | (probeFlags | 4);
-
-			g_unk50A12C = v58;
-
-			if ((v58 & 8) != 0)
-				v58 = (v58 & ~0xFF) | 3;
-
-			switch (v58 & 7)
-			{
-				case 0:
-					state->collisionFlags = 0;
-					break;
-
-				case 1:
-					goto LABEL_153;
-
-				case 2:
-					goto LABEL_140;
-
-				case 3:
-					goto LABEL_155;
-
-				case 4:
-					goto LABEL_156;
-
-				case 5:
-					if ((state->collisionFlags & 1) == 0)
-						state->collisionFlags = 8;
-
-					goto LABEL_143;
-
-				case 6:
-				LABEL_143:
-					if ((state->collisionFlags & 2) == 0)
-						state->collisionFlags = 8;
-
-					goto LABEL_145;
-
-				case 7:
-				LABEL_145:
-					int32_t v59;
-					v59 = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
-
-					if (v59 >= 0x800)
-						v59 -= 4096;
-
-					int32_t v60;
-					v60 = abs(v59);
-
-					if (v60 <= 1024)
+					if (abs(yawDelta) > 1536)
 					{
-						if (v60 <= 512)
-						{
-							if (g_buzzActor.gravityVel >= -128)
-							LABEL_156:
-								state->collisionFlags = 8;
-							else
-							LABEL_155:
-								state->collisionFlags = 4;
-						}
-						else if (v59 <= 0)
-						{
-						LABEL_140:
-							state->collisionFlags = 2;
-						}
-						else
-						{
-						LABEL_153:
-							state->collisionFlags = 1;
-						}
+						int32_t oppositeYaw = yawDelta > 0 ? 2048 : -2048;
+						yawDelta = 3 * (oppositeYaw - yawDelta);
 					}
-					else if (v59 <= 0)
+
+					if (Buzz::g_buzzSlipTimer)
+						turnDivisor = 96;
+
+					state->orbitYaw -= yawDelta * frameDelta / (2 * turnDivisor);
+				}
+				else
+				{
+					int32_t turn = 0;
+
+					if ((InputManager::g_directionInputState & DIR_CAMERA_LEFT) != 0 && (g_unk50A12C & 9) == 0)
+						turn = 32 * frameDelta / 2;
+
+					if ((InputManager::g_directionInputState & DIR_CAMERA_RIGHT) != 0 && (g_unk50A12C & 10) == 0)
+						turn = -32 * frameDelta / 2;
+
+					state->orbitYaw += turn;
+
+					if ((InputManager::g_curButtonsPressed & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0)
+						state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				}
+
+				if (Buzz::g_unk53C618 || g_rocketBootsDuration || Buzz::g_unk53C818 || g_grappleState == 2 || (g_buzzActor.actorFlags & 0x40) != 0)
+				{
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+
+					if (yawDelta >= 2048)
+						yawDelta -= 4096;
+
+					if (abs(yawDelta) > 512)
+						yawDelta = yawDelta >= 0 ? 512 : -512;
+
+					state->orbitYaw -= yawDelta * frameDelta / 32;
+				}
+
+				state->orbitYaw &= 0xFFF;
+				int32_t orbitYaw = state->orbitYaw;
+				int32_t orbitPitch = state->orbitPitch;
+				int32_t distance = state->distance;
+				int32_t horizontalDistance = (distance * Numerics::g_sinCosLUT[(orbitPitch + 1024) & 0xFFF]) >> 14;
+				int32_t offsetY = (distance * Numerics::g_sinCosLUT[(orbitPitch - 2048) & 0xFFF]) >> 9;
+				int32_t offsetX = -((horizontalDistance * Numerics::g_sinCosLUT[orbitYaw & 0xFFF]) >> 9);
+				int32_t offsetZ = -((horizontalDistance * Numerics::g_sinCosLUT[(orbitYaw + 1024) & 0xFFF]) >> 9);
+				int32_t probeFlags = 0;
+
+				cameraPos[0] = buzzX;
+				cameraPos[1] = buzzY - 4096;
+				cameraPos[2] = buzzZ;
+				PrepareCameraCollisionCandidates(cameraPos, offsetX, offsetY + state->smoothedY - buzzY, offsetZ, 2000);
+
+				int32_t sideX = Numerics::g_sinCosLUT[(orbitYaw + 1024) & 0xFFF] >> 3;
+				int32_t sideZ = Numerics::g_sinCosLUT[(orbitYaw - 2048) & 0xFFF] >> 3;
+				startPos.pos.x = cameraPos[0] - sideX;
+				startPos.pos.y = cameraPos[1] - 3840;
+				startPos.pos.z = cameraPos[2] - sideZ;
+				displacement.pos.x = offsetX - sideX;
+				displacement.pos.y = state->smoothedY - buzzY + offsetY - 2048;
+				displacement.pos.z = offsetZ - sideZ;
+
+				if (Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 1, 200))
+				{
+					probeFlags = 1;
+
+					if (Collision::g_floorSlope.y > 12000)
+						probeFlags = 9;
+
+					startPos.pos.x += displacement.pos.x;
+					startPos.pos.z += displacement.pos.z;
+				}
+
+				probePos.pos.x = cameraPos[0] + sideX;
+				probePos.pos.y = cameraPos[1] - 3840;
+				probePos.pos.z = cameraPos[2] + sideZ;
+				displacement.pos.x = offsetX + sideX;
+				displacement.pos.y = state->smoothedY - buzzY + offsetY - 2048;
+				displacement.pos.z = offsetZ + sideZ;
+
+				if (Nu3D::Collision::SweepAndSlide(&probePos, &displacement, 0x8000, 1, 200))
+				{
+					probeFlags |= 2;
+
+					if (Collision::g_floorSlope.y > 12000)
+						probeFlags |= 8;
+
+					probePos.pos.x += displacement.pos.x;
+					probePos.pos.z += displacement.pos.z;
+				}
+
+				lowerProbePos.pos.x = cameraPos[0];
+				lowerProbePos.pos.y = cameraPos[1] + 3072;
+				lowerProbePos.pos.z = cameraPos[2];
+				displacement.pos.x = offsetX;
+				displacement.pos.y = offsetY + state->smoothedY - buzzY;
+				displacement.pos.z = offsetZ;
+
+				if (Nu3D::Collision::SweepAndSlide(&lowerProbePos, &displacement, 0x8000, 1, 200))
+					probeFlags |= 4;
+
+				g_unk50A12C = probeFlags;
+
+				if ((probeFlags & 8) != 0)
+					probeFlags = 3;
+
+				switch (probeFlags & 7)
+				{
+					case 0:
+						state->collisionFlags = 0;
+						break;
+					case 1:
+						state->collisionFlags = 1;
+						break;
+					case 2:
+						state->collisionFlags = 2;
+						break;
+					case 3:
+						state->collisionFlags = 4;
+						break;
+					case 4:
+						state->collisionFlags = 8;
+						break;
+					case 5:
+						if ((state->collisionFlags & 1) == 0)
+							state->collisionFlags = 8;
+					case 6:
+						if ((state->collisionFlags & 2) == 0)
+							state->collisionFlags = 8;
+					case 7: {
+						int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+
+						if (yawDelta >= 2048)
+							yawDelta -= 4096;
+
+						int32_t yawDistance = abs(yawDelta);
+
+						if (yawDistance > 1024)
+							state->collisionFlags = yawDelta > 0 ? 9 : 10;
+						else if (yawDistance > 512)
+							state->collisionFlags = yawDelta > 0 ? 1 : 2;
+						else
+							state->collisionFlags = g_buzzActor.gravityVel < -128 ? 4 : 8;
+
+						break;
+					}
+				}
+
+				frameDelta = Renderer::g_frameDelta;
+
+				if ((state->collisionFlags & 3) != 0)
+				{
+					if ((state->collisionFlags & 3) == 1)
 					{
-						state->collisionFlags = 10;
+						if (g_unk50A4B4 > 0)
+							g_unk50A4B4 = 0;
+
+						g_unk50A4B4 -= 8 * frameDelta;
+
+						if (g_unk50A4B4 <= -96)
+							g_unk50A4B4 = -96;
+					}
+
+					if ((state->collisionFlags & 3) == 2)
+					{
+						if (g_unk50A4B4 < 0)
+							g_unk50A4B4 = 0;
+
+						g_unk50A4B4 += 8 * frameDelta;
+
+						if (g_unk50A4B4 >= 96)
+							g_unk50A4B4 = 96;
+					}
+
+					state->orbitYaw = (state->orbitYaw + frameDelta * g_unk50A4B4 / 2) & 0xFFF;
+				}
+				else if (g_unk50A4B4 > 0)
+				{
+					g_unk50A4B4 -= 16 * frameDelta;
+
+					if (g_unk50A4B4 < 0)
+						g_unk50A4B4 = 0;
+				}
+				else if (g_unk50A4B4 < 0)
+				{
+					g_unk50A4B4 += 16 * frameDelta;
+
+					if (g_unk50A4B4 > 0)
+						g_unk50A4B4 = 0;
+				}
+
+				int32_t collisionFlags = state->collisionFlags;
+
+				if ((collisionFlags & 4) != 0)
+				{
+					state->orbitPitch -= 8 * frameDelta;
+
+					if (state->orbitPitch < -512)
+						state->orbitPitch = -512;
+				}
+
+				if ((collisionFlags & 8) != 0)
+				{
+					state->orbitPitch += 8 * frameDelta;
+
+					if (state->orbitPitch > 768)
+						state->orbitPitch = 768;
+				}
+
+				if ((collisionFlags & 12) == 0)
+				{
+					if (state->orbitPitch > 64)
+					{
+						state->orbitPitch -= 8 * frameDelta;
+
+						if (state->orbitPitch <= 64)
+							state->orbitPitch = 64;
 					}
 					else
 					{
-						state->collisionFlags = 9;
-					}
+						state->orbitPitch += 8 * frameDelta;
 
-					break;
-
-				default:
-					break;
-			}
-
-			if ((state->collisionFlags & 3) != 0)
-			{
-				int32_t v61;
-
-				v61 = g_unk50A4B4;
-
-				if ((state->collisionFlags & 3) == 1)
-				{
-					if (g_unk50A4B4 > 0)
-						v61 = 0;
-
-					v61 -= 8 * frameDelta;
-					g_unk50A4B4 = v61;
-
-					if (v61 <= -96)
-					{
-						v61 = -96;
-						g_unk50A4B4 = -96;
+						if (state->orbitPitch >= 64)
+							state->orbitPitch = 64;
 					}
 				}
 
-				if ((state->collisionFlags & 3) == 2)
+				if (g_unk50A118.x != 0x80000000)
 				{
-					if (v61 < 0)
-						v61 = 0;
+					int16_t orbitYaw = state->orbitYaw;
+					int32_t yawDelta =
+						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z))
+						& 0xFFF;
 
-					v61 += 8 * frameDelta;
-					g_unk50A4B4 = v61;
+					if (yawDelta >= 2048)
+						yawDelta -= 4096;
 
-					if (v61 >= 96)
-					{
-						v61 = 96;
-						g_unk50A4B4 = 96;
-					}
+					state->orbitYaw = orbitYaw - (yawDelta >> 3);
+					g_unk50A118.x = 0x80000000;
 				}
-
-				state->orbitYaw = (state->orbitYaw + frameDelta * v61 / 2) & 0xFFF;
-				goto LABEL_169;
 			}
 
-			if (g_unk50A4B4 <= 0)
-			{
-				if (g_unk50A4B4 >= 0)
-				{
-				LABEL_169:
-					v62 = frameDelta;
-					goto LABEL_170;
-				}
-
-				v62 = frameDelta;
-				g_unk50A4B4 += 16 * frameDelta;
-
-				if (g_unk50A4B4 > 0)
-					g_unk50A4B4 = 0;
-			}
-			else
-			{
-				v62 = frameDelta;
-				g_unk50A4B4 += -16 * frameDelta;
-
-				if (g_unk50A4B4 < 0)
-					g_unk50A4B4 = 0;
-			}
-
-		LABEL_170:
-			int32_t collisionFlags;
-			collisionFlags = state->collisionFlags;
-
-			if ((collisionFlags & 4) != 0)
-			{
-				state->orbitPitch += -8 * v62;
-
-				if (state->orbitPitch < -512)
-					state->orbitPitch = -512;
-
-				v62 = frameDelta;
-			}
-
-			if ((collisionFlags & 8) != 0)
-			{
-				state->orbitPitch += 8 * v62;
-
-				if (state->orbitPitch > 768)
-					state->orbitPitch = 768;
-
-				v62 = frameDelta;
-			}
-
-			if ((collisionFlags & 0xC) != 0)
-				goto LABEL_190;
-
-			int32_t v64;
-			v64 = state->orbitPitch;
-
-			if (v64 <= 64)
-			{
-				int32_t v65;
-
-				v65 = v64 + 8 * v62;
-				state->orbitPitch = v65;
-
-				if (v65 < 64)
-					goto LABEL_190;
-			}
-			else
-			{
-				int32_t v66;
-
-				v66 = v64 - 8 * v62;
-				state->orbitPitch = v66;
-
-				if (v66 > 64)
-					goto LABEL_190;
-			}
-
-			state->orbitPitch = 64;
-
-		LABEL_190:
-			if (g_unk50A118.x != 0x80000000)
-			{
-				int32_t v67;
-
-				v67 = state->orbitYaw;
-				int32_t v68;
-				v68 =
-					(v67 - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z)) & 0xFFF;
-
-				if (v68 >= 2048)
-					v68 -= 4096;
-
-				state->orbitYaw = v67 - (v68 >> 3);
-				g_unk50A118.x = 0x80000000;
-			}
-
-		LABEL_194:
-			int32_t v69 = state->orbitPitch;
-			int32_t v70 = state->distance;
-			int32_t v71 = (v70 * Numerics::g_sinCosLUT[(v69 + 1024) & 0xFFF]) >> 14;
-			int32_t v72 = v70 * Numerics::g_sinCosLUT[(v69 - 2048) & 0xFFF];
-			int32_t v73 = v71 * Numerics::g_sinCosLUT[(state->orbitYaw + 1024) & 0xFFF];
-			displacement.pos.x = (v71 * Numerics::g_sinCosLUT[state->orbitYaw & 0xFFF]) >> 9;
-
-			int32_t v74 = state->smoothedY;
-			v72 >>= 9;
-			displacement.pos.y = v72;
+			int32_t orbitPitch = state->orbitPitch;
+			int32_t distance = state->distance;
+			int32_t horizontalDistance = (distance * Numerics::g_sinCosLUT[(orbitPitch + 1024) & 0xFFF]) >> 14;
+			displacement.pos.x = (horizontalDistance * Numerics::g_sinCosLUT[state->orbitYaw & 0xFFF]) >> 9;
+			displacement.pos.y = (distance * Numerics::g_sinCosLUT[(orbitPitch - 2048) & 0xFFF]) >> 9;
 			state->targetPos.x = buzzX - displacement.pos.x;
-			state->targetPos.y = v74 + v72 - 0x2000;
-			displacement.pos.z = v73 >> 9;
-			state->targetPos.z = buzzZ - (v73 >> 9);
+			state->targetPos.y = state->smoothedY + displacement.pos.y - 8192;
+			displacement.pos.z = (horizontalDistance * Numerics::g_sinCosLUT[(state->orbitYaw + 1024) & 0xFFF]) >> 9;
+			state->targetPos.z = buzzZ - displacement.pos.z;
 
 			if (! g_unk50A4E8)
 			{
-				int32_t v75 = g_unk52AD98;
+				frameDelta = Renderer::g_frameDelta;
 
 				if (g_unk52AD98 > 16)
 				{
 					g_unk52AD98 -= 2 * frameDelta;
-					v75 = g_unk52AD98;
 
 					if (g_unk52AD98 < 16)
-					{
-						v75 = 16;
 						g_unk52AD98 = 16;
-					}
 				}
 
 				if (snapToTarget)
@@ -2147,84 +1915,68 @@ namespace Toy2
 				}
 				else
 				{
-					int32_t v80 = state->targetPos.y;
-					state->pos.x -= frameDelta * (state->pos.x - state->targetPos.x) / (2 * v75 / 4);
-					int32_t v81 = frameDelta * (state->pos.y - v80);
-
-					int32_t v82 = state->targetPos.z;
-					state->pos.y -= v81 / (2 * g_unk52AD98 / 4);
-					state->pos.z -= frameDelta * (state->pos.z - v82) / (2 * g_unk52AD98 / 4);
+					state->pos.x -= frameDelta * (state->pos.x - state->targetPos.x) / (2 * g_unk52AD98 / 4);
+					state->pos.y -= (int32_t)Renderer::g_frameDelta * (state->pos.y - state->targetPos.y) / (2 * g_unk52AD98 / 4);
+					state->pos.z -= (int32_t)Renderer::g_frameDelta * (state->pos.z - state->targetPos.z) / (2 * g_unk52AD98 / 4);
 				}
 			}
 
-			int32_t v83 = state->distance;
+			int32_t closeOffset = 0;
 
-			if (v83 >= 400)
-				v84 = 0;
-			else
-				v84 = 2 * (400 - v83);
+			if (state->distance < 400)
+				closeOffset = 2 * (400 - state->distance);
 
-			int32_t v85 = Nu3D::Math::CartesianToFixedAngle((buzzX - state->pos.x) >> 5, (buzzZ - state->pos.z) >> 5);
-			int32_t v86 = (g_buzzCameraDistance - v84) * Numerics::g_sinCosLUT[(v85 + 1024) & 0xFFF];
-			int32_t v87 = ((g_buzzCameraDistance - v84) * Numerics::g_sinCosLUT[v85 & 0xFFF]) >> 14;
+			int32_t targetYaw = Nu3D::Math::CartesianToFixedAngle((buzzX - state->pos.x) >> 5, (buzzZ - state->pos.z) >> 5);
+			int32_t lookX = ((g_buzzCameraDistance - closeOffset) * Numerics::g_sinCosLUT[targetYaw & 0xFFF]) >> 14;
+			int32_t lookZ = ((g_buzzCameraDistance - closeOffset) * Numerics::g_sinCosLUT[(targetYaw + 1024) & 0xFFF]) >> 14;
+			int32_t lookY = (buzzY - state->pos.y - 6144) >> 5;
+			int32_t negativeAbsLookY = lookY;
 
-			int32_t v88 = v86 >> 14;
-			int32_t v89 = (buzzY - state->pos.y - 6144) >> 5;
-			int32_t v90 = v89;
+			if (lookY >= 0)
+				negativeAbsLookY = -lookY;
 
-			if (v89 >= 0)
-				v90 = -v89;
-
-			int32_t v91 = 0;
+			int32_t pitchKick = 0;
 
 			if (g_unk50A510 > 0)
 			{
-				v91 = Numerics::g_sinCosLUT[(-384 * g_unk50A510) & 0xFFF] / (16 * (g_unk50A510 - 50));
-				g_unk50A510 -= frameDelta;
+				pitchKick = Numerics::g_sinCosLUT[(-384 * g_unk50A510) & 0xFFF] / (16 * (g_unk50A510 - 50));
+				g_unk50A510 -= Renderer::g_frameDelta;
 
 				if (g_unk50A510 < 0)
 					g_unk50A510 = 0;
 			}
 
-			int32_t v92 = (v91 - state->angles.pitch - Nu3D::Math::CartesianToFixedAngle(v89 * v90, v87 * v87 + v88 * v88)) & 0xFFF;
+			int32_t pitchDelta =
+				(pitchKick - state->angles.pitch - Nu3D::Math::CartesianToFixedAngle(lookY * negativeAbsLookY, lookX * lookX + lookZ * lookZ)) & 0xFFF;
 
-			if (v92 >= 2048)
-				v92 -= 4096;
+			if (pitchDelta >= 2048)
+				pitchDelta -= 4096;
 
 			if (Buzz::g_unk53C660)
 			{
-				if (v92 <= 32)
-				{
-					if (v92 < -32)
-						v92 = -32;
-				}
-				else
-				{
-					v92 = 32;
-				}
+				if (pitchDelta > 32)
+					pitchDelta = 32;
+				else if (pitchDelta < -32)
+					pitchDelta = -32;
 			}
 
-			state->angles.pitch = (state->angles.pitch + v92 * frameDelta / (g_unk52AD98 / 2)) & 0xFFF;
-			int32_t v93 = Nu3D::Math::CartesianToFixedAngle(v87, v88);
+			state->angles.pitch = (state->angles.pitch + pitchDelta * (int32_t)Renderer::g_frameDelta / (g_unk52AD98 / 2)) & 0xFFF;
+			targetYaw = Nu3D::Math::CartesianToFixedAngle(lookX, lookZ);
 
 			if (! snapToTarget)
 			{
-				v94 = (v93 - state->angles.yaw) & 0xFFF;
+				int32_t yawDelta = (targetYaw - state->angles.yaw) & 0xFFF;
 
-				if (v94 >= 2048)
-					v94 -= 4096;
+				if (yawDelta >= 2048)
+					yawDelta -= 4096;
 
-				v93 = state->angles.yaw + v94 * frameDelta / (g_unk52AD98 / 2);
+				targetYaw = state->angles.yaw + yawDelta * (int32_t)Renderer::g_frameDelta / (g_unk52AD98 / 2);
 			}
 
-			state->angles.yaw = v93 & 0xFFF;
+			state->angles.yaw = targetYaw & 0xFFF;
 
 			if (moving)
 			{
-				v91 = buzzX;
-				v92 = buzzY;
-				v94 = buzzZ;
-
 				cameraPos[0] = state->pos.x;
 				cameraPos[1] = state->pos.y;
 				cameraPos[2] = state->pos.z;
@@ -2234,39 +1986,32 @@ namespace Toy2
 
 				if (Nu3D::Collision::SweepQuery(cameraPos, &displacement.pos.x, 1, 1) == 1)
 				{
-					int32_t v97;
-
-					v97 = (int32_t)sqrt((
-						double)((displacement.pos.y >> 5) * (displacement.pos.y >> 5) + (displacement.pos.x >> 5) * (displacement.pos.x >> 5)
-								+ (displacement.pos.z >> 5) * (displacement.pos.z >> 5)));
-					state->distance -= v97;
+					int32_t x = displacement.pos.x >> 5;
+					int32_t y = displacement.pos.y >> 5;
+					int32_t z = displacement.pos.z >> 5;
+					int32_t correctionDistance = (int32_t)sqrt((double)(z * z + x * x + y * y));
+					state->distance -= correctionDistance;
 
 					if (state->distance < 10)
 						state->distance = 10;
 
-					if (v97 < 300)
+					if (correctionDistance < 300)
 					{
 						state->pos.x += displacement.pos.x;
-						state->pos.y = displacement.pos.y + state->pos.y;
-						state->pos.z = displacement.pos.z + state->pos.z;
+						state->pos.y += displacement.pos.y;
+						state->pos.z += displacement.pos.z;
 					}
-
-					v92 = buzzY;
 				}
 			}
-			else
-			{
-				v94 = buzzZ;
-				v92 = buzzY;
-				v91 = buzzX;
-			}
 
-			v102 = (v92 - state->pos.y - 4096) >> 5;
-			v103 = ((v91 - state->pos.x) >> 5) * ((v91 - state->pos.x) >> 5);
-			v104 = ((v94 - state->pos.z) >> 5) * ((v94 - state->pos.z) >> 5);
+			int32_t deltaX = (buzzX - state->pos.x) >> 5;
+			int32_t deltaY = (buzzY - state->pos.y - 4096) >> 5;
+			int32_t deltaZ = (buzzZ - state->pos.z) >> 5;
+			int32_t xSquared = deltaX * deltaX;
+			int32_t zSquared = deltaZ * deltaZ;
 
-			if (v104 + v103 + v102 * v102 < 160000)
-				state->pos.y = v92 - 32 * (int32_t)sqrt((double)(160000 - v103 - v104)) - 4096;
+			if (deltaY * deltaY + xSquared + zSquared < 160000)
+				state->pos.y = buzzY - 32 * (int32_t)sqrt((double)(160000 - xSquared - zSquared)) - 4096;
 		}
 
 		// FUNCTION: TOY2 0x00405860
