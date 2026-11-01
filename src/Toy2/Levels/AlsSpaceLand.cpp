@@ -108,13 +108,12 @@ namespace Toy2
 		int32_t g_unk52FB1C;
 
 		// GLOBAL: TOY2 0x0052FB20
-		int32_t g_unk52FB20[18];
+		int32_t g_rotationState[18];
 
-		// GLOBAL: TOY2 0x0052FB60
-		int32_t g_unk52FB60;
-
-		// GLOBAL: TOY2 0x0052FB64
-		int32_t g_unk52FB64;
+		STATIC_ASSERT(sizeof(g_rotationState) == 0x48);
+		int32_t (&g_unk52FB20)[18] = g_rotationState;
+		int32_t& g_unk52FB60 = g_rotationState[16];
+		int32_t& g_unk52FB64 = g_rotationState[17];
 
 		// GLOBAL: TOY2 0x0052FB68
 		int32_t g_unk52FB68;
@@ -302,6 +301,8 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00423200
 		void Interactions()
 		{
+			int32_t& clawYaw = g_rotationState[16];
+			int32_t& clawPhase = g_rotationState[17];
 			int32_t v0;
 			int32_t* v1;
 			int16_t v2;
@@ -352,7 +353,7 @@ namespace Toy2
 			Vector3I l_clawPos;
 
 			v0 = 2;
-			v1 = g_unk52FB20;
+			v1 = g_rotationState;
 
 			do
 			{
@@ -755,11 +756,11 @@ namespace Toy2
 
 			v28 = (int32_t)Renderer::g_frameDelta;
 		LABEL_97:
-			g_unk52FB64 = (g_unk52FB64 + 8 * v28) & 0xFFF;
-			g_unk52FB60 = (g_unk52FB60 + v28 * (Numerics::g_sinCosLUT[g_unk52FB64] >> 11)) & 0xFFF;
+			clawPhase = (clawPhase + 8 * v28) & 0xFFF;
+			clawYaw = (clawYaw + v28 * (Numerics::g_sinCosLUT[clawPhase] >> 11)) & 0xFFF;
 
-			Nu3D::Link::SetRotationRelative8bit(10, 0, g_unk52FB60, 0);
-			Nu3D::Link::SetRotationRelative8bit(11, 0, g_unk52FB60, 0);
+			Nu3D::Link::SetRotationRelative8bit(10, 0, clawYaw, 0);
+			Nu3D::Link::SetRotationRelative8bit(11, 0, clawYaw, 0);
 
 			if (g_unk52FA80->pos.y != 0x80000000)
 			{

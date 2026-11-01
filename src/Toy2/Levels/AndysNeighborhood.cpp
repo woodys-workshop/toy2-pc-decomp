@@ -89,10 +89,10 @@ namespace Toy2
 		Vector3I g_unk52F5F8;
 
 		// GLOBAL: TOY2 0x0052F608
-		int16_t g_unk52F608[2];
+		int32_t g_unk52F608;
 
 		// GLOBAL: TOY2 0x0052F60C
-		int16_t g_unk52F60C[2];
+		int32_t g_unk52F60C;
 
 		// GLOBAL: TOY2 0x0052F610
 		int32_t g_unk52F610;
@@ -113,7 +113,7 @@ namespace Toy2
 		Vector3I g_unk52F628;
 
 		// GLOBAL: TOY2 0x0052F638
-		int16_t g_unk52F638[2];
+		int32_t g_unk52F638;
 
 		// GLOBAL: TOY2 0x0052F640
 		int32_t g_unk52F640;
@@ -134,7 +134,7 @@ namespace Toy2
 		int32_t g_unk52F66C;
 
 		// GLOBAL: TOY2 0x0052F674
-		int16_t g_unk52F674[2];
+		int32_t g_unk52F674;
 
 		// GLOBAL: TOY2 0x0052F678
 		int32_t g_unk52F678;
@@ -832,7 +832,7 @@ namespace Toy2
 				goto LABEL_159;
 			}
 
-			if (*g_unk52F60C)
+			if (g_unk52F60C)
 			{
 				if (Buzz::g_groundSlamTicker >= 0)
 					v34 = 32 * v16 + g_unk52F6B4;
@@ -872,20 +872,20 @@ namespace Toy2
 			}
 		LABEL_160:
 
-			v40 = *g_unk52F674;
-			if (*g_unk52F674)
+			v40 = g_unk52F674;
+			if (g_unk52F674)
 			{
-				Nu3D::Link::SetScaleFromFixedOffsets(7, 4096, 4096 - *g_unk52F674, 4096);
+				Nu3D::Link::SetScaleFromFixedOffsets(7, 4096, 4096 - g_unk52F674, 4096);
 				v16 = (int32_t)Renderer::g_frameDelta;
-				v40 = *g_unk52F674;
+				v40 = g_unk52F674;
 			}
 
-			*g_unk52F60C = 0;
+			g_unk52F60C = 0;
 
 			if (v40 != g_unk52F690)
 			{
-				*g_unk52F60C = v40 - g_unk52F690 < -128;
-				*g_unk52F674 = v16 * (v40 - g_unk52F690) / -8 + v40;
+				g_unk52F60C = v40 - g_unk52F690 < -128;
+				g_unk52F674 = v16 * (v40 - g_unk52F690) / -8 + v40;
 			}
 
 			v41 = g_unk52F6C8;

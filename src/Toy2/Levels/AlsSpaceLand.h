@@ -38,9 +38,10 @@ namespace Toy2
 		extern Vector3I g_tokenPos;
 		extern int32_t g_clawInitialized;
 		extern int32_t g_unk52FB1C;
-		extern int32_t g_unk52FB20[18];
-		extern int32_t g_unk52FB60;
-		extern int32_t g_unk52FB64;
+		extern int32_t g_rotationState[18];
+		extern int32_t (&g_unk52FB20)[18];
+		extern int32_t& g_unk52FB60;
+		extern int32_t& g_unk52FB64;
 		extern int32_t g_unk52FB68;
 		extern int32_t g_unk52FB6C;
 		extern int32_t g_unk52FB70;
