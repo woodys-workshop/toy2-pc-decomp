@@ -894,27 +894,27 @@ namespace Toy2
 							case 0:
 							case 1:
 							case 0x13:
-								goto LABEL_7;
+								goto LBL_SET_CONTACT_HIT;
 
 							case 4:
 							case 0x33:
 							case 0x34:
 								hitType = 2;
-								collisionFlags = instance->collisionFlags;
-								goto LABEL_21;
+								collisionFlags = (int8_t)instance->collisionFlags;
+								goto LBL_CLEAR_HIT_SOUND;
 
 							case 5:
 								hitType = 2;
-								collisionFlags = instance->collisionFlags;
-								goto LABEL_21;
+								collisionFlags = (int8_t)instance->collisionFlags;
+								goto LBL_CLEAR_HIT_SOUND;
 
 							case 7:
 								if (! g_buzzActor.unkShort40)
 									break;
 
-							LABEL_7:
+							LBL_SET_CONTACT_HIT:
 								hitType = 1;
-								goto LABEL_20;
+								goto LBL_CLEAR_HIT_RESPONSE;
 
 							case 0x10:
 								coinsCollected = g_buzzActor.coinsCollected;
@@ -934,7 +934,7 @@ namespace Toy2
 								collisionFlags = 4;
 								soundId = 0;
 								hitType = 1;
-								goto LABEL_22;
+								goto LBL_RECORD_HIT_PARTICLE;
 
 							case 0x16:
 								if (g_buzzActor.collisionFlags)
@@ -944,26 +944,26 @@ namespace Toy2
 
 							case 0x35:
 								if (g_buzzActor.unkShort40)
-									goto LABEL_18;
+									goto LBL_SET_FLAGGED_CONTACT_HIT;
 
 								break;
 
 							case 0x36:
-							LABEL_18:
+							LBL_SET_FLAGGED_CONTACT_HIT:
 								hitType = 1;
-								collisionFlags = instance->collisionFlags;
-								goto LABEL_21;
+								collisionFlags = (int8_t)instance->collisionFlags;
+								goto LBL_CLEAR_HIT_SOUND;
 
 							case 0x37:
 								hitType = 2;
 
-							LABEL_20:
+							LBL_CLEAR_HIT_RESPONSE:
 								collisionFlags = 0;
 
-							LABEL_21:
+							LBL_CLEAR_HIT_SOUND:
 								soundId = 0;
 
-							LABEL_22:
+							LBL_RECORD_HIT_PARTICLE:
 								hitInstance = instance;
 
 								break;
@@ -1253,7 +1253,7 @@ namespace Toy2
 			int32_t turnRate;
 			int16_t facingAngle;
 			uint16_t yawAngle;
-			uint32_t angleDiff;
+			int32_t angleDiff;
 			bool slipping;
 
 			if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
@@ -1263,12 +1263,12 @@ namespace Toy2
 					if (! g_unk53C678)
 					{
 						g_unk53C5D0 = buzzActor->posAngles.angles.yaw;
-						goto LABEL_6;
+						goto LBL_ADVANCE_TURN_TIMER;
 					}
 
 					if (g_unk53C678 < 16)
 					{
-					LABEL_6:
+					LBL_ADVANCE_TURN_TIMER:
 						g_unk53C678 += Renderer::g_frameDelta;
 
 						if (g_unk53C678 >= 16)
@@ -1312,7 +1312,7 @@ namespace Toy2
 					g_unk53C5D0 = facingAngle;
 					slipping = (g_buzzActionState & 0xFF481) == 1;
 
-				LABEL_27:
+				LBL_CHECK_SLIP:
 					if (slipping)
 					{
 						g_buzzSlipTimer = 26;
@@ -1320,7 +1320,7 @@ namespace Toy2
 						AudioManager::PlaySoundEffect(18, &buzzActor->posAngles.pos);
 					}
 
-					goto LABEL_38;
+					goto LBL_WRAP_YAW;
 				}
 
 				if (turnDiff > movementParams->maxTurnRate)
@@ -1338,7 +1338,7 @@ namespace Toy2
 					g_unk53C5D0 = facingAngle;
 
 					slipping = (g_buzzActionState & 0xFF481) == 1;
-					goto LABEL_27;
+					goto LBL_CHECK_SLIP;
 				}
 
 				if (turnRate > movementParams->maxTurnRate)
@@ -1347,7 +1347,7 @@ namespace Toy2
 				buzzActor->posAngles.angles.yaw = yawAngle + turnRate * (int32_t)Renderer::g_frameDelta / 8;
 			}
 
-		LABEL_38:
+		LBL_WRAP_YAW:
 			buzzActor->posAngles.angles.yaw &= 0xFFF;
 
 			if (g_curMoveableObject)
@@ -3457,20 +3457,20 @@ namespace Toy2
 				if (g_currentFluidType == 1)
 				{
 					if (buzzActor->posAngles.pos.y <= g_underwaterYLevel + 0x2000)
-						goto LABEL_13;
+						goto LBL_APPLY_SURFACE_ACCELERATION;
 
-					goto LABEL_12;
+					goto LBL_SET_FLUID_FLAG;
 				}
 
 				if (g_currentFluidType > 1 && g_currentFluidType <= 3 && buzzActor->posAngles.pos.y > g_underwaterYLevel)
 				{
-				LABEL_12:
+				LBL_SET_FLUID_FLAG:
 					actorFlags |= 0x100;
 					buzzActor->actorFlags = actorFlags;
 				}
 			}
 
-		LABEL_13:
+		LBL_APPLY_SURFACE_ACCELERATION:
 			if ((g_unk52B81C & ~3) == 4)
 			{
 				movementParams.groundAccel = (frameDelta << 6) / 4;
@@ -3523,7 +3523,7 @@ namespace Toy2
 			buzzActor->surfaceClampY = 0x80000000;
 
 			if ((actorFlags & 0x100) == 0)
-				goto LABEL_34;
+				goto LBL_SET_FRAME_MULTIPLIER;
 
 			if (g_currentFluidType != 1)
 			{
@@ -3538,9 +3538,9 @@ namespace Toy2
 					buzzActor->surfaceClampY = g_underwaterYLevel;
 				}
 
-			LABEL_34:
+			LBL_SET_FRAME_MULTIPLIER:
 				speedMultiplier = frameDelta;
-				goto LABEL_35;
+				goto LBL_UPDATE_ACTION_FLAGS;
 			}
 
 			speedMultiplier = frameDelta;
@@ -3552,7 +3552,7 @@ namespace Toy2
 			if (turnSpeed >= 0)
 				movementParams.turnSpeed = 160 * frameDelta / 16;
 
-		LABEL_35:
+		LBL_UPDATE_ACTION_FLAGS:
 			g_buzzActionState = buzzActor->unkShort40 != 0;
 
 			if (g_unk53C83C < 0)
@@ -3703,7 +3703,7 @@ namespace Toy2
 			{
 				if (buzzActor->collisionFlags)
 				{
-					actorFlags &= 0xBB;
+					actorFlags &= 0xFFBB;
 					buzzActor->actorFlags = actorFlags;
 				}
 				else
@@ -3762,26 +3762,26 @@ namespace Toy2
 			ziplineResult = HandleZipline(buzzActor) - 1;
 
 			if (! ziplineResult)
-				goto LABEL_136;
+				goto LBL_UPDATE_FACING;
 
 			if (ziplineResult == 1)
-				goto LABEL_145;
+				goto LBL_RESOLVE_MOVEMENT;
 
 			swingResult = HandleSwing(buzzActor) - 1;
 
 			if (! swingResult)
-				goto LABEL_136;
+				goto LBL_UPDATE_FACING;
 
 			if (swingResult == 1)
-				goto LABEL_145;
+				goto LBL_RESOLVE_MOVEMENT;
 
 			poleResult = HandlePoleClimb(buzzActor) - 1;
 
 			if (! poleResult)
-				goto LABEL_136;
+				goto LBL_UPDATE_FACING;
 
 			if (poleResult == 1)
-				goto LABEL_145;
+				goto LBL_RESOLVE_MOVEMENT;
 
 			moveFlags = Camera::HandleLedgeClimb(buzzActor) | moveFlags;
 
@@ -3800,7 +3800,7 @@ namespace Toy2
 			if (g_grappleState == 2)
 			{
 				moveFlags = (moveFlags & 0xFFFFFF00) | 16;
-				goto LABEL_123;
+				goto LBL_APPLY_MOVEMENT_FLAGS;
 			}
 
 			if (! moveFlags)
@@ -3817,16 +3817,16 @@ namespace Toy2
 				else
 					UpdateJumpAndGravity(buzzActor, movementParams.initialJumpVelocity, 0);
 
-			LABEL_136:
+			LBL_UPDATE_FACING:
 				if (g_rocketBootsDuration)
 					facingResult = Camera::UpdateRocketBoots(buzzActor, &movementParams);
 				else
 					facingResult = UpdateFacing(buzzActor, &movementParams);
 
-				goto LABEL_140;
+				goto LBL_UPDATE_HORIZONTAL_MOVEMENT;
 			}
 
-		LABEL_123:
+		LBL_APPLY_MOVEMENT_FLAGS:
 			if ((moveFlags & 1) != 0)
 				buzzActor->velX = 0;
 
@@ -3842,7 +3842,7 @@ namespace Toy2
 
 				UpdateJumpAndGravity(buzzActor, movementParams.initialJumpVelocity, 0);
 
-			LABEL_140:
+			LBL_UPDATE_HORIZONTAL_MOVEMENT:
 				if (g_unk53C818)
 				{
 					if (movementParams.turnSpeed)
@@ -3860,7 +3860,7 @@ namespace Toy2
 				UpdateHorizontalMovement(buzzActor, &movementParams, facingResult);
 			}
 
-		LABEL_145:
+		LBL_RESOLVE_MOVEMENT:
 			y = buzzActor->posAngles.pos.y;
 			z = buzzActor->posAngles.pos.z;
 			buzzActor->motionTargetPos.x = buzzActor->posAngles.pos.x;
@@ -3883,14 +3883,15 @@ namespace Toy2
 
 			if (buzzActor->collisionFlags == 0)
 			{
-				int16_t unkShort40 = buzzActor->unkShort40;
+				// Contact and fluid handling refresh this support countdown.
+				int16_t supportGraceTimer = buzzActor->unkShort40;
 
-				if (unkShort40 > 0)
+				if (supportGraceTimer > 0)
 				{
-					unkShort40 = unkShort40 - frameDelta;
-					buzzActor->unkShort40 = unkShort40;
+					supportGraceTimer = supportGraceTimer - frameDelta;
+					buzzActor->unkShort40 = supportGraceTimer;
 
-					if (unkShort40 <= 0)
+					if (supportGraceTimer <= 0)
 						buzzActor->unkShort40 = 0;
 				}
 			}
@@ -3914,7 +3915,7 @@ namespace Toy2
 				groundSlamTimer = g_unk53C838;
 
 				if (g_unk53C838 < 0)
-					goto LABEL_168;
+					goto LBL_CHECK_BELOW_LEVEL_LIMIT;
 			}
 
 			if (buzzActor->gravityVel <= 128 || buzzActor->collisionFlags)
@@ -3961,7 +3962,7 @@ namespace Toy2
 				}
 			}
 
-		LABEL_168:
+		LBL_CHECK_BELOW_LEVEL_LIMIT:
 			if (buzzActor->collisionFlags)
 				g_unk53C62C = 0;
 

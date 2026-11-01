@@ -1556,7 +1556,7 @@ namespace Toy2
 								HitType1Particles(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z);
 						}
 
-						// actorPhase is the health of the actor, 100 and above is dead
+						// Phases below 100 take health damage.
 						if (actor->actorPhase < 100)
 						{
 							actor->actorPhase -= g_hitStructs[hitType].unkShort3;
