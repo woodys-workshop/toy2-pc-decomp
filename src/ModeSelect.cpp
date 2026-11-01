@@ -181,139 +181,74 @@ namespace ModeSelect
 
 		MarkCompatibleBitDepthDevices();
 
-		uint8_t flags = selectionFlags;
+		DWORD flags = selectionFlags;
 
 		if (! g_forceFullscreen)
-		{
-			flags = selectionFlags | 2;
-			selectionFlags |= 2;
-		}
+			flags |= 2;
 
-		if ((flags & 60) != 0)
-		{
-			DDAppDevice::App* appIter = g_ddAppListHead;
+		DDAppDevice::App* app;
+		DDAppDevice* device;
 
-			for (DDAppDevice::App* outerApp = g_ddAppListHead; appIter; outerApp = appIter)
+		if ((flags & 0x3C) != 0)
+		{
+			for (app = g_ddAppListHead; app; app = app->chainDDApp)
 			{
-				DDAppDevice* deviceIter = appIter->deviceListHead;
-
-				if (deviceIter)
+				for (device = app->deviceListHead; device; device = device->nextDevice)
 				{
-					while (true)
+					BOOL matches;
+
+					if (! memcmp(device->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
+						matches = (flags & 4) != 0;
+					else if (! memcmp(device->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
+						matches = (flags & 8) != 0;
+					else
+						matches = ((flags & 16) != 0 && app == g_ddAppListHead) || ((flags & 32) != 0 && app != g_ddAppListHead);
+
+					if (matches)
 					{
-						BOOL matchesDriverKind = 0;
-
-						if (! memcmp(deviceIter->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
-						{
-							if ((selectionFlags & 4) != 0)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-						else if (! memcmp(deviceIter->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
-						{
-							if ((selectionFlags & 8) != 0)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-						else
-						{
-							if ((selectionFlags & 16) != 0)
-								matchesDriverKind = outerApp == g_ddAppListHead;
-
-							if ((selectionFlags & 32) != 0 && outerApp != g_ddAppListHead || matchesDriverKind)
-							{
-								g_primaryDDApp = outerApp;
-								outerApp->primaryDevice = deviceIter;
-								return 0;
-							}
-						}
-
-						deviceIter = deviceIter->nextDevice;
-
-						if (! deviceIter)
-						{
-							appIter = outerApp;
-							break;
-						}
+						g_primaryDDApp = app;
+						app->primaryDevice = device;
+						return 0;
 					}
 				}
-
-				appIter = appIter->chainDDApp;
 			}
 
 			return 0x81000005;
 		}
 
-		DDAppDevice::App* appIter;
-		DDAppDevice* device;
-		int32_t wantHardware;
-		int32_t wantWindowed;
-		int16_t attemptIndex = 0;
+		uint32_t attemptIndex = 0;
 
-		while (true)
+		do
 		{
-			wantHardware = (attemptIndex & 1) == 0;
-			wantWindowed = (~attemptIndex >> 1) & 1;
+			int32_t wantHardware = (~attemptIndex) & 1;
+			int32_t wantWindowed = ((~attemptIndex & 0xFFFF) >> 1) & 1;
 
 			if ((wantHardware != 1 || (flags & 1) == 0) && (wantWindowed != 1 || (flags & 2) == 0))
 			{
-				appIter = g_ddAppListHead;
+				for (app = g_ddAppListHead; app; app = app->chainDDApp)
+				{
+					if (wantWindowed && (app->ddCaps1.dwCaps2 & 0x80000) == 0)
+						continue;
 
-				if (g_ddAppListHead)
-					break;
+					for (device = app->deviceListHead; device; device = device->nextDevice)
+					{
+						if (wantHardware != device->isHardwareAccelerated || (wantWindowed && ! device->supportsCurrentMode))
+							continue;
+
+						device->canRenderWindowedOnPrimary = wantWindowed;
+						g_primaryDDApp = app;
+						app->primaryDevice = device;
+						return 0;
+					}
+				}
 			}
 
-		LBL_NEXT_ATTEMPT:
+			++attemptIndex;
+		} while ((uint16_t)attemptIndex < 4);
 
-			if (++attemptIndex >= 4)
-			{
-				if (g_foundAnyD3DDevice)
-					return (g_foundRefDevice != 0) + 0x81000002;
-				else
-					return 0x81000001;
-			}
-		}
-
-		while (true)
-		{
-			if (! wantWindowed || (appIter->ddCaps1.dwCaps2 & 0x80000) != 0)
-			{
-				device = appIter->deviceListHead;
-				if (device)
-					break;
-			}
-
-			appIter = appIter->chainDDApp;
-
-			if (! appIter)
-				goto LBL_NEXT_ATTEMPT;
-		}
-
-		while (wantHardware != device->isHardwareAccelerated || wantWindowed && ! device->supportsCurrentMode)
-		{
-			device = device->nextDevice;
-
-			if (! device)
-			{
-				appIter = appIter->chainDDApp;
-
-				if (! appIter)
-					goto LBL_NEXT_ATTEMPT;
-			}
-		}
-
-		device->canRenderWindowedOnPrimary = wantWindowed;
-
-		g_primaryDDApp = appIter;
-		appIter->primaryDevice = device;
-
-		return 0;
+		if (! g_foundAnyD3DDevice)
+			return 0x81000001;
+		return (g_foundRefDevice != 0) + 0x81000002;
 	}
 
 	// FUNCTION: TOY2 0x004ACFB0
@@ -327,7 +262,7 @@ namespace ModeSelect
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice* device = reinterpret_cast<DDAppDevice*>(lpContext);
+		DDAppDevice* device = (DDAppDevice*)lpContext;
 
 		if (! lpDDSurfaceDesc2 || ! device)
 			return D3DENUMRET_CANCEL;
@@ -402,10 +337,11 @@ namespace ModeSelect
 
 			if (ddAppParent->vidMemTotal == ddAppParent->totalTextureMem)
 			{
-				if (ddAppParent->vidMemFree - texMem < 0x80000)
+				DWORD remaining = ddAppParent->vidMemFree - texMem;
+				if ((int32_t)remaining < 0x80000)
 					return D3DENUMRET_OK;
 			}
-			else if (ddAppParent->freeTextureMem < texMem)
+			else if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
 			{
 				return D3DENUMRET_OK;
 			}
@@ -715,14 +651,14 @@ namespace ModeSelect
 				return DefWindowProcA(hWnd, msg, wParam, lParam);
 			}
 
-			Logger::GetErrorHandler("C:\\projects\\toy2\\modesel.cpp", 162)("");
+			Logger::GetErrorHandler("C:\\projects\\toy2\\modesel.cpp", 162)(Toy2::g_emptyStr);
 			return DefWindowProcA(hWnd, msg, wParam, lParam);
 		}
 
 		switch (msg)
 		{
 			case WM_CLOSE:
-				Logger::GetErrorHandler("C:\\projects\\toy2\\modesel.cpp", 162)("");
+				Logger::GetErrorHandler("C:\\projects\\toy2\\modesel.cpp", 162)(Toy2::g_emptyStr);
 				return DefWindowProcA(hWnd, msg, wParam, lParam);
 
 			case WM_CREATE:
@@ -774,6 +710,13 @@ namespace ModeSelect
 
 					if (g_offscreenBitmap)
 						g_originalBitmap = SelectObject(g_offscreenDC, g_offscreenBitmap);
+
+					if (! g_offscreenDC)
+					{
+						EndPaint(hWnd, &paint);
+						g_paintError = 1;
+						return DefWindowProcA(hWnd, msg, wParam, lParam);
+					}
 				}
 
 				if (g_backgroundBitmap)
@@ -796,76 +739,45 @@ namespace ModeSelect
 				int32_t textX = g_textStartX;
 				int32_t textY = g_textStartY;
 
-				if (g_headerFont)
-					g_savedHeaderFont = SelectObject(g_offscreenDC, g_headerFont);
-
-				g_savedTextColor = SetTextColor(g_offscreenDC, 0xFFFF);
-				g_savedBkMode = SetBkMode(g_offscreenDC, 1);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0xFFFF, 1);
 
 				if (g_ddAppIterator->chainDDApp)
 				{
-					if (g_headerFont)
-						SelectObject(g_offscreenDC, g_headerFont);
-
-					SetTextColor(g_offscreenDC, 0);
+					ApplyTextStyle(g_offscreenDC, g_headerFont, 0, 0);
 					DrawTextOutA(g_offscreenDC, textX - 2, textY - 2, "Device");
 					DrawTextOutA(g_offscreenDC, textX + 2, textY + 2, "Device");
 
-					if (g_headerFont)
-						SelectObject(g_offscreenDC, g_headerFont);
-
-					SetTextColor(g_offscreenDC, 0xFF);
+					ApplyTextStyle(g_offscreenDC, g_headerFont, 0xFF, 0);
 					DrawTextOutA(g_offscreenDC, textX, textY, "Device");
 
 					textY += 4 * g_lineHeight / 2;
 				}
 
-				if (g_headerFont)
-					SelectObject(g_offscreenDC, g_headerFont);
-
-				SetTextColor(g_offscreenDC, 0);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0, 0);
 				DrawTextOutA(g_offscreenDC, textX - 2, textY - 2, "Render Method");
 				DrawTextOutA(g_offscreenDC, textX + 2, textY + 2, "Render Method");
 
-				if (g_headerFont)
-					SelectObject(g_offscreenDC, g_headerFont);
-
-				SetTextColor(g_offscreenDC, 0xFF);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0xFF, 0);
 				DrawTextOutA(g_offscreenDC, textX, textY, "Render Method");
 
 				int32_t nextTextY = 4 * g_lineHeight / 2 + textY;
 
-				if (g_headerFont)
-					SelectObject(g_offscreenDC, g_headerFont);
-
-				SetTextColor(g_offscreenDC, 0);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0, 0);
 				DrawTextOutA(g_offscreenDC, textX - 2, nextTextY - 2, "Screen Resolution");
 				DrawTextOutA(g_offscreenDC, textX + 2, nextTextY + 2, "Screen Resolution");
 
-				if (g_headerFont)
-					SelectObject(g_offscreenDC, g_headerFont);
-
-				SetTextColor(g_offscreenDC, 0xFF);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0xFF, 0);
 				DrawTextOutA(g_offscreenDC, textX, nextTextY, "Screen Resolution");
 
-				if (g_headerFont)
-					SelectObject(g_offscreenDC, g_savedHeaderFont);
-
-				SetTextColor(g_offscreenDC, g_savedTextColor);
-				SetBkMode(g_offscreenDC, g_savedBkMode);
-
-				if (g_mainFont)
-					g_savedHeaderFont = SelectObject(g_offscreenDC, g_mainFont);
-
-				g_savedTextColor = SetTextColor(g_offscreenDC, 0);
-				g_savedBkMode = SetBkMode(g_offscreenDC, 1);
+				ApplyTextStyle(g_offscreenDC, g_headerFont, 0, 2);
+				ApplyTextStyle(g_offscreenDC, g_mainFont, 0, 1);
 
 				int32_t deviceTextX = g_textStartX;
 				int32_t deviceTextY = g_textStartY + g_lineHeight / 2;
 
 				if (g_ddAppIterator->chainDDApp)
 				{
-					DrawTextOutA(g_offscreenDC, g_textStartX - 2, deviceTextY - 2, g_selectedDDApp->driverName);
+					DrawTextOutA(g_offscreenDC, deviceTextX - 2, deviceTextY - 2, g_selectedDDApp->driverName);
 					DrawTextOutA(g_offscreenDC, deviceTextX + 2, deviceTextY + 2, g_selectedDDApp->driverName);
 
 					int32_t savedTextColor;
@@ -875,19 +787,13 @@ namespace ModeSelect
 					else
 						savedTextColor = g_highlightColor;
 
-					if (g_mainFont)
-						SelectObject(g_offscreenDC, g_mainFont);
-
-					SetTextColor(g_offscreenDC, savedTextColor);
+					ApplyTextStyle(g_offscreenDC, g_mainFont, savedTextColor, 0);
 					DrawTextOutA(g_offscreenDC, deviceTextX, deviceTextY, g_selectedDDApp->driverName);
 
 					deviceTextY += 4 * g_lineHeight / 2;
 				}
 
-				if (g_mainFont)
-					SelectObject(g_offscreenDC, g_mainFont);
-
-				SetTextColor(g_offscreenDC, 0);
+				ApplyTextStyle(g_offscreenDC, g_mainFont, 0, 0);
 				char* deviceName = g_ddAppSelectedDevice->deviceName;
 
 				if (! strcmpi(g_ddAppSelectedDevice->deviceName, "rgb emulation"))
@@ -899,27 +805,21 @@ namespace ModeSelect
 				DrawTextOutA(g_offscreenDC, deviceTextX - 2, deviceTextY - 2, deviceName);
 				DrawTextOutA(g_offscreenDC, deviceTextX + 2, deviceTextY + 2, deviceName);
 
-				int32_t deviceHightlightColor;
+				int32_t deviceHighlightColor;
 
 				if (g_selectionState == 1)
-					deviceHightlightColor = g_highlightColor;
+					deviceHighlightColor = g_highlightColor;
 				else
-					deviceHightlightColor = 0x8888;
+					deviceHighlightColor = 0x8888;
 
-				if (g_mainFont)
-					SelectObject(g_offscreenDC, g_mainFont);
-
-				SetTextColor(g_offscreenDC, deviceHightlightColor);
-				DrawTextOutA(g_offscreenDC, g_textStartX, deviceTextY, deviceName);
+				ApplyTextStyle(g_offscreenDC, g_mainFont, deviceHighlightColor, 0);
+				DrawTextOutA(g_offscreenDC, deviceTextX, deviceTextY, deviceName);
 
 				int32_t modeTextY = 4 * g_lineHeight / 2 + deviceTextY;
 
 				if (g_selectionState == 3)
 				{
-					if (g_mainFont)
-						SelectObject(g_offscreenDC, g_mainFont);
-
-					SetTextColor(g_offscreenDC, 0);
+					ApplyTextStyle(g_offscreenDC, g_mainFont, 0, 0);
 
 					char* selectedModeText;
 
@@ -928,17 +828,14 @@ namespace ModeSelect
 					else
 						selectedModeText = g_ddAppSelectedDisplayMode->modeText;
 
-					DrawTextOutA(g_offscreenDC, g_textStartX - 2, modeTextY - 2, selectedModeText);
+					DrawTextOutA(g_offscreenDC, deviceTextX - 2, modeTextY - 2, selectedModeText);
 
 					if (g_ddAppSelectedDevice->canRenderWindowedOnPrimary)
-						DrawTextOutA(g_offscreenDC, g_textStartX + 2, modeTextY + 2, "Windowed");
+						DrawTextOutA(g_offscreenDC, deviceTextX + 2, modeTextY + 2, "Windowed");
 					else
-						DrawTextOutA(g_offscreenDC, g_textStartX + 2, modeTextY + 2, g_ddAppSelectedDisplayMode->modeText);
+						DrawTextOutA(g_offscreenDC, deviceTextX + 2, modeTextY + 2, g_ddAppSelectedDisplayMode->modeText);
 
-					if (g_mainFont)
-						SelectObject(g_offscreenDC, g_mainFont);
-
-					SetTextColor(g_offscreenDC, 0xFF);
+					ApplyTextStyle(g_offscreenDC, g_mainFont, 0xFF, 0);
 
 					char* windowedModeText;
 
@@ -947,16 +844,13 @@ namespace ModeSelect
 					else
 						windowedModeText = g_ddAppSelectedDisplayMode->modeText;
 
-					DrawTextOutA(g_offscreenDC, g_textStartX, modeTextY, windowedModeText);
+					DrawTextOutA(g_offscreenDC, deviceTextX, modeTextY, windowedModeText);
 				}
 				else
 				{
-					if (g_mainFont)
-						SelectObject(g_offscreenDC, g_mainFont);
-
-					SetTextColor(g_offscreenDC, 0);
-					DrawTextOutA(g_offscreenDC, g_textStartX - 2, modeTextY - 2, g_ddAppSelectedDisplayMode->modeText);
-					DrawTextOutA(g_offscreenDC, g_textStartX + 2, modeTextY + 2, g_ddAppSelectedDisplayMode->modeText);
+					ApplyTextStyle(g_offscreenDC, g_mainFont, 0, 0);
+					DrawTextOutA(g_offscreenDC, deviceTextX - 2, modeTextY - 2, g_ddAppSelectedDisplayMode->modeText);
+					DrawTextOutA(g_offscreenDC, deviceTextX + 2, modeTextY + 2, g_ddAppSelectedDisplayMode->modeText);
 
 					int32_t modeHighlightColor;
 
@@ -965,11 +859,8 @@ namespace ModeSelect
 					else
 						modeHighlightColor = 0x8888;
 
-					if (g_mainFont)
-						SelectObject(g_offscreenDC, g_mainFont);
-
-					SetTextColor(g_offscreenDC, modeHighlightColor);
-					DrawTextOutA(g_offscreenDC, g_textStartX, modeTextY, g_ddAppSelectedDisplayMode->modeText);
+					ApplyTextStyle(g_offscreenDC, g_mainFont, modeHighlightColor, 0);
+					DrawTextOutA(g_offscreenDC, deviceTextX, modeTextY, g_ddAppSelectedDisplayMode->modeText);
 				}
 
 				int32_t instructionFirstLineY = 3 * g_lineHeight / 2 + modeTextY;
@@ -987,11 +878,7 @@ namespace ModeSelect
 						{
 						LBL_FINISH_PAINT:
 
-							if (g_mainFont)
-								SelectObject(g_offscreenDC, g_savedHeaderFont);
-
-							SetTextColor(g_offscreenDC, g_savedTextColor);
-							SetBkMode(g_offscreenDC, g_savedBkMode);
+							ApplyTextStyle(g_offscreenDC, g_mainFont, 0, 2);
 
 							BitBlt(paintDC, 0, 0, clientRect.right, clientRect.bottom, g_offscreenDC, 0, 0, SRCCOPY);
 							EndPaint(hWnd, &paint);
@@ -1011,11 +898,14 @@ namespace ModeSelect
 
 				if (instructionLines)
 				{
+					HDC instructionDC = g_offscreenDC;
+					HFONT instructionFont = g_instructionFont;
+					int32_t instructionLineHeight = g_instructionLineHeight;
 					const char** shadowIter = instructionLines;
 
 					int32_t instructionLineYIter = instructionFirstLineY;
 
-					ApplyTextStyle(g_offscreenDC, g_instructionFont, 0, 0);
+					ApplyTextStyle(instructionDC, instructionFont, 0, 0);
 
 					const char* currentInstructionShadow = *instructionLines;
 
@@ -1025,25 +915,25 @@ namespace ModeSelect
 
 						do
 						{
-							DrawTextOutA(g_offscreenDC, g_textStartX - 2, shadowLineY - 4, currentInstructionShadow);
-							DrawTextOutA(g_offscreenDC, g_textStartX + 2, shadowLineY, *shadowIter);
+							DrawTextOutA(instructionDC, deviceTextX - 2, shadowLineY - 4, currentInstructionShadow);
+							DrawTextOutA(instructionDC, deviceTextX + 2, shadowLineY, *shadowIter);
 
 							currentInstructionShadow = shadowIter[1];
 							++shadowIter;
 
-							shadowLineY += g_instructionLineHeight;
+							shadowLineY += instructionLineHeight;
 
 						} while (currentInstructionShadow);
 					}
 
 					const char** lineIter = instructionLines;
 
-					ApplyTextStyle(g_offscreenDC, g_instructionFont, 0xFFFFFF, 0);
+					ApplyTextStyle(instructionDC, instructionFont, 0xFFFFFF, 0);
 
 					for (const char* instructionLine = *instructionLines; instructionLine;
-						 instructionLineYIter = (instructionLineYIter + g_instructionLineHeight))
+						 instructionLineYIter = (instructionLineYIter + instructionLineHeight))
 					{
-						DrawTextOutA(g_offscreenDC, g_textStartX, instructionLineYIter, instructionLine);
+						DrawTextOutA(instructionDC, deviceTextX, instructionLineYIter, instructionLine);
 
 						instructionLine = lineIter[1];
 						++lineIter;
@@ -1212,7 +1102,7 @@ namespace ModeSelect
 		wndClass.hIcon = LoadIconA(0, IDI_WINLOGO);
 		wndClass.hCursor = LoadCursorA(0, IDC_ARROW);
 		wndClass.hbrBackground = 0;
-		wndClass.lpszMenuName = "";
+		wndClass.lpszMenuName = Toy2::g_emptyStr;
 		wndClass.lpszClassName = "Screen Mode Select";
 
 		if (! RegisterClassA(&wndClass))

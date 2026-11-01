@@ -11,6 +11,12 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x00883FF8
 	uint8_t g_hasTimeStampCounter;
 
+	// GLOBAL: TOY2 0x00883FF9
+	uint8_t g_hasMMX;
+
+	// GLOBAL: TOY2 0x00883FFA
+	uint8_t g_has3DNow;
+
 	// GLOBAL: TOY2 0x00883FE0
 	int64_t g_cpuTicksPerSecond;
 
@@ -23,15 +29,9 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B1880
 	void SetIsSoftwareRendering(int32_t value) { g_isSoftwareRendering = value; }
 
-	// FUNCTION: TOY2 0x004AB7D0 [MATCHED]
+	// FUNCTION: TOY2 0x004AB7D0
 	void GetCPUFeatures()
 	{
-		// GLOBAL: TOY2 0x00883FF9
-		static uint8_t g_hasMMX;
-
-		// GLOBAL: TOY2 0x00883FFA
-		static uint8_t g_hasLongMode;
-
 		__asm
 		{
 			pushfd                       ; save EFLAGS
@@ -64,9 +64,9 @@ namespace Nu3D
 			test    eax, 80000000h      ; high bit of eax
 			jz      LBL_DONE
 			mov     eax, 1
-			test    edx, 80000000h      ; long-mode bit (edx bit 31)
+			test    edx, 80000000h      ; 3DNow (edx bit 31)
 			jz      LBL_DONE
-			mov     g_hasLongMode, al
+			mov     g_has3DNow, al
 
 		LBL_DONE:
 		}

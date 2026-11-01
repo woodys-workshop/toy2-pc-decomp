@@ -320,15 +320,7 @@ namespace Toy2
 
 			SaveManager::SaveToFile(0, "default.cfg");
 
-			FILE* fd = fopen("toy2.cfg", "wb");
-
-			if (! fd)
-				return 0;
-
-			fwrite(&g_toyCfgData, 1, sizeof(g_toyCfgData), fd);
-			fclose(fd);
-
-			return 1;
+			return Toy2::WriteCfg();
 		}
 
 		// FUNCTION: TOY2 0x0043E6E0

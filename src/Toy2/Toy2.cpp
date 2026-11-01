@@ -4944,10 +4944,10 @@ namespace Toy2
 	{
 		int32_t avgTime;
 		int32_t testIteration;
-		int32_t startTime;
+		uint32_t startTime;
 		int32_t loopCounter;
 		int32_t time[10];
-		float cpuSpeedInMhz;
+		float scratch;
 	};
 
 	STATIC_ASSERT(sizeof(CpuProfile) == 0x3C);
@@ -4958,21 +4958,21 @@ namespace Toy2
 	// FUNCTION: TOY2 0x0047EF80
 	void ProfileCPU()
 	{
-		DWORD time;
-		double speedInMhz;
-
 		g_cpuProfile.avgTime = 0;
 
-		for (g_cpuProfile.testIteration = 0; g_cpuProfile.testIteration < 10; g_cpuProfile.avgTime += g_cpuProfile.time[g_cpuProfile.testIteration++])
+		for (g_cpuProfile.testIteration = 0; g_cpuProfile.testIteration < 10; ++g_cpuProfile.testIteration)
 		{
 			g_cpuProfile.startTime = timeGetTime();
 
 			for (g_cpuProfile.loopCounter = 0; g_cpuProfile.loopCounter < 1000000; ++g_cpuProfile.loopCounter)
-				g_cpuProfile.cpuSpeedInMhz = g_cpuProfile.loopCounter / 50000.0 * 50000.0;
+			{
+				g_cpuProfile.scratch = g_cpuProfile.loopCounter;
+				g_cpuProfile.scratch /= 50000.0f;
+				g_cpuProfile.scratch *= 50000.0f;
+			}
 
-			time = timeGetTime();
-
-			g_cpuProfile.time[g_cpuProfile.testIteration] = abs((int32_t)(time - g_cpuProfile.startTime));
+			g_cpuProfile.time[g_cpuProfile.testIteration] = abs((int32_t)(timeGetTime() - g_cpuProfile.startTime));
+			g_cpuProfile.avgTime += g_cpuProfile.time[g_cpuProfile.testIteration];
 		}
 
 		g_cpuProfile.avgTime /= 10;
@@ -4984,7 +4984,8 @@ namespace Toy2
 			g_cpuProfile.avgTime = 1;
 #endif
 
-		g_cpuSpeed = 1000000 * (56000 / g_cpuProfile.avgTime);
+		g_cpuSpeed = 56000 / g_cpuProfile.avgTime;
+		g_cpuSpeed *= 1000000;
 
 		Logger::Log("CalculateClockSpeed->time[0]=%i\n", g_cpuProfile.time[0]);
 		Logger::Log("                   ->time[1]=%i\n", g_cpuProfile.time[1]);
@@ -4999,10 +5000,10 @@ namespace Toy2
 		Logger::Log("                   ->avgtime=%i\n", g_cpuProfile.avgTime);
 		Logger::Log("                   ->CPUSPEED=%u\n", g_cpuSpeed);
 
-		speedInMhz = g_cpuSpeed / 1000000.0;
-		g_cpuProfile.cpuSpeedInMhz = speedInMhz;
+		g_cpuProfile.scratch = g_cpuSpeed;
+		g_cpuProfile.scratch /= 1000000.0f;
 
-		Logger::Log("INIT : CPU clock speed is %f MHZ\n", speedInMhz);
+		Logger::Log("INIT : CPU clock speed is %f MHZ\n", g_cpuProfile.scratch);
 	}
 
 	// FUNCTION: TOY2 0x0048E730
@@ -5176,6 +5177,21 @@ namespace Toy2
 		{
 			fread(&g_toyCfgData, 1, sizeof(ToyCfg), fileHandle);
 			fclose(fileHandle);
+			return 1;
+		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004CE860
+	int32_t WriteCfg()
+	{
+		FILE* file = fopen("toy2.cfg", "wb");
+
+		if (file)
+		{
+			fwrite(&g_toyCfgData, 1, sizeof(g_toyCfgData), file);
+			fclose(file);
 			return 1;
 		}
 
@@ -8203,6 +8219,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 
 	Toy2::g_levelFileIndex = 1;
 
+	memset(&D3DApp::g_windowData.stateCache, 0, sizeof(D3DApp::g_windowData.stateCache));
 	memset(&D3DApp::g_windowData, 0, sizeof(D3DApp::g_windowData));
 
 	D3DApp::g_windowData.hInstance = hInstance;
@@ -8240,19 +8257,18 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 	}
 
 	int32_t tokenCount = 0;
-	char* currentToken;
-	char* tokenEntries[8];
+	char* commandTokens[10];
 
-	currentToken = strtok(cmdLine, " ");
+	commandTokens[0] = strtok(cmdLine, " ");
 
-	if (currentToken)
+	if (commandTokens[0])
 	{
 		tokenCount = 1;
 		char* nextToken = strtok(0, " ");
 
 		if (nextToken)
 		{
-			char** tokenArrayPtr = tokenEntries;
+			char** tokenArrayPtr = commandTokens + 1;
 
 			do
 			{
@@ -8265,7 +8281,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 		}
 	}
 
-	Toy2::Run(tokenCount, &currentToken);
+	Toy2::Run(tokenCount, commandTokens);
 
 	D3DApp::g_windowData.wndIsExiting = 1;
 
