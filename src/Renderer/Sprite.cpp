@@ -224,8 +224,8 @@ namespace Renderer
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = bitmapWidth;
-				float height = bitmapHeight;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -237,14 +237,14 @@ namespace Renderer
 
 			RGBA color;
 			color.a = 0xFF;
-			color.b = Nu3D::Camera::g_cameraTintBlue;
+			color.r = Nu3D::Camera::g_cameraTintBlue;
 			color.g = Nu3D::Camera::g_cameraTintGreen;
-			color.r = Nu3D::Camera::g_cameraTintRed;
+			color.b = Nu3D::Camera::g_cameraTintRed;
 
 			Queue2DSprite(
-				xPos * 0.003125,
+				xPos * 0.003125f,
 				yPos * yScale,
-				sheet->tileWidth * 0.003125,
+				sheet->tileWidth * 0.003125f,
 				sheet->tileHeight * yScale,
 				&uvTopLeft,
 				&uvBottomRight,
@@ -274,8 +274,8 @@ namespace Renderer
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = bitmapWidth;
-				float height = bitmapHeight;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -287,9 +287,9 @@ namespace Renderer
 
 			RGBA color;
 			color.a = 0xFF;
-			color.b = Nu3D::Camera::g_cameraTintBlue;
+			color.r = Nu3D::Camera::g_cameraTintBlue;
 			color.g = Nu3D::Camera::g_cameraTintGreen;
-			color.r = Nu3D::Camera::g_cameraTintRed;
+			color.b = Nu3D::Camera::g_cameraTintRed;
 			float xScale = 1.0 / g_virtualScreenWidth;
 
 			Queue2DSprite(
@@ -325,8 +325,8 @@ namespace Renderer
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = bitmapWidth;
-				float height = bitmapHeight;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -336,17 +336,16 @@ namespace Renderer
 
 			double yScale = 1.0 / g_virtualScreenHeight;
 
-			// (the original really does swap red and blue)
 			RGBA color;
 			color.a = 0xFF;
-			color.b = red;
+			color.r = red;
 			color.g = green;
-			color.r = blue;
+			color.b = blue;
 
 			Queue2DSprite(
-				xPos * 0.003125,
+				xPos * 0.003125f,
 				yPos * yScale,
-				sheet->tileWidth * 0.003125,
+				sheet->tileWidth * 0.003125f,
 				sheet->tileHeight * yScale,
 				&uvTopLeft,
 				&uvBottomRight,
@@ -358,7 +357,7 @@ namespace Renderer
 		}
 
 		// FUNCTION: TOY2 0x00493C30
-		int16_t DrawColoured(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t blue, uint8_t green, uint8_t red)
+		int16_t DrawColoured(int16_t xPos, int16_t yPos, int16_t sheetIndex, int16_t tileIndex, uint8_t red, uint8_t green, uint8_t blue)
 		{
 			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
 
@@ -376,8 +375,8 @@ namespace Renderer
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = bitmapWidth;
-				float height = bitmapHeight;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -409,7 +408,7 @@ namespace Renderer
 		}
 
 		// FUNCTION: TOY2 0x0049D390
-		void DrawBitmapText(char* text, int32_t screenY, int32_t screenX, uint8_t colorB, uint8_t colorG, uint8_t colorR)
+		void DrawBitmapText(char* text, int32_t screenY, int32_t screenX, uint8_t red, uint8_t green, uint8_t blue, int32_t unusedArg)
 		{
 			// Draws centered text from the UI glyph texture. The glyphs are on an 8 wide grid of 32x32 tiles, the first
 			// 26 are the letters, followed by the digits, a few symbols are placed by hand.
@@ -520,18 +519,18 @@ namespace Renderer
 				Vector2F uvMin;
 				Vector2F uvMax;
 
-				uvMin.x = glyphX * 0.0039215689;
-				uvMin.y = glyphY * 0.0039215689;
-				uvMax.x = (glyphX + 31.0) * 0.0039215689;
-				uvMax.y = (glyphY + 31.0) * 0.0039215689;
+				uvMin.x = glyphX * 0.0039215689f;
+				uvMin.y = glyphY * 0.0039215689f;
+				uvMax.x = (glyphX + 31.0) * 0.0039215689f;
+				uvMax.y = (glyphY + 31.0) * 0.0039215689f;
 
 				int32_t fontTextureIndex = NGNLoader::GetTextureDataIndex(31);
 
 				RGBA color;
-				color.b = colorB;
+				color.b = blue;
 				color.a = 0xFF;
-				color.g = colorG;
-				color.r = colorR;
+				color.g = green;
+				color.r = red;
 
 				double invHeight = 1.0 / g_virtualScreenHeight;
 				float invWidth = 1.0 / g_virtualScreenWidth;
@@ -550,7 +549,7 @@ namespace Renderer
 		}
 
 		// FUNCTION: TOY2 0x0049D750
-		void DrawWhiteText(char* text, int32_t screenY, int32_t screenX) { DrawBitmapText(text, screenY, screenX, 255, 255, 255); }
+		void DrawWhiteText(char* text, int32_t screenY, int32_t screenX) { DrawBitmapText(text, screenY, screenX, 255, 255, 255, 0x60); }
 
 		// FUNCTION: TOY2 0x00493F40
 		int16_t DrawScaled(
@@ -588,14 +587,14 @@ namespace Renderer
 
 				int16_t ti = (int16_t)tileIndex;
 
-				double dW = (double)bitmapWidth;
-				double dH = (double)bitmapHeight;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
-				uvMin.x = sheet->tiles[ti].x / dW;
-				uvMin.y = sheet->tiles[ti].y / dH;
+				uvMin.x = sheet->tiles[ti].x / width;
+				uvMin.y = sheet->tiles[ti].y / height;
 
-				uvMax.x = ((double)sheet->tileWidth + (double)sheet->tiles[ti].x) / dW;
-				uvMax.y = ((double)sheet->tileHeight + (double)sheet->tiles[ti].y) / dH;
+				uvMax.x = ((double)sheet->tileWidth + sheet->tiles[ti].x) / width;
+				uvMax.y = ((double)sheet->tileHeight + sheet->tiles[ti].y) / height;
 			}
 
 			RGBA packedColor;
@@ -635,7 +634,7 @@ namespace Renderer
 				renderFlags = RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT;
 			}
 
-			float invHeight = 1.0 / g_virtualScreenHeight;
+			double invHeight = 1.0 / g_virtualScreenHeight;
 			float invWidth = 1.0 / g_virtualScreenWidth;
 
 			Queue2DSprite(
@@ -847,6 +846,7 @@ namespace Renderer
 		// FUNCTION: TOY2 0x00493A60
 		int16_t DrawTinted(int16_t xPos, int16_t yPos, int32_t sheetIndex, int32_t tileIndex, int32_t red, int32_t green, int32_t blue, int16_t flags)
 		{
+			sheetIndex = (int16_t)sheetIndex;
 			SpriteSheet* sheet = g_spriteSheets[sheetIndex];
 
 			if (sheet)
@@ -862,14 +862,15 @@ namespace Renderer
 					uint32_t bitmapHeight;
 					NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-					double dW = (double)bitmapWidth;
-					double dH = (double)bitmapHeight;
+					tileIndex = (int16_t)tileIndex;
+					double dW = (int32_t)bitmapWidth;
+					float bitmapHeightF = (int32_t)bitmapHeight;
 
 					uvTopLeft.x = sheet->tiles[tileIndex].x / dW;
-					uvTopLeft.y = sheet->tiles[tileIndex].y / dH;
+					uvTopLeft.y = sheet->tiles[tileIndex].y / bitmapHeightF;
 
 					uvBottomRight.x = ((double)sheet->tileWidth + (double)sheet->tiles[tileIndex].x) / dW;
-					uvBottomRight.y = ((double)sheet->tileHeight + (double)sheet->tiles[tileIndex].y) / dH;
+					uvBottomRight.y = ((double)sheet->tileHeight + (double)sheet->tiles[tileIndex].y) / bitmapHeightF;
 				}
 
 				// the colour is the tint of the camera, the red, green and blue arguments are not used
@@ -937,6 +938,7 @@ namespace Renderer
 			int32_t scaleX,
 			int32_t scaleY)
 		{
+			sheetIndex = (int16_t)sheetIndex;
 			SpriteSheet* sheet;
 
 			if ((sheetIndex & 0x8000) == 0)
@@ -958,8 +960,9 @@ namespace Renderer
 				uint32_t bitmapHeight;
 				NGNLoader::RetrieveTextureData(textureDataIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-				double width = bitmapWidth;
-				float height = bitmapHeight;
+				tileIndex = (int16_t)tileIndex;
+				double width = (int32_t)bitmapWidth;
+				float height = (int32_t)bitmapHeight;
 
 				uvTopLeft.x = sheet->tiles[tileIndex].x / width;
 				uvTopLeft.y = sheet->tiles[tileIndex].y / height;
@@ -1002,9 +1005,9 @@ namespace Renderer
 
 			// quirk: unlike DrawScaled the x axis uses a fixed 1 / 320
 			Queue2DSprite(
-				xPos * 0.003125,
+				xPos * 0.003125f,
 				yPos * invHeight,
-				((scaleX * sheet->tileWidth) >> 12) * 0.003125,
+				((scaleX * sheet->tileWidth) >> 12) * 0.003125f,
 				((scaleY * sheet->tileHeight) >> 12) * invHeight,
 				&uvTopLeft,
 				&uvBottomRight,
@@ -1033,8 +1036,8 @@ namespace Renderer
 					uint32_t bitmapHeight;
 					NGNLoader::RetrieveTextureData(textureIndex, &bitmapWidth, &bitmapHeight, 0, 0, 0);
 
-					double dW = (double)bitmapWidth;
-					float dH = (float)bitmapHeight;
+					double dW = (int32_t)bitmapWidth;
+					float dH = (int32_t)bitmapHeight;
 
 					uvTopLeft.x = sheet->tiles[tileIndex].x / dW;
 					uvTopLeft.y = sheet->tiles[tileIndex].y / dH;
@@ -1050,8 +1053,8 @@ namespace Renderer
 				color.b = Nu3D::Camera::g_cameraTintRed;
 				color.a = 255;
 
-				float clipLeftF = clipLeft / g_virtualScreenWidth;
-				float clipRightF = clipRight / g_virtualScreenWidth;
+				float clipLeftF = (int16_t)clipLeft / g_virtualScreenWidth;
+				float clipRightF = (int16_t)clipRight / g_virtualScreenWidth;
 
 				double invWidth = 1.0 / g_virtualScreenWidth;
 

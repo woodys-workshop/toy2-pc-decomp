@@ -152,7 +152,7 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B4110
 	Font* Font::Build(const char* fontName, int32_t fontSize, const char* charSet)
 	{
-		unsigned int charSetLen;
+		uint32_t charSetLen;
 		HFONT fontHandle;
 		HDC dc;
 		Font* font;
@@ -188,7 +188,7 @@ namespace Nu3D
 		fontResult = 0;
 
 		if (! charSet)
-			charSet = " 01234567890-=!\"";
+			charSet = " 01234567890-=!\"\xA3$%^&*()_+ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[]{};'#:@~,./<>?\\|";
 
 		charSetLen = strlen(charSet) + 1;
 		charSetLenMinusOne = charSetLen - 1;
@@ -312,7 +312,7 @@ namespace Nu3D
 				}
 
 				for (index = 0; index < numChars; ++index)
-					fontPtr->charToGlyphIndex[charSet[index]] = index;
+					fontPtr->charToGlyphIndex[(uint8_t)charSet[index]] = index;
 
 				SelectObject(dc, oldObject);
 				::SetTextColor(dc, textColor);
@@ -630,13 +630,13 @@ namespace Nu3D
 							endPos += textCursorX - previousCursorX;
 							break;
 						case '\n':
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = startCursorX;
-							goto LABEL_11;
+							goto LBL_FINISH_LINE;
 						case '\r':
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = g_lineStartX;
-						LABEL_11:
+						LBL_FINISH_LINE:
 							g_textCursorX = textCursorX;
 							if (test <= endPos)
 								test = endPos;
@@ -658,7 +658,7 @@ namespace Nu3D
 					ch = *++textPtr;
 
 					if (! ch)
-						goto LABEL_19;
+						goto LBL_SELECT_TEXT_RESULT;
 				}
 			}
 
@@ -668,7 +668,7 @@ namespace Nu3D
 		// $TODO: the original returns the string pointer when there is no font selected
 		test = (int32_t)string;
 		endPos = (int32_t)string;
-	LABEL_19:
+	LBL_SELECT_TEXT_RESULT:
 
 		if (test <= endPos)
 			return (char*)endPos;
@@ -681,18 +681,18 @@ namespace Nu3D
 	{
 		LPDIRECT3DDEVICE3 device;
 		GlyphInfo* glyphInfo;
-		int32_t height;
-		double posY;
 		float width;
+		double height;
+		double posY;
 
 		device = DrawingDevice::GetD3DDevice();
 
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
 
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
-		height = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].height;
-		width = g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].width * g_fontWidthScale;
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
+		width = glyphInfo->width * g_fontWidthScale;
+		height = glyphInfo->height * g_fontScaleFactor;
 
 		posY = g_textCursorY - g_scaledFontAscent;
 
@@ -705,7 +705,7 @@ namespace Nu3D
 		g_upperFontVerts[1].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[1].uv.y = glyphInfo->uvMinY;
 		g_upperFontVerts[2].position.x = (g_textCursorX - 1) + width;
-		g_upperFontVerts[2].position.y = posY - 1.0 + height * g_fontScaleFactor;
+		g_upperFontVerts[2].position.y = posY - 1.0f + height;
 		g_upperFontVerts[2].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[2].uv.y = glyphInfo->uvMaxY;
 
@@ -750,11 +750,11 @@ namespace Nu3D
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 		fontClipLeft = g_fontClipLeftAmount;
 		glyphInfo = &g_selectedFont->glyphs[glyphIndex];
-		width = g_selectedFont->glyphs[glyphIndex].width * g_fontWidthScale;
-		height = g_selectedFont->glyphs[glyphIndex].height * g_fontScaleFactor;
+		width = glyphInfo->width * g_fontWidthScale;
+		height = glyphInfo->height * g_fontScaleFactor;
 
 		if (g_fontClipLeftAmount <= g_fontClipRightAmount)
 			fontClipLeft = g_fontClipRightAmount;
@@ -775,9 +775,7 @@ namespace Nu3D
 				if (g_fontClipLeftAmount > 0)
 				{
 					g_upperFontVerts[0].position.x = (float)(posXOffset + g_fontClipLeftAmount);
-					g_upperFontVerts[0].uv.x = (g_selectedFont->glyphs[glyphIndex].uvMaxX - g_selectedFont->glyphs[glyphIndex].uvMinX)
-							* (g_fontClipLeftAmount + g_fontWidthScale) / width
-						+ g_selectedFont->glyphs[glyphIndex].uvMinX;
+					g_upperFontVerts[0].uv.x = (glyphInfo->uvMaxX - glyphInfo->uvMinX) * (g_fontClipLeftAmount + g_fontWidthScale) / width + glyphInfo->uvMinX;
 
 					g_lowerFontVerts[0].position.x = g_upperFontVerts[0].position.x;
 					g_lowerFontVerts[0].uv.x = g_upperFontVerts[0].uv.x;
@@ -799,8 +797,7 @@ namespace Nu3D
 				{
 					g_upperFontVerts[1].position.x = (g_textOffsetX - g_fontClipRightAmount + g_textCursorX - 1) + width;
 
-					g_upperFontVerts[1].uv.x = g_selectedFont->glyphs[glyphIndex].uvMaxX
-						- (g_selectedFont->glyphs[glyphIndex].uvMaxX - g_selectedFont->glyphs[glyphIndex].uvMinX) * g_fontClipRightAmount / width;
+					g_upperFontVerts[1].uv.x = glyphInfo->uvMaxX - (glyphInfo->uvMaxX - glyphInfo->uvMinX) * g_fontClipRightAmount / width;
 
 					g_upperFontVerts[2].position.x = (g_textCursorX - g_fontClipRightAmount - 1) + width;
 					g_upperFontVerts[2].uv.x = g_upperFontVerts[1].uv.x;
@@ -810,12 +807,12 @@ namespace Nu3D
 				else
 				{
 					g_upperFontVerts[1].position.x = (posXOffset - 1) + width;
-					g_upperFontVerts[1].uv.x = g_selectedFont->glyphs[glyphIndex].uvMaxX;
+					g_upperFontVerts[1].uv.x = glyphInfo->uvMaxX;
 					g_upperFontVerts[2].position.x = (g_textCursorX - 1) + width;
 
 					g_lowerFontVerts[1].position.x = g_upperFontVerts[2].position.x;
-					g_upperFontVerts[2].uv.x = g_selectedFont->glyphs[glyphIndex].uvMaxX;
-					g_lowerFontVerts[1].uv.x = g_selectedFont->glyphs[glyphIndex].uvMaxX;
+					g_upperFontVerts[2].uv.x = glyphInfo->uvMaxX;
+					g_lowerFontVerts[1].uv.x = glyphInfo->uvMaxX;
 				}
 				if (clipTop > 0)
 				{
@@ -823,8 +820,7 @@ namespace Nu3D
 
 					g_upperFontVerts[0].position.y = clipTopAmount + posYOffset;
 
-					uvY = (g_selectedFont->glyphs[glyphIndex].uvMaxY - g_selectedFont->glyphs[glyphIndex].uvMinY) * (clipTopAmount + g_fontScaleFactor) / height
-						+ g_selectedFont->glyphs[glyphIndex].uvMinY;
+					uvY = (glyphInfo->uvMaxY - glyphInfo->uvMinY) * (clipTopAmount + g_fontScaleFactor) / height + glyphInfo->uvMinY;
 
 					g_upperFontVerts[1].position.y = g_upperFontVerts[0].position.y;
 					g_lowerFontVerts[0].position.y = g_upperFontVerts[0].position.y;
@@ -834,19 +830,19 @@ namespace Nu3D
 				}
 				else
 				{
-					g_upperFontVerts[0].position.y = g_textCursorY - g_scaledFontAscent;
-					g_upperFontVerts[0].uv.y = g_selectedFont->glyphs[glyphIndex].uvMinY;
+					g_upperFontVerts[0].position.y = posYOffset;
+					g_upperFontVerts[0].uv.y = glyphInfo->uvMinY;
 					g_upperFontVerts[1].position.y = g_upperFontVerts[0].position.y;
 
 					g_lowerFontVerts[0].position.y = g_upperFontVerts[0].position.y;
-					g_upperFontVerts[1].uv.y = g_selectedFont->glyphs[glyphIndex].uvMinY;
+					g_upperFontVerts[1].uv.y = glyphInfo->uvMinY;
 					g_lowerFontVerts[0].uv.y = glyphInfo->uvMinY;
 				}
 				if (g_fontClipBottomAmount > 0)
 				{
 					clipBottom = g_fontClipBottomAmount;
 
-					g_upperFontVerts[2].position.y = posYOffset - 1.0 - clipBottom + g_scaledFontHeight;
+					g_upperFontVerts[2].position.y = posYOffset - 1.0f - clipBottom + g_scaledFontHeight;
 					uvY = glyphInfo->uvMaxY - clipBottom * (glyphInfo->uvMaxY - glyphInfo->uvMinY) / height;
 
 					g_lowerFontVerts[1].position.y = g_upperFontVerts[2].position.y;
@@ -857,7 +853,7 @@ namespace Nu3D
 				}
 				else
 				{
-					g_upperFontVerts[2].position.y = posYOffset - 1.0 + g_scaledFontHeight;
+					g_upperFontVerts[2].position.y = posYOffset - 1.0f + g_scaledFontHeight;
 
 					g_lowerFontVerts[1].position.y = g_upperFontVerts[2].position.y;
 					g_upperFontVerts[2].uv.y = glyphInfo->uvMaxY;
@@ -866,8 +862,8 @@ namespace Nu3D
 					g_lowerFontVerts[1].uv.y = glyphInfo->uvMaxY;
 					g_lowerFontVerts[2].uv.y = glyphInfo->uvMaxY;
 				}
-				Renderer::DrawSingleTexturedTriangle(g_upperFontVerts, g_selectedFontTexIndex, 1092);
-				Renderer::DrawSingleTexturedTriangle(g_lowerFontVerts, g_selectedFontTexIndex, 1092);
+				Renderer::DrawSingleTexturedTriangle(g_upperFontVerts, g_selectedFontTexIndex, 0x444);
+				Renderer::DrawSingleTexturedTriangle(g_lowerFontVerts, g_selectedFontTexIndex, 0x444);
 			}
 		}
 
@@ -879,7 +875,7 @@ namespace Nu3D
 	{
 		int32_t glyphIndex;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
 		g_fontClipRightAmount = g_textCursorX + (int32_t)(g_selectedFont->glyphs[glyphIndex].width * g_fontWidthScale) - g_clipRectRight;
@@ -926,11 +922,11 @@ namespace Nu3D
 						case 10:
 							g_textCursorY += g_selectedFont->fontHeight;
 							textCursorX = startCursorX;
-							goto LABEL_11;
+							goto LBL_FINISH_LINE;
 						case 13:
-							g_textCursorY += g_scaledFontHeight;
+							g_textCursorY += (int32_t)g_scaledFontHeight;
 							textCursorX = g_lineStartX;
-						LABEL_11:
+						LBL_FINISH_LINE:
 							g_textCursorX = textCursorX;
 							if (test <= endPos)
 								test = endPos;
@@ -948,7 +944,7 @@ namespace Nu3D
 					}
 					ch = *++textPtr;
 					if (! ch)
-						goto LABEL_19;
+						goto LBL_SELECT_TEXT_RESULT;
 				}
 			}
 			return (char*)endPos;
@@ -957,7 +953,7 @@ namespace Nu3D
 		// $TODO: the original returns the string pointer when there is no font selected
 		test = (int32_t)string;
 		endPos = (int32_t)string;
-	LABEL_19:
+	LBL_SELECT_TEXT_RESULT:
 		if (test <= endPos)
 			return (char*)endPos;
 		return (char*)test;
@@ -968,13 +964,13 @@ namespace Nu3D
 	{
 		LPDIRECT3DDEVICE3 device;
 		GlyphInfo* glyphInfo;
-		double posY;
+		float posY;
 
 		device = DrawingDevice::GetD3DDevice();
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
-		posY = (g_textCursorY - g_selectedFont->fontAscent);
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
+		posY = (float)(g_textCursorY - g_selectedFont->fontAscent);
 		g_upperFontVerts[0].position.x = (float)(g_textOffsetX + g_textCursorX);
 		g_upperFontVerts[0].position.y = posY;
 		g_upperFontVerts[0].uv.x = glyphInfo->uvMinX;
@@ -984,7 +980,7 @@ namespace Nu3D
 		g_upperFontVerts[1].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[1].uv.y = glyphInfo->uvMinY;
 		g_upperFontVerts[2].position.x = (float)(glyphInfo->width + g_textCursorX - 1);
-		g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0;
+		g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0f;
 		g_upperFontVerts[2].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[2].uv.y = glyphInfo->uvMaxY;
 		g_lowerFontVerts[0].position.x = g_upperFontVerts[0].position.x;
@@ -1015,16 +1011,16 @@ namespace Nu3D
 		device = DrawingDevice::GetD3DDevice();
 		if (! g_selectedFont || ! g_selectedFontTexIndex || ! device)
 			return 0;
-		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]];
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 		clipMax = g_fontClipLeftAmount;
 		if (g_fontClipLeftAmount <= g_fontClipRightAmount)
 			clipMax = g_fontClipRightAmount;
-		if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].width)
+		if (clipMax < glyphInfo->width)
 		{
 			clipMax = g_fontClipBottomAmount;
 			if (g_fontClipTopAmount > g_fontClipBottomAmount)
 				clipMax = g_fontClipTopAmount;
-			if (clipMax < g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[charValue]].height)
+			if (clipMax < glyphInfo->height)
 			{
 				posY = (float)(g_textCursorY - g_selectedFont->fontAscent);
 				if (g_fontClipLeftAmount > 0)
@@ -1078,15 +1074,15 @@ namespace Nu3D
 				{
 					g_upperFontVerts[0].position.y = posY;
 					g_upperFontVerts[0].uv.y = glyphInfo->uvMinY;
-					g_upperFontVerts[1].position.y = posY;
+					g_upperFontVerts[1].position.y = g_upperFontVerts[0].position.y;
 					g_upperFontVerts[1].uv.y = glyphInfo->uvMinY;
-					g_lowerFontVerts[0].position.y = posY;
+					g_lowerFontVerts[0].position.y = g_upperFontVerts[0].position.y;
 					g_lowerFontVerts[0].uv.y = glyphInfo->uvMinY;
 				}
 				if (g_fontClipBottomAmount > 0)
 				{
 					clipBottom = g_fontClipBottomAmount;
-					g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0 - clipBottom;
+					g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0f - clipBottom;
 					uvY = glyphInfo->uvMaxY - clipBottom * (glyphInfo->uvMaxY - glyphInfo->uvMinY) / glyphInfo->height;
 					g_lowerFontVerts[1].position.y = g_upperFontVerts[2].position.y;
 					g_lowerFontVerts[2].position.y = g_upperFontVerts[2].position.y;
@@ -1096,15 +1092,15 @@ namespace Nu3D
 				}
 				else
 				{
-					g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0;
+					g_upperFontVerts[2].position.y = glyphInfo->height + posY - 1.0f;
 					g_lowerFontVerts[1].position.y = g_upperFontVerts[2].position.y;
 					g_upperFontVerts[2].uv.y = glyphInfo->uvMaxY;
 					g_lowerFontVerts[2].position.y = g_upperFontVerts[2].position.y;
 					g_lowerFontVerts[1].uv.y = glyphInfo->uvMaxY;
 					g_lowerFontVerts[2].uv.y = glyphInfo->uvMaxY;
 				}
-				Renderer::DrawSingleTexturedTriangle(g_upperFontVerts, g_selectedFontTexIndex, 1092);
-				Renderer::DrawSingleTexturedTriangle(g_lowerFontVerts, g_selectedFontTexIndex, 1092);
+				Renderer::DrawSingleTexturedTriangle(g_upperFontVerts, g_selectedFontTexIndex, 0x444);
+				Renderer::DrawSingleTexturedTriangle(g_lowerFontVerts, g_selectedFontTexIndex, 0x444);
 			}
 		}
 		return glyphInfo->width;
@@ -1115,7 +1111,7 @@ namespace Nu3D
 	{
 		int32_t glyphIndex;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[charValue];
+		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
 		g_fontClipRightAmount = g_textCursorX + g_selectedFont->glyphs[glyphIndex].width - g_clipRectRight;
 		g_fontClipTopAmount = g_clipRectTop + g_selectedFont->fontAscent - g_textCursorY;
