@@ -231,8 +231,8 @@ namespace Toy2
 
 	// GLOBAL: TOY2 0x00500A58
 	SectorBackdropTexIdTable g_sectorBackdropTexTable = {
-		{ 36, 40, 41, 42, 43, 44, 45, 46, 47, 32 },
-		{ 88, 89, 90, 91, 92, 93, 94, 95 },
+		{ 36, 40, 41, 42, 43, 44, 45, 46, 47 },
+		{ 32, 88, 89, 90, 91, 92, 93, 94, 95 },
 	};
 
 	// GLOBAL: TOY2 0x00534550
@@ -2338,7 +2338,8 @@ namespace Toy2
 		char slotFileName[256];
 		char slotName[256];
 		char saveName[256];
-		char xOffsets[32];
+		char refreshFileName[256];
+		int32_t xOffsets[8];
 
 		size_t slotNameSize;
 
@@ -2361,13 +2362,13 @@ namespace Toy2
 			saveMenuType = 2;
 
 		// read the name of every save slot, and work out how far each one is pushed along the curve
-		size_t saveIndex = 0;
-		char* xOffset = xOffsets;
+		int32_t saveIndex = 0;
+		int32_t* xOffset = xOffsets;
 		SaveNameBuffer* saveNameBuffer = g_saveNameBuffers;
 
 		do
 		{
-			size_t nextSaveIndex = saveIndex + 1;
+			int32_t nextSaveIndex = saveIndex + 1;
 
 			sprintf(slotFileName, "Toy2%02d.sav", saveIndex + 1);
 
@@ -2391,13 +2392,13 @@ namespace Toy2
 				saveNameBuffer->name[0] = '\0';
 			}
 
-			*xOffset = (cos(saveIndex * 0.64269906 - 1.0) * 80.0);
+			*xOffset = (int32_t)(cos(saveIndex * 0.64269906f - 1.0) * 80.0);
 
 			++saveNameBuffer;
 
 			saveIndex = nextSaveIndex;
 
-			xOffset += 4;
+			++xOffset;
 		} while (saveNameBuffer < &g_saveNameBuffers[8]);
 
 		do
@@ -2468,8 +2469,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2530,8 +2531,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2539,7 +2540,7 @@ namespace Toy2
 
 						int32_t slot = 0;
 						int32_t slotY = 33;
-						char* slotXOffset = xOffsets;
+						int32_t* slotXOffset = xOffsets;
 						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
 
 						do
@@ -2555,7 +2556,7 @@ namespace Toy2
 							++nameBuffer;
 							++slot;
 							slotY += 23;
-							slotXOffset += 4;
+							++slotXOffset;
 						} while (nameBuffer < &g_saveNameBuffers[8]);
 
 						Renderer::DrawFormattedText(256, 25 * slot + 28, "jump:select  cancel:menu");
@@ -2587,12 +2588,13 @@ namespace Toy2
 
 								if (saveFile)
 								{
-									fread(&slotNameSize, 1, 4, saveFile);
+									size_t selectedNameSize;
+									fread(&selectedNameSize, 1, 4, saveFile);
 
-									if (slotNameSize)
+									if (selectedNameSize)
 									{
-										fread(slotName, 1, slotNameSize, saveFile);
-										slotName[slotNameSize] = 0;
+										fread(slotName, 1, selectedNameSize, saveFile);
+										slotName[selectedNameSize] = 0;
 									}
 
 									if (slotCursor == 98)
@@ -2626,8 +2628,8 @@ namespace Toy2
 
 						if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.primary[1]))
 							g_nextBackdropId = g_sectorBackdropTexTable.primary[1];
-						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[0]))
-							g_nextBackdropId = g_sectorBackdropTexTable.secondary[0];
+						else if (NGNLoader::GetTextureDataIndex(g_sectorBackdropTexTable.secondary[1]))
+							g_nextBackdropId = g_sectorBackdropTexTable.secondary[1];
 
 						g_hasBackdrop = 1;
 
@@ -2635,7 +2637,7 @@ namespace Toy2
 
 						int32_t slot = 0;
 						int32_t slotY = 33;
-						char* slotXOffset = xOffsets;
+						int32_t* slotXOffset = xOffsets;
 						SaveNameBuffer* nameBuffer = g_saveNameBuffers;
 
 						do
@@ -2651,7 +2653,7 @@ namespace Toy2
 							++nameBuffer;
 							++slot;
 							slotY += 23;
-							slotXOffset += 4;
+							++slotXOffset;
 						} while (nameBuffer < &g_saveNameBuffers[8]);
 
 						if (showSaveMenu)
@@ -2682,7 +2684,7 @@ namespace Toy2
 							{
 								int32_t tokenProgress = ComputeTokenProgress();
 
-								sprintf(saveName, "TOK %d LEV %d", (tokenProgress >> 16) & 0xFF, tokenProgress);
+								sprintf(saveName, "TOK %d LEV %d", (tokenProgress >> 16) & 0xFF, tokenProgress & 0xFF);
 								SaveManager::SaveToFile(slotCursor + 1, saveName);
 
 								saveMenuType = 3;
@@ -2696,9 +2698,9 @@ namespace Toy2
 								{
 									int32_t nextRefreshIndex = refreshIndex + 1;
 
-									sprintf(slotFileName, "Toy2%02d.sav", refreshIndex + 1);
+									sprintf(refreshFileName, "Toy2%02d.sav", refreshIndex + 1);
 
-									FILE* saveFile = fopen(slotFileName, "rb");
+									FILE* saveFile = fopen(refreshFileName, "rb");
 
 									if (saveFile)
 									{
@@ -3621,8 +3623,8 @@ namespace Toy2
 			}
 			else
 			{
-				uint32_t l_textureId = g_sectorBackdropTexTable.secondary[sectorIdx - 1];
-				int32_t* l_id = &g_sectorBackdropTexTable.secondary[sectorIdx - 1];
+				uint32_t l_textureId = g_sectorBackdropTexTable.secondary[sectorIdx];
+				int32_t* l_id = &g_sectorBackdropTexTable.secondary[sectorIdx];
 
 				if (NGNLoader::GetTextureDataIndex(l_textureId))
 					g_nextBackdropId = *l_id;

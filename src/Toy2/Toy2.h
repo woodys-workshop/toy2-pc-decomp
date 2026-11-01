@@ -31,8 +31,8 @@ namespace Toy2
 
 	struct SectorBackdropTexIdTable
 	{
-		int32_t primary[10];
-		int32_t secondary[8];
+		int32_t primary[9];
+		int32_t secondary[9];
 	};
 
 	struct SaveNameBuffer
@@ -193,6 +193,7 @@ namespace Toy2
 
 	STATIC_ASSERT(sizeof(ToyCfg) == 0x18);
 	STATIC_ASSERT(sizeof(ViewportPreset) == 0x18);
+	STATIC_ASSERT(sizeof(SectorBackdropTexIdTable) == 0x48);
 	STATIC_ASSERT(sizeof(TickAccumulators) == 0xC);
 	STATIC_ASSERT(sizeof(SoundSequencePlayer) == 0x14);
 	STATIC_ASSERT(sizeof(SpawnLocation) == 0x10);
