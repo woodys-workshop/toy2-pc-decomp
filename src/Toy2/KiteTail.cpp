@@ -172,7 +172,6 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0044E710
 		void Simulate(Vector3I* anchor, int32_t slot)
 		{
-			Transform* scratch = (Transform*)Collision::g_mathScratch;
 			Rope* rope = g_ropes[slot];
 			int32_t i;
 
@@ -180,86 +179,97 @@ namespace Toy2
 			rope->points[0].pos.y = anchor->y;
 			rope->points[0].pos.z = anchor->z;
 
+			rope = g_ropes[slot];
 			int32_t spacing = rope->spacing;
 			int32_t gravity = rope->gravity;
+			Transform* point = &rope->points[1];
+			RopeVelocity* velocity = &rope->velocities[1];
+			Transform* target = (Transform*)Collision::g_mathScratch;
 
-			// move every point along its velocity, then place it at the rope spacing from the point before it
+			// Integrate points before constraining their positions in the shared scratch.
 			i = 1;
 
 			if (rope->pointCount > 1)
 			{
 				do
 				{
-					rope->points[i].pos.x += rope->velocities[i].x;
-					rope->points[i].pos.y += rope->velocities[i].y;
-					rope->points[i].pos.z += rope->velocities[i].z;
+					point->pos.x += velocity->x;
+					point->pos.y += velocity->y;
+					point->pos.z += velocity->z;
 
-					scratch[i - 1].pos.x = (rope->points[i].pos.x - rope->points[i - 1].pos.x) >> 3;
-					scratch[i - 1].pos.y = (rope->points[i].pos.y - rope->points[i - 1].pos.y) >> 3;
-					scratch[i - 1].pos.z = (rope->points[i].pos.z - rope->points[i - 1].pos.z) >> 3;
+					target->pos.x = (point->pos.x - point[-1].pos.x) >> 3;
+					target->pos.y = (point->pos.y - point[-1].pos.y) >> 3;
+					target->pos.z = (point->pos.z - point[-1].pos.z) >> 3;
 
-					Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&scratch[i - 1], (Vector3I*)&scratch[i - 1]);
+					Nu3D::Math::NormalizeToFixedPoint(&target->pos, &target->pos);
 
-					scratch[i - 1].pos.x = rope->points[i - 1].pos.x + ((spacing * scratch[i - 1].pos.x) >> 12);
-					scratch[i - 1].pos.y = rope->points[i - 1].pos.y + ((spacing * scratch[i - 1].pos.y) >> 12);
-					scratch[i - 1].pos.z = rope->points[i - 1].pos.z + ((spacing * scratch[i - 1].pos.z) >> 12);
+					target->pos.x = point[-1].pos.x + ((spacing * target->pos.x) >> 12);
+					target->pos.y = point[-1].pos.y + ((spacing * target->pos.y) >> 12);
+					target->pos.z = point[-1].pos.z + ((spacing * target->pos.z) >> 12);
 
+					++point;
+					++velocity;
+					++target;
 					++i;
-				} while (i < rope->pointCount);
+				} while (i < g_ropes[slot]->pointCount);
 			}
 
-			// pull every velocity towards the neighbouring points, damp it and add the gravity
+			// Both neighbours contribute before any constrained position is published.
+			rope = g_ropes[slot];
+			point = &rope->points[1];
+			velocity = &rope->velocities[1];
+			target = (Transform*)Collision::g_mathScratch;
 			i = 1;
 
 			if (rope->pointCount - 1 > 1)
 			{
 				do
 				{
-					rope->velocities[i].x = ((rope->points[i + 1].pos.x - scratch[i].pos.x) >> 5) + ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4)
-						+ 30 * rope->velocities[i].x / 32;
-					rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32
-						+ ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4) + ((rope->points[i + 1].pos.y - scratch[i].pos.y) >> 5);
-					rope->velocities[i].z = 30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4)
-						+ ((rope->points[i + 1].pos.z - scratch[i].pos.z) >> 5);
+					velocity->x = 30 * velocity->x / 32 + ((target->pos.x - point->pos.x) >> 4) + ((point[1].pos.x - target[1].pos.x) >> 5);
+					velocity->y = ((point[1].pos.y - target[1].pos.y) >> 5) + ((target->pos.y - point->pos.y) >> 4) + 30 * velocity->y / 32
+						+ gravity * Renderer::g_frameDelta;
+					velocity->z = ((point[1].pos.z - target[1].pos.z) >> 5) + ((target->pos.z - point->pos.z) >> 4) + 30 * velocity->z / 32;
 
+					++point;
+					++velocity;
+					++target;
 					++i;
-				} while (i < rope->pointCount - 1);
+				} while (i < g_ropes[slot]->pointCount - 1);
 			}
 
-			// the last point has no neighbour after it
-			rope->velocities[i].x = ((scratch[i - 1].pos.x - rope->points[i].pos.x) >> 4) + 30 * rope->velocities[i].x / 32;
-			rope->velocities[i].y = gravity * Renderer::g_frameDelta + 30 * rope->velocities[i].y / 32 + ((scratch[i - 1].pos.y - rope->points[i].pos.y) >> 4);
-			rope->velocities[i].z = 30 * rope->velocities[i].z / 32 + ((scratch[i - 1].pos.z - rope->points[i].pos.z) >> 4);
+			velocity->x = 30 * velocity->x / 32 + ((target->pos.x - point->pos.x) >> 4);
+			velocity->y = ((target->pos.y - point->pos.y) >> 4) + 30 * velocity->y / 32 + gravity * Renderer::g_frameDelta;
+			velocity->z = ((target->pos.z - point->pos.z) >> 4) + 30 * velocity->z / 32;
 
-			// keep the points out of the arena walls, then store the new positions
+			rope = g_ropes[slot];
+			point = &rope->points[1];
+			velocity = &rope->velocities[1];
+			target = (Transform*)Collision::g_mathScratch;
 			i = 1;
 
 			if (rope->pointCount > 1)
 			{
 				do
 				{
-					Transform* point = &scratch[i - 1];
-					RopeVelocity* velocity = &rope->velocities[i];
-
-					if ((uint32_t)(point->pos.x - 118212) < 0x1558C)
+					if ((uint32_t)(target->pos.x - 118212) < 0x1558C)
 					{
-						if ((uint32_t)(point->pos.z - 183960) < 0x1FC38 && point->pos.y >= -467398)
+						if ((uint32_t)(target->pos.z - 183960) < 0x1FC38 && target->pos.y >= -467398)
 						{
-							if ((uint32_t)(point->pos.x - 117188) >= 0x14D8C || (uint32_t)(point->pos.z - 182936) >= 0x1F438)
+							if ((uint32_t)(target->pos.x - 117188) >= 0x14D8C || (uint32_t)(target->pos.z - 182936) >= 0x1F438)
 							{
-								int32_t distX = abs(point->pos.x - 118212);
-								int32_t distX2 = abs(point->pos.x - 205648);
+								int32_t distX = abs(target->pos.x - 118212);
+								int32_t distX2 = abs(target->pos.x - 205648);
 
 								if (distX2 < distX)
 									distX = -distX2;
 
-								int32_t distZ = abs(point->pos.z - 183960);
-								int32_t distZ2 = abs(point->pos.z - 314064);
+								int32_t distZ = abs(target->pos.z - 183960);
+								int32_t distZ2 = abs(target->pos.z - 314064);
 
 								if (distZ2 < distZ)
 									distZ = -distZ2;
 
-								int32_t depth = point->pos.y + 467398;
+								int32_t depth = target->pos.y + 467398;
 								velocity->grounded = 0;
 								int32_t absDistX = abs(distX);
 
@@ -267,39 +277,42 @@ namespace Toy2
 								{
 									if (abs(distZ) >= depth)
 									{
-										point->pos.y = -467654;
+										target->pos.y = -467654;
 										velocity->grounded = 1;
 									}
 									else
 									{
-										point->pos.z = distZ <= 0 ? 314320 : 183704;
+										target->pos.z = distZ <= 0 ? 314320 : 183704;
 										velocity->y += (-6 * gravity * (int32_t)Renderer::g_frameDelta) / 4;
 									}
 								}
 								else
 								{
 									if (absDistX >= abs(distZ))
-										point->pos.z = distZ <= 0 ? 314320 : 183704;
+										target->pos.z = distZ <= 0 ? 314320 : 183704;
 									else
-										point->pos.x = distX <= 0 ? 205904 : 117956;
+										target->pos.x = distX <= 0 ? 205904 : 117956;
 
 									velocity->y += (-6 * gravity * (int32_t)Renderer::g_frameDelta) / 4;
 								}
 							}
 							else
 							{
-								point->pos.y = -467654;
+								target->pos.y = -467654;
 								velocity->grounded = 1;
 							}
 						}
 					}
 
-					rope->points[i].pos.x = point->pos.x;
-					rope->points[i].pos.y = point->pos.y;
-					rope->points[i].pos.z = point->pos.z;
+					point->pos.x = target->pos.x;
+					point->pos.y = target->pos.y;
+					point->pos.z = target->pos.z;
 
+					++point;
+					++velocity;
+					++target;
 					++i;
-				} while (i < rope->pointCount);
+				} while (i < g_ropes[slot]->pointCount);
 			}
 		}
 	}
