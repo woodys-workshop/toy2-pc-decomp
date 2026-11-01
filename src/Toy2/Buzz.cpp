@@ -1459,7 +1459,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A5370
-		uint32_t FireGrapple()
+		uint32_t FireGrapple(int32_t unusedYaw, int32_t unusedPitch)
 		{
 			int32_t dominantDist;
 			Transform direction;
@@ -1567,7 +1567,7 @@ namespace Toy2
 				g_unk53C650 = 0;
 				g_buzzActionState |= 0x80u;
 
-				goto LABEL_13;
+				goto LBL_RESET_CHARGE_TIMER;
 			}
 
 			if (! chargeTimer)
@@ -1577,21 +1577,21 @@ namespace Toy2
 			{
 				if (chargeTimer != -1)
 				{
-				LABEL_14:
+				LBL_ADVANCE_INITIAL_CHARGE:
 					g_fireChargeTimer = Renderer::g_frameDelta + chargeTimer;
 
-					if (Renderer::g_frameDelta + chargeTimer < 12)
+					if ((int32_t)(Renderer::g_frameDelta + chargeTimer) < 12)
 						return;
 
 					shotType = 1;
 
-					goto LABEL_49;
+					goto LBL_APPLY_GREEN_CHARGE;
 				}
 
-			LABEL_13:
+			LBL_RESET_CHARGE_TIMER:
 				chargeTimer = 0;
 
-				goto LABEL_14;
+				goto LBL_ADVANCE_INITIAL_CHARGE;
 			}
 
 			newChargeTimer = Renderer::g_frameDelta + chargeTimer;
@@ -1605,29 +1605,29 @@ namespace Toy2
 				if (g_discLauncherTimer)
 				{
 					if (newHoldTimer < 14)
-						goto LABEL_23;
+						goto LBL_WRAP_CHARGE_TIMER;
 
-				LABEL_22:
+				LBL_QUEUE_REPEAT_SHOT:
 					shotKind = 1;
 					g_fireHoldTimer = 0;
 					shotType = 1;
 
-				LABEL_23:
+				LBL_WRAP_CHARGE_TIMER:
 					if (newChargeTimer >= 52)
 					{
 						newChargeTimer -= 40;
 						g_fireChargeTimer = newChargeTimer;
 					}
 
-					goto LABEL_45;
+					goto LBL_FINISH_CHARGE_TIMER;
 				}
 
 				if (g_greenGunCharge)
 				{
 					if (newHoldTimer < 6)
-						goto LABEL_23;
+						goto LBL_WRAP_CHARGE_TIMER;
 
-					goto LABEL_22;
+					goto LBL_QUEUE_REPEAT_SHOT;
 				}
 
 				if (newHoldTimer >= 64)
@@ -1639,7 +1639,7 @@ namespace Toy2
 				if (InputManager::g_prevDirectionInputState < 0 || (g_buzzActionState & 0xFBE7E) != 0)
 				{
 					if (newChargeTimer < 52)
-						goto LABEL_35;
+						goto LBL_PLAY_CHARGE_SOUND;
 
 					newChargeTimer -= 40;
 				}
@@ -1650,7 +1650,7 @@ namespace Toy2
 						shotKind = 1;
 						shotType = 1;
 
-						goto LABEL_35;
+						goto LBL_PLAY_CHARGE_SOUND;
 					}
 
 					newChargeTimer = 64 - newChargeTimer;
@@ -1658,7 +1658,7 @@ namespace Toy2
 
 				g_fireChargeTimer = newChargeTimer;
 
-			LABEL_35:
+			LBL_PLAY_CHARGE_SOUND:
 				if (newHoldTimer > 12)
 				{
 					AudioManager::g_pitchArray[3] = 80 * newHoldTimer + 2048;
@@ -1666,7 +1666,7 @@ namespace Toy2
 					newChargeTimer = g_fireChargeTimer;
 				}
 
-				goto LABEL_45;
+				goto LBL_FINISH_CHARGE_TIMER;
 			}
 
 			if (holdTimer > 36)
@@ -1689,7 +1689,7 @@ namespace Toy2
 			if (g_discLauncherTimer)
 				g_fireHoldTimer = 14;
 
-		LABEL_45:
+		LBL_FINISH_CHARGE_TIMER:
 			if (newChargeTimer >= 64)
 				g_fireChargeTimer = 0;
 
@@ -1697,7 +1697,7 @@ namespace Toy2
 			{
 				if (shotKind != 1)
 				{
-				LABEL_52:
+				LBL_FIRE_SHOT:
 					g_fireChargeTimer = 12;
 
 					if (Camera::g_cameraState == 4)
@@ -1724,7 +1724,7 @@ namespace Toy2
 
 					if (g_grappleTimer && Camera::g_cameraState >= 3 && Camera::g_unk50A540 && Camera::g_lockOnActorIdx >= 1000)
 					{
-						FireGrapple();
+						FireGrapple(yaw, pitch);
 					}
 					else if (g_discLauncherTimer)
 					{
@@ -1757,7 +1757,7 @@ namespace Toy2
 					return;
 				}
 
-			LABEL_49:
+			LBL_APPLY_GREEN_CHARGE:
 				if (g_greenGunCharge)
 				{
 					shotType = 3;
@@ -1767,7 +1767,7 @@ namespace Toy2
 						g_greenGunCharge = 0;
 				}
 
-				goto LABEL_52;
+				goto LBL_FIRE_SHOT;
 			}
 		}
 

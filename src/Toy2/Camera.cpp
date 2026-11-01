@@ -763,7 +763,7 @@ namespace Toy2
 			else
 			{
 				if (cameraState != 4)
-					goto LABEL_155;
+					goto LBL_CHECK_VISOR_EXIT;
 
 				targetIdx = g_lockOnActorIdx;
 			}
@@ -824,7 +824,7 @@ namespace Toy2
 
 			if (targetIdx == -1 || g_lockOnCandidates[0] == -1)
 			{
-			LABEL_26:
+			LBL_CLEAR_LOCK_TARGET:
 				targetIdx = -1;
 				g_unk50A14C = 1;
 				g_unk50A540 = 0;
@@ -841,11 +841,11 @@ namespace Toy2
 					++candidate;
 
 					if (candidateIdx == -1)
-						goto LABEL_26;
+						goto LBL_CLEAR_LOCK_TARGET;
 				}
 
 				if ((InputManager::g_directionInputState & 0x800) == 0 || (InputManager::g_prevDirectionInputState & 0x800) != 0 || ! g_unk50A540)
-					goto LABEL_43;
+					goto LBL_UPDATE_TARGET_MARKER;
 			}
 
 			// switch to the next target
@@ -859,7 +859,7 @@ namespace Toy2
 			if (targetIdx == -1)
 			{
 				if (! candidateCount)
-					goto LABEL_50;
+					goto LBL_CLEAR_TARGET_MARKER;
 
 				g_lockOnActorIdx = firstCandidate;
 			}
@@ -888,7 +888,7 @@ namespace Toy2
 			targetIdx = g_lockOnActorIdx;
 			g_unk50A14C = 0;
 
-		LABEL_43:
+		LBL_UPDATE_TARGET_MARKER:
 			// the marker on the target
 			if (targetIdx != -1)
 			{
@@ -924,20 +924,20 @@ namespace Toy2
 				g_unk50A4DC->pos.y = lockOnPoint.y;
 				g_unk50A4DC->pos.z = lockOnPoint.z;
 				g_unk50A4DC->lifetime = 10000;
-				goto LABEL_52;
+				goto LBL_RELOAD_LOCK_TARGET_INDEX;
 			}
 
-		LABEL_50:
+		LBL_CLEAR_TARGET_MARKER:
 			if (g_unk50A4DC == (Nu3D::Particles::ParticleInstance*)-1)
-				goto LABEL_53;
+				goto LBL_READ_AIM_INPUT;
 
 			g_unk50A4DC->lifetime = 1;
 			g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
 
-		LABEL_52:
+		LBL_RELOAD_LOCK_TARGET_INDEX:
 			targetIdx = g_lockOnActorIdx;
 
-		LABEL_53:
+		LBL_READ_AIM_INPUT:
 			// the analog stick (or the keys at full speed)
 			if ((InputManager::g_directionalInputCount == 1 || InputManager::g_directionalInputCount == 2) && ! g_demoMode)
 			{
@@ -992,17 +992,17 @@ namespace Toy2
 				if (yawAccel >= 0)
 				{
 					if (newYawVel <= yawTarget)
-						goto LABEL_74;
+						goto LBL_UPDATE_PITCH_ACCELERATION;
 				}
 				else if (newYawVel >= yawTarget)
 				{
-					goto LABEL_74;
+					goto LBL_UPDATE_PITCH_ACCELERATION;
 				}
 
 				g_unk50A130 = yawTarget;
 			}
 
-		LABEL_74:
+		LBL_UPDATE_PITCH_ACCELERATION:
 			pitchAccel = 0;
 			pitchCap = 0;
 
@@ -1037,12 +1037,12 @@ namespace Toy2
 				if (pitchAccel >= 0)
 				{
 					if (newPitchVel > pitchCap)
-					LABEL_86:
+					LBL_CLAMP_PITCH_VELOCITY:
 						g_unk50A138 = pitchCap;
 				}
 				else if (newPitchVel < pitchCap)
 				{
-					goto LABEL_86;
+					goto LBL_CLAMP_PITCH_VELOCITY;
 				}
 			}
 
@@ -1058,7 +1058,7 @@ namespace Toy2
 				if ((InputManager::g_directionInputState & 0xF0) != 0)
 				{
 					g_unk50A540 = 0;
-				LABEL_92:
+				LBL_USE_MANUAL_AIM:
 					if (g_unk50A4DC != (Nu3D::Particles::ParticleInstance*)-1)
 					{
 						if (targetIdx < 1000)
@@ -1079,15 +1079,19 @@ namespace Toy2
 					yawVel = g_unk50A130;
 					pitchTarget = g_unk50A138;
 					g_unk50A14C = 0;
-					goto LABEL_124;
+					goto LBL_APPLY_AIM_VELOCITY;
 				}
 
 				if (! lockHeld)
-					goto LABEL_92;
+					goto LBL_USE_MANUAL_AIM;
 			}
 
 			if (targetIdx == -1 || g_unk50A14C)
-				goto LABEL_124;
+			{
+				yawVel = pitchAccel;
+				pitchTarget = pitchCap;
+				goto LBL_APPLY_AIM_VELOCITY;
+			}
 
 			// the camera turns towards the target
 			{
@@ -1158,7 +1162,7 @@ namespace Toy2
 
 				int32_t pitchDelta =
 					(Nu3D::Math::CartesianToFixedAngle((int32_t)sqrt((double)(lockOnPoint.x * lockOnPoint.x + lockOnPoint.z * lockOnPoint.z)), -lockOnPoint.y)
-					 - (int16_t)state->targetPos.x - 1024)
+					 - state->targetPos.x - 1024)
 					& 0xFFF;
 
 				if (pitchDelta >= 2048)
@@ -1169,7 +1173,7 @@ namespace Toy2
 				g_unk50A138 = 0;
 			}
 
-		LABEL_124:
+		LBL_APPLY_AIM_VELOCITY:
 			g_buzzActor.posAngles.angles.yaw = (g_buzzActor.posAngles.angles.yaw + yawVel * frameDelta / 16) & 0xFFF;
 
 			{
@@ -1178,7 +1182,7 @@ namespace Toy2
 				if (pitch < 1824)
 				{
 					if (pitch > 200)
-						goto LABEL_129;
+						goto LBL_STORE_TARGET_PITCH;
 
 					pitch = 200;
 				}
@@ -1189,7 +1193,7 @@ namespace Toy2
 
 				g_unk50A138 = 0;
 
-			LABEL_129:
+			LBL_STORE_TARGET_PITCH:
 				state->targetPos.x = (pitch - 1024) & 0xFFF;
 			}
 
@@ -1281,7 +1285,7 @@ namespace Toy2
 			Nu3D::Link::SetScaleFromFixedOffsets(47, 2048, 2048, 2048);
 
 			{
-				// the visor rings follow the aim with a delay
+				// Link angles follow the aim with a delay.
 				int32_t pitchLag = (g_unk50A28C - state->targetPos.x) & 0xFFF;
 
 				if (pitchLag >= 0x800)
@@ -1296,7 +1300,7 @@ namespace Toy2
 
 				g_unk50A290 = (g_unk50A290 - (yawLag * (int32_t)Renderer::g_frameDelta) / 6) & 0xFFF;
 
-				int32_t ringSpin = Numerics::g_sinCosLUT[g_unk50A4C8] >> 10;
+				int32_t linkAngleOffset = Numerics::g_sinCosLUT[g_unk50A4C8] >> 10;
 
 				Nu3D::Link::SetPositionRawAndCommit(
 					45, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
@@ -1305,9 +1309,10 @@ namespace Toy2
 				Nu3D::Link::SetPositionRawAndCommit(
 					47, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
 
-				Nu3D::Link::SetRotationRelative8bit(45, 0, (g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF, ((ringSpin / 2) + state->targetPos.x) & 0xFFF);
-				Nu3D::Link::SetRotationRelative8bit(46, 0, (g_unk50A290 - 1024) & 0xFFF, (ringSpin + g_unk50A28C) & 0xFFF);
-				Nu3D::Link::SetRotationRelative8bit(47, 0, (g_unk50A290 - 1024) & 0xFFF, (g_unk50A28C + (ringSpin / 2)) & 0xFFF);
+				Nu3D::Link::SetRotationRelative8bit(
+					45, 0, (g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF, ((linkAngleOffset / 2) + state->targetPos.x) & 0xFFF);
+				Nu3D::Link::SetRotationRelative8bit(46, 0, (g_unk50A290 - 1024) & 0xFFF, (linkAngleOffset + g_unk50A28C) & 0xFFF);
+				Nu3D::Link::SetRotationRelative8bit(47, 0, (g_unk50A290 - 1024) & 0xFFF, (g_unk50A28C + (linkAngleOffset / 2)) & 0xFFF);
 			}
 
 			{
@@ -1331,7 +1336,7 @@ namespace Toy2
 				cameraState = g_cameraState;
 			}
 
-		LABEL_155:
+		LBL_CHECK_VISOR_EXIT:
 			// the visor button leaves the visor
 			if ((InputManager::g_directionInputState & 0x400) != 0 && (InputManager::g_prevDirectionInputState & 0x400) == 0 && cameraState == 4)
 			{
@@ -2524,7 +2529,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A5870
-		int32_t SweepSegmentVsActors(Transform* arg0, Transform* a2, int32_t a3)
+		int32_t SweepSegmentVsActors(Transform* startPos, Transform* displacement, int32_t damageMode)
 		{
 			Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
 			Toy2::Actor::Toy2Actor* hitActor = 0;
@@ -2540,9 +2545,9 @@ namespace Toy2
 			{
 				if ((actor->creatureRam->defenseMode & 4) != 0 && actor->damageCooldownTimer >= 0 && actor->unkVar29 >= 0)
 				{
-					int32_t endX = a2->pos.x + arg0->pos.x;
-					int32_t endY = a2->pos.y + arg0->pos.y;
-					int32_t endZ = a2->pos.z + arg0->pos.z;
+					int32_t endX = displacement->pos.x + startPos->pos.x;
+					int32_t endY = displacement->pos.y + startPos->pos.y;
+					int32_t endZ = displacement->pos.z + startPos->pos.z;
 
 					int16_t* attach = (int16_t*)(actor->unkVar34 + 16 * actor->primaryAnimIdx);
 
@@ -2553,14 +2558,14 @@ namespace Toy2
 					int32_t centerY = actor->transform.pos.y + attach[1];
 					int32_t centerZ = actor->transform.pos.z + ((cosYaw * attach[2] - sinYaw * attach[0]) >> 12);
 
-					int32_t startToCenterZ = centerZ - arg0->pos.z;
-					int32_t startToCenterX = centerX - arg0->pos.x;
+					int32_t startToCenterZ = centerZ - startPos->pos.z;
+					int32_t startToCenterX = centerX - startPos->pos.x;
 
 					int32_t scaleX = attach[4];
 					int32_t scaleY = attach[5];
 					int32_t scaleZ = attach[6];
 
-					int32_t startScaledY = (scaleY * (centerY - arg0->pos.y)) >> 8;
+					int32_t startScaledY = (scaleY * (centerY - startPos->pos.y)) >> 8;
 					int32_t startScaledX = (scaleX * ((sinYaw * startToCenterZ + cosYaw * startToCenterX) >> 12)) >> 8;
 					int32_t startScaledZ = (scaleZ * ((cosYaw * startToCenterZ - sinYaw * startToCenterX) >> 12)) >> 8;
 
@@ -2593,17 +2598,17 @@ namespace Toy2
 
 						if (distSq < radiusSq)
 						{
-							int32_t travel = (int32_t)(closest - sqrt((double)(radiusSq - distSq)));
-							int32_t hitX = ((dir.x * travel) >> 4) / scaleX;
-							int32_t hitY = 2 * dir.y * travel / scaleY;
-							int32_t hitZ = ((dir.z * travel) >> 4) / scaleZ;
+							int32_t travel = closest - (int32_t)sqrt((double)(radiusSq - distSq));
+							int32_t hitX = ((dir.x * travel) >> 4) / attach[4];
+							int32_t hitY = 2 * dir.y * travel / attach[5];
+							int32_t hitZ = ((dir.z * travel) >> 4) / attach[6];
 
 							hitActor = actor;
 							hit = 2;
 
-							a2->pos.y = hitY;
-							a2->pos.x = (cosYaw * hitX - sinYaw * hitZ) >> 7;
-							a2->pos.z = (sinYaw * hitX + cosYaw * hitZ) >> 7;
+							displacement->pos.y = hitY;
+							displacement->pos.x = (cosYaw * hitX - sinYaw * hitZ) >> 7;
+							displacement->pos.z = (sinYaw * hitX + cosYaw * hitZ) >> 7;
 						}
 					}
 				}
@@ -2611,10 +2616,10 @@ namespace Toy2
 				actor = *++nextActor;
 			} while (actor);
 
-			if (! hit || ! a3)
+			if (! hit || ! damageMode)
 				return hit;
 
-			if (a3 == 1)
+			if (damageMode == 1)
 				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 2);
 			else
 				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 3);
