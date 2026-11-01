@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "Numerics.h"
+#include <stddef.h>
 
 namespace Toy2
 {
@@ -177,7 +178,7 @@ namespace Toy2
 			uint8_t pad[14];
 		};
 
-		extern RecordData* g_recordData[96];
+		extern RecordData* g_recordData[117];
 		extern int32_t g_hasZoneData;
 		extern ObjectList* g_objectListBase;
 		extern PortalZone g_portalEntries[20];
@@ -194,6 +195,7 @@ namespace Toy2
 		extern uint8_t* g_unk550C20;
 		extern int32_t g_type63CullDistance;
 		extern uint8_t g_levelDataHeapBase[1249280];
+		STATIC_ASSERT(sizeof(g_levelDataHeapBase) == 0x131000);
 		extern int32_t g_levelLoadConfig;
 		extern uint8_t* g_levelLoadArena;
 
@@ -201,6 +203,7 @@ namespace Toy2
 		void FlushRenderer();
 		int32_t InitLevelDefaults();
 		void InitLevelPlay(int32_t levelId);
+		int32_t LoadDAT(int32_t levelId, int32_t fileSize);
 		int32_t GetSectorAtPosition(Vector3I* position);
 		int32_t Method2(int32_t a1, int16_t a2);
 		void Method1(int32_t a1, int32_t a2, int32_t a3, int32_t a4);
@@ -209,11 +212,30 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(RecordData) == 0x4);
 		STATIC_ASSERT(sizeof(Type63) == 0x10);
 		STATIC_ASSERT(sizeof(ModelTypeData_A) == 0x24);
+		STATIC_ASSERT(offsetof(ModelTypeData_A, rotation) == 0xC);
+		STATIC_ASSERT(offsetof(ModelTypeData_A, scaleX) == 0x12);
+		STATIC_ASSERT(offsetof(ModelTypeData_A, flags) == 0x18);
+		STATIC_ASSERT(offsetof(ModelTypeData_A, meshPtr) == 0x1C);
+		STATIC_ASSERT(offsetof(ModelTypeData_A, animPtr) == 0x20);
 		STATIC_ASSERT(sizeof(ModelTypeData_B) == 0x20);
+		STATIC_ASSERT(offsetof(ModelTypeData_B, rotation) == 0xC);
+		STATIC_ASSERT(offsetof(ModelTypeData_B, flags) == 0x12);
+		STATIC_ASSERT(offsetof(ModelTypeData_B, modelPtr) == 0x14);
+		STATIC_ASSERT(offsetof(ModelTypeData_B, unk11) == 0x18);
+		STATIC_ASSERT(offsetof(ModelTypeData_B, polyCount) == 0x1C);
 		STATIC_ASSERT(sizeof(InstanceSection) == 0x14);
+		STATIC_ASSERT(offsetof(InstanceSection, modelId) == 0xC);
+		STATIC_ASSERT(offsetof(InstanceSection, flags) == 0xE);
+		STATIC_ASSERT(offsetof(InstanceSection, unk6) == 0x10);
+		STATIC_ASSERT(sizeof(Type64) == 0x24);
+		STATIC_ASSERT(offsetof(Type64, recordPtr) == 0x1C);
+		STATIC_ASSERT(offsetof(Type64, unkVar8) == 0x20);
 		STATIC_ASSERT(sizeof(Object) == 0x14);
 		STATIC_ASSERT(sizeof(ObjectDesc) == 0xC);
 		STATIC_ASSERT(sizeof(ObjectDescCache) == 0x1C);
+		STATIC_ASSERT(offsetof(ObjectDescCache, unkInt4) == 0xC);
+		STATIC_ASSERT(offsetof(ObjectDescCache, unkInt7) == 0x12);
+		STATIC_ASSERT(offsetof(ObjectDescCache, unkInt8) == 0x14);
 		STATIC_ASSERT(sizeof(ObjectList) == 0x4);
 		STATIC_ASSERT(sizeof(PortalEntry) == 0x2);
 		STATIC_ASSERT(sizeof(PortalQuad) == 0x2E);
@@ -223,10 +245,10 @@ namespace Toy2
 
 	namespace Terrain
 	{
-		// an entry of the table of the .all file
+		// Directory record following the word-sized collision payloads.
 		struct TerrainInstance
 		{
-			int32_t dataSize;
+			int32_t dataSizeWords;
 			int32_t x;
 			int32_t y;
 			int32_t z;
@@ -234,7 +256,7 @@ namespace Toy2
 			uint8_t pad20[6];
 			int16_t platformSlot;
 			uint8_t pad28[12];
-			int16_t unk40;
+			int16_t sectorAndCollisionFlags;
 			uint8_t pad42[26];
 			int16_t copySlot;
 			int16_t isCopy;
@@ -242,6 +264,12 @@ namespace Toy2
 		};
 
 		STATIC_ASSERT(sizeof(TerrainInstance) == 0x4C);
+		STATIC_ASSERT(offsetof(TerrainInstance, dataSizeWords) == 0);
+		STATIC_ASSERT(offsetof(TerrainInstance, type) == 0x10);
+		STATIC_ASSERT(offsetof(TerrainInstance, platformSlot) == 0x1A);
+		STATIC_ASSERT(offsetof(TerrainInstance, sectorAndCollisionFlags) == 0x28);
+		STATIC_ASSERT(offsetof(TerrainInstance, copySlot) == 0x44);
+		STATIC_ASSERT(offsetof(TerrainInstance, isCopy) == 0x46);
 
 		int32_t LoadAll(const char* fileName, int32_t index, void** buffer);
 	}

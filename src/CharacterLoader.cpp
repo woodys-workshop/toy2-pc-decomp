@@ -74,7 +74,7 @@ namespace CharacterLoader
 	uint8_t* g_unk53E4C4;
 
 	// GLOBAL: TOY2 0x00559DF0
-	int32_t g_unk559DF0;
+	int32_t g_boneTransformOverflow;
 
 	// FUNCTION: TOY2 0x0043ABC0
 	uint16_t* LoadFirstSection(int32_t a1, char a2)
@@ -1078,7 +1078,7 @@ namespace CharacterLoader
 		}
 
 		if (*result > 300)
-			g_unk559DF0 = 1;
+			g_boneTransformOverflow = 1;
 	}
 
 	// FUNCTION: TOY2 0x0043C700

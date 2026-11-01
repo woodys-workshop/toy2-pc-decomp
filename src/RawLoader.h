@@ -32,6 +32,7 @@ namespace RawLoader
 	};
 
 	extern CreatureListRam g_creatureListRam[64];
+	extern uint16_t g_type36Data1[4];
 
 	void LoadPacketData(char* fileName);
 	void LoadRawAndNGN(char* filePath);
