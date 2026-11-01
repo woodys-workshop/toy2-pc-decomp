@@ -311,33 +311,30 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x004A1BE0
-		void FadeToTargetTint()
+		int32_t FadeToTargetTint()
 		{
 			int32_t anyChannelChanged = 0;
-			int32_t fadeStep = Renderer::g_frameDelta * g_targetTintFadeSpeed / 2;
+			int32_t fadeStep = (int32_t)(Renderer::g_frameDelta * g_targetTintFadeSpeed) / 2;
 
 			if (! fadeStep)
-			{
-				g_targetTintFadeSpeed = 0;
-				return;
-			}
+				goto LBL_RETURN_FADE_STATUS;
 
 			if (g_cameraTintBlue != g_targetTintBlue)
 			{
 				anyChannelChanged = 1;
 
-				if (g_cameraTintBlue >= g_targetTintBlue)
-				{
-					g_cameraTintBlue -= fadeStep;
-
-					if (g_cameraTintBlue >= g_targetTintBlue)
-						goto LBL_FADE_GREEN;
-				}
-				else
+				if (g_cameraTintBlue < g_targetTintBlue)
 				{
 					g_cameraTintBlue += fadeStep;
 
 					if (g_cameraTintBlue <= g_targetTintBlue)
+						goto LBL_FADE_GREEN;
+				}
+				else
+				{
+					g_cameraTintBlue -= fadeStep;
+
+					if (g_cameraTintBlue >= g_targetTintBlue)
 						goto LBL_FADE_GREEN;
 				}
 				g_cameraTintBlue = g_targetTintBlue;
@@ -350,17 +347,17 @@ namespace Nu3D
 
 			anyChannelChanged = 1;
 
-			if (g_cameraTintGreen >= g_targetTintGreen)
+			if (g_cameraTintGreen < g_targetTintGreen)
 			{
-				g_cameraTintGreen -= fadeStep;
-				if (g_cameraTintGreen >= g_targetTintGreen)
+				g_cameraTintGreen += fadeStep;
+				if (g_cameraTintGreen <= g_targetTintGreen)
 					goto LBL_FADE_RED;
 			}
 			else
 			{
-				g_cameraTintGreen += fadeStep;
+				g_cameraTintGreen -= fadeStep;
 
-				if (g_cameraTintGreen <= g_targetTintGreen)
+				if (g_cameraTintGreen >= g_targetTintGreen)
 					goto LBL_FADE_RED;
 			}
 
@@ -369,26 +366,26 @@ namespace Nu3D
 		LBL_FADE_RED:
 
 			if (g_cameraTintRed == g_targetTintRed)
-			{
-				if (anyChannelChanged)
-					return;
+				goto LBL_RETURN_FADE_STATUS;
 
-				g_targetTintFadeSpeed = 0;
-				return;
-			}
-
-			if (g_cameraTintRed >= g_targetTintRed)
-			{
-				g_cameraTintRed -= fadeStep;
-				if (g_cameraTintRed < g_targetTintRed)
-					g_cameraTintRed = g_targetTintRed;
-			}
-			else
+			if (g_cameraTintRed < g_targetTintRed)
 			{
 				g_cameraTintRed += fadeStep;
 				if (g_cameraTintRed > g_targetTintRed)
 					g_cameraTintRed = g_targetTintRed;
 			}
+			else
+			{
+				g_cameraTintRed -= fadeStep;
+				if (g_cameraTintRed < g_targetTintRed)
+					g_cameraTintRed = g_targetTintRed;
+			}
+			return 1;
+
+		LBL_RETURN_FADE_STATUS:
+			if (! anyChannelChanged)
+				g_targetTintFadeSpeed = 0;
+			return anyChannelChanged;
 		}
 
 		// FUNCTION: TOY2 0x004BB890 [MATCHED]

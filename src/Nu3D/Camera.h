@@ -114,7 +114,7 @@ namespace Nu3D
 
 		void SetTint(uint8_t blue, uint8_t green, uint8_t red, uint8_t fadeSpeed);
 		void InitViewMatrixGlobals();
-		void FadeToTargetTint();
+		int32_t FadeToTargetTint();
 		void ApplyTransformToCamera(ActiveCameraTransform* camera);
 		void ToggleCameraSkew(int32_t effect);
 		void SetSkewPhase(int32_t skewPhase);
