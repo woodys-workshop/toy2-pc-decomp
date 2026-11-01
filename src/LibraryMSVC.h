@@ -3,12 +3,6 @@
 // The game has a statically linked single threaded CRT
 // The names of a lot of these are probably wrong and will need to be changed over time
 
-// LIBRARY: TOY2 0x0047C7F0
-// ___setargv
-
-// LIBRARY: TOY2 0x004B2AA0
-// __mkgmtime
-
 // LIBRARY: TOY2 0x004CEB00
 // __fpmath
 
