@@ -108,6 +108,7 @@ namespace Toy2
 	void ProcessMiscEvents();
 	int32_t ShowControlConfig();
 	void ShowGraphicsConfig();
+	int32_t WriteCfg();
 	void PlayLevelMusic();
 	void ActivateGravityBoots();
 	void RespawnCosmicShield();
