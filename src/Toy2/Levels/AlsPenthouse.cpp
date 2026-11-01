@@ -630,13 +630,13 @@ namespace Toy2
 				{
 					if (Nu3D::Math::IsWithinDistance(&Camera::g_activeCameraTransform.pos, &g_unk52FD98, 768))
 					{
-						Nu3D::Particles::SpawnFromPreset(
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(
 							g_unk52FD98.x - (Numerics::g_sinCosLUT[(g_unk52FD0C + 1024) & 0xFFF] >> 2),
 							g_unk52FD98.y - 0x4000,
 							g_unk52FD98.z - (Numerics::g_sinCosLUT[g_unk52FD0C & 0xFFF] >> 2),
 							17,
-							27)
-							->rotSpeed = *g_randDatBufferPtr - 128;
+							27);
+						particle->rotSpeed = *g_randDatBufferPtr - 128;
 						v11 = g_randDatBufferPtr + 1;
 						v12 = (g_unk52FDB4 - (int32_t)Renderer::g_frameDelta) <= 0;
 						++g_randDatBufferPtr;
@@ -801,7 +801,8 @@ namespace Toy2
 				{
 					if (g_tickState[7])
 					{
-						Nu3D::Particles::SpawnFromPreset(p_v1.x, p_v1.y - 0x2000, p_v1.z, 17, 26)->rotSpeed = *g_randDatBufferPtr - 128;
+						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(p_v1.x, p_v1.y - 0x2000, p_v1.z, 17, 26);
+						particle->rotSpeed = *g_randDatBufferPtr - 128;
 						++g_randDatBufferPtr;
 					}
 				}
@@ -846,7 +847,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00429800
-		void Method12(int32_t a1)
+		void Method12(int32_t cannonLinkBaseIndex)
 		{
 			int32_t v1;
 			int32_t v2;
@@ -855,10 +856,10 @@ namespace Toy2
 			int32_t v5;
 			Vector3I a2;
 
-			v1 = g_unk4F3E74[a1 + 3];
-			v2 = g_unk4F3E74[a1 + 1];
-			v3 = g_unk4F3E74[a1];
-			v4 = g_unk4F3E74[a1 + 2];
+			v1 = g_unk4F3E74[cannonLinkBaseIndex + 3];
+			v2 = g_unk4F3E74[cannonLinkBaseIndex + 1];
+			v3 = g_unk4F3E74[cannonLinkBaseIndex];
+			v4 = g_unk4F3E74[cannonLinkBaseIndex + 2];
 			Nu3D::Link::GetRotation8Bit(v3, &a2);
 			Nu3D::Link::SetRotationRelative8bit(v4, 0, a2.y, 0);
 			Nu3D::Link::SetRotationRelative8bit(v1, 0, a2.y, 0);
@@ -870,7 +871,8 @@ namespace Toy2
 			v5 = 4;
 			do
 			{
-				Nu3D::Particles::SpawnFromPreset(a2.x, a2.y - 12288, a2.z, 35, 14)->rotSpeed = *g_randDatBufferPtr - 128;
+				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(a2.x, a2.y - 12288, a2.z, 35, 14);
+				particle->rotSpeed = *g_randDatBufferPtr - 128;
 				--v5;
 				++g_randDatBufferPtr;
 			} while (v5);

@@ -274,9 +274,9 @@ namespace Toy2
 				do
 				{
 					v21 = &g_laserPositions[v14];
-					Nu3D::Particles::SpawnFromPreset(
-						g_laserPositions[laserIndex].pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 4, 4)
-						->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(
+						g_laserPositions[laserIndex].pos.x, g_laserPositions[laserIndex].pos.y, g_laserPositions[laserIndex].pos.z, 4, 4);
+					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 					--v20;
 					++g_randDatBufferPtr;
 				} while (v20);

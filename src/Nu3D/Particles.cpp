@@ -625,7 +625,8 @@ namespace Nu3D
 
 						do
 						{
-							SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17)->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
+							spawned = SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17);
+							spawned->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
 
 							--count;
 							++g_randDatBufferPtr;
@@ -662,8 +663,7 @@ namespace Nu3D
 							--count;
 						} while (! lastIteration);
 
-						// quirk: the colour is the address of the level data heap (plus an offset), not a colour
-						Toy2::Lighting::SpawnLight(x, y, z, (int32_t)&Toy2::Levels::g_levelDataHeapBase[201752], 16, x);
+						Toy2::Lighting::SpawnLight(x, y, z, 0x00604000, 16, x);
 
 						break;
 
@@ -689,13 +689,14 @@ namespace Nu3D
 
 						do
 						{
-							SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17)->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
+							spawned = SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17);
+							spawned->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
 
 							--count;
 							++g_randDatBufferPtr;
 						} while (count);
 
-						goto LABEL_18;
+						goto LBL_PLAY_SOUND;
 
 					case 8:
 						count = 5;
@@ -703,7 +704,8 @@ namespace Nu3D
 
 						do
 						{
-							SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17)->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
+							spawned = SpawnFromPreset(particle->pos.x, spawnY, particle->pos.z, 37, 17);
+							spawned->lifetime = 2 * (*g_randDatBufferPtr & 7) + 32;
 
 							--count;
 							++g_randDatBufferPtr;
@@ -729,7 +731,7 @@ namespace Nu3D
 							++g_randDatBufferPtr;
 						} while (count);
 
-					LABEL_18:
+					LBL_PLAY_SOUND:
 						AudioManager::PlaySoundEffect(11, &particle->pos);
 
 						break;
@@ -1801,8 +1803,11 @@ namespace Nu3D
 							particle->pos.y = value - 2048;
 
 						if (particle->lifetime > 4 && Toy2::g_tickState[2] && (particle->renderFlags & 0x200) != 0 && Toy2::g_tickState[4])
-							SpawnFromPreset(particle->pos.x, particle->pos.y, particle->pos.z, 107, 2)->groundAlignRot =
-								(2047 - (int16_t)particle->yawAngle) & 0xFFF;
+						{
+							spawned = SpawnFromPreset(particle->pos.x, particle->pos.y, particle->pos.z, 107, 2);
+							// Allocation can replace the particle whose yaw is read here.
+							spawned->groundAlignRot = (2047 - (int16_t)particle->yawAngle) & 0xFFF;
+						}
 
 						goto LABEL_243;
 

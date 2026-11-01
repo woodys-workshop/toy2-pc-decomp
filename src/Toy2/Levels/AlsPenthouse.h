@@ -33,6 +33,7 @@ namespace Toy2
 		void Method2(int32_t a1);
 		void Method8();
 		int32_t Method6(int32_t a1);
+		void Method12(int32_t cannonLinkBaseIndex);
 		void InitHiddenCollectibles();
 		void Interactions();
 

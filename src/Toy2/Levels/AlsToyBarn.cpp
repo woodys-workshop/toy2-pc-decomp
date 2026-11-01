@@ -258,7 +258,7 @@ namespace Toy2
 			int32_t v12;
 			int32_t v13;
 			Nu3D::Particles::ParticleInstance* v14;
-			int32_t v15;
+			int32_t projectilePointIndex;
 			int32_t x;
 			int32_t v17;
 			int32_t z;
@@ -770,14 +770,18 @@ namespace Toy2
 
 				if (g_tickState[11] && Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -244538, -112442, -42973, 298915))
 				{
-					v15 = *g_randDatBufferPtr++ & 7;
+					projectilePointIndex = *g_randDatBufferPtr++ & 7;
 
-					if (v15 > 5)
-						v15 -= 6;
+					if (projectilePointIndex > 5)
+						projectilePointIndex -= 6;
 
-					Nu3D::Particles::SpawnFromPreset(
-						32 * Levels::g_recordData[7]->data[v15].x, 32 * Levels::g_recordData[7]->data[v15].y, 32 * Levels::g_recordData[7]->data[v15].z, 80, 24)
-						->groundAlignRot = (*g_randDatBufferPtr & 3) << 10;
+					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(
+						32 * Levels::g_recordData[7]->data[projectilePointIndex].x,
+						32 * Levels::g_recordData[7]->data[projectilePointIndex].y,
+						32 * Levels::g_recordData[7]->data[projectilePointIndex].z,
+						80,
+						24);
+					particle->groundAlignRot = (*g_randDatBufferPtr & 3) << 10;
 
 					++g_randDatBufferPtr;
 				}
