@@ -251,7 +251,7 @@ namespace Renderer
 					if (! material)
 						return;
 
-					material = material->alwaysZero;
+					material = material->nextInChain;
 				} while (++textureCount < g_maxSimultaneousTextures);
 			}
 

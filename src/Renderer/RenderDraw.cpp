@@ -37,18 +37,18 @@ namespace Renderer
 	// GLOBAL: TOY2 0x005087DC
 	WORD g_quadStripIndices[4] = { 0, 1, 2, 3 };
 
-	// TODO: Fix
 	// the instance data's sprite is reused as scratch space for materials with metadata 0x100 (environment mapping)
 	struct Metadata100Params
 	{
 		float scale;
-		float unkFloats[4];
+		uint8_t unk04[0x10];
 		Vector3F position;
-		float unkFloats2[9];
+		uint8_t unk20[0x24];
 		D3DMATRIX matrix;
 	};
 
 	STATIC_ASSERT(sizeof(Metadata100Params) == sizeof(Nu3D::Sprite));
+	STATIC_ASSERT(sizeof(((Nu3D::InstanceData*)0)->matrices) == 0x100);
 
 	// FUNCTION: TOY2 0x004C27D0
 	void BindMaterial(Nu3D::Material* material, int32_t forceBind)
@@ -79,7 +79,7 @@ namespace Renderer
 							DrawingDevice::BindTexWithStage(material->texDataIndex, textureStage);
 						}
 
-						material = material->alwaysZero;
+						material = material->nextInChain;
 
 						if (! material)
 							break;
@@ -160,7 +160,7 @@ namespace Renderer
 			SetTextureStageState(newState, textureStage);
 
 			if (material)
-				material = material->alwaysZero;
+				material = material->nextInChain;
 
 			if (++textureStage >= g_maxSimultaneousTextures)
 				return textureStage;
@@ -183,18 +183,18 @@ namespace Renderer
 		{
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
-				// modulation is 12 bit fixed point (4096 = 1.0), each channel clamps at 255
 				// transformed vertices (XYZRHW) are 32 bytes each, the diffuse colour lives at +0x10
-				uint8_t* color = (uint8_t*)lockedData + 32 * i + 0x10;
+				RGBA* color = &((Nu3D::VertexTL*)lockedData)->diffuse;
 
-				uint32_t red = colorR * color[2];
-				color[2] = (red & 0xFFFFF000) <= 0xFF000 ? red >> 12 : 255;
+				uint32_t red = (uint32_t)colorR * color->r;
+				color->r = (int32_t)(red & 0xFFFFF000) > 0xFF000 ? 255 : (int32_t)red >> 12;
 
-				uint32_t green = colorG * color[1];
-				color[1] = (green & 0xFFFFF000) <= 0xFF000 ? green >> 12 : 255;
+				uint32_t green = (uint32_t)colorG * color->g;
+				color->g = (int32_t)(green & 0xFFFFF000) > 0xFF000 ? 255 : (int32_t)green >> 12;
 
-				uint32_t blue = colorB * color[0];
-				color[0] = (blue & 0xFFFFF000) <= 0xFF000 ? blue >> 12 : 255;
+				uint32_t blue = (uint32_t)colorB * color->b;
+				color->b = (int32_t)(blue & 0xFFFFF000) > 0xFF000 ? 255 : (int32_t)blue >> 12;
+				lockedData = (Nu3D::VertexTL*)lockedData + 1;
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
@@ -232,16 +232,27 @@ namespace Renderer
 			D3DMATRIX combined;
 			Nu3D::Math::MultiplyMatrix3x4(&combined, matrix, Nu3D::Camera::GetProjectionMatrix());
 
+			float xU = combined._11;
+			float yU = combined._21;
+			float zU = combined._31;
+			float xV = combined._12;
+			float yV = combined._22;
+			float zV = combined._32;
+			Nu3D::Vertex* source = patchVertices->data.vertices;
+
 			// the vertex normals are projected to get the uv's of the reflection map
 			for (int32_t i = 0; i < patchVertices->vertexCount; i++)
 			{
-				Vector3F* normal = &patchVertices->data.vertices[i].normals;
-				float* uv = (float*)((uint8_t*)lockedData + 32 * i + 0x18);
+				float normalX = source->normals.x;
+				float normalY = source->normals.y;
+				float normalZ = source->normals.z;
 
-				uv[0] = (normal->z * combined._31 + normal->y * combined._21 + normal->x * combined._11 + 1.0) * 0.5;
-				uv[1] = (1.0 - (normal->z * combined._32 + normal->y * combined._22 + normal->x * combined._12)) * 0.5;
+				((Nu3D::VertexTL*)lockedData)->uv.x = (normalZ * zU + normalY * yU + normalX * xU + 1.0f) * 0.5f;
+				((Nu3D::VertexTL*)lockedData)->uv.y = (1.0f - (normalZ * zV + normalY * yV + normalX * xV)) * 0.5f;
+				((Nu3D::VertexTL*)lockedData)->diffuse.a = 96;
 
-				((uint8_t*)lockedData + 32 * i + 0x10)[3] = 96;
+				++source;
+				lockedData = (Nu3D::VertexTL*)lockedData + 1;
 			}
 
 			DrawingAPI::UnlockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer);
@@ -264,17 +275,25 @@ namespace Renderer
 				D3DMATRIX combined;
 				Nu3D::Math::MultiplyMatrix3x4(&combined, matrix, Nu3D::Camera::GetProjectionMatrix());
 
+				float xU = combined._11;
+				float yU = combined._21;
+				float zU = combined._31;
+				float xV = combined._12;
+				float yV = combined._22;
+				float zV = combined._32;
+				Nu3D::Vertex* source = patchVertices->data.vertices + srcIndex;
+
 				for (int32_t i = 0; i < verticesPerHeader; i++)
 				{
-					Vector3F* normal = &patchVertices->data.vertices[srcIndex + i].normals;
+					float normalX = source->normals.x;
+					float normalY = source->normals.y;
+					float normalZ = source->normals.z;
 
-					// TODO: These are literred everywhere, fix it with the actual struct definition
-					float* uv = (float*)((uint8_t*)lockedData + 32 * (destIndex + i) + 0x18);
+					((Nu3D::VertexTL*)lockedData)[destIndex + i].uv.x = (normalZ * zU + normalY * yU + normalX * xU + 1.0f) * 0.5f;
+					((Nu3D::VertexTL*)lockedData)[destIndex + i].uv.y = (1.0f - (normalZ * zV + normalY * yV + normalX * xV)) * 0.5f;
+					((Nu3D::VertexTL*)lockedData)[destIndex + i].diffuse.a = 0x80;
 
-					uv[0] = (normal->z * combined._31 + normal->y * combined._21 + normal->x * combined._11 + 1.0) * 0.5;
-					uv[1] = (1.0 - (normal->z * combined._32 + normal->y * combined._22 + normal->x * combined._12)) * 0.5;
-
-					((uint8_t*)lockedData + 32 * (destIndex + i) + 0x10)[3] = 0x80;
+					++source;
 				}
 
 				if (headerCount == 2)
@@ -294,13 +313,13 @@ namespace Renderer
 	}
 
 	// FUNCTION: TOY2 0x004B75E0
-	void Vertices::ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::InstanceData* instance)
+	void Vertices::ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::Sprite* metadataParams)
 	{
 		LPVOID lockedData;
 
 		if (g_FVF_14C_Buffer_2.vertexBuffer && ! DrawingAPI::LockVertexBuffer(g_FVF_14C_Buffer_2.vertexBuffer, 0x801, &lockedData, 0))
 		{
-			Metadata100Params* params = (Metadata100Params*)&instance->sprite;
+			Metadata100Params* params = (Metadata100Params*)metadataParams;
 
 			D3DMATRIX combined;
 			Nu3D::Math::FullMatrixMultiply(&combined, matrix, &params->matrix);
@@ -345,10 +364,9 @@ namespace Renderer
 		Nu3D::Primitive* primitive = entry->primitive;
 
 		int32_t renderFlags = primitive->renderFlags | instanceData->renderFlags;
-		int32_t drawType = primitive->header->drawType;
 
 		// billboards are never culled
-		if (drawType == 4 || drawType == 5)
+		if (primitive->header->drawType == 4 || primitive->header->drawType == 5)
 			renderFlags |= 0x40;
 
 		int32_t isTex14 = 0;
@@ -363,8 +381,8 @@ namespace Renderer
 		LPDIRECT3DVERTEXBUFFER destBuffer;
 
 		// vertices that need modifying after they were transformed need to go to a buffer that can be locked
-		if (instanceData->horzOffset != 0.0 || instanceData->vertOffset != 0.0 || (instanceData->renderModeFlags & 3) != 0 || (material->metadata & 0x100) != 0
-			|| isTex14 || drawType == 4 || drawType == 5 || g_useSoftwareRasterizer)
+		if (instanceData->horzOffset != 0.0f || instanceData->vertOffset != 0.0f || (instanceData->renderModeFlags & 3) != 0
+			|| (material->metadata & 0x100) != 0 || isTex14 || primitive->header->drawType == 4 || primitive->header->drawType == 5 || g_useSoftwareRasterizer)
 		{
 			destBuffer = g_FVF_14C_Buffer_2.vertexBuffer;
 		}
@@ -390,7 +408,7 @@ namespace Renderer
 
 			HRESULT result;
 
-			if (drawType < 4 || drawType > 5)
+			if (primitive->header->drawType < 4 || primitive->header->drawType > 5)
 			{
 				DrawingDevice::SetWorldTransform(instanceData->matrices);
 
@@ -402,7 +420,7 @@ namespace Renderer
 			}
 
 			if ((material->metadata & 0x100) != 0)
-				Vertices::ApplyMetadata100(&primitive->patchVerts, instanceData->matrices, instanceData);
+				Vertices::ApplyMetadata100(&primitive->patchVerts, instanceData->matrices, &instanceData->sprite);
 
 			if (isTex14)
 				Vertices::ProjectForTex14(&primitive->patchVerts, instanceData->matrices);
@@ -412,7 +430,7 @@ namespace Renderer
 				Vertices::ModuleColor(&primitive->patchVerts, instanceData->vertexModColor.r, instanceData->vertexModColor.g, instanceData->vertexModColor.b);
 			}
 
-			if (g_instanceHorzOffset != 0.0 || g_instanceVertOffset != 0.0)
+			if (g_instanceHorzOffset != 0.0f || g_instanceVertOffset != 0.0f)
 				Vertices::ApplyOffset(&primitive->patchVerts, g_instanceHorzOffset, g_instanceVertOffset);
 
 			if (! result)
@@ -426,42 +444,44 @@ namespace Renderer
 
 				for (int32_t h = 0; h < primitive->headerCount; h++)
 				{
-					Nu3D::Primitive::Header* header = &primitive->header[h];
-
 					if (g_drawWireframe)
 					{
-						for (int32_t i = 0; i < header->indexCount; i += 3)
-							DrawingAPI::DrawIndexedPrimitiveVB(D3DPT_LINESTRIP, destBuffer, header->indices + i, 3, drawFlags);
+						for (int32_t i = 0; i < primitive->header[h].indexCount; i += 3)
+							DrawingAPI::DrawIndexedPrimitiveVB(D3DPT_LINESTRIP, destBuffer, primitive->header[h].indices + i, 3, drawFlags);
 
 						continue;
 					}
 
-					switch (header->drawType)
+					switch (primitive->header[h].drawType)
 					{
 						case 0:
-							g_frameTriCount += header->indexCount / 3;
+							g_frameTriCount += primitive->header[h].indexCount / 3;
 
 							if (g_useSoftwareRasterizer)
-								SoftwareRenderer::SubmitTriangleList(renderFlags, destBuffer, entry, header->indices, header->indexCount);
+								SoftwareRenderer::SubmitTriangleList(
+									renderFlags, destBuffer, entry, primitive->header[h].indices, primitive->header[h].indexCount);
 							else
-								DrawingAPI::DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, destBuffer, header->indices, header->indexCount, drawFlags);
+								DrawingAPI::DrawIndexedPrimitiveVB(
+									D3DPT_TRIANGLELIST, destBuffer, primitive->header[h].indices, primitive->header[h].indexCount, drawFlags);
 
 							break;
 
 						case 2:
-							g_frameTriCount += header->indexCount >> 1;
+							g_frameTriCount += primitive->header[h].indexCount >> 1;
 
 							if (g_useSoftwareRasterizer)
-								SoftwareRenderer::SubmitTriangleStrip(renderFlags, destBuffer, entry, header->indices, header->indexCount);
+								SoftwareRenderer::SubmitTriangleStrip(
+									renderFlags, destBuffer, entry, primitive->header[h].indices, primitive->header[h].indexCount);
 							else
-								DrawingAPI::DrawIndexedPrimitiveVB(D3DPT_TRIANGLESTRIP, destBuffer, header->indices, header->indexCount, drawFlags);
+								DrawingAPI::DrawIndexedPrimitiveVB(
+									D3DPT_TRIANGLESTRIP, destBuffer, primitive->header[h].indices, primitive->header[h].indexCount, drawFlags);
 
 							break;
 
 						case 3: {
 							// a list of quads, each of them drawn as a 4 index triangle strip
-							uint16_t* indices = header->indices;
-							int32_t indexCount = header->indexCount;
+							uint16_t* indices = primitive->header[h].indices;
+							int32_t indexCount = primitive->header[h].indexCount;
 
 							g_frameTriCount += indexCount >> 1;
 
@@ -477,14 +497,14 @@ namespace Renderer
 						case 4:
 						case 5: {
 							// billboards, indices[0] is the vertex to rotate around, followed by the 4 vertices of the quad
-							uint16_t* indices = header->indices;
+							uint16_t* indices = primitive->header[h].indices;
 
 							Vector3F position;
 							Nu3D::Math::TransformPointByMatrix(&position, &primitive->patchVerts.data.vertices[*indices].position, instanceData->matrices);
 
 							D3DMATRIX billboardMatrix;
 
-							if (header->drawType == 4)
+							if (primitive->header[h].drawType == 4)
 							{
 								// only turns to face the camera horizontally
 								Nu3D::Math::BuildIdentityMatrix(&billboardMatrix);

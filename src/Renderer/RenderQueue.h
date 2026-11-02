@@ -66,7 +66,7 @@ namespace Renderer
 
 	namespace Vertices
 	{
-		void ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::InstanceData* instance);
+		void ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::Sprite* metadataParams);
 		void ProjectForTex14(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix);
 		void ModuleColor(Nu3D::Patch::PatchVertices* patchVertices, int32_t colorR, int32_t colorG, int32_t colorB);
 		void ApplyOffset(Nu3D::Patch::PatchVertices* patchVertices, float horzOffset, float vertOffset);

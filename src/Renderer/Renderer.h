@@ -40,7 +40,7 @@ namespace DrawingAPI
 	// Vertex Methods
 	typedef HRESULT Device_ReleaseVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	typedef HRESULT Device_CreateVertexBuffer(D3DVERTEXBUFFERDESC* desc, LPDIRECT3DVERTEXBUFFER* outBuffer, DWORD flags);
-	typedef HRESULT Device_LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride);
+	typedef HRESULT Device_LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* sizeBytes);
 	typedef HRESULT Device_UnlockVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer);
 	typedef HRESULT Device_OptimizeVertexBuffer(LPDIRECT3DVERTEXBUFFER buffer, LPDIRECT3DDEVICE3 device, DWORD flags);
 	typedef HRESULT Device_ProcessVerticesOnBuffer(
@@ -161,17 +161,17 @@ namespace DevDraw
 	struct DrawBuffer
 	{
 		void* vertex[65];
-		uint16_t vertexCount[65];
+		int16_t vertexCount[65];
 		uint16_t index[65][1000];
-		uint16_t indexCount[65];
+		int16_t indexCount[65];
 	};
 
 	struct DrawTranBuffer
 	{
 		void* vertices[65];
-		uint16_t vertexCount[65];
+		int16_t vertexCount[65];
 		uint16_t index[32][6000];
-		uint16_t indexCount[32];
+		int16_t indexCount[32];
 	};
 
 	extern DrawBuffer* g_drawBuffer;

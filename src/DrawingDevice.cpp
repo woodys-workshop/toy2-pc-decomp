@@ -894,9 +894,9 @@ namespace HardwareDevice
 	}
 
 	// FUNCTION: TOY2 0x004AC0A0
-	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* lpStride)
+	HRESULT LockVertexBuffer(LPDIRECT3DVERTEXBUFFER vertexBuffer, DWORD dwFlags, LPVOID* lplpData, DWORD* sizeBytes)
 	{
-		return vertexBuffer->Lock(dwFlags, lplpData, lpStride);
+		return vertexBuffer->Lock(dwFlags, lplpData, sizeBytes);
 	}
 
 	// FUNCTION: TOY2 0x004AC0C0

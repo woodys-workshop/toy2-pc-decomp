@@ -1971,9 +1971,9 @@ namespace Toy2
 			-g_buzzActor.lightDirection.x,
 			-g_buzzActor.lightDirection.y,
 			-g_buzzActor.lightDirection.z,
-			g_buzzActor.color.r,
-			g_buzzActor.color.g,
-			g_buzzActor.color.b);
+			g_buzzActor.color.value & 0xFF,
+			(g_buzzActor.color.value >> 8) & 0xFF,
+			(g_buzzActor.color.value >> 16) & 0xFF);
 
 		if (Renderer::BeginScene())
 		{
