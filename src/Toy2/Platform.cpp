@@ -23,11 +23,7 @@ namespace Toy2
 		PlatformDescriptor g_platformDescriptors[32];
 
 		// GLOBAL: TOY2 0x0052FE48
-		PathPlatform g_pathPlatforms[5] = {
-			{ -1, -1, -1, -1, -1, -1, 0xFFFF, 0xFFFF, -1, -1 }, { -1, -1, -1, -1, -1, -1, 0xFFFF, 0xFFFF, -1, -1 },
-			{ -1, -1, -1, -1, -1, -1, 0xFFFF, 0xFFFF, -1, -1 }, { -1, -1, -1, -1, -1, -1, 0xFFFF, 0xFFFF, -1, -1 },
-			{ -1, -1, -1, -1, -1, -1, 0xFFFF, 0xFFFF, -1, -1 },
-		};
+		PathPlatform g_pathPlatforms[5];
 
 		// FUNCTION: TOY2 0x0042C2B0
 		void InitPathPlatform(int32_t index, int32_t platformIdx, int32_t pathIdx, int32_t linkId, int32_t linkId2, int32_t a6, int32_t pathPosition, int32_t y)
@@ -620,7 +616,7 @@ namespace Toy2
 					int32_t speed = (*scriptIP)[4];
 
 					// arrived
-					if (distX < speed + 2 && abs(originY - target.y) < speed + 2 && abs(originZ - target.z) < speed + 2)
+					if (distX < speed + 8 && abs(originY - target.y) < speed + 8 && abs(originZ - target.z) < speed + 8)
 					{
 						*accelRamp = 0;
 						*timer = 0;
@@ -788,7 +784,7 @@ namespace Toy2
 
 					int32_t speed = (*scriptIP)[3];
 
-					if (distX >= speed + 2 || abs(originY - target.y) >= speed + 2 || abs(originZ - target.z) >= speed + 2)
+					if (distX >= speed + 8 || abs(originY - target.y) >= speed + 8 || abs(originZ - target.z) >= speed + 8)
 					{
 						int32_t curSpeed;
 

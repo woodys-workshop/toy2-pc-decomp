@@ -487,11 +487,11 @@ namespace Toy2
 			v10 = v7->data[v9].z;
 			z = v7->data[v9 + 1].z;
 
-			v14 = (Numerics::g_sinCosLUT[g_unk52FA84] >> 2) + ((v4 * (v7->data[v9 + 1].y - v7->data[v9].y)) >> 11);
+			v14 = (Numerics::g_sinCosLUT[g_unk52FA84] >> 2) + (((v4 & 0xFFFF) * (v7->data[v9 + 1].y - v7->data[v9].y)) >> 11);
 
-			g_levelActors[1].transform.pos.x = 32 * v7->data[v9].x + ((v4 * (v7->data[v9 + 1].x - v7->data[v9].x)) >> 11);
+			g_levelActors[1].transform.pos.x = 32 * v7->data[v9].x + (((v4 & 0xFFFF) * (v7->data[v9 + 1].x - v7->data[v9].x)) >> 11);
 			g_levelActors[1].transform.pos.y = v14 + 32 * v7->data[v9].y;
-			g_levelActors[1].transform.pos.z = ((v4 * (z - v10)) >> 11) + 32 * v7->data[v9].z;
+			g_levelActors[1].transform.pos.z = (((v4 & 0xFFFF) * (z - v10)) >> 11) + 32 * v7->data[v9].z;
 
 			g_levelActors[1].motionTargetPos = g_levelActors[1].transform.pos;
 			g_levelActors[1].boundary = g_levelActors[1].transform.pos;

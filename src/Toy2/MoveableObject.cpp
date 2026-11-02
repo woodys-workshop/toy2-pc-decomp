@@ -198,7 +198,7 @@ namespace Toy2
 
 				if (object->liftVel)
 				{
-					int32_t liftVel = object->liftVel + (frameDelta << 8) / 4;
+					int16_t liftVel = object->liftVel + (frameDelta << 8) / 4;
 
 					object->liftVel = liftVel;
 
@@ -280,7 +280,7 @@ namespace Toy2
 				if (! object->liftVel && object->pushState >= 0)
 				{
 					if (object->minWaypointIdx >= Levels::g_recordData[object->pathIdx]->recordCount - 1)
-						goto LABEL_67;
+						goto LBL_PUBLISH_POSITION;
 
 					if (((Buzz::g_unk53C624 - object->segHeading + 8) & 0xFFF) < 0x10)
 					{
@@ -324,7 +324,7 @@ namespace Toy2
 						waypointIdx = object->waypointIdx;
 
 						if (waypointIdx > object->minWaypointIdx)
-							goto LABEL_65;
+							goto LBL_RETREAT_WAYPOINT;
 					}
 
 					segLength = object->segLength;
@@ -336,14 +336,14 @@ namespace Toy2
 						waypointIdx = object->waypointIdx;
 
 						if (waypointIdx < Levels::g_recordData[pathIdx]->recordCount - 2)
-							goto LABEL_61;
+							goto LBL_ADVANCE_WAYPOINT;
 
 						pushing = pushedForward;
 						notPastEnd = segProgress <= segLength;
 					}
 
 					if (notPastEnd)
-						goto LABEL_62;
+						goto LBL_CHECK_REVERSE_PROGRESS;
 
 					pathIdx = object->pathIdx;
 					waypointIdx = object->waypointIdx;
@@ -351,16 +351,16 @@ namespace Toy2
 					if (waypointIdx >= Levels::g_recordData[pathIdx]->recordCount - 2)
 					{
 						object->segProgress = segLength;
-						goto LABEL_62;
+						goto LBL_CHECK_REVERSE_PROGRESS;
 					}
 
-				LABEL_61:
+				LBL_ADVANCE_WAYPOINT:
 					object->waypointIdx = waypointIdx + 1;
 					ComputeSegment(pathIdx, object);
 					pushing = 0;
 					object->segProgress = 0;
 
-				LABEL_62:
+				LBL_CHECK_REVERSE_PROGRESS:
 					if (object->segProgress < 0)
 					{
 						waypointIdx = object->waypointIdx;
@@ -369,21 +369,21 @@ namespace Toy2
 						{
 							object->segProgress = 0;
 
-						LABEL_66:
+						LBL_SUPPRESS_PUSH_EFFECTS:
 							pushing = 0;
-							goto LABEL_67;
+							goto LBL_PUBLISH_POSITION;
 						}
 
-					LABEL_65:
+					LBL_RETREAT_WAYPOINT:
 						object->waypointIdx = waypointIdx - 1;
 						ComputeSegment(object->pathIdx, object);
 
 						object->segProgress = object->segLength;
 
-						goto LABEL_66;
+						goto LBL_SUPPRESS_PUSH_EFFECTS;
 					}
 
-				LABEL_67:
+				LBL_PUBLISH_POSITION:
 					int32_t pathIndex = object->pathIdx;
 					int32_t progress = object->segProgress;
 
