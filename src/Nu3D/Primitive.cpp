@@ -239,14 +239,9 @@ namespace Nu3D
 		Primitive::Header* headerList = (Primitive::Header*)malloc(sizeof(Primitive::Header) * size);
 
 		if (headerList)
-		{
 			memset(headerList, 0, sizeof(Primitive::Header) * size);
-			return headerList;
-		}
-		else
-		{
-			return 0;
-		}
+
+		return headerList;
 	}
 
 	// FUNCTION: TOY2 0x004B31D0

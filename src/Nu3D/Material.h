@@ -27,7 +27,7 @@ namespace Nu3D
 	{
 		Material* next;
 		Material* prev;
-		Material* alwaysZero;
+		Material* nextInChain;
 		int32_t id;
 		D3DMATERIAL d3dMaterial;
 		D3DMATERIALHANDLE d3dMaterialHandle;

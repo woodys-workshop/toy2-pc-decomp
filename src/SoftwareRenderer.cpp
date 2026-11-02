@@ -263,11 +263,18 @@ namespace SoftwareRenderer
 		if (result)
 			return result;
 
-		Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
-
-		// last triangle first
-		for (int32_t i = vertexCount - 3; vertexCount > 0; i -= 3, vertexCount -= 3)
-			SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[indices[i]], &vertices[indices[i + 1]], &vertices[indices[i + 2]]);
+		if (vertexCount)
+		{
+			uint16_t* triangleIndices = indices + vertexCount;
+			// last triangle first
+			do
+			{
+				triangleIndices -= 3;
+				vertexCount -= 3;
+				Nu3D::VertexTL* vertices = (Nu3D::VertexTL*)data;
+				SubmitSortedTriangle(renderFlags, renderEntry, 0, &vertices[triangleIndices[0]], &vertices[triangleIndices[1]], &vertices[triangleIndices[2]]);
+			} while (vertexCount);
+		}
 
 		return DrawingAPI::UnlockVertexBuffer(buffer);
 	}
