@@ -252,7 +252,6 @@ namespace Toy2
 			bool v6;
 			int32_t v7;
 			int32_t v8;
-			bool v9;
 			int32_t v10;
 			bool v11;
 			int32_t v12;
@@ -618,8 +617,6 @@ namespace Toy2
 			}
 		LABEL_85:
 
-			v9 = g_unk52F9E8 <= 0;
-
 			if (! g_unk52F9E8)
 			{
 				if (! g_buzzActor.collisionFlags)
@@ -630,11 +627,9 @@ namespace Toy2
 					g_unk52F9E8 = 32;
 					Levels::Method3(2, 1);
 				}
-
-				v9 = g_unk52F9E8 <= 0;
 			}
 
-			if (! v9)
+			if (g_unk52F9E8 > 0)
 			{
 				Platform::GetOrigin(14, &a2);
 				AudioManager::g_pitchArray[0] = g_unk52F9E8 + 3400;
@@ -670,11 +665,9 @@ namespace Toy2
 						g_buzzActor.facingAngle = 2078;
 					}
 				}
-
-				v9 = g_unk52F9E8 < 0;
 			}
 
-			if (v9)
+			if (g_unk52F9E8 < 0)
 			{
 				Platform::GetOrigin(14, &a2);
 
@@ -788,14 +781,14 @@ namespace Toy2
 			}
 
 			x = g_levelActors[10].transform.pos.x;
-			if (g_levelActors[10].transform.pos.x < -499087)
+			if ((uint32_t)g_levelActors[10].transform.pos.x < 0xFFF86271u)
 			{
 				x = -499087;
 				g_levelActors[10].transform.pos.x = -499087;
 			}
 
 			v17 = g_levelActors[11].transform.pos.x;
-			if (g_levelActors[11].transform.pos.x < -499087)
+			if ((uint32_t)g_levelActors[11].transform.pos.x < 0xFFF86271u)
 			{
 				v17 = -499087;
 				g_levelActors[11].transform.pos.x = -499087;
