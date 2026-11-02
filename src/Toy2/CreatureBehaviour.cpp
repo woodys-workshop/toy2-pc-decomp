@@ -571,8 +571,10 @@ namespace Toy2
 				int32_t deltaX = (g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5;
 				int32_t deltaZ = (g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5;
 
-				if ((creatureRam->boundHalfX << 8) + ((deltaX * cosValue - deltaZ * sinValue) >> 7) >= (creatureRam->boundHalfX << 9)
-					|| (insideBounds = 1, (creatureRam->boundHalfZ << 8) + ((deltaX * sinValue + deltaZ * cosValue) >> 7) >= (creatureRam->boundHalfZ << 9)))
+				if ((uint32_t)((creatureRam->boundHalfX << 8) + ((deltaX * cosValue - deltaZ * sinValue) >> 7)) >= (uint32_t)(creatureRam->boundHalfX << 9)
+					|| (insideBounds = 1,
+						(uint32_t)((creatureRam->boundHalfZ << 8) + ((deltaX * sinValue + deltaZ * cosValue) >> 7))
+							>= (uint32_t)(creatureRam->boundHalfZ << 9)))
 				{
 					insideBounds = 0;
 				}
