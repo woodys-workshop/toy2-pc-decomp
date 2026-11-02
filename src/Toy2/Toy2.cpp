@@ -7624,9 +7624,9 @@ namespace Toy2
 				AndysNeighborhood::g_unk52F6E4 = 0;
 				AndysNeighborhood::g_unk52F678 = 1;
 				AndysNeighborhood::g_unk52F6B4 = 4095;
-				AndysNeighborhood::g_unk52F674[0] = 0;
+				AndysNeighborhood::g_unk52F674 = 0;
 				AndysNeighborhood::g_unk52F690 = 0;
-				AndysNeighborhood::g_unk52F60C[0] = 0;
+				AndysNeighborhood::g_unk52F60C = 0;
 				AndysNeighborhood::g_unk52F6C8 = 4096;
 				AndysNeighborhood::g_unk52F6CC = 4096;
 				AndysNeighborhood::g_unk52F618 = 0;

@@ -838,6 +838,7 @@ namespace Toy2
 					"the ^cosmic shield^ will only protect you from harm for a little while so make sure you use it wisely.",
 					512,
 					2560);
+					
 				Renderer::BlitTextureByIndexOffset(8, 128, 128, 64, 64, 0, (Numerics::g_sinCosLUT[g_potatoHeadBlitAngle] >> 11) & 0x3F, 64, 0);
 				frameDelta = Renderer::g_frameDelta;
 				g_potatoHeadBlitAngle = (g_potatoHeadBlitAngle + 32 * frameDelta) & 0xFFF;
