@@ -1,39 +1,23 @@
 #include "Toy2/Levels/ConstructionYard.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Gadget.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
-#include "Renderer/Shadows.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Numerics.h"
+
+#include <MATH.H>
 
 namespace Toy2
 {
@@ -279,7 +263,7 @@ namespace Toy2
 		int32_t g_unk52F8A4;
 
 		// GLOBAL: TOY2 0x0052F814
-		HiddenCollectible g_unk52F814[5];
+		Collectables::HiddenCollectible g_unk52F814[5];
 
 		// GLOBAL: TOY2 0x004F1CCC
 		int32_t g_unk4F1CCC[4] = { -336724, -158292, -129428, 49196 };
@@ -489,7 +473,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041C190
-		void Init()
+		void Initialize()
 		{
 			int32_t v0;
 			int32_t v1;

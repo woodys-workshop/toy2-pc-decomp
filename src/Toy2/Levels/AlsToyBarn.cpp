@@ -1,38 +1,22 @@
 #include "Toy2/Levels/AlsToyBarn.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
 #include "Toy2/Gadget.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
-#include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+#include "Toy2/MainMenu.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
-#include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "Numerics.h"
-#include "SaveManager.h"
 #include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 namespace Toy2
 {
@@ -196,6 +180,74 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FA50
 		int32_t g_unk52FA50;
+
+		// GLOBAL: TOY2 0x004F73B4
+		RGB32 g_type36Color = { 118, 175, 158 };
+
+		// FUNCTION: TOY2 0x00421090
+		void Initialize()
+		{
+			Vector3I origin;
+
+			Collectables::Init(g_unk4F2A48, 65);
+			Collectables::LoadTokenTable((int32_t*)g_unk4F2A54);
+			MoveableObject::InitTable(g_unk4F2A24);
+			Collectables::Activate(3, 1);
+			Nullsub2(19, 18);
+			g_unk52F9E4 = 0;
+			g_unk52FA24 = 0;
+			g_unk52FA30 = 0;
+			g_unk52FA28 = 0;
+			Platform::AddFlags(0, 256);
+			g_levelActors[6].actorFlags &= 0xFF7E;
+			g_unk52FA0C = 0;
+			g_unk52FA14 = 0;
+			g_unk52FA20 = 0;
+			g_unk52FA50 = 0;
+			g_unk52FA2C = g_levelActors[0].actorPhase;
+			g_unk52F9DC = 0;
+			g_unk52F9E0 = 0;
+			g_unk52FA18 = 0;
+			g_unk52F9C0 = 0;
+			Nu3D::Link::SetScaleFromFixedOffsets(30, 4096, 0, 4096);
+			g_unk52F9EC = 0;
+			Nu3D::Link::SetScaleFromFixedOffsets(3, 4096, 0, 4096);
+			g_unk52F9E8 = 0;
+			g_unk52F9BC = 0;
+			g_unk52FA4C = 0;
+			Platform::AddFlags(10, 256);
+			Platform::AddFlags(14, 256);
+			g_unk52FA08 = 0;
+			g_unk52FA1C = 0;
+			g_unk52FA10 = 0;
+			g_unk52F2F8 = 0;
+			g_unk52AD64 = 0;
+			g_unk52FA00 = g_unk4F294C;
+			g_unk52FA44 = 0;
+			g_unk52FA04 = g_unk4F2970;
+			g_unk52FA48 = 0;
+			g_unk52F9F8 = g_unk4F2994;
+			g_unk52FA3C = 0;
+			Platform::AddFlags(7, 256);
+			Platform::AddFlags(8, 256);
+			Platform::AddFlags(9, 256);
+			g_unk52F9FC = g_unk4F29B8;
+			g_unk52FA40 = 0;
+			g_unk52F9F0 = g_unk4F29DC;
+			g_unk52FA34 = 0;
+			g_unk52F9F4 = g_unk4F2A00;
+			g_unk52FA38 = 0;
+			Platform::GetOrigin(13, &origin);
+			Platform::SetOrigin(13, origin.x + 25280, origin.y, origin.z);
+			Nu3D::Link::SetPositionRawAndCommit(12, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+			Platform::GetOrigin(12, &origin);
+			Platform::SetOrigin(12, origin.x + 25280, origin.y, origin.z);
+			Nu3D::Link::SetPositionRawAndCommit(13, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+			Platform::GetOrigin(11, &origin);
+			Platform::SetOrigin(11, origin.x + 25280, origin.y, origin.z);
+			Nu3D::Link::SetPositionRawAndCommit(14, (origin.x + 25280) >> 5, origin.y >> 5, origin.z >> 5);
+			MainMenu::g_menuClearColor = g_type36Color;
+		}
 
 		// FUNCTION: TOY2 0x00420F70
 		void Method1(int32_t actorIndex, int32_t objectId)

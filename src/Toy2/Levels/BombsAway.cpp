@@ -1,27 +1,21 @@
 #include "Toy2/Levels/BombsAway.h"
 
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/Weather.h"
+#include "Toy2/Collectables.h"
+#include "Toy2/MoveableObject.h"
 
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Camera.h"
 
 #include "Renderer/Renderer.h"
 #include "Renderer/LensFlare.h"
 
 #include "AudioManager/AudioManager.h"
 #include "Random.h"
-#include "Numerics.h"
 #include "SaveManager.h"
-
-#include <STDLIB.H>
 
 namespace Toy2
 {
@@ -95,6 +89,58 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052F738
 		Vector3I g_flashSoundPos;
+
+		// FUNCTION: TOY2 0x0041A8A0
+		void Initialize()
+		{
+			MoveableObject::InitTable(0);
+			Collectables::Init(0, 0);
+			Weather::Init();
+
+			g_targetSize = 4096;
+			g_damageLevel = 4096;
+			g_lastBossPhase = g_levelActors[0].actorPhase;
+			g_hitCutsceneLength = 180;
+			g_introSoundTimer = 180;
+			g_tauntTimer = 180;
+			g_prevCutsceneTimer = Camera::g_cutsceneTimer;
+
+			g_levelActors[0].actorFlags |= 0x800u;
+			g_levelActors[0].transform.angles.yaw = 2048;
+			g_levelActors[0].targetYaw = 2048;
+
+			g_currentSize = 1;
+			g_bossState = 0;
+			g_unusedInt = 0;
+			g_wobblePhase = 0;
+			g_dropY = 0;
+			g_dropVelocity = 0;
+			g_textureScrollU = 0;
+			g_textureScrollV = 0;
+			g_hitFlashTimer = 0;
+			g_tintPhaseR = 0;
+			g_tintPhaseG = 0;
+			g_tintPhaseB = 0;
+			g_flashTimer = 200;
+			g_flashSoundDelay = 20000;
+
+			g_levelActors[0].unkShort4 = 0;
+			g_levelActors[0].transform.pos.z += 0x10000;
+			g_levelActors[0].actorTint.r = 0x2000;
+			g_levelActors[0].actorTint.g = 0x2000;
+			g_levelActors[0].actorTint.b = 0x2000;
+			g_levelActors[0].unkVar10 = 1000;
+
+			Nu3D::Link::SetScaleFromFixedOffsets(50, 0, 0, 0);
+			g_savedRecordY = Levels::g_recordData[63]->data[0].y;
+			Levels::g_recordData[63]->data[0].y = 0x80000000;
+			g_dropY = g_levelActors[0].transform.pos.y - 11000;
+
+			Nu3D::Link::SetPositionRawAndCommit(
+				0, g_levelActors[0].transform.pos.x >> 5, g_levelActors[0].transform.pos.y - 11000, g_levelActors[0].transform.pos.z >> 5);
+
+			Nu3D::Link::SetScaleFromFixedOffsets(0, 5000, 5000, 5000);
+		}
 
 		// FUNCTION: TOY2 0x0041AA10
 		void Interactions()

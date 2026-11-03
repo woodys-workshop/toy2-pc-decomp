@@ -1,37 +1,21 @@
 #include "Toy2/Levels/BarnEncounter.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
-#include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
-#include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
-#include "Nu3D/Link.h"
+
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
 #include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
 #include "Renderer/Effects.h"
+
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "Numerics.h"
 #include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 namespace Toy2
 {
@@ -93,6 +77,56 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FBFC
 		int32_t g_unk52FBFC;
+
+		// FUNCTION: TOY2 0x00424390
+		void Initialize()
+		{
+			Actor::Toy2Actor* actor;
+
+			MoveableObject::InitTable(0);
+			Collectables::Init(0, 0);
+			g_unk52FBB8 = g_levelActors[0].actorPhase;
+			g_unk52FC0C = 0;
+			g_unk52FBEC = 0;
+			g_unk52FC08 = 0;
+			g_unk52FBCC = -360448;
+			g_unk52FC04 = 0;
+			g_unk52FBC0 = 0;
+			g_unk52FBE8 = 0;
+			g_unk52FBD4 = 1;
+			g_unk52FBF0 = 0;
+			g_unk52FC00 = 200;
+			g_unk52FBC8 = 7;
+			g_unk52FBC4 = 7;
+			g_unk52FBF4 = 0;
+			g_unk52FBBC = 0;
+			g_unk52FBD0 = 0;
+			g_unk52FBF8 = 120;
+			g_unk52FBFC = 0;
+			g_levelActors[0].creatureRam->speedTarget = 0;
+
+			actor = &g_levelActors[7];
+
+			do
+			{
+				actor->unkShort2 = 10000;
+				actor->actorPhase = 0;
+				actor->unkVar13_ = 0;
+
+				actor->creatureRam->boundHalfX = g_levelActors[6].creatureRam->boundHalfX;
+				actor->creatureRam->boundHalfZ = g_levelActors[6].creatureRam->boundHalfZ;
+
+				++actor;
+			} while (actor < &g_levelActors[12]);
+
+			actor = &g_levelActors[0];
+
+			do
+			{
+				actor->actorFlags |= 0x800;
+				++actor;
+			} while (actor < &g_levelActors[12]);
+		}
 
 		// FUNCTION: TOY2 0x00424490
 		void Interactions()

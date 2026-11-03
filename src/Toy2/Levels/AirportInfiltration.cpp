@@ -1,37 +1,19 @@
-#include "Numerics.h"
+#include "Toy2/Levels/AirportInfiltration.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
-#include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Toy2/Levels/AirportInfiltration.h"
 
 namespace Toy2
 {
@@ -65,7 +47,7 @@ namespace Toy2
 		int32_t g_unk52FE40;
 
 		// GLOBAL: TOY2 0x0052FEEC
-		HiddenCollectible g_unk52FEEC[5];
+		Collectables::HiddenCollectible g_unk52FEEC[5];
 
 		// GLOBAL: TOY2 0x0052FF14
 		int32_t g_unk52FF14;
@@ -303,6 +285,43 @@ namespace Toy2
 				*g_unk52FEEC[i].yPtr = 0x80000000;
 				Nu3D::Link::SetScaleFromFixedOffsets(i + 56, 0, 0, 0);
 			}
+		}
+
+		// FUNCTION: TOY2 0x0042C930
+		void Initialize()
+		{
+			MoveableObject::InitTable(g_unk4F46A4);
+			Collectables::Init(g_unk4F46C0, 64);
+			Collectables::Activate(3, 1);
+			InitHiddenCollectibles();
+
+			g_unk52FF24 = 0;
+			g_unk52FF20 = 0;
+
+			Platform::SetRotationAngles(4, 0, -1024, 0);
+
+			g_unk52FF34 = 0;
+			g_unk52FF38 = 0;
+			g_unk52FF40 = -512;
+			g_unk52FF14 = 512;
+
+			g_unk52FE38 = 0;
+			g_unk52FF30 = 200;
+
+			Platform::InitPathPlatform(0, 8, 2, 21, 20, 125, 0, 1024);
+			Platform::InitPathPlatform(1, 10, 4, 25, 24, 125, 0, 1024);
+			Platform::InitPathPlatform(2, 2, 6, 13, 12, 125, 32768, -1024);
+			Platform::InitPathPlatform(3, 5, 7, 15, 14, 125, 0, -3072);
+			Platform::InitPathPlatform(4, 1, 5, 11, 10, 125, 0, -1592);
+
+			g_unk52FE40 = 1;
+			g_unk52FF1C = 0;
+			g_unk52FF44 = 0;
+			g_unk52FF2C = 0;
+			g_unk52FEE8 = 0;
+
+			g_unk52FF3C = g_levelActors[32].actorPhase;
+			g_levelActors[32].creatureRam->boundHalfX = 90;
 		}
 
 		// FUNCTION: TOY2 0x0042CA60

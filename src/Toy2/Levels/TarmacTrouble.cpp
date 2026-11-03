@@ -1,37 +1,26 @@
 #include "Toy2/Levels/TarmacTrouble.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
 #include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
 #include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
+
 #include "Random.h"
-#include "Numerics.h"
 #include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+
+#include <MATH.H>
 
 namespace Toy2
 {
@@ -352,6 +341,77 @@ namespace Toy2
 				else
 					Nu3D::Link::SetScaleFromFixedOffsets(i, 0, 0, 0);
 			}
+		}
+
+		// FUNCTION: TOY2 0x0042E600
+		void Initialize()
+		{
+			Actor::Toy2Actor* actor;
+			int32_t i;
+			int32_t recordCount;
+			Levels::Type63* entry;
+			Vector3I pos1;
+			Vector3I pos2;
+
+			MoveableObject::InitTable(0);
+			Collectables::Init(g_unk4F4C68, 120);
+			Collectables::LoadTokenTable((int32_t*)g_unk4F4C40);
+			Collectables::Activate(3, 1);
+			Nu3D::Link::GetCurrentPosFixed(10, &pos1);
+			Nu3D::Link::GetCurrentPosFixed(11, &pos2);
+			pos1.x = (pos1.x + pos2.x) >> 1;
+			pos1.y = (pos1.y + pos2.y) >> 1;
+			pos1.z = (pos1.z + pos2.z) >> 1;
+			Nu3D::Link::GetCurrentPosFixed(13, &pos2);
+			g_unk52FF60 = (pos2.x + pos1.x) >> 1;
+			g_unk52FFB8 = (pos2.x + pos1.x) >> 1;
+			g_unk52FF64 = (pos2.y + pos1.y) >> 1;
+			g_unk52FFBC = (pos2.y + pos1.y) >> 1;
+			g_unk52FF80.z = 0;
+			g_unk52FF68 = (pos2.z + pos1.z) >> 1;
+			g_unk52FFC0 = (pos2.z + pos1.z) >> 1;
+			g_unk52FF80.y = 0;
+			g_unk52FF80.x = 0;
+			Platform::AddFlags(0, 256);
+			Method2();
+			g_unk52FFB4 = 0;
+			g_unk52FFEC = 0;
+			g_unk52FF7C = 0;
+			g_unk52FFD4 = 0;
+
+			for (i = 0; i < 64; ++i)
+			{
+				if (g_levelActors[i].creatureId)
+					g_levelActors[i].visibilityDistance = 1800;
+			}
+
+			g_unk52FF74 = g_levelActors[46].actorPhase;
+			g_unk52FFAC = 0;
+			g_unk52FF78 = 0;
+			g_unk52FF4C = 0;
+			g_unk52FFE8 = 0;
+			g_unk52FFCC = -1;
+			i = 0;
+			recordCount = Levels::g_recordData[63]->recordCount;
+
+			if (recordCount > 0)
+			{
+				entry = (Levels::Type63*)Levels::g_recordData[63]->data;
+
+				while (entry->props.linkId != 116)
+				{
+					++entry;
+					++i;
+
+					if (i >= recordCount)
+						goto LABEL_11;
+				}
+
+				g_unk52FFCC = i;
+			}
+		LABEL_11:
+			g_unk52FFA8 = 200;
+			Weather::Init();
 		}
 
 		// FUNCTION: TOY2 0x0042DCB0

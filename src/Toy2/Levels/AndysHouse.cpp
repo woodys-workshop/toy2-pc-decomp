@@ -1,24 +1,22 @@
-#include "Numerics.h"
 #include "Toy2/Levels/AndysHouse.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collision.h"
 #include "Toy2/Platform.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Dialogue.h"
 #include "Toy2/Level.h"
-#include "Toy2/Levels.h"
-#include "Toy2/Actor.h"
+#include "Toy2/Collectables.h"
+
 #include "Nu3D/Math.h"
 #include "Nu3D/Link.h"
-#include "Nu3D/Particles.h"
+
 #include "Renderer/Renderer.h"
 #include "AudioManager/AudioManager.h"
 #include "Random.h"
 
-#include <math.h>
-#include <stdlib.h>
+#include <MATH.H>
 
 namespace Toy2
 {
@@ -213,6 +211,66 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052F5D0
 		int32_t g_potatoHeadBlitAngle;
+
+		// FUNCTION: TOY2 0x004171D0
+		void Initialize()
+		{
+			Collectables::Init(g_unk4F0EDC, 72);
+			Collectables::LoadTokenTable((int32_t*)g_tutorialHints);
+			Collectables::Activate(3, 1);
+			MoveableObject::InitTable(g_unk4F0F90);
+
+			g_sparkPathIndex = 1;
+			g_sparkPresetIndex = 0;
+			g_sparkPresetTimer = 0;
+			g_unk52F4F4 = 0;
+			g_unk52F568 = 0;
+			g_link14Rotation = 0;
+			g_liftVelocity = 0;
+			g_atticTilt = 0;
+
+			Platform::SetRotationAngles(15, 0, 0, 0);
+
+			g_tinRobotLastPhase = g_levelActors[8].actorPhase;
+			g_unk52F4FC = 0;
+			g_unk52F5AC = 1024;
+			g_inTinRobotFight = 0;
+			g_raceCarPathIndex = 0;
+			g_unk52F2F8 = 0;
+			g_raceCarLaps = 0;
+			g_unk52AD64 = 0;
+			g_raceBuzzLastSide = 0;
+			g_unk52F580 = 0;
+			g_unk52F574 = 0;
+			g_unk52F570 = 0;
+			g_unk52F56C = 0;
+			g_unk52F57C = 0;
+			g_unk52F594 = 0;
+			g_potatoHeadBlitAngle = 0;
+			g_unk52F500 = 0;
+			g_unk52F59C = Levels::g_recordData[58]->data[Level::g_unk830E28 + 1].y;
+
+			Levels::Method3(1, 1);
+
+			Nu3D::Link::GetCurrentPosFixed(6, &g_liftPos);
+
+			g_liftMaxY = g_liftPos.y + 47104;
+			g_unk52F530 = Levels::g_recordData[61]->data[16].y - g_liftPos.y;
+
+			Nu3D::Link::GetCurrentPosFixed(9, &g_link9Pos.pos);
+			Nu3D::Link::GetCurrentPosFixed(17, &g_link17Pos.pos);
+			Nu3D::Link::GetCurrentPosFixed(18, &g_link18Pos.pos);
+			Nu3D::Link::GetCurrentPosFixed(10, &g_link10Pos.pos);
+			Nu3D::Link::GetCurrentPosFixed(16, &g_link16Pos.pos);
+			Nu3D::Link::SetScaleFromFixedOffsets(21, 0, 4096, 4096);
+			Nu3D::Link::SnapToOtherLinkUsingScale(22, 21);
+
+			Platform::DisableCollision(8);
+			Platform::DisableCollision(14);
+
+			g_tinRobotFlashTimer = 0;
+			g_tinRobotFlash = 0;
+		}
 
 		// FUNCTION: TOY2 0x00417380 [MATCHED]
 		void AnimateBobbingPlatform(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t roll, int32_t platformId)
@@ -538,7 +596,8 @@ namespace Toy2
 
 					if (g_tickState[8])
 					{
-						Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(transform.pos.x, transform.pos.y, transform.pos.z, 17, 10);
+						Nu3D::Particles::ParticleInstance* particle =
+							Nu3D::Particles::SpawnFromPreset(transform.pos.x, transform.pos.y, transform.pos.z, 17, 10);
 						particle->rotSpeed = (*g_randDatBufferPtr - 128) >> 3;
 						++g_randDatBufferPtr;
 					}
@@ -838,7 +897,7 @@ namespace Toy2
 					"the ^cosmic shield^ will only protect you from harm for a little while so make sure you use it wisely.",
 					512,
 					2560);
-					
+
 				Renderer::BlitTextureByIndexOffset(8, 128, 128, 64, 64, 0, (Numerics::g_sinCosLUT[g_potatoHeadBlitAngle] >> 11) & 0x3F, 64, 0);
 				frameDelta = Renderer::g_frameDelta;
 				g_potatoHeadBlitAngle = (g_potatoHeadBlitAngle + 32 * frameDelta) & 0xFFF;

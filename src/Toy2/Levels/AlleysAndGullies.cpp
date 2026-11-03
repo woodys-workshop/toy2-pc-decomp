@@ -1,39 +1,23 @@
 #include "Toy2/Levels/AlleysAndGullies.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Gadget.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
 #include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
 #include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
-#include "Renderer/Shadows.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Numerics.h"
 
 namespace Toy2
 {
@@ -152,7 +136,7 @@ namespace Toy2
 		int32_t g_unk52F950;
 
 		// GLOBAL: TOY2 0x0052F954
-		HiddenCollectible g_unk52F954[5];
+		Collectables::HiddenCollectible g_unk52F954[5];
 
 		// GLOBAL: TOY2 0x0052F97C
 		int32_t g_unk52F97C;
@@ -272,6 +256,107 @@ namespace Toy2
 				*g_unk52F954[i].yPtr = 0x80000000;
 				Nu3D::Link::SetScaleFromFixedOffsets(i + 97, 0, 0, 0);
 			}
+		}
+
+		// FUNCTION: TOY2 0x0041E390
+		void Initialize()
+		{
+			Vector3I l_vec;
+
+			Weather::Init();
+			MoveableObject::InitTable(g_unk4F215C);
+			Collectables::Init(g_unk4F2178, 65);
+			Collectables::Activate(3, 1);
+			InitHiddenCollectibles();
+			g_unk52F8A8 = 245760;
+			g_unk52F97C = 245760;
+			g_unk52F948 = 245760;
+			g_unk52F940 = 245760;
+			g_unk52F908 = 245760;
+			g_unk52F8F4 = 245760;
+			g_unk52F8B4 = 0;
+			g_unk52F8AC = 0;
+			g_unk52F984 = 0;
+			g_unk52F94C = 0;
+			g_unk52F944 = 0;
+			g_unk52F900 = 0;
+			InterpolatePathPoint(0, 0, &l_vec);
+			Platform::SetOrigin(8, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(33, l_vec.x, l_vec.y, l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(29, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(0, g_unk52F8A8, &l_vec);
+			Platform::SetOrigin(5, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(34, l_vec.x, l_vec.y, l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(30, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(5, g_unk52F8AC, &l_vec);
+			Platform::SetOrigin(6, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(35, l_vec.x, l_vec.y, l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(31, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(5, g_unk52F97C, &l_vec);
+			Platform::SetOrigin(7, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(36, l_vec.x, l_vec.y, l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(32, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(2, g_unk52F944, &l_vec);
+			Platform::SetOrigin(9, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(21, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(2, g_unk52F908, &l_vec);
+			Platform::SetOrigin(10, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(22, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(3, g_unk52F900, &l_vec);
+			Platform::SetOrigin(11, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(23, l_vec.x, l_vec.y, l_vec.z);
+			InterpolatePathPoint(3, g_unk52F8F4, &l_vec);
+			Platform::SetOrigin(12, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
+			Nu3D::Link::SetPositionRawAndCommit(24, l_vec.x, l_vec.y, l_vec.z);
+			g_unk52F8EC = 0;
+			g_unk52F950 = 0;
+			Platform::DisableCollision(19);
+			g_unk52F938 = 0;
+			g_unk52F93C = 0;
+			g_unk52F988 = 0;
+			g_unk52F904 = 0;
+			g_unk52F8D4 = 0;
+			g_unk52F90C = 0;
+			g_unk52F8D0 = 0;
+			g_unk52F8F8 = 0;
+			g_unk52F910.x = -934963;
+			g_unk52F910.y = -50596;
+			g_unk52F910.z = -701229;
+			g_unk52F91C = 1;
+			g_unk52F8C0 = 0;
+			g_unk52F8C4 = 0;
+			g_unk52F8C8 = 0;
+			Nu3D::Link::SetPositionRawAndCommit(12, -29218, -1582, -21914);
+			Nu3D::Link::SetScaleFromFixedOffsets(12, 0, 0, 0);
+			Nu3D::Link::SetPositionRawAndCommit(13, g_unk52F910.x >> 7, g_unk52F910.y >> 7, g_unk52F910.z >> 7);
+			Nu3D::Link::SetScaleFromFixedOffsets(13, 0, 0, 0);
+			g_unk52F920.x = -934963;
+			g_unk52F920.y = -50596;
+			g_unk52F920.z = -701229;
+			g_unk52F92C = 0;
+			g_unk52F8D8 = 0;
+			g_unk52F8DC = 0;
+			g_unk52F8E0 = 0;
+			Nu3D::Link::SetPositionRawAndCommit(18, -29218, -1582, -21914);
+			Nu3D::Link::SetScaleFromFixedOffsets(18, 0, 0, 0);
+			Nu3D::Link::SetPositionRawAndCommit(19, g_unk52F920.x >> 7, g_unk52F920.y >> 7, g_unk52F920.z >> 7);
+			Nu3D::Link::SetScaleFromFixedOffsets(19, 0, 0, 0);
+			Buzz::g_underwaterYLevel = 0x10000;
+			Buzz::g_unk830D30 = 0x10000;
+			g_unk52F930 = 0;
+			g_unk52F934 = 0;
+			g_unk52F980 = 0;
+			g_unk52F8E8 = 0;
+			g_unk52F8FC = 0;
+			g_unk52F8B0 = 0;
+			g_unk52F2F8 = 0;
+			g_unk52AD64 = 0;
+			Buzz::g_currentFluidType = 1;
+			g_underwaterTintBlue = 96;
+			g_underwaterTintGreen = 120;
+			g_underwaterTintRed = 0x80;
+			g_unk52F8B8 = g_levelActors[3].actorPhase;
+			g_unk52F8F0 = 200;
 		}
 
 		// FUNCTION: TOY2 0x0041E880
@@ -1193,107 +1278,6 @@ namespace Toy2
 			}
 
 			PlayLevelMusic();
-		}
-
-		// FUNCTION: TOY2 0x0041E390
-		void Init()
-		{
-			Vector3I l_vec;
-
-			Weather::Init();
-			MoveableObject::InitTable(g_unk4F215C);
-			Collectables::Init(g_unk4F2178, 65);
-			Collectables::Activate(3, 1);
-			InitHiddenCollectibles();
-			g_unk52F8A8 = 245760;
-			g_unk52F97C = 245760;
-			g_unk52F948 = 245760;
-			g_unk52F940 = 245760;
-			g_unk52F908 = 245760;
-			g_unk52F8F4 = 245760;
-			g_unk52F8B4 = 0;
-			g_unk52F8AC = 0;
-			g_unk52F984 = 0;
-			g_unk52F94C = 0;
-			g_unk52F944 = 0;
-			g_unk52F900 = 0;
-			InterpolatePathPoint(0, 0, &l_vec);
-			Platform::SetOrigin(8, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(33, l_vec.x, l_vec.y, l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(29, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(0, g_unk52F8A8, &l_vec);
-			Platform::SetOrigin(5, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(34, l_vec.x, l_vec.y, l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(30, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(5, g_unk52F8AC, &l_vec);
-			Platform::SetOrigin(6, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(35, l_vec.x, l_vec.y, l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(31, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(5, g_unk52F97C, &l_vec);
-			Platform::SetOrigin(7, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(36, l_vec.x, l_vec.y, l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(32, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(2, g_unk52F944, &l_vec);
-			Platform::SetOrigin(9, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(21, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(2, g_unk52F908, &l_vec);
-			Platform::SetOrigin(10, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(22, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(3, g_unk52F900, &l_vec);
-			Platform::SetOrigin(11, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(23, l_vec.x, l_vec.y, l_vec.z);
-			InterpolatePathPoint(3, g_unk52F8F4, &l_vec);
-			Platform::SetOrigin(12, 32 * l_vec.x, 32 * l_vec.y, 32 * l_vec.z);
-			Nu3D::Link::SetPositionRawAndCommit(24, l_vec.x, l_vec.y, l_vec.z);
-			g_unk52F8EC = 0;
-			g_unk52F950 = 0;
-			Platform::DisableCollision(19);
-			g_unk52F938 = 0;
-			g_unk52F93C = 0;
-			g_unk52F988 = 0;
-			g_unk52F904 = 0;
-			g_unk52F8D4 = 0;
-			g_unk52F90C = 0;
-			g_unk52F8D0 = 0;
-			g_unk52F8F8 = 0;
-			g_unk52F910.x = -934963;
-			g_unk52F910.y = -50596;
-			g_unk52F910.z = -701229;
-			g_unk52F91C = 1;
-			g_unk52F8C0 = 0;
-			g_unk52F8C4 = 0;
-			g_unk52F8C8 = 0;
-			Nu3D::Link::SetPositionRawAndCommit(12, -29218, -1582, -21914);
-			Nu3D::Link::SetScaleFromFixedOffsets(12, 0, 0, 0);
-			Nu3D::Link::SetPositionRawAndCommit(13, g_unk52F910.x >> 7, g_unk52F910.y >> 7, g_unk52F910.z >> 7);
-			Nu3D::Link::SetScaleFromFixedOffsets(13, 0, 0, 0);
-			g_unk52F920.x = -934963;
-			g_unk52F920.y = -50596;
-			g_unk52F920.z = -701229;
-			g_unk52F92C = 0;
-			g_unk52F8D8 = 0;
-			g_unk52F8DC = 0;
-			g_unk52F8E0 = 0;
-			Nu3D::Link::SetPositionRawAndCommit(18, -29218, -1582, -21914);
-			Nu3D::Link::SetScaleFromFixedOffsets(18, 0, 0, 0);
-			Nu3D::Link::SetPositionRawAndCommit(19, g_unk52F920.x >> 7, g_unk52F920.y >> 7, g_unk52F920.z >> 7);
-			Nu3D::Link::SetScaleFromFixedOffsets(19, 0, 0, 0);
-			Buzz::g_underwaterYLevel = 0x10000;
-			Buzz::g_unk830D30 = 0x10000;
-			g_unk52F930 = 0;
-			g_unk52F934 = 0;
-			g_unk52F980 = 0;
-			g_unk52F8E8 = 0;
-			g_unk52F8FC = 0;
-			g_unk52F8B0 = 0;
-			g_unk52F2F8 = 0;
-			g_unk52AD64 = 0;
-			Buzz::g_currentFluidType = 1;
-			g_underwaterTintBlue = 96;
-			g_underwaterTintGreen = 120;
-			g_underwaterTintRed = 0x80;
-			g_unk52F8B8 = g_levelActors[3].actorPhase;
-			g_unk52F8F0 = 200;
 		}
 
 	}

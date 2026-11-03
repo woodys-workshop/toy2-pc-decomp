@@ -15,6 +15,13 @@ namespace Toy2
 			int32_t yaw;
 		};
 
+		// the y position of a hidden pickup and the one it is reset to when it shows up
+		struct HiddenCollectible
+		{
+			int32_t* yPtr;
+			int32_t savedY;
+		};
+
 		struct PickupSlot
 		{
 			int32_t linkId;
@@ -42,5 +49,6 @@ namespace Toy2
 		STATIC_ASSERT(sizeof(TokenTableEntry) == 0x10);
 		STATIC_ASSERT(sizeof(PickupSlot) == 0x10);
 		STATIC_ASSERT(sizeof(PickupTable) == 0x704);
+		STATIC_ASSERT(sizeof(HiddenCollectible) == 0x8);
 	}
 }

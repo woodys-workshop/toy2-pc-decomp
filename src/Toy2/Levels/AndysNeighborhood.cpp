@@ -1,40 +1,21 @@
 #include "Toy2/Levels/AndysNeighborhood.h"
+
 #include "Toy2/Toy2.h"
 #include "Toy2/KiteTail.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Gadget.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
-#include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
 #include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
-#include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
-#include "Renderer/Shadows.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Numerics.h"
 
 namespace Toy2
 {
@@ -208,6 +189,119 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052F6EC
 		int32_t g_zKiteRollPhase;
+
+		// FUNCTION: TOY2 0x00418E50
+		void Initialize()
+		{
+			Collectables::Init(g_unk4F154C, 65);
+			Collectables::Activate(3, 1);
+			MoveableObject::InitTable(g_unk4F1518);
+			Collectables::LoadTokenTable((int32_t*)g_unk4F153C);
+			Buzz::g_underwaterYLevel = 17408;
+			Buzz::g_unk830D30 = 17408;
+			g_underwaterTintBlue = 80;
+			g_underwaterTintGreen = 96;
+			g_underwaterTintRed = 128;
+			Platform::SetRotationAngles(0, 0, 2401, 0);
+			Platform::SetRotationAngles(1, 0, 2890, 0);
+			g_levelActors[26].actorFlags |= Actor::ACTOR_NO_DESPAWN;
+			g_levelActors[4].unkShort4 = 100;
+			g_zKitePhase = g_levelActors[26].actorPhase;
+			g_zKiteYawPhase = 0;
+			g_zKiteRollPhase = 0;
+			g_unk52F65C = 0;
+			g_unk52F664 = 0;
+			g_zKiteFlashTimer = 0;
+			g_unk52F63C = 0;
+			g_unk52F6DC = 0;
+			g_unk52F6E0 = 0;
+			g_unk52F2F8 = 0;
+			g_unk52F668 = 0;
+			g_unk52F620 = 0;
+			g_unk52AD64 = 0;
+			g_unk52F660 = 0;
+			g_unk52F5E0 = 0;
+			g_unk52F6B0 = 0;
+			g_unk52F6E4 = 0;
+			g_unk52F678 = 1;
+			g_unk52F6B4 = 4095;
+			g_unk52F674 = 0;
+			g_unk52F690 = 0;
+			g_unk52F60C = 0;
+			g_unk52F6C8 = 4096;
+			g_unk52F6CC = 4096;
+			g_unk52F618 = 0;
+			g_unk52F614 = 0;
+			g_unk52F6D8 = 3072;
+			g_unk52F66C = 0;
+			g_unk52F610 = 0;
+			g_unk52F5F0 = 750;
+			g_unk52F5E4 = 0;
+			g_unk52F5EC = 0;
+			g_unk52F640 = 0;
+			g_unk52F5DC = 0;
+			g_unk52F6D4 = 0;
+			g_unk52F61C = 0;
+			g_unk52F5E8 = 0;
+			g_unk52F6D0 = 0;
+			g_unk52F638[0] = 0;
+			g_unk52F658 = 0;
+			g_unk52F6E8 = 0;
+			Nu3D::Link::SetRotationRelative8bit(5, 0, 0, 750);
+			Nu3D::Link::GetCurrentPosFixed(6, &g_unk52F648);
+			Platform::DisableCollision(5);
+			Platform::DisableCollision(4);
+			Platform::DisableCollision(12);
+			Platform::AddFlags(7, 256);
+			Platform::SetOrigin(7, g_unk52F648.x, g_unk52F648.y, g_unk52F648.z);
+			Nu3D::Link::SetScaleFromFixedOffsets(21, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(32, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(33, 0, 0, 0);
+			Nu3D::Link::GetCurrentPosFixed(25, &g_unk52F680);
+			g_unk52F608[0] = 280;
+			Nu3D::Link::SetScaleFromFixedOffsets(27, 4096, 280, 4096);
+			Levels::g_recordData[61]->data[0].y = g_unk52F680.y;
+			g_unk52F6A8 = 0;
+			g_unk52F6C4 = 0;
+			KiteTail::Init(&g_levelActors[26].transform.pos, 16, 4096, 0, 96);
+		}
+
+		// FUNCTION: TOY2 0x00448080
+		void Method1()
+		{
+			int32_t l_index;
+			Levels::Type63* l_data;
+			int32_t l_unk;
+			Transform l_pos;
+
+			l_index = 0;
+			l_data = (Levels::Type63*)Levels::g_recordData[63]->data;
+
+			if (Levels::g_recordData[63]->recordCount)
+			{
+				do
+				{
+					if (l_data->pos.y != 0x80000000 && l_data->props.linkId < 0x30u)
+					{
+						l_pos.pos.x = 32 * l_data->pos.x;
+						l_pos.pos.z = 32 * l_data->pos.z;
+						l_pos.pos.y = 32 * (l_data->pos.y - 10);
+
+						l_unk = Nu3D::Collision::GetGroundHeightEx(&l_pos, 0, 0) >> 5;
+
+						l_data->props.floorPos = l_unk;
+
+						if (l_unk == 0x7FFF)
+							l_data->props.floorPos = 32766;
+
+						if (l_data->props.floorPos - l_data->pos.y > 6144)
+							l_data->props.floorPos = 0x7FFF;
+					}
+					++l_data;
+					++l_index;
+				} while (l_index < Levels::g_recordData[63]->recordCount);
+			}
+		}
 
 		// FUNCTION: TOY2 0x004190C0
 		void Interactions()
@@ -1107,43 +1201,6 @@ namespace Toy2
 			}
 
 			PlayLevelMusic();
-		}
-
-		// FUNCTION: TOY2 0x00448080
-		void Method1()
-		{
-			int32_t l_index;
-			Levels::Type63* l_data;
-			int32_t l_unk;
-			Transform l_pos;
-
-			l_index = 0;
-			l_data = (Levels::Type63*)Levels::g_recordData[63]->data;
-
-			if (Levels::g_recordData[63]->recordCount)
-			{
-				do
-				{
-					if (l_data->pos.y != 0x80000000 && l_data->props.linkId < 0x30u)
-					{
-						l_pos.pos.x = 32 * l_data->pos.x;
-						l_pos.pos.z = 32 * l_data->pos.z;
-						l_pos.pos.y = 32 * (l_data->pos.y - 10);
-
-						l_unk = Nu3D::Collision::GetGroundHeightEx(&l_pos, 0, 0) >> 5;
-
-						l_data->props.floorPos = l_unk;
-
-						if (l_unk == 0x7FFF)
-							l_data->props.floorPos = 32766;
-
-						if (l_data->props.floorPos - l_data->pos.y > 6144)
-							l_data->props.floorPos = 0x7FFF;
-					}
-					++l_data;
-					++l_index;
-				} while (l_index < Levels::g_recordData[63]->recordCount);
-			}
 		}
 
 	}

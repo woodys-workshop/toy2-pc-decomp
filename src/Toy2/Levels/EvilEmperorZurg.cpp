@@ -1,37 +1,19 @@
 #include "Toy2/Levels/EvilEmperorZurg.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
-#include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
-#include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
-#include "Nu3D/Link.h"
+
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
+
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "Numerics.h"
 #include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 namespace Toy2
 {
@@ -60,6 +42,27 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FE30
 		int32_t g_unk52FE30;
+
+		// FUNCTION: TOY2 0x0042B300
+		void Initialize()
+		{
+			MoveableObject::InitTable(0);
+			Collectables::Init(0, 0);
+			g_unk52FE00 = g_levelActors[0].actorPhase;
+			g_levelActors[0].actorFlags |= Actor::ACTOR_NO_DESPAWN;
+			g_levelActors[0].transform.pos.y -= 163840;
+			g_levelActors[0].motionTargetPos.y = g_levelActors[0].transform.pos.y;
+			g_unk52FE08 = 300;
+			g_unk52FE20 = 120;
+			g_unk52FE24 = 0;
+			g_unk52FE28 = 0;
+			g_unk52FE04 = 0;
+			g_unk52FE30 = 260;
+			Actor::g_unk52FE34 = 0;
+			g_levelActors[0].transform.angles.yaw = 3072;
+			g_levelActors[0].transform.pos.z += 0x10000;
+			g_levelActors[0].creatureRam->rotSpeed = 0;
+		}
 
 		// FUNCTION: TOY2 0x0042B2D0
 		void BuzzRespawn()

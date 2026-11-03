@@ -1,37 +1,20 @@
 #include "Toy2/Levels/FinalShowdown.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
-#include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
-#include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
+
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
-#include "Random.h"
-#include "Numerics.h"
 #include "SaveManager.h"
 #include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 
 namespace Toy2
 {
@@ -117,6 +100,64 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x00530064
 		int32_t g_unk530064;
+
+		// FUNCTION: TOY2 0x0042FAA0
+		void Initialize()
+		{
+			MoveableObject::InitTable(0);
+			Collectables::Init(0, 0);
+			Nullsub2(18, 17);
+			g_unk52FFFC = 200;
+			g_unk530008 = 0;
+			g_unk530018 = 0;
+			g_unk530054 = 0;
+			g_unk530060 = 0;
+			g_unk530028 = g_levelActors[0].actorPhase;
+			g_unk53000C = 0;
+			g_unk53001C = 0;
+			g_unk53004C = 0;
+			g_unk53005C = 0;
+			g_unk53002C = g_levelActors[2].actorPhase;
+			g_unk530004 = 0;
+			g_unk530020 = 0;
+			g_unk530050 = 0;
+			g_unk530030 = g_levelActors[1].actorPhase;
+			g_unk530010 = 0;
+			g_unk530064 = 0;
+			g_unk52FFF4 = 0;
+			g_unk530068 = 1024;
+			g_unk530000 = 240;
+			g_unk52FFF8 = 0;
+			g_unk530014 = 0;
+			g_unk530058 = 0;
+			g_unk52FFF0 = 0;
+			g_unk530024 = 0;
+			Nu3D::Link::GetCurrentPosFixed(0, &g_unk530038);
+			g_unk530048 = g_unk530038.y;
+			g_levelActors[0].targetYaw = 1024;
+			g_levelActors[0].transform.angles.yaw = 1024;
+			g_levelActors[1].targetYaw = 1024;
+			g_levelActors[1].transform.angles.yaw = 1024;
+			g_levelActors[2].targetYaw = 1024;
+			g_levelActors[2].transform.angles.yaw = 1024;
+			g_levelActors[0].actorPhase = 0;
+			g_levelActors[1].actorPhase = 0;
+			g_levelActors[2].actorPhase = 0;
+			g_levelActors[0].transform.pos.x = -207981;
+			g_levelActors[0].transform.pos.y = -37590;
+			g_levelActors[0].transform.pos.z = -5365;
+			g_levelActors[1].transform.pos.x = -206796;
+			g_levelActors[1].transform.pos.y = -37594;
+			g_levelActors[1].transform.pos.z = -17869;
+			g_levelActors[2].transform.pos.x = -207807;
+			g_levelActors[2].transform.pos.y = -37595;
+			g_levelActors[2].transform.pos.z = -33361;
+			g_levelActors[0].unkShort2 = 10000;
+			g_levelActors[1].unkShort2 = 10000;
+			g_levelActors[2].unkShort2 = 10000;
+			g_levelActors[3].unkShort2 = 10000;
+			g_levelActors[4].unkShort2 = 10000;
+		}
 
 		// FUNCTION: TOY2 0x0042FC50
 		void Interactions()

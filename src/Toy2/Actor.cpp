@@ -1002,16 +1002,18 @@ namespace Toy2
 							switch ((int16_t)movementData[1])
 							{
 								case 1:
-									actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(
-															 actor->transform.pos.x - actor->motionTargetPos.x, actor->transform.pos.z - actor->motionTargetPos.z)
-														 - 2048)
-														& 0xFFF;
+									actor->targetYaw =
+										(Nu3D::Math::CartesianToFixedAngle(
+											 actor->transform.pos.x - actor->motionTargetPos.x, actor->transform.pos.z - actor->motionTargetPos.z)
+										 - 2048)
+										& 0xFFF;
 									break;
 								case 2:
-									actor->targetYaw = (Nu3D::Math::CartesianToFixedAngle(
-															 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
-														 - 2048)
-														& 0xFFF;
+									actor->targetYaw =
+										(Nu3D::Math::CartesianToFixedAngle(
+											 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+										 - 2048)
+										& 0xFFF;
 									break;
 							}
 

@@ -1,38 +1,22 @@
 #include "Toy2/Levels/AlsSpaceLand.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
-#include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
-#include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
-#include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
-#include "Renderer/LensFlare.h"
 #include "Renderer/Effects.h"
 #include "Renderer/Shadows.h"
+
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "Numerics.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+
+#include <MATH.H>
 
 namespace Toy2
 {
@@ -178,6 +162,64 @@ namespace Toy2
 
 		// GLOBAL: TOY2 0x0052FB9C
 		int32_t g_unk52FB9C;
+
+		// FUNCTION: TOY2 0x00423020
+		void Initialize()
+		{
+			Collectables::Init(g_unk4F2F0C, 65);
+			Collectables::Activate(3, 1);
+			Buzz::g_underwaterYLevel = 0;
+			Buzz::g_unk830D30 = 0;
+			Buzz::g_currentFluidType = 0;
+			g_unk52FA80 = (Levels::Type63*)(Collectables::g_pickupSlots[3].yPosPtr - 1);
+			g_unk52FA80->props.flags &= 0x80u;
+			*(uint8_t*)&g_levelActors[1].actorFlags |= 0x80u;
+			memset(g_unk52FB20, 0, 0x48u);
+			g_unk52FAD8 = 0;
+			g_unk52FADC = 0;
+			g_unk52FA84 = 0;
+			g_laserWaypointIdx[0] = 0;
+			g_laserTotalTicks[0] = 0;
+			g_laserTimer[0] = 0;
+			g_laserWaypointIdx[1] = 0;
+			g_laserTotalTicks[1] = 0;
+			g_laserTimer[1] = 0;
+			Nu3D::Link::GetCurrentPosFixed(10, &g_clawHomePos);
+			Nu3D::Link::GetCurrentPosFixed(10, &g_tokenPos);
+			Nu3D::Link::GetCurrentPosFixed(20, &g_unk52FAA8);
+			Nu3D::Link::GetCurrentPosFixed(21, &g_unk52FA98);
+			Nu3D::Link::GetCurrentPosFixed(22, &g_unk52FAC8);
+			Nu3D::Link::GetCurrentPosFixed(23, &g_unk52FAB8);
+			g_tokenPos.y += 24576;
+			g_clawHomePos.x -= 0x4000;
+			g_clawHomePos.z -= 0x4000;
+			Nu3D::Link::SetScaleFromFixedOffsets(11, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(14, 0, 0, 0);
+			g_clawState = 0;
+			g_clawDropDepth = 0;
+			g_clawHoldTimer = 0;
+			g_clawCatchResult = 0;
+			g_unk52FB1C = 0;
+			g_clawInitialized = 0;
+			g_unk52FB98 = 0;
+			g_unk52FAE4 = 0;
+			g_unk52FAF8 = 0;
+			g_unk52FA90 = 0;
+			g_unk52FB78 = 0;
+			g_unk52FB6C = 0;
+			g_unk52FB68 = 0;
+			g_unk52FB70 = 0;
+			g_unk52FB8C = 0;
+			g_unk52FB80 = 0;
+			g_unk52FB7C = 60;
+			g_unk52FAE0 = 0;
+			g_unk52FA58 = 0;
+			g_unk52FA8C = 0;
+			g_unk52FA88 = g_levelActors[40].actorPhase;
+			Nu3D::Link::SetPositionRawAndCommit(25, -10861, -18786, 9697);
+			g_unk52F2F8 = 0;
+			g_unk52AD64 = 3;
+		}
 
 		// FUNCTION: TOY2 0x00422D20
 		void FireLaser(int32_t laserIndex)

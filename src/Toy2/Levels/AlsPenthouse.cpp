@@ -1,40 +1,39 @@
-#include "Numerics.h"
+#include "Toy2/Levels/AlsPenthouse.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
-#include "Toy2/Gadget.h"
-#include "Toy2/KiteTail.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
-#include "Renderer/Shadows.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Toy2/Levels/AlsPenthouse.h"
+
+#include <MATH.H>
+
+namespace
+{
+	struct SwitchEntry
+	{
+		int16_t mask;
+		int16_t linkA;
+		int16_t linkB;
+		int16_t rotLinkId;
+		int16_t rotX;
+		int16_t rotY;
+		int16_t rotZ;
+	};
+
+	STATIC_ASSERT(sizeof(SwitchEntry) == 0xE);
+}
 
 namespace Toy2
 {
@@ -71,12 +70,14 @@ namespace Toy2
 		Collectables::TokenTableEntry g_unk4F3F24[3] = {
 			{ 120,
 			  22,
-			  "^stomp^ the buttons to raise and lower the water level. the button in the bottom of the tub will drain all the water. the other buttons will raise the "
+			  "^stomp^ the buttons to raise and lower the water level. the button in the bottom of the tub will drain all the water. the other buttons will "
+			  "raise the "
 			  "water to their level. ",
 			  3072 },
 			{ 119,
 			  21,
-			  "^stomp^ the buttons to change the track points and make the train switch tracks. get the train to go onto the dead end track so that you can push the "
+			  "^stomp^ the buttons to change the track points and make the train switch tracks. get the train to go onto the dead end track so that you can "
+			  "push the "
 			  "box to the ^train bed^ to reach the pizza planet ^token^.",
 			  3072 },
 			{ -1, 0, 0, 0 }
@@ -104,7 +105,9 @@ namespace Toy2
 		int32_t g_unk4F3FE8[15] = { -16000, 43, 256, -32000, 20, 1, -64000, 21, 2, -95999, 22, 4, -524288, 23, 8 };
 
 		// GLOBAL: TOY2 0x004F4024
-		uint8_t g_unk4F4024[33] = { 44, 43, 20, 21, 22, 23, 91, 12, 13, 14, 15, 16, 17, 18, 31, 32, 33, 34, 35, 36, 37, 66, 67, 68, 69, 70, 72, 73, 74, 75, 76, 77, 79 };
+		uint8_t g_unk4F4024[33] = {
+			44, 43, 20, 21, 22, 23, 91, 12, 13, 14, 15, 16, 17, 18, 31, 32, 33, 34, 35, 36, 37, 66, 67, 68, 69, 70, 72, 73, 74, 75, 76, 77, 79
+		};
 
 		// GLOBAL: TOY2 0x0052FD08
 		int32_t g_unk52FD08;
@@ -221,7 +224,7 @@ namespace Toy2
 		Vector3I g_unk52FD98;
 
 		// GLOBAL: TOY2 0x0052FDC8
-		HiddenCollectible g_unk52FDC8[5];
+		Collectables::HiddenCollectible g_unk52FDC8[5];
 
 		// GLOBAL: TOY2 0x0052FD10
 		int32_t g_unk52FD10;
@@ -1004,6 +1007,87 @@ namespace Toy2
 				*g_unk52FDC8[i].yPtr = 0x80000000;
 				Nu3D::Link::SetScaleFromFixedOffsets(i + 101, 0, 0, 0);
 			}
+		}
+
+		// FUNCTION: TOY2 0x00429D70
+		void Initialize()
+		{
+			Collectables::Init(g_unk4F3F18, 113);
+			Collectables::LoadTokenTable((int32_t*)g_unk4F3F24);
+			Collectables::Activate(3, 1);
+			MoveableObject::InitTable(g_unk4F3E60);
+			InitHiddenCollectibles();
+			Levels::Method3(3, 1);
+			g_unk52FD58[0] = 0;
+			g_unk52FD58[1] = 0;
+			g_unk52FD58[2] = 0;
+			g_unk52FD58[3] = 0;
+			g_unk52FD58[4] = 0;
+			g_unk52FD58[5] = 0;
+			Buzz::g_underwaterYLevel = 0;
+			Buzz::g_currentFluidType = 1;
+			Buzz::g_unk830D30 = 0;
+			g_underwaterTintBlue = 104;
+			g_underwaterTintGreen = 104;
+			g_underwaterTintRed = 0x80;
+			g_unk52F2F8 = 0;
+			g_unk52AD64 = 0;
+			g_unk52FDFC = 0;
+			g_unk52FD30 = 0;
+			g_unk52FD3C = 0;
+			g_unk52FD78 = 0;
+			g_unk52FDB8 = 0;
+
+			for (int32_t i = 0; i < 33; ++i)
+				Nu3D::Link::SetScaleFromFixedOffsets(g_unk4F4024[i], 0, 0, 0);
+
+			Method6(16);
+			g_unk52FDAC = 0;
+			g_unk52FD7C = 0;
+			g_unk52FD1C = 0;
+			g_unk52FD90 = 0;
+			g_unk52FD28 = 0;
+			g_unk52FD50 = 0;
+			g_unk52FD18 = 0;
+			g_unk52FD88 = 0;
+			g_unk52FD20 = 0;
+			g_unk52FD14 = 0;
+			g_unk52FD0C = 0;
+			Method2(37);
+			g_unk52FD08 = 0;
+			g_unk52FD4C = 1;
+			g_unk52FD84 = 6;
+			g_unk52FDBC = 0;
+			g_unk52FD98.x = 32 * Levels::g_recordData[1]->data[6].x;
+			g_unk52FD98.y = 32 * Levels::g_recordData[1]->data[6].y;
+			g_unk52FD98.z = 32 * Levels::g_recordData[1]->data[6].z;
+			Method8();
+			g_unk52FD74 = 0;
+			g_unk52FD44 = 8;
+			Nu3D::Link::SetScaleFromFixedOffsets(49, 0, 0, 0);
+			MoveableObject::g_unk52FD24 = 0;
+			g_unk52FDF0 = 256;
+			g_unk52FDB4 = 256;
+			g_unk52FDF8 = 0;
+			g_unk52FD48 = 0;
+			g_unk52FD34 = 11;
+			Nu3D::Link::SetScaleFromFixedOffsets(48, 0, 0, 0);
+			g_unk52FD8C = 0;
+			g_unk52FD80 = 0;
+			g_unk52FDF4 = 0;
+			g_unk52FDB0 = 0;
+			g_unk52FDC4 = 0;
+			g_unk52FD40 = 0;
+			g_unk52FD70 = 0;
+			g_unk52FD10 = 0;
+			g_unk52FD2C = g_levelActors[11].actorPhase;
+			g_levelActors[11].transform.pos.z += 0x10000;
+			g_unk52FD38 = 0;
+			g_unk52FD54 = 0;
+			g_unk52FDA8 = 0;
+			g_unk52FDC0 = 0;
+			Platform::DisableCollision(26);
+			Platform::DisableCollision(27);
 		}
 
 		// FUNCTION: TOY2 0x00429FB0

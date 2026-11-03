@@ -1,39 +1,22 @@
-#include "Numerics.h"
+#include "Toy2/Levels/ElevatorHop.h"
+
 #include "Toy2/Toy2.h"
-#include "Toy2/Actor.h"
-#include "Toy2/Buzz.h"
 #include "Toy2/Camera.h"
 #include "Toy2/Collectables.h"
 #include "Toy2/Dialogue.h"
 #include "Toy2/Gadget.h"
-#include "Toy2/Level.h"
-#include "Toy2/Levels.h"
 #include "Toy2/Lighting.h"
 #include "Toy2/MoveableObject.h"
 #include "Toy2/Platform.h"
-#include "Toy2/Particles.h"
-#include "Toy2/Weather.h"
-#include "Toy2/Cutscene.h"
 #include "Toy2/Collision.h"
+
 #include "Nu3D/Link.h"
 #include "Nu3D/Math.h"
-#include "Nu3D/Particles.h"
-#include "Nu3D/Collision.h"
-#include "Nu3D/Camera.h"
+
 #include "Renderer/Renderer.h"
-#include "Renderer/Sprite.h"
 #include "Renderer/LensFlare.h"
-#include "Renderer/Effects.h"
-#include "Renderer/Shadows.h"
 #include "AudioManager/AudioManager.h"
-#include "InputManager.h"
 #include "Random.h"
-#include "SaveManager.h"
-#include "Nullsub.h"
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-#include "Toy2/Levels/ElevatorHop.h"
 
 namespace Toy2
 {
@@ -240,6 +223,124 @@ namespace Toy2
 				Levels::g_recordData[9]->data[g_unk52FCD8 + 6].x,
 				Levels::g_recordData[9]->data[g_unk52FCD8 + 6].y,
 				Levels::g_recordData[9]->data[g_unk52FCD8 + 6].z);
+		}
+
+		// FUNCTION: TOY2 0x00425B60
+		void Initialize()
+		{
+			int16_t* platformIdx;
+			int32_t* originY;
+			int16_t platform;
+			Vector3I origin;
+
+			Levels::g_recordData[9]->data[2].y = -27220;
+			Levels::g_recordData[9]->data[5].y = -27220;
+			Levels::g_recordData[9]->data[8].y = -27220;
+			Nu3D::Link::SetPositionRawAndCommit(
+				110, Levels::g_recordData[14]->data[0].x, Levels::g_recordData[14]->data[0].y, Levels::g_recordData[14]->data[0].z);
+			MoveableObject::InitTable(0);
+			Collectables::Init(g_unk4F3798, 115);
+			Collectables::Activate(3, 1);
+			Collectables::LoadTokenTable((int32_t*)g_unk4F37A4);
+			g_unk52FC10 = (int32_t)Collectables::g_pickupSlots[2].yPosPtr - 4;
+			g_unk52FCDC = 0;
+			g_unk52FC44 = 0;
+			Platform::AddFlags(0, 256);
+			Platform::AddFlags(1, 256);
+			Platform::AddFlags(2, 256);
+			Platform::AddFlags(3, 256);
+			Platform::AddFlags(6, 256);
+			Platform::AddFlags(7, 256);
+			Platform::AddFlags(8, 256);
+			Platform::AddFlags(9, 256);
+			Platform::AddFlags(10, 256);
+			Platform::AddFlags(11, 256);
+			Platform::AddFlags(12, 256);
+			Platform::AddFlags(13, 256);
+			Platform::AddFlags(14, 256);
+			Platform::AddFlags(15, 256);
+			Platform::AddFlags(16, 256);
+			Platform::AddFlags(17, 256);
+
+			platform = g_unk4F3614[0];
+
+			if (platform != -1)
+			{
+				platformIdx = g_unk4F3614;
+				originY = g_unk52FCA0;
+
+				do
+				{
+					Platform::GetOrigin(platform, &origin);
+					++platformIdx;
+					*originY = origin.y;
+					platform = *platformIdx;
+					++originY;
+				} while (platform != -1);
+			}
+
+			platform = g_unk4F3628[0];
+
+			if (platform != -1)
+			{
+				platformIdx = g_unk4F3628;
+				originY = g_unk52FC78;
+
+				do
+				{
+					Platform::GetOrigin(platform, &origin);
+					++platformIdx;
+					*originY = origin.y;
+					platform = *platformIdx;
+					++originY;
+				} while (platform != -1);
+			}
+
+			g_unk52FCC8 = 0;
+			g_unk52FC1C = 0;
+			g_unk52FC28 = 0;
+			g_unk52FC38 = 0;
+			g_unk52FD00 = 0;
+			g_unk52FC54 = 0;
+			g_unk52FC6C = 0;
+			g_unk52FC34 = 0;
+			g_unk52FC2C = 0;
+			g_unk52FC58 = 0;
+			g_unk52FC64 = 0;
+			g_unk52FC74 = 0;
+			g_unk52FC60 = 0;
+			g_unk52FC70 = 0;
+			g_unk52FC4C = 0;
+			g_unk52FCFC = 12288;
+			g_unk52FC18 = 0x7FFF;
+			g_unk52FC40 = 400;
+			g_unk52FC48 = 5;
+			g_unk52FC20 = 0;
+			g_unk52FCE0 = 0;
+			g_unk52FCF8 = g_levelActors[8].actorPhase;
+			g_unk52FC68 = 0;
+			g_unk52FCEC = 0;
+			g_unk52FCD0 = 0;
+			g_unk52FC14 = 0;
+			g_unk52FC50 = 0;
+			g_unk52FC30 = 2;
+			g_unk52FCD8 = 0;
+			g_unk52FC24 = 1;
+			Method2();
+			Nu3D::Link::SetScaleFromFixedOffsets(71, 4096, 4096, 4096);
+			Nu3D::Link::SetScaleFromFixedOffsets(70, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(73, 4096, 4096, 4096);
+			Nu3D::Link::SetScaleFromFixedOffsets(72, 0, 0, 0);
+			Nu3D::Link::SetScaleFromFixedOffsets(79, 4096, 4096, 4096);
+			Nu3D::Link::SetScaleFromFixedOffsets(78, 0, 0, 0);
+			g_unk52FCCC = 0;
+			g_unk52FCE8 = 0;
+			g_unk52FCD4 = 0;
+			g_unk52FCE4 = 0;
+			g_unk52FC3C = 4096;
+			g_unk52FCF4 = g_unk4F3688;
+			g_unk52FCF0 = g_unk4F36DC;
+			g_levelActors[8].transform.pos.x += 0x10000;
 		}
 
 		// FUNCTION: TOY2 0x00425A80
