@@ -6,7 +6,7 @@ namespace Nu3D
 	// GLOBAL: TOY2 0x00B423F0
 	NodeMatricesInner g_nodeMatrices[64];
 
-	// FUNCTION: TOY2 0x004C9F50
+	// FUNCTION: TOY2 0x004C9F50 [MATCHED]
 	void Creature::Destroy(Nu3D::Creature* creature)
 	{
 		if (creature->matrixList1 != 0)
@@ -45,8 +45,8 @@ namespace Nu3D
 			{
 				do
 				{
-					free(creature->animData[animIndex++]);
-
+					free(creature->animData[animIndex]);
+					++animIndex;
 				} while (animIndex < creature->animCount);
 			}
 
