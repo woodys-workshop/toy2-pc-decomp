@@ -161,33 +161,33 @@ namespace Nu3D
 			}
 		}
 
-		// FUNCTION: TOY2 0x004B5AD0
+		// FUNCTION: TOY2 0x004B5AD0 [MATCHED]
 		void BuildClipNormMatrix()
 		{
-			g_clipNormMatrixCache._12 = 0.0;
-			g_clipNormMatrixCache._13 = 0.0;
-			g_clipNormMatrixCache._14 = 0.0;
-			g_clipNormMatrixCache._21 = 0.0;
-			g_clipNormMatrixCache._23 = 0.0;
-			g_clipNormMatrixCache._24 = 0.0;
-			g_clipNormMatrixCache._31 = 0.0;
-			g_clipNormMatrixCache._32 = 0.0;
-			g_clipNormMatrixCache._34 = 0.0;
-			g_clipNormMatrixCache._44 = 1.0;
+			g_clipNormMatrixCache._12 = 0.0f;
+			g_clipNormMatrixCache._13 = 0.0f;
+			g_clipNormMatrixCache._14 = 0.0f;
+			g_clipNormMatrixCache._21 = 0.0f;
+			g_clipNormMatrixCache._23 = 0.0f;
+			g_clipNormMatrixCache._24 = 0.0f;
+			g_clipNormMatrixCache._31 = 0.0f;
+			g_clipNormMatrixCache._32 = 0.0f;
+			g_clipNormMatrixCache._34 = 0.0f;
+			g_clipNormMatrixCache._44 = 1.0f;
 
 			g_clipNormMatrixDirty = 0;
 
-			g_clipNormMatrixCache._11 = 2.0 / g_pendingViewport.dvClipWidth;
-			g_clipNormMatrixCache._22 = 2.0 / g_pendingViewport.dvClipHeight;
-			g_clipNormMatrixCache._33 = 1.0 / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ;
+			g_clipNormMatrixCache._11 = 2.0f / g_pendingViewport.dvClipWidth;
+			g_clipNormMatrixCache._22 = 2.0f / g_pendingViewport.dvClipHeight;
+			g_clipNormMatrixCache._33 = 1.0f / (g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ);
 
 			g_clipNormMatrixCache._41 =
-				-1.0 - (g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth + g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth);
+				-1.0f - (g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth + g_pendingViewport.dvClipX / g_pendingViewport.dvClipWidth);
 
 			g_clipNormMatrixCache._42 =
-				1.0 - (g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight + g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight);
+				1.0f - (g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight + g_pendingViewport.dvClipY / g_pendingViewport.dvClipHeight);
 
-			g_clipNormMatrixCache._43 = -(g_pendingViewport.dvMinZ / g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ);
+			g_clipNormMatrixCache._43 = -(g_pendingViewport.dvMinZ / (g_pendingViewport.dvMaxZ - g_pendingViewport.dvMinZ));
 		}
 
 		// FUNCTION: TOY2 0x004B5AA0
@@ -235,11 +235,11 @@ namespace Nu3D
 			viewportCache->frustumCount = g_fustrumInfo.fustrumCount;
 		}
 
-		// FUNCTION: TOY2 0x004B5700
+		// FUNCTION: TOY2 0x004B5700 [MATCHED]
 		void SetClipRect(float left, float top, float right, float bottom)
 		{
-			float width = right - left + 1.0;
-			float height = bottom - top + 1.0;
+			float width = right - left + 1.0f;
+			float height = bottom - top + 1.0f;
 
 			if (left != g_currentViewportX || top != g_currentViewportY || width != g_currentViewportWidth || height != g_currentViewportHeight)
 			{
@@ -249,17 +249,17 @@ namespace Nu3D
 				if (top <= g_minViewportY)
 					top = g_minViewportY;
 
-				double widthLimit = g_drawDeviceWidth - 1.0;
+				double widthLimit = g_drawDeviceWidth - 1.0f;
 
 				if (width >= widthLimit)
 					width = widthLimit;
 
-				double heightLimit = g_drawDeviceHeight - 1.0;
+				double heightLimit = g_drawDeviceHeight - 1.0f;
 
 				if (height >= heightLimit)
 					height = heightLimit;
 
-				if (width >= 0.0 && height >= 0.0)
+				if (width >= 0.0f && height >= 0.0f)
 				{
 					g_currentViewportX = left;
 					g_currentViewportY = top;
@@ -271,11 +271,11 @@ namespace Nu3D
 					g_pendingViewport.dwWidth = width;
 					g_pendingViewport.dwHeight = height;
 
-					double clipXOffset = (left - g_minViewportX) / g_drawDeviceWidth;
-					g_pendingViewport.dvClipX = clipXOffset + clipXOffset - 1.0 - g_clipOffsetX;
+					float clipXOffset = (left - g_minViewportX) / g_drawDeviceWidth;
+					g_pendingViewport.dvClipX = clipXOffset + clipXOffset - 1.0f - g_clipOffsetX;
 
-					double clipYOffset = (top - g_minViewportY) / g_drawDeviceHeight;
-					g_pendingViewport.dvClipY = 1.0 - (clipYOffset + clipYOffset) - g_clipOffsetY;
+					float clipYOffset = (top - g_minViewportY) / g_drawDeviceHeight;
+					g_pendingViewport.dvClipY = 1.0f - (clipYOffset + clipYOffset) - g_clipOffsetY;
 
 					g_pendingViewport.dvClipWidth = width / g_drawDeviceWidth + width / g_drawDeviceWidth;
 					g_pendingViewport.dvClipHeight = height / g_drawDeviceHeight + height / g_drawDeviceHeight;
