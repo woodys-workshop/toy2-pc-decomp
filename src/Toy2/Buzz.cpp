@@ -4745,7 +4745,7 @@ namespace Toy2
 			g_grappleState = 0;
 		}
 
-		// FUNCTION: TOY2 0x004A5C40
+		// FUNCTION: TOY2 0x004A5C40 [MATCHED]
 		void TickBeamShots()
 		{
 			int32_t lifeTimer;
@@ -4763,9 +4763,9 @@ namespace Toy2
 					originPos.pos.y = beamShot->originPos.y;
 					originPos.pos.z = beamShot->originPos.z;
 
+					direction.pos.x = beamShot->headPos.x - originPos.pos.x;
 					direction.pos.y = beamShot->headPos.y - originPos.pos.y;
 					direction.pos.z = beamShot->headPos.z - originPos.pos.z;
-					direction.pos.x = beamShot->headPos.x - originPos.pos.x;
 
 					lifeTimer = beamShot->lifeTimer * 4;
 
@@ -4788,15 +4788,15 @@ namespace Toy2
 
 					beamShot->moveTimer -= frameDelta;
 
-					if (beamShot->moveTimer > 0)
+					if (beamShot->moveTimer <= 0)
+					{
+						beamShot->lifeTimer = 0;
+					}
+					else
 					{
 						beamShot->headPos.x += frameDelta * beamShot->velocity.x;
 						beamShot->headPos.y += frameDelta * beamShot->velocity.y;
 						beamShot->headPos.z += frameDelta * beamShot->velocity.z;
-					}
-					else
-					{
-						beamShot->lifeTimer = 0;
 					}
 				}
 
