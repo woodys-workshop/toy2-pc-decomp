@@ -2288,11 +2288,12 @@ namespace Toy2
 	// GLOBAL: TOY2 0x00503AD4
 	char g_padPathFile[15] = "PAD\\PATH00.BIN";
 
-	// FUNCTION: TOY2 0x004A3770
+	// FUNCTION: TOY2 0x004A3770 [MATCHED]
 	void LoadPathBin()
 	{
-		g_padPathFile[8] = g_levelFileIndex / 10 + 48;
-		g_padPathFile[9] = g_levelFileIndex % 10 + 48;
+		int32_t tens = g_levelFileIndex / 10;
+		g_padPathFile[8] = tens + 48;
+		g_padPathFile[9] = g_levelFileIndex - tens * 10 + 48;
 		FileUtils::LoadFile(g_padPathFile, g_demoPathBuffer);
 	}
 

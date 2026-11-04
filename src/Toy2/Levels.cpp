@@ -810,22 +810,23 @@ namespace Toy2
 			return 32 * g_instanceRecordCount;
 		}
 
-		// FUNCTION: TOY2 0x004521A0
+		// FUNCTION: TOY2 0x004521A0 [MATCHED]
 		void BuildLevelPath(int32_t level, char* output, const char* suffix)
 		{
-			if (level >= 10)
+			if (level < 10)
+			{
+				strcpy(output, "level0");
+				output[6] = level + 48;
+			}
+			else
 			{
 				strcpy(output, "level");
 				output[5] = level / 10 + 48;
 				output[6] = level % 10 + 48;
 			}
-			else
-			{
-				strcpy(output, "level0");
-				output[6] = level + 48;
-			}
 
-			strcpy(output + 7, "\\");
+			output[7] = '\\';
+			output[8] = '\0';
 			strcat(output, suffix);
 		}
 
