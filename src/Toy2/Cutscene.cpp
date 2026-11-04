@@ -56,8 +56,8 @@ namespace Toy2
 				Camera::g_cameraBlendTimer = 64;
 				g_buzzActor.collisionFlags = 0;
 
-				if (! g_buzzActor.unkWord15)
-					g_buzzActor.unkWord15 = 5;
+				if (! g_buzzActor.jumpState)
+					g_buzzActor.jumpState = 5;
 
 				AudioManager::PlaySoundEffect(30, 0);
 
@@ -115,9 +115,9 @@ namespace Toy2
 							g_buzzActor.velX = 0;
 							g_buzzActor.gravityVel = 0;
 							g_buzzActor.velForward = 0;
-							g_buzzActor.unkVar30 = 0;
-							g_buzzActor.unkVar31 = 0;
-							g_buzzActor.unkVar37 = 1;
+							g_buzzActor.localForwardSpeed = 0;
+							g_buzzActor.localStrafeSpeed = 0;
+							g_buzzActor.animState = 1;
 							g_buzzActor.motionTargetPos = g_buzzActor.transform.pos;
 
 							ResetBuzzState();

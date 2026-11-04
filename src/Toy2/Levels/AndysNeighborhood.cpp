@@ -669,7 +669,7 @@ namespace Toy2
 			if (g_unk52F658 < 0)
 				g_unk52F658 = 0;
 
-			if (Buzz::g_unk52B81C == 11 && g_buzzActor.unkShort40)
+			if (Buzz::g_unk52B81C == 11 && g_buzzActor.supportGraceTimer)
 			{
 				if (! g_unk52F658 && ! g_unk52F690)
 				{

@@ -464,7 +464,7 @@ namespace Toy2
 				goto LABEL_21;
 			}
 
-			if (g_buzzActor.unkShort40)
+			if (g_buzzActor.supportGraceTimer)
 			{
 				if (g_buzzActor.transform.pos.y >= -82330)
 					goto LABEL_20;
@@ -891,7 +891,7 @@ namespace Toy2
 				Buzz::g_underwaterYLevel = 0;
 			}
 
-			if ((g_buzzActor.actorFlags & 0x100) != 0 && g_tickState[4] && (g_buzzActor.unkVar30 > 32 || abs(g_buzzActor.gravityVel) > 32))
+			if ((g_buzzActor.actorFlags & 0x100) != 0 && g_tickState[4] && (g_buzzActor.localForwardSpeed > 32 || abs(g_buzzActor.gravityVel) > 32))
 			{
 				v34 = Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, v33, g_buzzActor.transform.pos.z, 95, 4);
 				v35 = *g_randDatBufferPtr++ & 3;

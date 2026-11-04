@@ -866,7 +866,7 @@ namespace Toy2
 			}
 			else
 			{
-				if (g_buzzActor.unkWord15 && g_buzzActor.unkWord15 < 5 || ! Buzz::g_unk52B81C)
+				if (g_buzzActor.jumpState && g_buzzActor.jumpState < 5 || ! Buzz::g_unk52B81C)
 					g_unk52AD64 = 99;
 
 				if (g_tickState[11])

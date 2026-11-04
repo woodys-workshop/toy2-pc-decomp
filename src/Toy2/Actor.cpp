@@ -711,7 +711,7 @@ namespace Toy2
 
 				actor->actorFlags &= 0xFFFC;
 				actor->actorPhase = 0;
-				actor->unkVar13_ = 0;
+				actor->scaleControl = 0;
 
 				int32_t actorIdx = 0;
 
@@ -1609,20 +1609,20 @@ namespace Toy2
 
 			int32_t scaledM02;
 
-			if (actor->unkVar13_)
+			if (actor->scaleControl)
 			{
-				matrix->m00 = matrix->m00 * actor->unkVar12 / 4096;
-				matrix->m10 = matrix->m10 * actor->unkVar12 / 4096;
-				matrix->m20 = matrix->m20 * actor->unkVar12 / 4096;
-				matrix->m01 = matrix->m01 * actor->unkVar12_ / 4096;
-				matrix->m11 = matrix->m11 * actor->unkVar12_ / 4096;
-				matrix->m21 = matrix->m21 * actor->unkVar12_ / 4096;
+				matrix->m00 = matrix->m00 * actor->scale.x / 4096;
+				matrix->m10 = matrix->m10 * actor->scale.x / 4096;
+				matrix->m20 = matrix->m20 * actor->scale.x / 4096;
+				matrix->m01 = matrix->m01 * actor->scale.y / 4096;
+				matrix->m11 = matrix->m11 * actor->scale.y / 4096;
+				matrix->m21 = matrix->m21 * actor->scale.y / 4096;
 
-				scaledM02 = matrix->m02 * actor->unkVar13 / 4096;
+				scaledM02 = matrix->m02 * actor->scale.z / 4096;
 				matrix->m02 = scaledM02;
 
-				matrix->m12 = matrix->m12 * actor->unkVar13 / 4096;
-				matrix->m22 = matrix->m22 * actor->unkVar13 / 4096;
+				matrix->m12 = matrix->m12 * actor->scale.z / 4096;
+				matrix->m22 = matrix->m22 * actor->scale.z / 4096;
 			}
 			else
 			{
@@ -1660,8 +1660,8 @@ namespace Toy2
 			localOffset->y = y;
 			localOffset->z = zSum / 128 + posZ;
 
-			if (actor->unkVar13_)
-				localOffset->y = y + ((actor->unkVar13_ * (4096 - actor->unkVar12_)) >> 7);
+			if (actor->scaleControl)
+				localOffset->y = y + ((actor->scaleControl * (4096 - actor->scale.y)) >> 7);
 		}
 
 		// FUNCTION: TOY2 0x0049F460

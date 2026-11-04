@@ -262,19 +262,19 @@ namespace Toy2
 			g_buzzActor.velX = 0;
 			g_buzzActor.gravityVel = 0;
 			g_buzzActor.velForward = 0;
-			g_buzzActor.unkVar30 = 0;
-			g_buzzActor.unkVar31 = 0;
-			*(int32_t*)&g_buzzActor.unkWord13 = 0;
-			g_buzzActor.unkVar33 = 0;
+			g_buzzActor.localForwardSpeed = 0;
+			g_buzzActor.localStrafeSpeed = 0;
+			g_buzzActor.currentAnimTime = 0;
+			g_buzzActor.animTrackPos = 0;
 			g_buzzActor.surfaceClampY = 0x80000000;
 			g_buzzActor.inhibitMovementTimer = 0;
-			g_buzzActor.unkWord15 = 0;
+			g_buzzActor.jumpState = 0;
 			g_buzzActor.collisionFlags = 0;
-			g_buzzActor.unkShort40 = 0;
-			g_buzzActor.unkVar37 = 0;
-			g_buzzActor.unkVar38 = 0;
+			g_buzzActor.supportGraceTimer = 0;
+			g_buzzActor.animState = 0;
+			g_buzzActor.prevAnimState = 0;
 			g_buzzActor.actorFlags = 0x20;
-			g_buzzActor.stunTimer = (int16_t)65376;
+			g_buzzActor.stunTimer = 65376;
 			g_buzzActor.health = 14;
 
 			g_unk52B81C = -1;
@@ -322,12 +322,12 @@ namespace Toy2
 						g_unk50A0BC = 0;
 					}
 
-					if (! g_buzzActor.unkShort40)
+					if (! g_buzzActor.supportGraceTimer)
 					{
-						animationState = g_buzzActor.unkVar37;
+						animationState = g_buzzActor.animState;
 						g_unk50A098 = 0;
 
-						switch (g_buzzActor.unkVar37)
+						switch (g_buzzActor.animState)
 						{
 							case 0xA:
 							case 0xB:
@@ -349,7 +349,7 @@ namespace Toy2
 								goto LBL_CHECK_FALL_STATE;
 						}
 
-						g_buzzActor.unkVar37 = animationState;
+						g_buzzActor.animState = animationState;
 
 					LBL_CHECK_FALL_STATE:
 						if (g_unk53C838 == 80)
@@ -361,15 +361,15 @@ namespace Toy2
 						goto LBL_APPLY_ACTION_ANIMATIONS;
 					}
 
-					animationState = g_buzzActor.unkVar37;
+					animationState = g_buzzActor.animState;
 
-					if (g_buzzActor.unkVar37 == 3)
+					if (g_buzzActor.animState == 3)
 					{
 						animationState = 4;
-						g_buzzActor.unkVar37 = 4;
+						g_buzzActor.animState = 4;
 					}
 
-					if (g_buzzActor.unkVar30 < 512 && abs(g_buzzActor.unkVar31) < 512
+					if (g_buzzActor.localForwardSpeed < 512 && abs(g_buzzActor.localStrafeSpeed) < 512
 						&& ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) == 0 || g_unk53C664 == 30))
 					{
 						if (animationState == 4)
@@ -390,7 +390,7 @@ namespace Toy2
 							|| g_buzzActor.floorYPos == 0x80000000)
 						{
 						LBL_SELECT_IDLE_VARIATION:
-							if ((g_buzzActor.unkVar33 & 0xFFFF0000) == 0xE0000)
+							if ((g_buzzActor.animTrackPos & 0xFFFF0000) == 0xE0000)
 							{
 								uint8_t roll = *g_randDatBufferPtr & 3;
 								uint8_t* next = ++g_randDatBufferPtr;
@@ -466,13 +466,13 @@ namespace Toy2
 							g_unk50A098 = 1;
 						}
 
-						g_buzzActor.unkVar37 = animationState;
+						g_buzzActor.animState = animationState;
 
 						if (g_buzzSlipTimer)
 						{
 							animationState = 18;
 						LBL_STORE_ANIMATION_STATE:
-							g_buzzActor.unkVar37 = animationState;
+							g_buzzActor.animState = animationState;
 							goto LBL_APPLY_ACTION_ANIMATIONS;
 						}
 
@@ -481,7 +481,7 @@ namespace Toy2
 
 					animationState = 0;
 					g_unk50A098 = 0;
-					g_buzzActor.unkVar37 = 0;
+					g_buzzActor.animState = 0;
 
 					if (g_buzzSlipTimer)
 					{
@@ -493,98 +493,98 @@ namespace Toy2
 					if (g_unk53C66C && animationState != 8)
 					{
 						animationState = 26;
-						g_buzzActor.unkVar37 = 26;
+						g_buzzActor.animState = 26;
 					}
 
 					if (g_curMoveableObject)
 					{
 						animationState = 25;
-						g_buzzActor.unkVar37 = 25;
+						g_buzzActor.animState = 25;
 					}
 
 					if (g_unk53C618 == 2)
 					{
 						animationState = 17;
-						g_buzzActor.unkVar37 = 17;
+						g_buzzActor.animState = 17;
 					}
 
 					if (g_grappleState == 2 && g_grappleProgress >= 10)
 					{
 						animationState = 30;
-						g_buzzActor.unkVar37 = 30;
+						g_buzzActor.animState = 30;
 					}
 
 					if (g_gravityBootsDuration)
 					{
 						animationState = 31;
-						g_buzzActor.unkVar37 = 31;
+						g_buzzActor.animState = 31;
 					}
 
 					if (g_unk53C608)
 					{
 						animationState = 19;
-						g_buzzActor.unkVar37 = 19;
+						g_buzzActor.animState = 19;
 					}
 
-					if (g_unk53C818 && (g_buzzActor.unkShort40 || ! animationState))
+					if (g_unk53C818 && (g_buzzActor.supportGraceTimer || ! animationState))
 					{
 						animationState = 32;
-						g_buzzActor.unkVar37 = 32;
+						g_buzzActor.animState = 32;
 					}
 
 					if (g_unk53C83C < 0)
 					{
 						animationState = (g_unk53C83C > -120) + 19;
-						g_buzzActor.unkVar37 = animationState;
+						g_buzzActor.animState = animationState;
 					}
 
 					if (g_unk53C668 > 0)
 					{
 						animationState = 15;
-						g_buzzActor.unkVar37 = 15;
+						g_buzzActor.animState = 15;
 
 						if ((g_unk53C668 & 2) != 0)
 						{
 							animationState = 14;
-							g_buzzActor.unkVar37 = 14;
+							g_buzzActor.animState = 14;
 						}
 
 						if ((g_unk53C668 & 4) != 0)
 						{
-							g_buzzActor.unkVar37 = 16;
+							g_buzzActor.animState = 16;
 							AudioManager::PlaySoundEffect(35, &g_buzzActor.transform.pos);
-							animationState = g_buzzActor.unkVar37;
+							animationState = g_buzzActor.animState;
 						}
 					}
 
 					if (g_unk53C660)
 					{
 						animationState = 9;
-						g_buzzActor.unkVar37 = 9;
+						g_buzzActor.animState = 9;
 					}
 
 					if (g_groundSlamTicker > 0)
 					{
 						animationState = 23;
-						g_buzzActor.unkVar37 = 23;
+						g_buzzActor.animState = 23;
 					}
 
 					if (g_groundSlamTicker < -14)
 					{
 						animationState = 24;
-						g_buzzActor.unkVar37 = 24;
+						g_buzzActor.animState = 24;
 					}
 
 					if (g_unk53C838 < 0)
 					{
 						animationState = 13;
-						g_buzzActor.unkVar37 = 13;
+						g_buzzActor.animState = 13;
 					}
 
 					if (g_rocketBootsDuration)
 					{
 						animationState = 10;
-						g_buzzActor.unkVar37 = 10;
+						g_buzzActor.animState = 10;
 					}
 
 					if (g_buzzActor.stunTimer > 0)
@@ -596,7 +596,7 @@ namespace Toy2
 						else
 						{
 							animationState = 5;
-							g_buzzActor.unkVar37 = 5;
+							g_buzzActor.animState = 5;
 						}
 					}
 
@@ -612,17 +612,17 @@ namespace Toy2
 						animationState = 27;
 					}
 
-					g_buzzActor.unkVar37 = animationState;
+					g_buzzActor.animState = animationState;
 
 				LBL_SELECT_EVENT_TRACK:
 					animTableIndex = animationState;
 					eventTrack = g_buzzAnimTable[animationState].track;
 
-					if (animationState != g_buzzActor.unkVar38)
+					if (animationState != g_buzzActor.prevAnimState)
 					{
 						trackFraction = 0;
-						g_buzzActor.unkVar33 = 0;
-						g_buzzActor.unkVar38 = animTableIndex;
+						g_buzzActor.animTrackPos = 0;
+						g_buzzActor.prevAnimState = animTableIndex;
 						trackFrame = *eventTrack;
 						goto LBL_EVALUATE_ANIMATION;
 					}
@@ -632,7 +632,7 @@ namespace Toy2
 					if (trackAdvance < 0)
 					{
 						trackAdvance = -(
-							trackAdvance * (int32_t)sqrt((double)(g_buzzActor.unkVar30 * g_buzzActor.unkVar30 + g_buzzActor.unkVar31 * g_buzzActor.unkVar31)));
+							trackAdvance * (int32_t)sqrt((double)(g_buzzActor.localForwardSpeed * g_buzzActor.localForwardSpeed + g_buzzActor.localStrafeSpeed * g_buzzActor.localStrafeSpeed)));
 
 						if (trackAdvance < 0)
 						{
@@ -647,7 +647,7 @@ namespace Toy2
 					for (;;)
 					{
 						trackAdvance -= 0x10000;
-						g_buzzActor.unkVar33 += 0x10000;
+						g_buzzActor.animTrackPos += 0x10000;
 
 						if (Animation::StepEventTrack(eventTrack) == -1)
 							break;
@@ -658,16 +658,16 @@ namespace Toy2
 				}
 
 			LBL_ADVANCE_EVENT_TRACK:
-				g_buzzActor.unkVar33 += trackAdvance;
+				g_buzzActor.animTrackPos += trackAdvance;
 				trackFrame = Animation::StepEventTrack(eventTrack);
 			} while (trackFrame == -1);
 
-			trackFraction = (uint16_t)g_buzzActor.unkVar33;
+			trackFraction = (uint16_t)g_buzzActor.animTrackPos;
 
 		LBL_EVALUATE_ANIMATION:
 			secondaryFrame = (trackFrame << 16) + trackFraction;
 
-			*(int32_t*)&g_buzzActor.unkWord13 = secondaryFrame;
+			g_buzzActor.currentAnimTime = secondaryFrame;
 
 			primaryFrame = secondaryFrame;
 			secondaryAnim = g_buzzAnimTable[animTableIndex].secondaryAnim;
@@ -736,13 +736,13 @@ namespace Toy2
 				Actor::ResolveBoneAttachmentPos(&g_unk50A0A0, (CreatureActor*)&g_buzzActor, 15);
 			}
 
-			int32_t absVelZ = abs(g_buzzActor.unkVar31);
+			int32_t absVelZ = abs(g_buzzActor.localStrafeSpeed);
 
-			if (((absVelZ > g_buzzActor.unkVar30 && absVelZ > 256) || g_buzzActor.unkVar30 < -256) && g_buzzActor.unkShort40
+			if (((absVelZ > g_buzzActor.localForwardSpeed && absVelZ > 256) || g_buzzActor.localForwardSpeed < -256) && g_buzzActor.supportGraceTimer
 				&& (g_buzzActor.actorFlags & 4) == 0 && ! g_unk53C838)
 				g_unk53C634 |= 4;
 
-			if (! g_buzzActor.unkVar30 && ! g_buzzActor.unkVar31)
+			if (! g_buzzActor.localForwardSpeed && ! g_buzzActor.localStrafeSpeed)
 				g_unk53C634 |= 8;
 		}
 
@@ -820,10 +820,10 @@ namespace Toy2
 				--g_buzzActor.health;
 
 				g_unk53C61C = 0;
-				g_buzzActor.unkWord15 = 5;
+				g_buzzActor.jumpState = 5;
 				g_buzzActor.gravityVel = -512;
 				g_buzzActor.collisionFlags = 0;
-				g_buzzActor.unkShort40 = 0;
+				g_buzzActor.supportGraceTimer = 0;
 
 				ResetBuzzState();
 				g_unk53C834 = 1;
@@ -910,7 +910,7 @@ namespace Toy2
 								goto LBL_CLEAR_HIT_SOUND;
 
 							case 7:
-								if (! g_buzzActor.unkShort40)
+								if (! g_buzzActor.supportGraceTimer)
 									break;
 
 							LBL_SET_CONTACT_HIT:
@@ -944,7 +944,7 @@ namespace Toy2
 								break;
 
 							case 0x35:
-								if (g_buzzActor.unkShort40)
+								if (g_buzzActor.supportGraceTimer)
 									goto LBL_SET_FLAGGED_CONTACT_HIT;
 
 								break;
@@ -1044,7 +1044,7 @@ namespace Toy2
 					maxFallSpeed = 64;
 
 					if (buzzActor->gravityVel >= 0)
-						buzzActor->unkShort40 = 6;
+						buzzActor->supportGraceTimer = 6;
 				}
 			}
 			else
@@ -1056,9 +1056,9 @@ namespace Toy2
 			if ((InputManager::g_directionInputState & DIR_CAM_FLAG2) == 0 || forceJump)
 			{
 				if (buzzActor->collisionFlags)
-					buzzActor->unkWord15 = 0;
+					buzzActor->jumpState = 0;
 
-				if (buzzActor->unkWord15 == 1)
+				if (buzzActor->jumpState == 1)
 				{
 					velocity = buzzActor->gravityVel;
 
@@ -1070,18 +1070,18 @@ namespace Toy2
 						buzzActor->gravityVel = buzzActor->gravityVel / 2 - 256 / (gravityScale * gravityScale);
 					}
 
-					buzzActor->unkWord15 = 2;
+					buzzActor->jumpState = 2;
 				}
 
-				if (buzzActor->unkWord15 == 5)
-					buzzActor->unkWord15 = 6;
+				if (buzzActor->jumpState == 5)
+					buzzActor->jumpState = 6;
 			}
 			else
 			{
-				jumpState = buzzActor->unkWord15;
+				jumpState = buzzActor->jumpState;
 				groundSlamTimer = g_unk53C838;
 
-				if ((jumpState == 2 && buzzActor->gravityVel > -1024 && g_unk53C83C >= 0 && ! buzzActor->unkShort40 && buzzActor->inhibitMovementTimer <= 0
+				if ((jumpState == 2 && buzzActor->gravityVel > -1024 && g_unk53C83C >= 0 && ! buzzActor->supportGraceTimer && buzzActor->inhibitMovementTimer <= 0
 					 && g_unk53C838 >= 0)
 					|| (! jumpState && g_unk53C838 == 80))
 				{
@@ -1104,39 +1104,39 @@ namespace Toy2
 						buzzActor->gravityVel = -2304 / gravityScale;
 					}
 
-					buzzActor->unkWord15 = 5;
-					buzzActor->unkVar37 = 8;
+					buzzActor->jumpState = 5;
+					buzzActor->animState = 8;
 					AudioManager::PlaySoundEffect(16, &g_buzzActor.transform.pos);
 					groundSlamTimer = g_unk53C838;
 				}
 
-				jumpState = buzzActor->unkWord15;
+				jumpState = buzzActor->jumpState;
 
 				if (jumpState == 1 || jumpState >= 4)
 				{
 					if (buzzActor->collisionFlags)
 					{
-						buzzActor->unkWord15 = 5;
+						buzzActor->jumpState = 5;
 					}
 					else if (jumpState == 6)
 					{
-						buzzActor->unkWord15 = 3;
+						buzzActor->jumpState = 3;
 					}
 				}
-				else if (! buzzActor->unkShort40 || g_groundSlamTicker || groundSlamTimer == 80)
+				else if (! buzzActor->supportGraceTimer || g_groundSlamTicker || groundSlamTimer == 80)
 				{
 					if (jumpState == 2)
-						buzzActor->unkWord15 = 3;
+						buzzActor->jumpState = 3;
 				}
 				else
 				{
 					if (! AudioManager::IsActorSoundPlaying(buzzActor))
 						AudioManager::Preset::PlayOneShotSound2(25, (CreatureActor*)buzzActor);
 
-					g_buzzActor.unkWord15 = 1;
+					g_buzzActor.jumpState = 1;
 					g_buzzActor.collisionFlags = 0;
-					g_buzzActor.unkShort40 = 0;
-					g_buzzActor.unkVar37 = 2;
+					g_buzzActor.supportGraceTimer = 0;
+					g_buzzActor.animState = 2;
 					g_buzzActor.gravityVel = initialJumpVelocity;
 					g_curMoveableObject = 0;
 					g_buzzSlipTimer = 0;
@@ -1234,8 +1234,8 @@ namespace Toy2
 			if (forward < -maxAirSpeed)
 				forward = -maxAirSpeed;
 
-			buzzActor->unkVar30 = forward;
-			buzzActor->unkVar31 = sideways;
+			buzzActor->localForwardSpeed = forward;
+			buzzActor->localStrafeSpeed = sideways;
 
 			sinValue = Numerics::g_sinCosLUT[buzzActor->transform.angles.yaw] >> 2;
 			cosValue = *cosEntry >> 2;
@@ -1284,7 +1284,7 @@ namespace Toy2
 			}
 			else
 			{
-				if (g_unk53C678 > 0 && g_unk53C678 < 16 && buzzActor->unkShort40)
+				if (g_unk53C678 > 0 && g_unk53C678 < 16 && buzzActor->supportGraceTimer)
 				{
 					angleDiff = (g_unk53C5D0 - buzzActor->facingAngle) & 0xFFF;
 
@@ -1297,7 +1297,7 @@ namespace Toy2
 					g_unk53C678 = -1;
 				}
 
-				if (g_buzzActor.unkVar30 < 512 && abs(g_buzzActor.unkVar31) < 512 && buzzActor->unkShort40)
+				if (g_buzzActor.localForwardSpeed < 512 && abs(g_buzzActor.localStrafeSpeed) < 512 && buzzActor->supportGraceTimer)
 					g_unk53C678 = 0;
 			}
 
@@ -1317,7 +1317,7 @@ namespace Toy2
 					if (slipping)
 					{
 						g_buzzSlipTimer = 26;
-						buzzActor->unkVar38 = -1;
+						buzzActor->prevAnimState = -1;
 						AudioManager::PlaySoundEffect(18, &buzzActor->transform.pos);
 					}
 
@@ -2014,8 +2014,8 @@ namespace Toy2
 								{
 									AudioManager::PlaySoundEffect(27, &buzz->transform.pos);
 									g_unk53C66C = 69;
-									buzz->unkVar37 = 26;
-									buzz->unkVar38 = -1;
+									buzz->animState = 26;
+									buzz->prevAnimState = -1;
 									g_unk53C5F0 = data->x + ((dir.x * v9) >> 7);
 									g_unk53C5F4 = data->y + 0x4000;
 									g_unk53C5F8 = data->z + ((dir.z * v9) >> 7);
@@ -2052,7 +2052,7 @@ namespace Toy2
 				buzz->velForward = Numerics::g_sinCosLUT[(buzz->transform.angles.yaw + 1024) & 0xFFF] >> 1;
 
 				if ((InputManager::g_directionInputState & 0x4000) == 0)
-					buzz->unkWord15 = 2;
+					buzz->jumpState = 2;
 
 				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 				result = 1;
@@ -2085,8 +2085,8 @@ namespace Toy2
 			}
 			else
 			{
-				if (buzz->unkVar37 == 26)
-					buzz->unkVar37 = 3;
+				if (buzz->animState == 26)
+					buzz->animState = 3;
 
 				g_unk53C66C = 0;
 			}
@@ -2177,8 +2177,8 @@ namespace Toy2
 				if (dy < -7680)
 				{
 					g_unk53C668 = -1;
-					buzz->unkWord15 = 5;
-					buzz->unkVar37 = 3;
+					buzz->jumpState = 5;
+					buzz->animState = 3;
 					g_unk53C61C = 0;
 
 					return 1;
@@ -2205,7 +2205,7 @@ namespace Toy2
 			{
 				g_unk53C668 = 1;
 
-				if (buzz->unkShort40)
+				if (buzz->supportGraceTimer)
 				{
 					g_unk53C668 = -1;
 
@@ -2226,7 +2226,7 @@ namespace Toy2
 				if ((InputManager::g_directionInputState & 0x10) != 0)
 				{
 					buzz->collisionFlags = 0;
-					buzz->unkShort40 = 0;
+					buzz->supportGraceTimer = 0;
 
 					if (v2 != 2)
 					{
@@ -2236,7 +2236,7 @@ namespace Toy2
 				}
 				else if ((InputManager::g_directionInputState & 0x40) != 0)
 				{
-					if (buzz->unkShort40)
+					if (buzz->supportGraceTimer)
 					{
 						g_unk53C668 = -1;
 
@@ -2293,14 +2293,14 @@ namespace Toy2
 
 				buzz->velX = Numerics::g_sinCosLUT[buzz->transform.angles.yaw & 0xFFF] >> 1;
 				buzz->velForward = Numerics::g_sinCosLUT[(buzz->transform.angles.yaw + 1024) & 0xFFF] >> 1;
-				buzz->unkWord15 = 1;
+				buzz->jumpState = 1;
 				g_unk53C61C = 0;
 				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 
 				g_unk53C668 = -1;
 				buzz->collisionFlags = 0;
-				buzz->unkShort40 = 0;
-				buzz->unkVar37 = 2;
+				buzz->supportGraceTimer = 0;
+				buzz->animState = 2;
 				buzz->facingAngle = buzz->transform.angles.yaw;
 
 				return 1;
@@ -2310,14 +2310,14 @@ namespace Toy2
 			buzz->gravityVel = -1536;
 			buzz->velX = 0;
 			buzz->velForward = 0;
-			buzz->unkWord15 = 2;
+			buzz->jumpState = 2;
 			AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 			g_unk53C61C = 0;
 
 			g_unk53C668 = -1;
 			buzz->collisionFlags = 0;
-			buzz->unkShort40 = 0;
-			buzz->unkVar37 = 2;
+			buzz->supportGraceTimer = 0;
+			buzz->animState = 2;
 			buzz->facingAngle = buzz->transform.angles.yaw;
 
 			return 1;
@@ -2522,11 +2522,11 @@ namespace Toy2
 			actor->velX = g_unk53C604 * (Numerics::g_sinCosLUT[actor->transform.angles.yaw & 0xFFF] >> 5);
 			actor->velForward = g_unk53C604 * (Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 5);
 			actor->gravityVel = -1472;
-			actor->unkWord15 = 1;
+			actor->jumpState = 1;
 			g_unk53C61C = 0;
 			actor->collisionFlags = 0;
-			actor->unkShort40 = 0;
-			actor->unkVar37 = 3;
+			actor->supportGraceTimer = 0;
+			actor->animState = 3;
 
 			if ((InputManager::g_directionInputState & 0x4000) != 0)
 				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)actor);
@@ -2586,7 +2586,7 @@ namespace Toy2
 					Platform::g_platformDescriptors[platformIdx].flags = flags | 0x12;
 					Collision::g_buzzCollisionStates[0].platformIdx = (int16_t)platformIdx;
 
-					if (Toy2::g_buzzActor.unkWord15 == 0)
+					if (Toy2::g_buzzActor.jumpState == 0)
 					{
 						Toy2::g_buzzActor.collisionFlags |= 1;
 						Toy2::g_buzzActor.gravityVel += 32;
@@ -3294,7 +3294,7 @@ namespace Toy2
 				surfaceQuality = Nu3D::Collision::GetSurfaceQuality(0);
 				g_unk52B81C = surfaceQuality;
 
-				if (! buzzActor->collisionFlags && buzzActor->unkShort40)
+				if (! buzzActor->collisionFlags && buzzActor->supportGraceTimer)
 				{
 					surfaceQuality = previousQuality;
 					g_unk52B81C = surfaceQuality;
@@ -3322,7 +3322,7 @@ namespace Toy2
 						buzzActor->transform.pos.y = gravityVel + buzzActor->motionTargetPos.y;
 						buzzActor->transform.pos.z = velForward + buzzActor->motionTargetPos.z;
 						buzzActor->collisionFlags = 0;
-						buzzActor->unkShort40 = 0;
+						buzzActor->supportGraceTimer = 0;
 
 						surfaceQuality = g_unk52B81C;
 					}
@@ -3337,13 +3337,13 @@ namespace Toy2
 
 			if (g_unk53C818)
 			{
-				if (surfaceQuality != 13 && buzzActor->unkShort40)
+				if (surfaceQuality != 13 && buzzActor->supportGraceTimer)
 					g_unk53C818 = 0;
 				else
 					goto LABEL_19;
 			}
 
-			if (surfaceQuality == 13 && buzzActor->unkShort40)
+			if (surfaceQuality == 13 && buzzActor->supportGraceTimer)
 				g_unk53C818 = 2;
 
 		LABEL_19:
@@ -3513,7 +3513,7 @@ namespace Toy2
 					buzzActor->facingAngle = newYaw;
 				}
 
-				if (buzzActor->unkShort40)
+				if (buzzActor->supportGraceTimer)
 					g_unk53C634 |= 4;
 			}
 
@@ -3554,7 +3554,7 @@ namespace Toy2
 				movementParams.turnSpeed = 160 * frameDelta / 16;
 
 		LBL_UPDATE_ACTION_FLAGS:
-			g_buzzActionState = buzzActor->unkShort40 != 0;
+			g_buzzActionState = buzzActor->supportGraceTimer != 0;
 
 			if (g_unk53C83C < 0)
 				g_buzzActionState |= 0x2;
@@ -3604,7 +3604,7 @@ namespace Toy2
 			if (g_unk53C818)
 				g_buzzActionState |= 0x10000;
 
-			if (buzzActor->unkShort40)
+			if (buzzActor->supportGraceTimer)
 			{
 				if (g_unk53C608)
 				{
@@ -3730,7 +3730,7 @@ namespace Toy2
 				}
 			}
 
-			if (buzzActor->unkShort40 || (buzzActor->stunTimer <= 0 && buzzActor->health >= 0))
+			if (buzzActor->supportGraceTimer || (buzzActor->stunTimer <= 0 && buzzActor->health >= 0))
 				g_unk53C834 = 0;
 
 			g_unk53C658 -= frameDelta;
@@ -3885,20 +3885,20 @@ namespace Toy2
 			if (buzzActor->collisionFlags == 0)
 			{
 				// Contact and fluid handling refresh this support countdown.
-				int16_t supportGraceTimer = buzzActor->unkShort40;
+				int16_t supportGraceTimer = buzzActor->supportGraceTimer;
 
 				if (supportGraceTimer > 0)
 				{
 					supportGraceTimer = supportGraceTimer - frameDelta;
-					buzzActor->unkShort40 = supportGraceTimer;
+					buzzActor->supportGraceTimer = supportGraceTimer;
 
 					if (supportGraceTimer <= 0)
-						buzzActor->unkShort40 = 0;
+						buzzActor->supportGraceTimer = 0;
 				}
 			}
 			else
 			{
-				buzzActor->unkShort40 = 6;
+				buzzActor->supportGraceTimer = 6;
 			}
 
 			Shadow::QueueStretchedForBuzz(buzzActor->transform.pos.x, buzzActor->floorYPos, buzzActor->transform.pos.z, 100);
@@ -3921,7 +3921,7 @@ namespace Toy2
 
 			if (buzzActor->gravityVel <= 128 || buzzActor->collisionFlags)
 			{
-				if (buzzActor->unkShort40)
+				if (buzzActor->supportGraceTimer)
 				{
 					if (groundSlamTimer == 80)
 					{
@@ -4203,7 +4203,7 @@ namespace Toy2
 				if ((flags & 0x10) != 0)
 					v6 = 1;
 
-				if (((flags & 0x10) != 0 || v7) && g_buzzActor.unkShort40)
+				if (((flags & 0x10) != 0 || v7) && g_buzzActor.supportGraceTimer)
 				{
 					switch (g_unk52B81C)
 					{
@@ -4455,7 +4455,7 @@ namespace Toy2
 
 			bandIdx = 9;
 
-			if (g_buzzActor.unkVar30 || g_buzzActor.unkVar31)
+			if (g_buzzActor.localForwardSpeed || g_buzzActor.localStrafeSpeed)
 				bandIdx = altIdx;
 
 			if (g_buzzActor.transform.pos.y > surfaceY && g_buzzActor.transform.pos.y < surfaceY + 12288 && g_tickState[bandIdx])
@@ -4502,7 +4502,7 @@ namespace Toy2
 		LABEL_144:
 			g_unk830D30 = g_buzzActor.transform.pos.y;
 
-			if (g_buzzActor.unkShort40 && stepSound)
+			if (g_buzzActor.supportGraceTimer && stepSound)
 			{
 				if (g_unk52B81C == -1)
 				{
@@ -4609,7 +4609,7 @@ namespace Toy2
 				Nu3D::Link::SetRotationRelative8bit(g_cosmicShieldPickup->props.linkId, 0, g_cosmicShieldRotYaw, g_cosmicShieldSpin);
 
 				g_cosmicShieldRotYaw = -g_buzzActor.transform.angles.yaw & 0xFFF;
-				g_cosmicShieldSpin = (g_cosmicShieldSpin - Renderer::g_frameDelta * (g_buzzActor.unkVar30 >> 4)) & 0xFFF;
+				g_cosmicShieldSpin = (g_cosmicShieldSpin - Renderer::g_frameDelta * (g_buzzActor.localForwardSpeed >> 4)) & 0xFFF;
 
 				BOOL playSound = 1;
 

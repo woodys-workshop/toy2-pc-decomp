@@ -32,24 +32,31 @@ namespace Toy2
 		int32_t secondaryAnimTime;
 		int32_t surfaceClampY;
 
-		// creature actor
+		// --- creature actor ---
+
+		// lighting
 		RGB16 actorTint;
-		int16_t unkVar10;
-		int16_t unkVar12;
-		int16_t unkVar12_;
-		int16_t unkVar13;
-		int16_t unkVar13_;
+		int16_t unusedLightParam;
+		Vector3I16 scale;
+		int16_t scaleControl;
 		int32_t useTint;
+
+		// bounding / flags
 		Vector3I16 boundingOffset;
 		int16_t boundingSphereRadius;
 		int16_t actorFlags;
 		int16_t visibilityDistance;
+
+		// velocity
 		int32_t velX;
 		int32_t gravityVel;
 		int32_t velForward;
+		
+		// boundary / target
 		Vector3I boundary;
 		Vector3I motionTargetPos;
 		int32_t targetYaw;
+
 		int32_t areaIndex;
 		int16_t unkVar29;
 		int16_t unkVar29_;

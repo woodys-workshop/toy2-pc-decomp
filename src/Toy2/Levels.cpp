@@ -1308,10 +1308,10 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00434090
 		int32_t Method2(int32_t a1, int16_t a2)
 		{
-			g_buzzActor.unkWord15 = a2;
+			g_buzzActor.jumpState = a2;
 			g_buzzActor.collisionFlags = 0;
-			g_buzzActor.unkShort40 = 0;
-			g_buzzActor.unkVar37 = 2;
+			g_buzzActor.supportGraceTimer = 0;
+			g_buzzActor.animState = 2;
 			g_buzzActor.gravityVel = a1;
 			Buzz::g_curMoveableObject = 0;
 			Buzz::g_buzzSlipTimer = 0;

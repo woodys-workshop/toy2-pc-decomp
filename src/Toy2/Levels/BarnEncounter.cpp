@@ -111,7 +111,7 @@ namespace Toy2
 			{
 				actor->unkShort2 = 10000;
 				actor->actorPhase = 0;
-				actor->unkVar13_ = 0;
+				actor->scaleControl = 0;
 
 				actor->creatureRam->boundHalfX = g_levelActors[6].creatureRam->boundHalfX;
 				actor->creatureRam->boundHalfZ = g_levelActors[6].creatureRam->boundHalfZ;
@@ -529,17 +529,17 @@ namespace Toy2
 							v42 = 40 * g_unk52FBC4;
 
 							g_levelActors[v41].visibilityDistance = 2800;
-							g_levelActors[v41].unkVar12 = 0;
-							g_levelActors[v41].unkVar12_ = 0;
+							g_levelActors[v41].scale.x = 0;
+							g_levelActors[v41].scale.y = 0;
 
-							g_levelActors[v41].unkVar13 = 0;
-							g_levelActors[v41].unkVar13_ = (int16_t)0x8000;
+							g_levelActors[v41].scale.z = 0;
+							g_levelActors[v41].scaleControl = 0x8000;
 
 							g_levelActors[v40].visibilityDistance = 2800;
-							g_levelActors[v40].unkVar12 = 0;
-							g_levelActors[v40].unkVar12_ = 0;
-							g_levelActors[v40].unkVar13 = 0;
-							g_levelActors[v40].unkVar13_ = (int16_t)0x8000;
+							g_levelActors[v40].scale.x = 0;
+							g_levelActors[v40].scale.y = 0;
+							g_levelActors[v40].scale.z = 0;
+							g_levelActors[v40].scaleControl = 0x8000;
 
 							AudioManager::PlaySoundEffect(134, &g_levelActors[v41].transform.pos);
 							v32 = g_unk52FBD4;
@@ -795,35 +795,35 @@ namespace Toy2
 			v64 = g_unk52FBC8;
 			v65 = g_unk52FBC8;
 
-			if ((uint16_t)g_levelActors[g_unk52FBC8].unkVar13_ == 0x8000)
+			if ((uint16_t)g_levelActors[g_unk52FBC8].scaleControl == 0x8000)
 			{
-				g_levelActors[g_unk52FBC8].unkVar12 += 12 * v56;
+				g_levelActors[g_unk52FBC8].scale.x += 12 * v56;
 
-				if (g_levelActors[v65].unkVar12 >= 4096)
+				if (g_levelActors[v65].scale.x >= 4096)
 				{
-					g_levelActors[v65].unkVar12 = 4096;
-					g_levelActors[v65].unkVar13_ = 0;
+					g_levelActors[v65].scale.x = 4096;
+					g_levelActors[v65].scaleControl = 0;
 				}
 
-				g_levelActors[v65].unkVar12_ = g_levelActors[v65].unkVar12;
-				g_levelActors[v65].unkVar13 = g_levelActors[v65].unkVar12;
+				g_levelActors[v65].scale.y = g_levelActors[v65].scale.x;
+				g_levelActors[v65].scale.z = g_levelActors[v65].scale.x;
 			}
 
 			v66 = g_unk52FBC4;
 
-			if (v64 != g_unk52FBC4 && (uint16_t)g_levelActors[g_unk52FBC4].unkVar13_ == 0x8000)
+			if (v64 != g_unk52FBC4 && (uint16_t)g_levelActors[g_unk52FBC4].scaleControl == 0x8000)
 			{
-				g_levelActors[g_unk52FBC4].unkVar12 += 12 * v56;
+				g_levelActors[g_unk52FBC4].scale.x += 12 * v56;
 
-				if (g_levelActors[v66].unkVar12 >= 4096)
+				if (g_levelActors[v66].scale.x >= 4096)
 				{
-					g_levelActors[v66].unkVar12 = 4096;
-					g_levelActors[v66].unkVar13_ = 0;
+					g_levelActors[v66].scale.x = 4096;
+					g_levelActors[v66].scaleControl = 0;
 				}
 
 				v55 = g_unk52FC04;
-				g_levelActors[v66].unkVar12_ = g_levelActors[v66].unkVar12;
-				g_levelActors[v66].unkVar13 = g_levelActors[v66].unkVar12;
+				g_levelActors[v66].scale.y = g_levelActors[v66].scale.x;
+				g_levelActors[v66].scale.z = g_levelActors[v66].scale.x;
 			}
 
 			if (v55 > 1 && v55 < 4)

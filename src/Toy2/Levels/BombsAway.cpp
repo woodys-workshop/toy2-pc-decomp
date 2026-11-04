@@ -129,7 +129,7 @@ namespace Toy2
 			g_levelActors[0].actorTint.r = 0x2000;
 			g_levelActors[0].actorTint.g = 0x2000;
 			g_levelActors[0].actorTint.b = 0x2000;
-			g_levelActors[0].unkVar10 = 1000;
+			g_levelActors[0].unusedLightParam = 1000;
 
 			Nu3D::Link::SetScaleFromFixedOffsets(50, 0, 0, 0);
 			g_savedRecordY = Levels::g_recordData[63]->data[0].y;
@@ -438,13 +438,13 @@ namespace Toy2
 			{
 				g_levelActors[0].secondaryAnimIdx = g_levelActors[0].primaryAnimIdx - 1;
 				g_levelActors[0].secondaryAnimTime = g_levelActors[0].primaryAnimTime;
-				g_levelActors[0].unkVar13_ = -301;
+				g_levelActors[0].scaleControl = -301;
 
 				int32_t unkInt1 = -12000 - g_currentSize;
 
-				g_levelActors[0].unkVar12 = g_currentSize;
-				g_levelActors[0].unkVar12_ = g_currentSize;
-				g_levelActors[0].unkVar13 = g_currentSize;
+				g_levelActors[0].scale.x = g_currentSize;
+				g_levelActors[0].scale.y = g_currentSize;
+				g_levelActors[0].scale.z = g_currentSize;
 
 				if (! unkInt1)
 					unkInt1 = 1;

@@ -276,7 +276,7 @@ namespace Toy2
 				else
 					forced = 1;
 
-				if (Collision::g_unk729110 < 0 || Toy2::g_buzzActor.unkWord15
+				if (Collision::g_unk729110 < 0 || Toy2::g_buzzActor.jumpState
 					|| (standing = Collision::g_unk729110, (g_platformDescriptors[Collision::g_unk729110].flags & 0x10) == 0))
 					standing = -1;
 
@@ -300,7 +300,7 @@ namespace Toy2
 				{
 					flags = descriptor->flags;
 
-					if ((flags & 0x100) != 0 && (flags & 0x12) != 0 && ! Toy2::g_buzzActor.unkWord15)
+					if ((flags & 0x100) != 0 && (flags & 0x12) != 0 && ! Toy2::g_buzzActor.jumpState)
 						standing = index;
 
 					flags = (flags & 0xFF00) | (flags & 0xFC);
@@ -462,7 +462,7 @@ namespace Toy2
 				Collision::g_unk729110 = standing;
 
 				// Buzz is carried by the platform he stands on
-				if (Collision::g_unk728718 != -1 && carried == -1 && ! Toy2::g_buzzActor.unkWord15)
+				if (Collision::g_unk728718 != -1 && carried == -1 && ! Toy2::g_buzzActor.jumpState)
 				{
 					descriptor = &g_platformDescriptors[Collision::g_unk728718];
 

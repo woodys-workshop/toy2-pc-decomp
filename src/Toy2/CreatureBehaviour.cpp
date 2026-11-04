@@ -622,7 +622,7 @@ namespace Toy2
 					if (AndysHouse::g_inTinRobotFight == 2)
 						Camera::g_unk50A118 = actor->transform.pos;
 				}
-				else if (g_buzzActor.unkShort40 && g_buzzActor.transform.pos.y < -179566)
+				else if (g_buzzActor.supportGraceTimer && g_buzzActor.transform.pos.y < -179566)
 				{
 					Dialogue::Begin(8, 26, "ha ha ha ha ... defeat the ^tin robot^ to get a ^token^!", 3619, 1792, -1);
 					AndysHouse::g_inTinRobotFight = 1;

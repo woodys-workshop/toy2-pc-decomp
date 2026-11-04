@@ -1423,8 +1423,8 @@ namespace Toy2
 			}
 
 			int32_t moving = ! (
-				(abs(g_buzzActor.velX) < 4 && abs(g_buzzActor.velForward) < 4 && ! Buzz::g_unk53C660 && g_buzzActor.unkShort40)
-				|| (Buzz::g_unk53C668 > 0 && g_buzzActor.unkVar37 == 15));
+				(abs(g_buzzActor.velX) < 4 && abs(g_buzzActor.velForward) < 4 && ! Buzz::g_unk53C660 && g_buzzActor.supportGraceTimer)
+				|| (Buzz::g_unk53C668 > 0 && g_buzzActor.animState == 15));
 
 			if (! moving)
 			{
@@ -1626,7 +1626,7 @@ namespace Toy2
 				if (g_buzzActor.transform.pos.y < state->followY - 0x4000)
 					state->followY = g_buzzActor.transform.pos.y + 0x4000;
 
-				if ((g_buzzActor.unkShort40 && g_buzzActor.unkVar30) || g_buzzActor.transform.pos.y < state->followY + 4096)
+				if ((g_buzzActor.supportGraceTimer && g_buzzActor.localForwardSpeed) || g_buzzActor.transform.pos.y < state->followY + 4096)
 					state->followY -= (state->followY - g_buzzActor.transform.pos.y + 4096) >> 5;
 
 				state->smoothedY -= frameDelta * (state->smoothedY - state->followY) / 16;

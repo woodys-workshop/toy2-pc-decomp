@@ -571,10 +571,10 @@ namespace Toy2
 			g_unk52F760 = 0;
 			g_unk52F868 = 0;
 			g_levelActors[5].useTint = 1;
-			g_levelActors[5].unkVar13_ = (int16_t)32768;
-			g_levelActors[5].unkVar13 = 4096;
-			g_levelActors[5].unkVar12 = 4096;
-			g_levelActors[5].unkVar12_ = 0;
+			g_levelActors[5].scaleControl = 32768;
+			g_levelActors[5].scale.z = 4096;
+			g_levelActors[5].scale.x = 4096;
+			g_levelActors[5].scale.y = 0;
 			g_unk52F888 = 0;
 			g_unk52F77C = 0;
 			g_unk52F890 = 0;
@@ -967,7 +967,7 @@ namespace Toy2
 			{
 				*(uint16_t*)&v24 = g_unk52F86C;
 				g_unk52F868 = 0;
-				g_levelActors[5].unkVar12_ = g_unk52F760 * g_unk52F86C / 32;
+				g_levelActors[5].scale.y = g_unk52F760 * g_unk52F86C / 32;
 				g_unk52F760 -= (int32_t)Renderer::g_frameDelta;
 			}
 			else
@@ -1127,7 +1127,7 @@ namespace Toy2
 						break;
 				}
 
-				g_levelActors[5].unkVar12_ = v24;
+				g_levelActors[5].scale.y = v24;
 			}
 
 			g_unk52F7D8 = v20 - (int32_t)Renderer::g_frameDelta;
@@ -1166,7 +1166,7 @@ namespace Toy2
 				}
 			}
 
-			if (g_levelActors[5].unkVar12_ < 384)
+			if (g_levelActors[5].scale.y < 384)
 				*(uint8_t*)&g_levelActors[5].actorFlags &= ~1u;
 
 			if (g_tickState[8])

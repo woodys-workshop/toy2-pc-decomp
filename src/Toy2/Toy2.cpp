@@ -567,8 +567,8 @@ namespace Toy2
 
 							AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
 
-							if (! g_buzzActor.unkWord15)
-								g_buzzActor.unkWord15 = 5;
+							if (! g_buzzActor.jumpState)
+								g_buzzActor.jumpState = 5;
 
 							scrollIdx = g_gameMenuScrollIdx;
 							Buzz::g_unk53C658 = 10;
@@ -713,8 +713,8 @@ namespace Toy2
 						g_isPaused = 0;
 						AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
 
-						if (! g_buzzActor.unkWord15)
-							g_buzzActor.unkWord15 = 5;
+						if (! g_buzzActor.jumpState)
+							g_buzzActor.jumpState = 5;
 
 						scrollIdx = g_gameMenuScrollIdx;
 						Buzz::g_unk53C658 = 10;
@@ -803,8 +803,8 @@ namespace Toy2
 				g_isPaused = 0;
 				AudioManager::PlayMusicLooping(AudioManager::g_curTrackIndex);
 
-				if (! g_buzzActor.unkWord15)
-					g_buzzActor.unkWord15 = 5;
+				if (! g_buzzActor.jumpState)
+					g_buzzActor.jumpState = 5;
 
 				Buzz::g_unk53C658 = 10;
 			}
@@ -1971,9 +1971,9 @@ namespace Toy2
 			-g_buzzActor.lightDirection.x,
 			-g_buzzActor.lightDirection.y,
 			-g_buzzActor.lightDirection.z,
-			g_buzzActor.color.value & 0xFF,
-			(g_buzzActor.color.value >> 8) & 0xFF,
-			(g_buzzActor.color.value >> 16) & 0xFF);
+			g_buzzActor.lightColor.value & 0xFF,
+			(g_buzzActor.lightColor.value >> 8) & 0xFF,
+			(g_buzzActor.lightColor.value >> 16) & 0xFF);
 
 		if (Renderer::BeginScene())
 		{
@@ -6814,7 +6814,7 @@ namespace Toy2
 					g_unk830CC4 = 0;
 					Camera::g_cutsceneTimer = 0;
 					Camera::g_cameraBlendTimer = 64;
-					g_buzzActor.unkWord15 = 5;
+					g_buzzActor.jumpState = 5;
 				}
 			}
 		}
@@ -7826,7 +7826,7 @@ namespace Toy2
 			HandleLevelInteractions(g_levelFileIndex);
 			Lighting::UpdateBuzzLight();
 
-			g_buzzActor.unkVar23 = 0;
+			g_buzzActor.unusedVar2 = 0;
 
 			Buzz::UpdateAnimationState();
 			UnusedVarUpdate();

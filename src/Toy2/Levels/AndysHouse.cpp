@@ -494,7 +494,7 @@ namespace Toy2
 			if (! g_link21Scale)
 			{
 				if (g_buzzActor.transform.pos.z < -321858u && g_buzzActor.transform.pos.z > -361602u && g_buzzActor.transform.pos.x < 314294
-					&& g_buzzActor.transform.pos.x > 287606 && g_buzzActor.transform.pos.y < 18432 && g_buzzActor.transform.pos.y > 0 && g_buzzActor.unkShort40)
+					&& g_buzzActor.transform.pos.x > 287606 && g_buzzActor.transform.pos.y < 18432 && g_buzzActor.transform.pos.y > 0 && g_buzzActor.supportGraceTimer)
 				{
 					Collision::MarkPlatformAsMoving(8);
 					g_link21Scale = 8;

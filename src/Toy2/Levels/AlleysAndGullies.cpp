@@ -483,7 +483,7 @@ namespace Toy2
 				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 			}
 
-			if (g_buzzActor.unkShort40)
+			if (g_buzzActor.supportGraceTimer)
 			{
 				Levels::g_recordData[61]->data[1].x = 0;
 				Levels::g_recordData[61]->data[3].x = 0;
@@ -750,9 +750,9 @@ namespace Toy2
 				if (Buzz::g_unk53C668 > 0 && ! Buzz::g_unk53C5E4)
 				{
 					Buzz::g_unk53C668 = 0;
-					g_buzzActor.unkVar37 = 2;
+					g_buzzActor.animState = 2;
 					g_buzzActor.collisionFlags = 0;
-					g_buzzActor.unkShort40 = 0;
+					g_buzzActor.supportGraceTimer = 0;
 				}
 			}
 		LABEL_90:
@@ -892,9 +892,9 @@ namespace Toy2
 				if (Buzz::g_unk53C668 > 0 && Buzz::g_unk53C5E4 == 6)
 				{
 					Buzz::g_unk53C668 = 0;
-					g_buzzActor.unkVar37 = 2;
+					g_buzzActor.animState = 2;
 					g_buzzActor.collisionFlags = 0;
-					g_buzzActor.unkShort40 = 0;
+					g_buzzActor.supportGraceTimer = 0;
 				}
 			}
 		LABEL_118:

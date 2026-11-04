@@ -332,11 +332,11 @@ namespace Toy2
 						Nu3D::Math::BuildIdentityMatrix(&matrix2);
 
 						secondaryYOffset = 0.0f;
-						offset.x = (float)selectedActor->unkVar12 * 0.000244140625f;
-						offset.y = (float)selectedActor->unkVar12_ * 0.000244140625f;
-						offset.z = (float)selectedActor->unkVar13 * 0.000244140625f;
+						offset.x = (float)selectedActor->scale.x * 0.000244140625f;
+						offset.y = (float)selectedActor->scale.y * 0.000244140625f;
+						offset.z = (float)selectedActor->scale.z * 0.000244140625f;
 
-						int16_t scaleControl = selectedActor->unkVar13_;
+						int16_t scaleControl = selectedActor->scaleControl;
 
 						if (scaleControl)
 						{
@@ -632,16 +632,16 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00401000
 		uint32_t StepEventTrack(uint8_t* animStream)
 		{
-			int32_t unkVar33 = g_buzzActor.unkVar33;
-			uint8_t* cur = &animStream[g_buzzActor.unkVar33 >> 16];
+			int32_t trackPos = g_buzzActor.animTrackPos;
+			uint8_t* cur = &animStream[g_buzzActor.animTrackPos >> 16];
 
 			if (cur[1] == 0xFF && cur[2] == 1)
 			{
-				unkVar33 = g_buzzActor.unkVar33 & 0xFFFF0000;
-				g_buzzActor.unkVar33 &= 0xFFFF0000;
+				trackPos = g_buzzActor.animTrackPos & 0xFFFF0000;
+				g_buzzActor.animTrackPos &= 0xFFFF0000;
 			}
 
-			cur = &animStream[unkVar33 >> 16];
+			cur = &animStream[trackPos >> 16];
 			uint32_t result = *cur;
 
 			if (result >= 0x80)
@@ -651,12 +651,12 @@ namespace Toy2
 					switch (result)
 					{
 						case 0x81:
-							if (g_buzzActor.unkShort40)
+							if (g_buzzActor.supportGraceTimer)
 								Buzz::g_unk53C634 |= 1;
 							break;
 
 						case 0x82:
-							if (g_buzzActor.unkShort40)
+							if (g_buzzActor.supportGraceTimer)
 								Buzz::g_unk53C634 |= 2;
 							break;
 
@@ -678,23 +678,23 @@ namespace Toy2
 
 						case 0xFE:
 							result = (uint32_t)-1;
-							g_buzzActor.unkVar37 = 0;
-							g_buzzActor.unkVar38 = -1;
+							g_buzzActor.animState = 0;
+							g_buzzActor.prevAnimState = -1;
 							Buzz::g_unk50A098 = 0;
 							return result;
 
 						case 0xFF:
-							g_buzzActor.unkVar33 = -65536 - (cur[1] << 16) + unkVar33;
+							g_buzzActor.animTrackPos = -65536 - (cur[1] << 16) + trackPos;
 							break;
 
 						default:
 							break;
 					}
 
-					g_buzzActor.unkVar33 += 0x10000;
-					unkVar33 = g_buzzActor.unkVar33;
-					result = animStream[g_buzzActor.unkVar33 >> 16];
-					cur = &animStream[g_buzzActor.unkVar33 >> 16];
+					g_buzzActor.animTrackPos += 0x10000;
+					trackPos = g_buzzActor.animTrackPos;
+					result = animStream[g_buzzActor.animTrackPos >> 16];
+					cur = &animStream[g_buzzActor.animTrackPos >> 16];
 
 					if (result < 0x80)
 						return result;

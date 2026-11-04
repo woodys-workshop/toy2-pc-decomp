@@ -219,7 +219,7 @@ namespace Toy2
 			g_buzzActor.lightDirection.y = dirY;
 			g_buzzActor.lightDirection.z = dirZ;
 
-			g_buzzActor.color.value = ((colorR * (0x10000 - distanceSquared)) >> 16)
+			g_buzzActor.lightColor.value = ((colorR * (0x10000 - distanceSquared)) >> 16)
 				+ ((((colorG * (0x10000 - distanceSquared)) >> 16) + (((colorB * (0x10000 - distanceSquared)) >> 16) << 8)) << 8);
 		}
 
@@ -233,7 +233,7 @@ namespace Toy2
 
 			g_dynamicLights[0].groupId = 0;
 
-			g_buzzActor.unkVar51 = 2400;
+			g_buzzActor.unusedLightParam = 2400;
 
 			uint32_t packedColor = g_levelLightDefs[g_levelFileIndex].packedColor;
 
