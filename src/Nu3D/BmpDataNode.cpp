@@ -959,7 +959,7 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004CA0C0
 	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex)
 	{
-		double minDistanceSquared = 3.4028235e38f;
+		float minDistanceSquared = 3.4028235e38f;
 
 		Nu3D::Primitive* currentPrim = creature->primitives[vertexIndex];
 
@@ -977,19 +977,19 @@ namespace Nu3D
 					{
 						Nu3D::Vertex* candidateVertex = &currentPrim->patchVerts.data.vertices[vertOffset];
 
+						double deltaZ = candidateVertex->position.z - targetVertex->position.z;
 						double deltaY = candidateVertex->position.y - targetVertex->position.y;
 						double deltaX = candidateVertex->position.x - targetVertex->position.x;
-						double deltaZ = candidateVertex->position.z - targetVertex->position.z;
 
 						float distanceSquared = (float)(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
-						if (distanceSquared < minDistanceSquared && distanceSquared < 1024.0)
+						if (distanceSquared < minDistanceSquared && distanceSquared < 1024.0f)
 						{
 							minDistanceSquared = distanceSquared;
 
 							targetVertex->normals = candidateVertex->normals;
 
-							if (distanceSquared < 1.0)
+							if (distanceSquared < 1.0f)
 								return;
 						}
 
