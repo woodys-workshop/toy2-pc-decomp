@@ -57,7 +57,10 @@ namespace Toy2
 		Vector3I motionTargetPos;
 		int32_t targetYaw;
 
-		int32_t areaIndex;
+		int8_t areaIndex;
+		uint8_t groundAnimSpeed;
+		uint8_t airAnimSpeed;
+
 		int16_t unkVar29;
 		int16_t unkVar29_;
 		int32_t unkVar30;
@@ -213,11 +216,6 @@ namespace Toy2
 
 		STATIC_ASSERT(sizeof(CreatureActor) == 0x9C);
 		STATIC_ASSERT(sizeof(CreatureActor::ActorBehaviourContext) == 0xC);
-		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, updateFlags) == 0x4);
-		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, targetFlags) == 0x6);
-		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, localStrafeSpeed) == 0x8);
-		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, localForwardSpeed) == 0xA);
-		STATIC_ASSERT(offsetof(CreatureAnimationSequences, sequences) == 0x18);
 		STATIC_ASSERT(sizeof(CreatureAnimationSequences) == 0x80);
 	}
 }

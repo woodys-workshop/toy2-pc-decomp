@@ -305,7 +305,8 @@ namespace Toy2
 						Actor::SetAnimation(g_levelActors, 2, 25);
 						*(uint8_t*)&g_levelActors[0].actorFlags &= 0xF3u;
 						g_unk52FE30 = 30;
-						((uint16_t*)&g_levelActors[0].areaIndex)[1] = -16192;
+						g_levelActors[0].groundAnimSpeed = (uint8_t)-64;
+						g_levelActors[0].airAnimSpeed = (uint8_t)-64;
 
 						g_levelActors[0].creatureRam->latSpeedNoTarget = 32;
 						g_levelActors[0].creatureRam->latSpeedTarget = 32;
@@ -320,7 +321,8 @@ namespace Toy2
 						g_unk52FE30 = 0;
 						Actor::g_unk52FE34 = 1;
 						Actor::SetAnimation(g_levelActors, 1, 2);
-						((uint16_t*)&g_levelActors[0].areaIndex)[1] = -7968;
+						g_levelActors[0].groundAnimSpeed = (uint8_t)-32;
+						g_levelActors[0].airAnimSpeed = (uint8_t)-32;
 					}
 
 					v9 = (int32_t)Renderer::g_frameDelta;
@@ -348,7 +350,8 @@ namespace Toy2
 				{
 					Actor::SetAnimation(g_levelActors, 0, 24);
 					v14 = g_unk52FE30;
-					((uint16_t*)&g_levelActors[0].areaIndex)[1] = -16192;
+					g_levelActors[0].groundAnimSpeed = (uint8_t)-64;
+					g_levelActors[0].airAnimSpeed = (uint8_t)-64;
 				}
 
 				if (v13 > 146 && v14 <= 146)
@@ -396,7 +399,8 @@ namespace Toy2
 				{
 					Actor::g_unk52FE34 = 0;
 					Actor::SetAnimation(g_levelActors, 1, 2);
-					((uint16_t*)&g_levelActors[0].areaIndex)[1] = -7968;
+					g_levelActors[0].groundAnimSpeed = (uint8_t)-32;
+					g_levelActors[0].airAnimSpeed = (uint8_t)-32;
 				}
 			}
 		LABEL_69:

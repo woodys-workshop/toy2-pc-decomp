@@ -2297,7 +2297,7 @@ namespace Toy2
 
 					if (*(int16_t*)CharacterLoader::g_unk547CD4[creatureId])
 					{
-						int32_t areaIndex = (int8_t)curActor->areaIndex;
+						int32_t areaIndex = curActor->areaIndex;
 
 						if (areaIndex >= 0 && Nu3D::Portal::IsAreaVisible(areaIndex))
 						{

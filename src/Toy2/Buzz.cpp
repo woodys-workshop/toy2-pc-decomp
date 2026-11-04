@@ -1772,14 +1772,14 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00434D20
-		int32_t TickGroundSlam(Toy2::CreatureActor* actor)
+		int32_t TickGroundSlam(Toy2::BuzzActor* actor)
 		{
 			int32_t ticker;
 
 			if ((InputManager::g_directionInputState & DIR_CAM_FLAG3) != 0 && (InputManager::g_prevDirectionInputState & 0x2000) == 0
 				&& (g_buzzActionState & 0xFFF7F) == 0 && ! g_unk53C83C && ! g_unk53C650)
 			{
-				if (actor->unkWord15 == 1 || actor->unkWord15 == 2 || (int16_t)actor->lastValidYPosition == 8)
+				if (actor->jumpState == 1 || actor->jumpState == 2 || actor->animState == 8)
 				{
 					g_groundSlamTicker = 1;
 					AudioManager::PlaySoundEffect(23, &actor->transform.pos);
@@ -1801,11 +1801,11 @@ namespace Toy2
 					if (ticker >= -14)
 						return 0;
 
-					if (! actor->unkWord16)
-						actor->areaIndex += ((int32_t)Renderer::g_frameDelta << 8) / 4;
+					if (! actor->collisionFlags)
+						actor->gravityVel += ((int32_t)Renderer::g_frameDelta << 8) / 4;
 
-					if (actor->areaIndex > 2048)
-						actor->areaIndex = 2048;
+					if (actor->gravityVel > 2048)
+						actor->gravityVel = 2048;
 
 					return 5;
 				}
@@ -1815,7 +1815,7 @@ namespace Toy2
 				return 0;
 			}
 
-			if (actor->unkWord16)
+			if (actor->collisionFlags)
 			{
 				g_groundSlamTicker = -40;
 				Camera::g_unk50A510 = 40;
@@ -1831,7 +1831,7 @@ namespace Toy2
 			if (g_groundSlamTicker <= 14)
 				return 7;
 
-			actor->areaIndex = 2048;
+			actor->gravityVel = 2048;
 			g_groundSlamTicker = 14;
 
 			return 5;
@@ -3756,7 +3756,7 @@ namespace Toy2
 
 			TickGunFire(&buzzActor->transform);
 
-			moveFlags = gunFlags | TickGroundSlam((CreatureActor*)buzzActor);
+			moveFlags = gunFlags | TickGroundSlam(buzzActor);
 
 			TickSpinHover(buzzActor);
 

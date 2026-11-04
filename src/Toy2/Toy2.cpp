@@ -5356,7 +5356,10 @@ namespace Toy2
 
 		Renderer::SetVirtualRatioTo54();
 		Levels::InitLevelPlay(0);
+
+#ifndef APPLY_FIXES
 		ScreenDispatcher(10);
+#endif
 
 		g_levelFileIndex = levelIdx;
 

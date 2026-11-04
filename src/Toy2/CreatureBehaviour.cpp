@@ -2259,8 +2259,8 @@ namespace Toy2
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
-						((uint8_t*)&actor->areaIndex)[2] = 0xD0;
-						((uint8_t*)&actor->areaIndex)[3] = 0xD0;
+						actor->groundAnimSpeed = 0xD0;
+						actor->airAnimSpeed = 0xD0;
 						Actor::SetAnimation(actor, 3, 9);
 						actor->creatureRam->speedTarget = 0;
 						AirportInfiltration::g_unk52FEE8 = 44;
@@ -2743,8 +2743,8 @@ namespace Toy2
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
-						((uint8_t*)&actor->areaIndex)[2] = 0xD0;
-						((uint8_t*)&actor->areaIndex)[3] = 0xD0;
+						actor->groundAnimSpeed = 0xD0;
+						actor->airAnimSpeed = 0xD0;
 						Actor::SetAnimation(actor, 3, 9);
 						actor->creatureRam->speedTarget = 0;
 						FinalShowdown::g_unk53005C = 44;

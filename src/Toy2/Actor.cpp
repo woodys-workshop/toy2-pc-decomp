@@ -541,8 +541,8 @@ namespace Toy2
 				}
 
 				actor->actorFlags |= ACTOR_NO_DESPAWN;
-				((uint8_t*)&actor->areaIndex)[2] = (uint8_t)-32;
-				((uint8_t*)&actor->areaIndex)[3] = (uint8_t)-32;
+				actor->groundAnimSpeed = (uint8_t)-32;
+				actor->airAnimSpeed = (uint8_t)-32;
 				actor->velX = 0;
 				actor->velForward = 0;
 				actor->gravityVel = -1024;
@@ -975,8 +975,8 @@ namespace Toy2
 							++movementData;
 							break;
 						case 22:
-							((uint8_t*)&actor->areaIndex)[2] = (uint8_t)movementData[1];
-							((uint8_t*)&actor->areaIndex)[3] = (uint8_t)movementData[2];
+							actor->groundAnimSpeed = (uint8_t)movementData[1];
+							actor->airAnimSpeed = (uint8_t)movementData[2];
 							movementData += 3;
 							break;
 						case 23:
@@ -1455,9 +1455,9 @@ namespace Toy2
 			int32_t areaIndexByte;
 
 			if ((updateFlags & ACTOR_UPDATE_GROUNDED) != 0)
-				areaIndexByte = ((uint8_t*)&actor->areaIndex)[2];
+				areaIndexByte = actor->groundAnimSpeed;
 			else
-				areaIndexByte = ((uint8_t*)&actor->areaIndex)[3];
+				areaIndexByte = actor->airAnimSpeed;
 
 			int32_t animSpeed;
 
