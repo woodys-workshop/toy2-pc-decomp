@@ -1237,7 +1237,7 @@ namespace AudioManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x00436D80
+	// FUNCTION: TOY2 0x00436D80 [MATCHED]
 	void FillBuffer()
 	{
 		LPVOID audioPtr1;
@@ -1252,21 +1252,57 @@ namespace AudioManager
 			{
 				DWORD bytesPlayed;
 
-				if (curPlayCursor >= g_lastPlayCursor)
-					bytesPlayed = curPlayCursor - g_lastPlayCursor;
+				if (curPlayCursor < g_lastPlayCursor)
+					bytesPlayed = g_totalBufferSize - g_lastPlayCursor + curPlayCursor;
 				else
-					bytesPlayed = curPlayCursor + g_totalBufferSize - g_lastPlayCursor;
+					bytesPlayed = curPlayCursor - g_lastPlayCursor;
 
-				g_lastPlayCursor = curPlayCursor;
 				g_totalBytesPlayed += bytesPlayed;
+				g_lastPlayCursor = curPlayCursor;
 			}
 
-			if (g_eofReached)
+			if (! g_eofReached)
 			{
 				if (! g_musicSoundBuffer->Lock(g_writeOffset, g_chunkSize, &audioPtr1, &audioBytes1, 0, 0, 0))
 				{
-					// the end of the file was reached, keep writing silence
-					memset(audioPtr1, g_musicWaveFormat->wBitsPerSample != 8 ? 0 : 0x80, audioBytes1);
+					WaveReadFile(g_musicFileHandle, audioBytes1, (uint8_t*)audioPtr1, &g_musicDataChunk, &bytesOut);
+					DWORD totalRead = bytesOut;
+
+					if (bytesOut < audioBytes1)
+					{
+						if (! g_looping)
+						{
+							g_eofReached = 1;
+
+							memset((uint8_t*)audioPtr1 + bytesOut, (uint8_t)(g_musicWaveFormat->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1 - bytesOut);
+						}
+						else
+						{
+							while (totalRead < audioBytes1)
+							{
+								if (Wave::SeekToChunk(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
+									break;
+
+								if (WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesOut))
+									break;
+
+								totalRead += bytesOut;
+							}
+						}
+					}
+
+					g_musicSoundBuffer->Unlock(audioPtr1, audioBytes1, 0, 0);
+					g_writeOffset += audioBytes1;
+
+					if (g_writeOffset >= g_totalBufferSize)
+						g_writeOffset -= g_totalBufferSize;
+				}
+			}
+			else
+			{
+				if (! g_musicSoundBuffer->Lock(g_writeOffset, g_chunkSize, &audioPtr1, &audioBytes1, 0, 0, 0))
+				{
+					memset(audioPtr1, (uint8_t)(g_musicWaveFormat->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1);
 
 					g_musicSoundBuffer->Unlock(audioPtr1, audioBytes1, 0, 0);
 				}
@@ -1276,41 +1312,6 @@ namespace AudioManager
 				{
 					g_streamFinished = 1;
 				}
-			}
-			else if (! g_musicSoundBuffer->Lock(g_writeOffset, g_chunkSize, &audioPtr1, &audioBytes1, 0, 0, 0))
-			{
-				WaveReadFile(g_musicFileHandle, audioBytes1, (uint8_t*)audioPtr1, &g_musicDataChunk, &bytesOut);
-				DWORD totalRead = bytesOut;
-
-				if (bytesOut < audioBytes1)
-				{
-					if (g_looping)
-					{
-						do
-						{
-							if (Wave::SeekToChunk(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
-								break;
-
-							if (WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesOut))
-								break;
-
-							totalRead += bytesOut;
-						} while (totalRead < audioBytes1);
-					}
-					else
-					{
-						g_eofReached = 1;
-
-						memset((uint8_t*)audioPtr1 + bytesOut, g_musicWaveFormat->wBitsPerSample != 8 ? 0 : 0x80, audioBytes1 - bytesOut);
-					}
-				}
-
-				g_musicSoundBuffer->Unlock(audioPtr1, audioBytes1, 0, 0);
-				DWORD nextOffset = audioBytes1 + g_writeOffset;
-				g_writeOffset += audioBytes1;
-
-				if (g_writeOffset >= g_totalBufferSize)
-					g_writeOffset = nextOffset - g_totalBufferSize;
 			}
 		}
 	}
