@@ -373,18 +373,18 @@ namespace Toy2
 				if (portal->categoryIdx == 15 && g_hasBackdrop)
 					goto NEXT_PORTAL;
 
-				x = g_buzzActor.posAngles.pos.x >> 7;
+				x = g_buzzActor.transform.pos.x >> 7;
 
 				quad = (Levels::PortalQuad*)Levels::g_recordData[recordIdx];
 
 				// Buzz has to be near the first corner of the quad, or near the third one
 				if (abs(x - quad->p0x) < 0x4000)
 				{
-					y = g_buzzActor.posAngles.pos.y >> 7;
+					y = g_buzzActor.transform.pos.y >> 7;
 
 					if (abs(y - quad->p0y) < 0x4000)
 					{
-						z = g_buzzActor.posAngles.pos.z >> 7;
+						z = g_buzzActor.transform.pos.z >> 7;
 
 						if (abs(z - quad->p0z) < 0x4000)
 							goto LABEL_10;
@@ -394,12 +394,12 @@ namespace Toy2
 				if (abs(x - quad->p2x) >= 0x4000)
 					goto NEXT_PORTAL;
 
-				y = g_buzzActor.posAngles.pos.y >> 7;
+				y = g_buzzActor.transform.pos.y >> 7;
 
 				if (abs(y - quad->p2y) >= 0x4000)
 					goto NEXT_PORTAL;
 
-				z = g_buzzActor.posAngles.pos.z >> 7;
+				z = g_buzzActor.transform.pos.z >> 7;
 
 				if (abs(z - quad->p2z) >= 0x4000)
 					goto NEXT_PORTAL;
@@ -437,15 +437,15 @@ namespace Toy2
 
 					// where the path of Buzz crosses the plane
 					mathScratch[242] =
-						((Sector::g_unk54D920.x + sidePrevious * (g_buzzActor.posAngles.pos.x - Sector::g_unk54D920.x) / (sidePrevious - sideNow)) >> 7)
+						((Sector::g_unk54D920.x + sidePrevious * (g_buzzActor.transform.pos.x - Sector::g_unk54D920.x) / (sidePrevious - sideNow)) >> 7)
 						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0x;
 
 					mathScratch[243] =
-						((Sector::g_unk54D920.y + sidePrevious * (g_buzzActor.posAngles.pos.y - Sector::g_unk54D920.y) / (sidePrevious - sideNow)) >> 7)
+						((Sector::g_unk54D920.y + sidePrevious * (g_buzzActor.transform.pos.y - Sector::g_unk54D920.y) / (sidePrevious - sideNow)) >> 7)
 						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0y;
 
 					mathScratch[244] =
-						((Sector::g_unk54D920.z + sidePrevious * (g_buzzActor.posAngles.pos.z - Sector::g_unk54D920.z) / (sidePrevious - sideNow)) >> 7)
+						((Sector::g_unk54D920.z + sidePrevious * (g_buzzActor.transform.pos.z - Sector::g_unk54D920.z) / (sidePrevious - sideNow)) >> 7)
 						- ((Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx])->p0z;
 
 					quad = (Levels::PortalQuad*)Levels::g_recordData[portal->recordIdx];
@@ -489,19 +489,19 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00440260 [MATCHED]
 		void UpdateActiveSectorAt(int32_t x, int32_t y, int32_t z)
 		{
-			int32_t previousX = g_buzzActor.posAngles.pos.x;
-			int32_t previousY = g_buzzActor.posAngles.pos.y;
-			int32_t previousZ = g_buzzActor.posAngles.pos.z;
+			int32_t previousX = g_buzzActor.transform.pos.x;
+			int32_t previousY = g_buzzActor.transform.pos.y;
+			int32_t previousZ = g_buzzActor.transform.pos.z;
 
-			g_buzzActor.posAngles.pos.x = x;
-			g_buzzActor.posAngles.pos.y = y;
-			g_buzzActor.posAngles.pos.z = z;
+			g_buzzActor.transform.pos.x = x;
+			g_buzzActor.transform.pos.y = y;
+			g_buzzActor.transform.pos.z = z;
 
 			UpdateActiveSector();
 
-			g_buzzActor.posAngles.pos.y = previousY;
-			g_buzzActor.posAngles.pos.x = previousX;
-			g_buzzActor.posAngles.pos.z = previousZ;
+			g_buzzActor.transform.pos.y = previousY;
+			g_buzzActor.transform.pos.x = previousX;
+			g_buzzActor.transform.pos.z = previousZ;
 		}
 	}
 }

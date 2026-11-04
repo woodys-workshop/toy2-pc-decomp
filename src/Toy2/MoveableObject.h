@@ -29,7 +29,7 @@ namespace Toy2
 		extern int32_t g_unk52FD24;
 
 		void InitTable(int16_t* array);
-		void Update(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		void Update(Toy2::BuzzActor* buzzActor);
 
 		STATIC_ASSERT(sizeof(MoveableObject) == 0x28);
 	}

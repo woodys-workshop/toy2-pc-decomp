@@ -206,7 +206,7 @@ namespace Toy2
 	uint16_t g_playerUnlocks;
 
 	// GLOBAL: TOY2 0x0052F300
-	Buzz::Toy2BuzzActor g_buzzActor;
+	BuzzActor g_buzzActor;
 
 	// GLOBAL: TOY2 0x00529388
 	int32_t g_wndIsExitingUnused;
@@ -264,7 +264,7 @@ namespace Toy2
 	};
 
 	// GLOBAL: TOY2 0x0052C840
-	Actor::Toy2Actor g_levelActors[64];
+	CreatureActor g_levelActors[64];
 
 	// GLOBAL: TOY2 0x004F59A4
 	SpawnLocation g_spawnLocations[17] = {
@@ -887,10 +887,10 @@ namespace Toy2
 		LBL_ORBIT_PAUSED_CAMERA:
 			if ((Camera::g_inCutscene & 1) == 0 && ! Camera::g_cameraState)
 			{
-				startPos.pos.x = g_buzzActor.posAngles.pos.x;
+				startPos.pos.x = g_buzzActor.transform.pos.x;
 				Camera::g_activeCameraTransform.angles.yaw = (Camera::g_activeCameraTransform.angles.yaw + 8 * frameDelta) & 0xFFF;
-				startPos.pos.y = g_buzzActor.posAngles.pos.y - 0x4000;
-				startPos.pos.z = g_buzzActor.posAngles.pos.z;
+				startPos.pos.y = g_buzzActor.transform.pos.y - 0x4000;
+				startPos.pos.z = g_buzzActor.transform.pos.z;
 
 				displacement.pos.x = -2 * Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw];
 				displacement.pos.z = -2 * Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];
@@ -943,7 +943,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406CD0
-		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn)
+		void InitActor(Toy2::CreatureActor* actor, int32_t initialSpawn)
 		{
 			RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
 			int16_t initActorFlags;
@@ -996,7 +996,7 @@ namespace Toy2
 			actor->velX = 0;
 			actor->gravityVel = 0;
 			actor->velForward = 0;
-			actor->unkVar7 = 0;
+			actor->primaryAnimTime = 0;
 			actor->primaryAnimIdx = 0;
 			actor->secondaryAnimIdx = -1;
 			actor->unkVar30 = (int32_t)Actor::g_unk4E0588[1];
@@ -1005,7 +1005,7 @@ namespace Toy2
 			actor->unkWord15 = 0;
 			actor->unkShort1 = 0;
 			actor->damageCooldownTimer = 0;
-			actor->unkVar9 = 0x80000000;
+			actor->surfaceClampY = 0x80000000;
 			actor->lastValidYPosition = actorPosY;
 
 			if (initialSpawn)
@@ -1195,15 +1195,15 @@ namespace Toy2
 				ellipsoidRadius = 400;
 			}
 
-			Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+			CreatureActor* actor = Actor::g_activeActors[0];
 
-			int32_t buzzX = g_buzzActor.posAngles.pos.x;
-			int32_t buzzY = g_buzzActor.posAngles.pos.y - 7360;
-			int32_t buzzZ = g_buzzActor.posAngles.pos.z;
+			int32_t buzzX = g_buzzActor.transform.pos.x;
+			int32_t buzzY = g_buzzActor.transform.pos.y - 7360;
+			int32_t buzzZ = g_buzzActor.transform.pos.z;
 
 			if (Actor::g_activeActors[0])
 			{
-				Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+				CreatureActor** nextActor = Actor::g_activeActors;
 
 				do
 				{
@@ -1234,7 +1234,7 @@ namespace Toy2
 							&& (actor->actorFlags & Actor::ACTOR_DEATH_DAMAGE) != 0)
 						{
 							int32_t angle = Nu3D::Math::CartesianToFixedAngle(
-								g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z);
+								g_buzzActor.transform.pos.x - actor->transform.pos.x, g_buzzActor.transform.pos.z - actor->transform.pos.z);
 
 							actor->actorFlags |= 0x200;
 
@@ -1269,7 +1269,7 @@ namespace Toy2
 
 			for (i = 0; i < 64; i++)
 			{
-				Actor::Toy2Actor* actor = &g_levelActors[i];
+				CreatureActor* actor = &g_levelActors[i];
 
 				actor->actorFlags = (actor->actorFlags & 0xFF00)
 					| (actor->actorFlags
@@ -1337,7 +1337,7 @@ namespace Toy2
 			if (g_levelFileIndex == 10)
 				ElevatorHop::InitMouse();
 
-			Actor::Toy2Actor* curActor = Actor::g_activeActors[0];
+			CreatureActor* curActor = Actor::g_activeActors[0];
 
 			if (Actor::g_activeActors[0])
 			{
@@ -1350,7 +1350,7 @@ namespace Toy2
 
 					if (((actorFlags & 1) == 0 && distances[index] >= radius * radius) || (actorFlags & Actor::ACTOR_FORCE_REMOVE) != 0)
 					{
-						Actor::g_activeActors[index] = (Actor::Toy2Actor*)-1;
+						Actor::g_activeActors[index] = (CreatureActor*)-1;
 					}
 					else
 					{
@@ -1365,14 +1365,14 @@ namespace Toy2
 
 			if (Actor::g_activeActors[0])
 			{
-				Actor::Toy2Actor** testActor = Actor::g_activeActors;
-				Actor::Toy2Actor** leadingActor = Actor::g_activeActors;
-				Actor::Toy2Actor** destActor = Actor::g_activeActors;
-				Actor::Toy2Actor* nextActor;
+				CreatureActor** testActor = Actor::g_activeActors;
+				CreatureActor** leadingActor = Actor::g_activeActors;
+				CreatureActor** destActor = Actor::g_activeActors;
+				CreatureActor* nextActor;
 
 				do
 				{
-					if (*testActor != (Actor::Toy2Actor*)-1)
+					if (*testActor != (CreatureActor*)-1)
 					{
 						++lastActorIdx;
 						*destActor++ = *leadingActor;
@@ -1388,7 +1388,7 @@ namespace Toy2
 
 			if (Actor::g_activeActors[0])
 			{
-				Actor::Toy2Actor** nextActorPtr = Actor::g_activeActors;
+				CreatureActor** nextActorPtr = Actor::g_activeActors;
 
 				do
 				{
@@ -1926,7 +1926,7 @@ namespace Toy2
 				checkPos.y = -66813;
 				checkPos.z = 386446;
 
-				if (sector == 2 || Nu3D::Math::IsWithinDistance(&checkPos, &g_buzzActor.posAngles.pos, 250))
+				if (sector == 2 || Nu3D::Math::IsWithinDistance(&checkPos, &g_buzzActor.transform.pos, 250))
 					Renderer::SetViewportPresetByDetail(0x7FFFFFFF);
 
 				break;
@@ -7006,7 +7006,7 @@ namespace Toy2
 			{
 				if (g_unk830E38 != 5)
 				{
-					AudioManager::StartSoundSequenceOnActor(-5, (Actor::Toy2Actor*)&g_buzzActor);
+					AudioManager::StartSoundSequenceOnActor(-5, (CreatureActor*)&g_buzzActor);
 					shown = g_collectionCount;
 				}
 
@@ -7937,7 +7937,7 @@ namespace Toy2
 		Transform* origin,
 		Transform* headOffset,
 		int32_t range,
-		Toy2::Actor::Toy2Actor* autoAimActor)
+		Toy2::CreatureActor* autoAimActor)
 	{
 		int32_t oldestLife = 1000;
 		BeamShot* beamShot;
@@ -7972,12 +7972,12 @@ namespace Toy2
 
 		if (autoAimActor)
 		{
-			Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+			CreatureActor* actor = Actor::g_activeActors[0];
 			int32_t bestAngleDiff = 0x7FFFFFFF;
 
 			if (actor)
 			{
-				Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+				CreatureActor** nextActor = Actor::g_activeActors;
 
 				do
 				{

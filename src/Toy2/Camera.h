@@ -68,14 +68,14 @@ namespace Toy2
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos);
 		void BeginScriptedCutsceneAtPoint(Vector3I* target, int32_t duration, int32_t orbitRadius);
 		void BeginScriptedCutsceneOnBuzz(int32_t duration);
-		void InitGameplayCamera(Toy2::Camera::GameplayCameraState* cameraState, Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		void InitGameplayCamera(Toy2::Camera::GameplayCameraState* cameraState, Toy2::BuzzActor* buzzActor);
 		void SnapBehindBuzz(Toy2::Camera::GameplayCameraState* cameraState);
 		void UpdateActiveTransform();
 		int32_t CalculateMaxTurnAngle(int32_t directionButtonState);
-		int32_t HandleLedgeClimb(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+		int32_t HandleLedgeClimb(Toy2::BuzzActor* buzzActor);
 		void CullActors(Nu3D::Camera::ActiveCameraTransform* cam);
-		void UpdateGravityBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor);
-		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement);
+		void UpdateGravityBoots(Toy2::BuzzActor* buzzActor);
+		BOOL UpdateRocketBoots(Toy2::BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement);
 		int32_t SweepSegmentVsActors(Transform* startPos, Transform* displacement, int32_t damageMode);
 
 		STATIC_ASSERT(sizeof(GameplayCameraState) == 0x34);

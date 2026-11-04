@@ -2592,7 +2592,7 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x0049E910
-	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::Actor::Toy2Actor* actor)
+	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::CreatureActor* actor)
 	{
 		Toy2::g_soundSequencePlayers[7].pos.x = actor->transform.pos.x;
 		Toy2::g_soundSequencePlayers[7].pos.y = actor->transform.pos.y;
@@ -2788,7 +2788,7 @@ namespace AudioManager
 	}
 
 	// FUNCTION: TOY2 0x004A3E60
-	int32_t IsActorSoundPlaying(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+	int32_t IsActorSoundPlaying(Toy2::BuzzActor* buzzActor)
 	{
 		if (g_directSoundInit)
 		{
@@ -2816,7 +2816,7 @@ namespace AudioManager
 	namespace Preset
 	{
 		// FUNCTION: TOY2 0x0049EA60
-		int32_t PlayOneShotSound2(int32_t soundIndex, Toy2::Actor::Toy2Actor* owner)
+		int32_t PlayOneShotSound2(int32_t soundIndex, Toy2::CreatureActor* owner)
 		{
 			return PlayOneShotSound3DActor(
 				owner,
@@ -2828,7 +2828,7 @@ namespace AudioManager
 		}
 
 		// FUNCTION: TOY2 0x0049EA90
-		int32_t PlayOneShotSound(int32_t soundIndex, Toy2::Actor::Toy2Actor* owner)
+		int32_t PlayOneShotSound(int32_t soundIndex, Toy2::CreatureActor* owner)
 		{
 			return PlayOneShotSound3DActor(
 				owner,

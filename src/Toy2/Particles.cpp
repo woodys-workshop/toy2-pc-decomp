@@ -77,7 +77,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004106C0
-		void SpawnBurstRingAtActor(Toy2::Actor::Toy2Actor* actor, uint8_t r, uint8_t g, uint8_t b, int32_t yOffset)
+		void SpawnBurstRingAtActor(Toy2::CreatureActor* actor, uint8_t r, uint8_t g, uint8_t b, int32_t yOffset)
 		{
 			int32_t zFactor = Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw & 0xFFF];
 			int32_t xFactor = Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];

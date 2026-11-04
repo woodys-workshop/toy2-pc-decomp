@@ -41,19 +41,19 @@ namespace AudioManager
 	int32_t PlayLoopingSound3DPositional(void* owner, int32_t soundIndex, int32_t volume, int32_t leftVolume, void* unused, int16_t rightVolume);
 	void ReleaseBuffers();
 	void PlaySoundEffect(int32_t effectId, Vector3I* worldPos);
-	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::Actor::Toy2Actor* actor);
+	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::CreatureActor* actor);
 	void ClearSequence7Cursor();
 	void UpdateSoundSequences();
 	void UpdateChannels();
 	int32_t PlayOneShotSound3DActor(void* owner, int32_t soundIndex, int32_t pitch, int32_t volume, Vector3I* pos, int32_t unused = 0);
-	int32_t IsActorSoundPlaying(Toy2::Buzz::Toy2BuzzActor* buzzActor);
+	int32_t IsActorSoundPlaying(Toy2::BuzzActor* buzzActor);
 	void SetVolumes(int32_t musicVolume, int32_t soundVolume);
 
 	STATIC_ASSERT(sizeof(SoundEffectPreset) == 0x10);
 
 	namespace Preset
 	{
-		int32_t PlayOneShotSound2(int32_t soundIndex, Toy2::Actor::Toy2Actor* owner);
-		int32_t PlayOneShotSound(int32_t soundIndex, Toy2::Actor::Toy2Actor* owner);
+		int32_t PlayOneShotSound2(int32_t soundIndex, Toy2::CreatureActor* owner);
+		int32_t PlayOneShotSound(int32_t soundIndex, Toy2::CreatureActor* owner);
 	}
 }

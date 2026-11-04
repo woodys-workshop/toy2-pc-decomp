@@ -237,18 +237,18 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x004CDC20
-		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList)
+		void RenderActors(Toy2::CreatureActor** activeActorList)
 		{
 			int32_t previousFlags = Renderer::Set508718(0);
 
 			if (NGNLoader::g_ngnImage->creatureCount)
 			{
-				Toy2::Actor::Toy2Actor** actor = activeActorList;
+				Toy2::CreatureActor** actor = activeActorList;
 
 				if (*activeActorList)
 				{
 					D3DMATRIX* nodeMatrices = (D3DMATRIX*)g_nodeMatrices;
-					Toy2::Actor::Toy2Actor* nextActor;
+					Toy2::CreatureActor* nextActor;
 
 					do
 					{

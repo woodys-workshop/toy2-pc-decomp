@@ -16,7 +16,7 @@ namespace Toy2
 	namespace Animation
 	{
 		// GLOBAL: TOY2 0x00B223C0
-		Actor::Toy2Actor** g_animActorList;
+		CreatureActor** g_animActorList;
 
 		// GLOBAL: TOY2 0x00E4D98C
 		int32_t g_isLastActor;
@@ -291,11 +291,11 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004CD880
-		void AnimateActors(Actor::Toy2Actor** actorList)
+		void AnimateActors(CreatureActor** actorList)
 		{
-			Actor::Toy2Actor** list;
-			Actor::Toy2Actor** actorNext;
-			Actor::Toy2Actor* selectedActor;
+			CreatureActor** list;
+			CreatureActor** actorNext;
+			CreatureActor* selectedActor;
 			Nu3D::Creature* creature;
 			Vector3F offset;
 			Vector3I* nodeAngle;
@@ -369,11 +369,11 @@ namespace Toy2
 
 						if (selectedActor->secondaryAnimIdx != -1)
 							EvaluateClipToMatrices(
-								slot, creature, &matrix1, (int16_t*)creature->animData[selectedActor->secondaryAnimIdx], selectedActor->unkVar8, 1);
+								slot, creature, &matrix1, (int16_t*)creature->animData[selectedActor->secondaryAnimIdx], selectedActor->secondaryAnimTime, 1);
 
 						if (selectedActor->primaryAnimIdx != -1)
 							EvaluateClipToMatrices(
-								slot, creature, &matrix2, (int16_t*)creature->animData[selectedActor->primaryAnimIdx], selectedActor->unkVar7, 0);
+								slot, creature, &matrix2, (int16_t*)creature->animData[selectedActor->primaryAnimIdx], selectedActor->primaryAnimTime, 0);
 
 						int32_t nodeIdx = 0;
 
@@ -426,7 +426,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0043C0E0
-		void TransformByBone(Vector3I* point, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex)
+		void TransformByBone(Vector3I* point, Toy2::CreatureActor* actor, int32_t boneIndex)
 		{
 			int32_t x = point->x;
 			int32_t y = point->y;
@@ -572,7 +572,7 @@ namespace Toy2
 							point.z = 0;
 							point.y = -200;
 
-							TransformByBone(&point, (Actor::Toy2Actor*)&g_buzzActor, (int16_t)baseBone);
+							TransformByBone(&point, (CreatureActor*)&g_buzzActor, (int16_t)baseBone);
 
 							g_unk53E4BC = (int16_t)point.z;
 							g_unk53E4B8 = (int16_t)point.x;
@@ -661,19 +661,19 @@ namespace Toy2
 							break;
 
 						case 0x83:
-							AudioManager::PlaySoundEffect(48, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(48, &g_buzzActor.transform.pos);
 							break;
 
 						case 0x84:
-							AudioManager::PlaySoundEffect(16, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(16, &g_buzzActor.transform.pos);
 							break;
 
 						case 0x85:
-							AudioManager::PlaySoundEffect(23, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(23, &g_buzzActor.transform.pos);
 							break;
 
 						case 0x86:
-							AudioManager::PlaySoundEffect(67, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(67, &g_buzzActor.transform.pos);
 							break;
 
 						case 0xFE:

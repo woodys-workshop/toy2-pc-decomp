@@ -446,10 +446,10 @@ namespace Toy2
 					}
 
 					g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
-					Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
-					g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+					Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.transform.angles.yaw;
+					g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
 					Camera::g_gameplayCameraState.distance = 1200;
-					Camera::g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+					Camera::g_gameplayCameraState.pos.y = g_buzzActor.transform.pos.y - 12288;
 					Camera::g_gameplayCameraState.angles.pitch = 0;
 					Camera::g_gameplayCameraState.targetPos.x = Camera::g_gameplayCameraState.pos.x;
 					Camera::g_gameplayCameraState.unkShort6 = 0;

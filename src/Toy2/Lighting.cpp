@@ -71,10 +71,10 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0049EEE0
 		void UpdateBuzzLight()
 		{
-			int32_t buzzLightY = g_buzzActor.posAngles.pos.y - 0x2000;
+			int32_t buzzLightY = g_buzzActor.transform.pos.y - 0x2000;
 
-			g_dynamicLights[0].pos.x = g_buzzActor.posAngles.pos.x + 16 * g_levelLightDefs[g_levelFileIndex].offset.x;
-			g_dynamicLights[0].pos.z = g_buzzActor.posAngles.pos.z + 16 * g_levelLightDefs[g_levelFileIndex].offset.z;
+			g_dynamicLights[0].pos.x = g_buzzActor.transform.pos.x + 16 * g_levelLightDefs[g_levelFileIndex].offset.x;
+			g_dynamicLights[0].pos.z = g_buzzActor.transform.pos.z + 16 * g_levelLightDefs[g_levelFileIndex].offset.z;
 			g_dynamicLights[0].pos.y = buzzLightY + 16 * g_levelLightDefs[g_levelFileIndex].offset.y;
 
 			int32_t closestDistance;
@@ -85,9 +85,9 @@ namespace Toy2
 			{
 				closestIdx = 1;
 				closestDistance =
-					((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8) * ((g_dynamicLights[1].pos.x - g_buzzActor.posAngles.pos.x) >> 8)
+					((g_dynamicLights[1].pos.x - g_buzzActor.transform.pos.x) >> 8) * ((g_dynamicLights[1].pos.x - g_buzzActor.transform.pos.x) >> 8)
 					+ ((g_dynamicLights[1].pos.y - buzzLightY) >> 8) * ((g_dynamicLights[1].pos.y - buzzLightY) >> 8)
-					+ ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((g_dynamicLights[1].pos.z - g_buzzActor.posAngles.pos.z) >> 8);
+					+ ((g_dynamicLights[1].pos.z - g_buzzActor.transform.pos.z) >> 8) * ((g_dynamicLights[1].pos.z - g_buzzActor.transform.pos.z) >> 8);
 			}
 			else
 			{
@@ -106,8 +106,8 @@ namespace Toy2
 					if (light->lifetime > 0)
 					{
 						int32_t distanceYZ = ((light->pos.y - buzzLightY) >> 8) * ((light->pos.y - buzzLightY) >> 8)
-							+ ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8) * ((light->pos.z - g_buzzActor.posAngles.pos.z) >> 8);
-						int32_t distanceX = ((light->pos.x - g_buzzActor.posAngles.pos.x) >> 8) * ((light->pos.x - g_buzzActor.posAngles.pos.x) >> 8);
+							+ ((light->pos.z - g_buzzActor.transform.pos.z) >> 8) * ((light->pos.z - g_buzzActor.transform.pos.z) >> 8);
+						int32_t distanceX = ((light->pos.x - g_buzzActor.transform.pos.x) >> 8) * ((light->pos.x - g_buzzActor.transform.pos.x) >> 8);
 
 						if (distanceX + distanceYZ <= 0x8000)
 						{
@@ -207,8 +207,8 @@ namespace Toy2
 
 		LABEL_23:
 			int32_t dirY = (y - buzzLightY) >> 8;
-			int32_t dirZ = (z - g_buzzActor.posAngles.pos.z) >> 8;
-			int32_t dirX = (x - g_buzzActor.posAngles.pos.x) >> 8;
+			int32_t dirZ = (z - g_buzzActor.transform.pos.z) >> 8;
+			int32_t dirX = (x - g_buzzActor.transform.pos.x) >> 8;
 
 			int32_t distanceSquared = dirX * dirX + dirY * dirY + dirZ * dirZ;
 

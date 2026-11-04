@@ -30,10 +30,10 @@ namespace Toy2
 	namespace Actor
 	{
 		// GLOBAL: TOY2 0x0052F1D0
-		Toy2Actor* g_activeActors[65];
+		CreatureActor* g_activeActors[65];
 
 		// GLOBAL: TOY2 0x00529D48
-		Toy2Actor* g_activeActorArray[64];
+		CreatureActor* g_activeActorArray[64];
 
 		// GLOBAL: TOY2 0x0052ADD8
 		uint8_t g_unk52ADD8[512];
@@ -467,15 +467,15 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004019D0
-		void UpdatePrimaryAnimation(Toy2::Actor::Toy2Actor* actor)
+		void UpdatePrimaryAnimation(Toy2::CreatureActor* actor)
 		{
 			uint8_t* creatureAnims = CharacterLoader::g_unk547CD4[actor->creatureId];
 
-			Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->primaryAnimIdx + 8), actor->unkVar7, *(uint16_t*)(creatureAnims + 4), 0);
+			Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->primaryAnimIdx + 8), actor->primaryAnimTime, *(uint16_t*)(creatureAnims + 4), 0);
 		}
 
 		// FUNCTION: TOY2 0x00405C80
-		void StepCreatureAnimFrame(Toy2::Actor::Toy2Actor* actor)
+		void StepCreatureAnimFrame(Toy2::CreatureActor* actor)
 		{
 			uint8_t* sequence = (uint8_t*)actor->unkVar30;
 
@@ -493,35 +493,35 @@ namespace Toy2
 					else
 					{
 						actor->unkVar30 = (int32_t)(sequence - 1);
-						actor->unkVar7 |= 0xFFFF;
+						actor->primaryAnimTime |= 0xFFFF;
 					}
 				}
 
 				uint8_t* current = (uint8_t*)actor->unkVar30;
-				int32_t unkVar7 = actor->unkVar7;
+				int32_t oldTime = actor->primaryAnimTime;
 
-				actor->unkVar7 = unkVar7 & 0xFFFF;
-				actor->unkVar7 = (*current << 16) + (unkVar7 & 0xFFFF);
+				actor->primaryAnimTime = oldTime & 0xFFFF;
+				actor->primaryAnimTime = (*current << 16) + (oldTime & 0xFFFF);
 			}
 			else
 			{
-				actor->unkVar7 = (*sequence << 16) + 0xFFFF;
+				actor->primaryAnimTime = (*sequence << 16) + 0xFFFF;
 			}
 		}
 
 		// FUNCTION: TOY2 0x00405CF0
-		void SetAnimation(Toy2::Actor::Toy2Actor* actor, int16_t state, int32_t animIdx)
+		void SetAnimation(Toy2::CreatureActor* actor, int16_t state, int32_t animIdx)
 		{
 			actor->primaryAnimIdx = state;
 
 			uint8_t* animSet = g_unk4E0588[animIdx];
 
 			actor->unkVar30 = (int32_t)animSet;
-			actor->unkVar7 = *animSet << 16;
+			actor->primaryAnimTime = *animSet << 16;
 		}
 
 		// FUNCTION: TOY2 0x00405D20
-		void Kill(Toy2::Actor::Toy2Actor* actor, uint8_t phase)
+		void Kill(Toy2::CreatureActor* actor, uint8_t phase)
 		{
 			if ((phase & 1) != 0)
 			{
@@ -555,7 +555,7 @@ namespace Toy2
 						actor->unkVar30 = (int32_t)g_unk4E0588[1];
 						burstCount = 3;
 						actor->unkVar29 = -94;
-						actor->unkVar7 = *g_unk4E0588[1] << 16;
+						actor->primaryAnimTime = *g_unk4E0588[1] << 16;
 						spawnBurst = 1;
 						break;
 					case 4:
@@ -563,7 +563,7 @@ namespace Toy2
 						actor->unkVar30 = (int32_t)g_unk4E0588[7];
 						burstCount = 3;
 						actor->unkVar29 = -62;
-						actor->unkVar7 = *g_unk4E0588[7] << 16;
+						actor->primaryAnimTime = *g_unk4E0588[7] << 16;
 						spawnBurst = 1;
 						break;
 					case 15:
@@ -583,7 +583,7 @@ namespace Toy2
 						actor->unkVar30 = (int32_t)g_unk4E0588[20];
 						burstCount = 3;
 						actor->unkVar29 = -70;
-						actor->unkVar7 = *g_unk4E0588[20] << 16;
+						actor->primaryAnimTime = *g_unk4E0588[20] << 16;
 						spawnBurst = 1;
 						break;
 					case 21:
@@ -601,7 +601,7 @@ namespace Toy2
 						actor->unkVar30 = (int32_t)g_unk4E0588[1];
 						burstCount = 3;
 						actor->unkVar29 = -94;
-						actor->unkVar7 = *g_unk4E0588[1] << 16;
+						actor->primaryAnimTime = *g_unk4E0588[1] << 16;
 						actor->unkShort2 = 10000;
 						spawnBurst = 1;
 						break;
@@ -717,8 +717,8 @@ namespace Toy2
 
 				if (g_activeActors[0] != actor)
 				{
-					Toy2Actor** cursor = g_activeActors;
-					Toy2Actor* next;
+					CreatureActor** cursor = g_activeActors;
+					CreatureActor* next;
 
 					do
 					{
@@ -728,12 +728,12 @@ namespace Toy2
 					} while (next != actor);
 				}
 
-				Toy2Actor** tail = &g_activeActors[actorIdx + 1];
+				CreatureActor** tail = &g_activeActors[actorIdx + 1];
 				int32_t lastIdx = actorIdx;
 
 				if (*tail)
 				{
-					Toy2Actor* nextActor;
+					CreatureActor* nextActor;
 
 					do
 					{
@@ -749,10 +749,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004076F0
-		void UpdateAIMovement(Toy2::Actor::Toy2Actor* actor)
+		void UpdateAIMovement(Toy2::CreatureActor* actor)
 		{
 			RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
-			Toy2Actor::ActorBehaviourContext behaviourContext;
+			CreatureActor::ActorBehaviourContext behaviourContext;
 			uint16_t* movementData = actor->movementData;
 			behaviourContext.targetFlags = 0;
 			int16_t boundAngle = creatureRam->boundAngle;
@@ -899,7 +899,7 @@ namespace Toy2
 							uint8_t* animSet = g_unk4E0588[(int16_t)movementData[2]];
 
 							actor->unkVar30 = (int32_t)animSet;
-							actor->unkVar7 = *animSet << 16;
+							actor->primaryAnimTime = *animSet << 16;
 							movementData += 3;
 							break;
 						}
@@ -928,8 +928,8 @@ namespace Toy2
 							movementData += 2;
 							break;
 						case 16: {
-							int32_t diffX = ((actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5);
-							scriptFlag = diffX * diffX + ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5) * ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5) < (int16_t)movementData[1] * (int16_t)movementData[1];
+							int32_t diffX = ((actor->transform.pos.x - g_buzzActor.transform.pos.x) >> 5);
+							scriptFlag = diffX * diffX + ((actor->transform.pos.z - g_buzzActor.transform.pos.z) >> 5) * ((actor->transform.pos.z - g_buzzActor.transform.pos.z) >> 5) < (int16_t)movementData[1] * (int16_t)movementData[1];
 							movementData += 2;
 							break;
 						}
@@ -944,8 +944,8 @@ namespace Toy2
 							++movementData;
 							break;
 						case 17: {
-							int32_t diffX = (g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5;
-							int32_t diffZ = (g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5;
+							int32_t diffX = (g_buzzActor.transform.pos.x - actor->boundary.x) >> 5;
+							int32_t diffZ = (g_buzzActor.transform.pos.z - actor->boundary.z) >> 5;
 
 							// NOTE: the original compares these unsigned
 							if ((uint32_t)(boundHalfXShift + ((cosBound * diffX - sinBound * diffZ) >> 7)) >= (uint32_t)(2 * boundHalfXShift))
@@ -971,7 +971,7 @@ namespace Toy2
 							movementData += 2;
 							break;
 						case 21:
-							actor->unkVar9 = 0x80000000;
+							actor->surfaceClampY = 0x80000000;
 							++movementData;
 							break;
 						case 22:
@@ -1011,7 +1011,7 @@ namespace Toy2
 								case 2:
 									actor->targetYaw =
 										(Nu3D::Math::CartesianToFixedAngle(
-											 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+											 actor->transform.pos.x - g_buzzActor.transform.pos.x, actor->transform.pos.z - g_buzzActor.transform.pos.z)
 										 - 2048)
 										& 0xFFF;
 									break;
@@ -1025,17 +1025,17 @@ namespace Toy2
 							movementData += 3;
 							break;
 						case 27:
-							actor->motionTargetPos.x = g_buzzActor.posAngles.pos.x;
+							actor->motionTargetPos.x = g_buzzActor.transform.pos.x;
 
 							if ((actor->actorFlags & ACTOR_STUNNED) == 0)
-								actor->motionTargetPos.y = g_buzzActor.posAngles.pos.y;
+								actor->motionTargetPos.y = g_buzzActor.transform.pos.y;
 
 							++movementData;
-							actor->motionTargetPos.z = g_buzzActor.posAngles.pos.z;
+							actor->motionTargetPos.z = g_buzzActor.transform.pos.z;
 							break;
 						case 31: {
-							int32_t dx = g_buzzActor.posAngles.pos.x - actor->transform.pos.x;
-							int32_t dz = g_buzzActor.posAngles.pos.z - actor->transform.pos.z;
+							int32_t dx = g_buzzActor.transform.pos.x - actor->transform.pos.x;
+							int32_t dz = g_buzzActor.transform.pos.z - actor->transform.pos.z;
 							int32_t angle = Nu3D::Math::CartesianToFixedAngle(dx, dz) & 0xFFF;
 							int32_t scale = (int16_t)movementData[1];
 
@@ -1051,8 +1051,8 @@ namespace Toy2
 							break;
 						}
 						case 35: {
-							int32_t dx = g_buzzActor.posAngles.pos.x - actor->transform.pos.x;
-							int32_t dz = g_buzzActor.posAngles.pos.z - actor->transform.pos.z;
+							int32_t dx = g_buzzActor.transform.pos.x - actor->transform.pos.x;
+							int32_t dz = g_buzzActor.transform.pos.z - actor->transform.pos.z;
 							int32_t angle = Nu3D::Math::CartesianToFixedAngle(dx, dz) & 0xFFF;
 
 							actor->motionTargetPos.x = actor->transform.pos.x - (int16_t)movementData[1] * Numerics::g_sinCosLUT[angle];
@@ -1095,7 +1095,7 @@ namespace Toy2
 				case 32:
 					actor->targetYaw =
 						(Nu3D::Math::CartesianToFixedAngle(
-							 actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+							 actor->transform.pos.x - g_buzzActor.transform.pos.x, actor->transform.pos.z - g_buzzActor.transform.pos.z)
 						 - 2048)
 						& 0xFFF;
 					break;
@@ -1110,13 +1110,13 @@ namespace Toy2
 
 			if ((actor->actorFlags & ACTOR_GROUNDED) != 0
 				&& (uint32_t)(boundHalfXShift
-							  + ((cosBound * ((g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5)
-								  - sinBound * ((g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5))
+							  + ((cosBound * ((g_buzzActor.transform.pos.x - actor->boundary.x) >> 5)
+								  - sinBound * ((g_buzzActor.transform.pos.z - actor->boundary.z) >> 5))
 								 >> 7))
 					< (uint32_t)(2 * boundHalfXShift)
 				&& (uint32_t)(boundHalfZShift
-							  + ((sinBound * ((g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5)
-								  + cosBound * ((g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5))
+							  + ((sinBound * ((g_buzzActor.transform.pos.x - actor->boundary.x) >> 5)
+								  + cosBound * ((g_buzzActor.transform.pos.z - actor->boundary.z) >> 5))
 								 >> 7))
 					< (uint32_t)(2 * boundHalfZShift))
 			{
@@ -1126,8 +1126,8 @@ namespace Toy2
 
 				behaviourContext.targetFlags |= 1;
 
-				targetX = g_buzzActor.posAngles.pos.x;
-				targetZ = g_buzzActor.posAngles.pos.z;
+				targetX = g_buzzActor.transform.pos.x;
+				targetZ = g_buzzActor.transform.pos.z;
 
 				switch (actor->creatureId)
 				{
@@ -1156,10 +1156,10 @@ namespace Toy2
 						break;
 				}
 
-				if (abs(actor->transform.pos.y - g_buzzActor.posAngles.pos.y) < 0x10000)
+				if (abs(actor->transform.pos.y - g_buzzActor.transform.pos.y) < 0x10000)
 				{
 					if (heightOffset != -1)
-						targetY = g_buzzActor.posAngles.pos.y - heightOffset;
+						targetY = g_buzzActor.transform.pos.y - heightOffset;
 				}
 				else
 				{
@@ -1483,8 +1483,8 @@ namespace Toy2
 					} while (wholeSteps);
 				}
 
-				int32_t oldVar7 = actor->unkVar7;
-				actor->unkVar7 = oldVar7 + animStep;
+				int32_t oldVar7 = actor->primaryAnimTime;
+				actor->primaryAnimTime = oldVar7 + animStep;
 
 				if (((oldVar7 ^ (oldVar7 + animStep)) & 0xFFFF0000) != 0)
 				{
@@ -1521,7 +1521,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00408A60
-		void HandleDamage(Toy2::Actor::Toy2Actor* actor, int32_t angle, int32_t hitType)
+		void HandleDamage(Toy2::CreatureActor* actor, int32_t angle, int32_t hitType)
 		{
 			g_unk50A54C = -1;
 
@@ -1545,11 +1545,11 @@ namespace Toy2
 							// quirk: the angle is not masked with 0xFFF for the x offset
 							if (hitType == 1)
 								HitType1Particles(
-									g_buzzActor.posAngles.pos.x + Numerics::g_sinCosLUT[angle] / 2,
-									g_buzzActor.posAngles.pos.y - 11264,
-									g_buzzActor.posAngles.pos.z + Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] / 2);
+									g_buzzActor.transform.pos.x + Numerics::g_sinCosLUT[angle] / 2,
+									g_buzzActor.transform.pos.y - 11264,
+									g_buzzActor.transform.pos.z + Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] / 2);
 							else
-								HitType1Particles(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z);
+								HitType1Particles(g_buzzActor.transform.pos.x, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z);
 						}
 
 						// Phases below 100 take health damage.
@@ -1575,7 +1575,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0043C1C0
-		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex)
+		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::CreatureActor* actor, int32_t boneIndex)
 		{
 			uint8_t* creatureAnims;
 
@@ -1583,14 +1583,14 @@ namespace Toy2
 			{
 				CharacterLoader::g_unk53EECC = boneIndex;
 				creatureAnims = CharacterLoader::g_unk547CD4[actor->creatureId];
-				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->primaryAnimIdx + 8), actor->unkVar7, *(uint16_t*)(creatureAnims + 4), 0);
+				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->primaryAnimIdx + 8), actor->primaryAnimTime, *(uint16_t*)(creatureAnims + 4), 0);
 			}
 
 			if (actor->secondaryAnimIdx != -1)
 			{
 				CharacterLoader::g_unk53EECC = boneIndex;
 				creatureAnims = CharacterLoader::g_unk547CD4[actor->creatureId];
-				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->secondaryAnimIdx + 8), actor->unkVar8, *(uint16_t*)(creatureAnims + 4), 1);
+				Animation::EvaluateClip(*(int16_t**)(creatureAnims + 4 * actor->secondaryAnimIdx + 8), actor->secondaryAnimTime, *(uint16_t*)(creatureAnims + 4), 1);
 			}
 
 			CharacterLoader::g_unk53EECC = -1;
@@ -1665,11 +1665,11 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0049F460
-		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ)
+		BOOL IsInsideBounds(Vector3I* position, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ)
 		{
-			if (actor->transform.pos.x > minX && actor->transform.pos.x < maxX)
+			if (position->x > minX && position->x < maxX)
 			{
-				int32_t zPos = actor->transform.pos.z;
+				int32_t zPos = position->z;
 
 				if (zPos > minZ && zPos < maxZ)
 					return 1;
@@ -1712,7 +1712,7 @@ namespace Toy2
 
 				if (! *state)
 				{
-					Toy2Actor* actor = &g_levelActors[actorIdx];
+					CreatureActor* actor = &g_levelActors[actorIdx];
 
 					if (g_buzzActor.coinsCollected < 50)
 					{
@@ -1964,7 +1964,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004A28B0
 		void PopulateActiveActors()
 		{
-			Toy2Actor* actor = g_activeActors[0];
+			CreatureActor* actor = g_activeActors[0];
 			int32_t actorIndex = 0;
 
 			if (g_activeActors[0])
@@ -1983,19 +1983,19 @@ namespace Toy2
 				} while (actor);
 			}
 
-			g_activeActorArray[actorIndex] = (Toy2Actor*)&g_buzzActor;
+			g_activeActorArray[actorIndex] = (CreatureActor*)&g_buzzActor;
 			g_activeActorArray[actorIndex + 1] = 0;
 		}
 
 		// FUNCTION: TOY2 0x004CDBF0
-		int32_t FindInActorList(Toy2::Actor::Toy2Actor* actor)
+		int32_t FindInActorList(Toy2::CreatureActor* actor)
 		{
-			Toy2Actor** next = Animation::g_animActorList;
+			CreatureActor** next = Animation::g_animActorList;
 
 			if (! Animation::g_animActorList)
 				return -1;
 
-			Toy2Actor* cur = *Animation::g_animActorList;
+			CreatureActor* cur = *Animation::g_animActorList;
 			int32_t index = 0;
 
 			if (! *Animation::g_animActorList)
@@ -2016,7 +2016,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004CDBB0
-		void SetNodeAngle(Toy2::Actor::Toy2Actor* actor, int32_t index, int32_t x, int32_t y, int32_t z)
+		void SetNodeAngle(Toy2::CreatureActor* actor, int32_t index, int32_t x, int32_t y, int32_t z)
 		{
 			int32_t offset = FindInActorList(actor);
 

@@ -119,14 +119,14 @@ namespace Toy2
 		Transform* origin,
 		Transform* headOffset,
 		int32_t range,
-		Toy2::Actor::Toy2Actor* autoAimActor);
+		Toy2::CreatureActor* autoAimActor);
 	int32_t ShowTokenSparkle(int32_t linkId);
 	void CheckForQuit();
 
 	extern ToyCfg g_toyCfgData;
 	extern ViewportPreset g_viewportPresets[3];
 	extern SpawnLocation g_spawnLocations[17];
-	extern Actor::Toy2Actor g_levelActors[64];
+	extern CreatureActor g_levelActors[64];
 	extern int32_t g_levelFileIndex;
 	extern int32_t g_isElevatorHopLevel;
 	extern int32_t g_hasBackdrop;
@@ -143,7 +143,7 @@ namespace Toy2
 	extern int32_t g_nextBackdropId;
 	extern int16_t g_levelIndex;
 	extern int32_t g_levelFileConversion[16];
-	extern Buzz::Toy2BuzzActor g_buzzActor;
+	extern BuzzActor g_buzzActor;
 	extern int16_t g_levelTransition;
 	extern int16_t g_levelTransitionTimer;
 	extern int16_t g_feedbackTimerA;
@@ -204,6 +204,6 @@ namespace Toy2
 	namespace Game
 	{
 		void MainLoop();
-		void InitActor(Toy2::Actor::Toy2Actor* actor, int32_t initialSpawn);
+		void InitActor(Toy2::CreatureActor* actor, int32_t initialSpawn);
 	}
 }

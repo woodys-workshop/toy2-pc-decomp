@@ -8,6 +8,67 @@
 
 namespace Toy2
 {
+	struct CreatureActor
+	{
+		struct ActorBehaviourContext
+		{
+			CreatureActor* actor;
+			int16_t updateFlags;
+			int16_t targetFlags;
+			int16_t localStrafeSpeed;
+			int16_t localForwardSpeed;
+		};
+
+		// The context is borrowed for one callback invocation.
+		typedef void (*ActorBehaviourFn)(ActorBehaviourContext* ctx);
+
+		// common variables
+		Transform transform;
+		int16_t rollAngle;
+		int16_t primaryAnimIdx;
+		int16_t creatureId;
+		int16_t secondaryAnimIdx;
+		int32_t primaryAnimTime;
+		int32_t secondaryAnimTime;
+		int32_t surfaceClampY;
+
+		// creature actor
+		RGB16 actorTint;
+		int16_t unkVar10;
+		int16_t unkVar12;
+		int16_t unkVar12_;
+		int16_t unkVar13;
+		int16_t unkVar13_;
+		int32_t useTint;
+		Vector3I16 boundingOffset;
+		int16_t boundingSphereRadius;
+		int16_t actorFlags;
+		int16_t visibilityDistance;
+		int32_t velX;
+		int32_t gravityVel;
+		int32_t velForward;
+		Vector3I boundary;
+		Vector3I motionTargetPos;
+		int32_t targetYaw;
+		int32_t areaIndex;
+		int16_t unkVar29;
+		int16_t unkVar29_;
+		int32_t unkVar30;
+		int16_t unkShort1;
+		int16_t unkShort2;
+		int16_t damageCooldownTimer;
+		int16_t actorPhase;
+		uint16_t* movementData;
+		int32_t unkVar34;
+		int16_t unkShort3;
+		int16_t unkShort4;
+		int16_t unkWord15;
+		int16_t unkWord16;
+		int32_t lastValidYPosition;
+		ActorBehaviourFn actorBehaviour;
+		RawLoader::CreatureListRam* creatureRam;
+	};
+
 	namespace Actor
 	{
 		enum CreatureId
@@ -105,64 +166,6 @@ namespace Toy2
 			ACTOR_UPDATE_ANIM_TICK = 0x4,
 		};
 
-		struct Toy2Actor
-		{
-			struct ActorBehaviourContext
-			{
-				Toy2Actor* actor;
-				int16_t updateFlags;
-				int16_t targetFlags;
-				int16_t localStrafeSpeed;
-				int16_t localForwardSpeed;
-			};
-
-			// The context is borrowed for one callback invocation.
-			typedef void (*ActorBehaviourFn)(ActorBehaviourContext* ctx);
-
-			Transform transform;
-			int16_t rollAngle;
-			int16_t primaryAnimIdx;
-			int16_t creatureId;
-			int16_t secondaryAnimIdx;
-			int32_t unkVar7;
-			int32_t unkVar8;
-			int32_t unkVar9;
-			RGB16 actorTint;
-			int16_t unkVar10;
-			int16_t unkVar12;
-			int16_t unkVar12_;
-			int16_t unkVar13;
-			int16_t unkVar13_;
-			int32_t useTint;
-			Vector3I16 boundingOffset;
-			int16_t boundingSphereRadius;
-			int16_t actorFlags;
-			int16_t visibilityDistance;
-			int32_t velX;
-			int32_t gravityVel;
-			int32_t velForward;
-			Vector3I boundary;
-			Vector3I motionTargetPos;
-			int32_t targetYaw;
-			int32_t areaIndex;
-			int16_t unkVar29;
-			int16_t unkVar29_;
-			int32_t unkVar30;
-			int16_t unkShort1;
-			int16_t unkShort2;
-			int16_t damageCooldownTimer;
-			int16_t actorPhase;
-			uint16_t* movementData;
-			int32_t unkVar34;
-			int16_t unkShort3;
-			int16_t unkShort4;
-			int16_t unkWord15;
-			int16_t unkWord16;
-			int32_t lastValidYPosition;
-			ActorBehaviourFn actorBehaviour;
-			RawLoader::CreatureListRam* creatureRam;
-		};
-
 		struct CreatureAnimationSequences
 		{
 			uint8_t sequence25Frames[24];
@@ -172,21 +175,21 @@ namespace Toy2
 			uint8_t* operator[](int32_t index) const { return sequences[index]; }
 		};
 
-		extern Toy2Actor* g_activeActors[65];
-		extern Toy2Actor* g_activeActorArray[64];
+		extern CreatureActor* g_activeActors[65];
+		extern CreatureActor* g_activeActorArray[64];
 		extern uint16_t* g_movementData[44];
 		extern CreatureAnimationSequences g_unk4E0588;
 		extern int32_t g_unk50A54C;
 		extern int32_t g_unk52FE34;
 
 		void GetCreatureList(uint8_t* creatureIdList);
-		void UpdatePrimaryAnimation(Toy2::Actor::Toy2Actor* actor);
-		void SetAnimation(Toy2::Actor::Toy2Actor* actor, int16_t state, int32_t animIdx);
-		void Kill(Toy2::Actor::Toy2Actor* actor, uint8_t phase);
-		void UpdateAIMovement(Toy2::Actor::Toy2Actor* actor);
-		void HandleDamage(Toy2::Actor::Toy2Actor* actor, int32_t angle, int32_t hitType);
-		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::Actor::Toy2Actor* actor, int32_t boneIndex);
-		BOOL IsInsideBounds(Toy2::Actor::Toy2Actor* actor, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ);
+		void UpdatePrimaryAnimation(Toy2::CreatureActor* actor);
+		void SetAnimation(Toy2::CreatureActor* actor, int16_t state, int32_t animIdx);
+		void Kill(Toy2::CreatureActor* actor, uint8_t phase);
+		void UpdateAIMovement(Toy2::CreatureActor* actor);
+		void HandleDamage(Toy2::CreatureActor* actor, int32_t angle, int32_t hitType);
+		void ResolveBoneAttachmentPos(Vector3I* localOffset, Toy2::CreatureActor* actor, int32_t boneIndex);
+		BOOL IsInsideBounds(Vector3I* position, int32_t minX, int32_t maxX, int32_t minZ, int32_t maxZ);
 		void CollectQuestReward(int32_t actorIdx, int32_t recordIdx, int32_t camAngle, int32_t camAngleValue, int32_t pickupSlotIdx);
 		void RotatingHint(int32_t actorIdx, int32_t recordIdx, char** hintTable);
 		void ItemReturnReward(
@@ -199,14 +202,14 @@ namespace Toy2
 			int32_t camAngle);
 		void PlayPeriodicHintSound(int32_t actorId, int32_t soundIdx);
 		void PopulateActiveActors();
-		void SetNodeAngle(Toy2::Actor::Toy2Actor* actor, int32_t index, int32_t x, int32_t y, int32_t z);
+		void SetNodeAngle(Toy2::CreatureActor* actor, int32_t index, int32_t x, int32_t y, int32_t z);
 
-		STATIC_ASSERT(sizeof(Toy2Actor) == 0x9C);
-		STATIC_ASSERT(sizeof(Toy2Actor::ActorBehaviourContext) == 0xC);
-		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, updateFlags) == 0x4);
-		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, targetFlags) == 0x6);
-		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, localStrafeSpeed) == 0x8);
-		STATIC_ASSERT(offsetof(Toy2Actor::ActorBehaviourContext, localForwardSpeed) == 0xA);
+		STATIC_ASSERT(sizeof(CreatureActor) == 0x9C);
+		STATIC_ASSERT(sizeof(CreatureActor::ActorBehaviourContext) == 0xC);
+		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, updateFlags) == 0x4);
+		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, targetFlags) == 0x6);
+		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, localStrafeSpeed) == 0x8);
+		STATIC_ASSERT(offsetof(CreatureActor::ActorBehaviourContext, localForwardSpeed) == 0xA);
 		STATIC_ASSERT(offsetof(CreatureAnimationSequences, sequences) == 0x18);
 		STATIC_ASSERT(sizeof(CreatureAnimationSequences) == 0x80);
 	}

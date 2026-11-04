@@ -318,7 +318,7 @@ namespace Toy2
 				v74 = 0;
 			}
 
-			if (g_buzzActor.posAngles.pos.x > -149248)
+			if (g_buzzActor.transform.pos.x > -149248)
 			{
 				Buzz::g_underwaterYLevel = 6144;
 				Buzz::g_currentFluidType = 2;
@@ -399,8 +399,8 @@ namespace Toy2
 			{
 				if (g_unk52F2F8 == 2)
 				{
-					int32_t px = g_buzzActor.posAngles.pos.x;
-					int32_t pz = g_buzzActor.posAngles.pos.z;
+					int32_t px = g_buzzActor.transform.pos.x;
+					int32_t pz = g_buzzActor.transform.pos.z;
 
 					if (g_unk52F6B0 < 4)
 					{
@@ -487,8 +487,8 @@ namespace Toy2
 				}
 			}
 
-			if ((g_buzzActor.posAngles.pos.x < -159744 || g_buzzActor.posAngles.pos.x > 162225 && g_buzzActor.posAngles.pos.z < 0
-				 || g_buzzActor.posAngles.pos.y < -99029)
+			if ((g_buzzActor.transform.pos.x < -159744 || g_buzzActor.transform.pos.x > 162225 && g_buzzActor.transform.pos.z < 0
+				 || g_buzzActor.transform.pos.y < -99029)
 				&& g_unk52F2F8 && (g_levelActors[29].actorFlags & 1) == 0 && ! Collectables::g_pickupSlots[2].state)
 			{
 				g_unk52F2F8 = 0;
@@ -496,12 +496,12 @@ namespace Toy2
 			}
 
 			if ((g_levelActors[4].actorFlags & 2) != 0 && (g_levelActors[4].actorFlags & 0x20) != 0
-				&& ((g_buzzActor.posAngles.pos.x - g_levelActors[4].transform.pos.x)
-					>> 5) * ((g_buzzActor.posAngles.pos.x - g_levelActors[4].transform.pos.x) >> 5)
-						+ ((g_buzzActor.posAngles.pos.z - g_levelActors[4].transform.pos.z) >> 5)
-							* ((g_buzzActor.posAngles.pos.z - g_levelActors[4].transform.pos.z) >> 5)
-						+ ((g_buzzActor.posAngles.pos.y - g_levelActors[4].transform.pos.y) >> 5)
-							* ((g_buzzActor.posAngles.pos.y - g_levelActors[4].transform.pos.y) >> 5)
+				&& ((g_buzzActor.transform.pos.x - g_levelActors[4].transform.pos.x)
+					>> 5) * ((g_buzzActor.transform.pos.x - g_levelActors[4].transform.pos.x) >> 5)
+						+ ((g_buzzActor.transform.pos.z - g_levelActors[4].transform.pos.z) >> 5)
+							* ((g_buzzActor.transform.pos.z - g_levelActors[4].transform.pos.z) >> 5)
+						+ ((g_buzzActor.transform.pos.y - g_levelActors[4].transform.pos.y) >> 5)
+							* ((g_buzzActor.transform.pos.y - g_levelActors[4].transform.pos.y) >> 5)
 					< 589824
 				&& g_levelActors[4].motionTargetPos.y != 20480)
 			{
@@ -544,7 +544,7 @@ namespace Toy2
 				g_levelActors[4].transform.pos.x = g_levelActors[4].motionTargetPos.x;
 				g_levelActors[4].transform.pos.y = 14336;
 				g_levelActors[4].transform.pos.z = g_levelActors[4].motionTargetPos.z;
-				g_levelActors[4].unkVar9 = 416;
+				g_levelActors[4].surfaceClampY = 416;
 			}
 
 			int32_t v75;
@@ -588,7 +588,7 @@ namespace Toy2
 					g_unk52F5F8.z = 32 * Levels::g_recordData[2]->data[g_unk52F5E8].z;
 
 					Nu3D::Particles::SpawnFromPreset(g_unk52F5F8.x, -9136, g_unk52F5F8.z, 59, 2);
-					AudioManager::StartSoundSequenceOnActor(-3, (Actor::Toy2Actor*)&g_unk52F5F8);
+					AudioManager::StartSoundSequenceOnActor(-3, (CreatureActor*)&g_unk52F5F8);
 				}
 			}
 
@@ -598,11 +598,11 @@ namespace Toy2
 				{
 					if (g_unk52F61C)
 					{
-						if (((g_buzzActor.posAngles.pos.x - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].x)
-							 >> 8) * ((g_buzzActor.posAngles.pos.x - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].x) >> 8)
-								+ ((g_buzzActor.posAngles.pos.z - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].z) >> 8)
-									* ((g_buzzActor.posAngles.pos.z - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].z) >> 8)
-								+ ((g_buzzActor.posAngles.pos.y + 2992) >> 8) * ((g_buzzActor.posAngles.pos.y + 2992) >> 8)
+						if (((g_buzzActor.transform.pos.x - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].x)
+							 >> 8) * ((g_buzzActor.transform.pos.x - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].x) >> 8)
+								+ ((g_buzzActor.transform.pos.z - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].z) >> 8)
+									* ((g_buzzActor.transform.pos.z - 32 * Levels::g_recordData[2]->data[g_unk52F5E8].z) >> 8)
+								+ ((g_buzzActor.transform.pos.y + 2992) >> 8) * ((g_buzzActor.transform.pos.y + 2992) >> 8)
 							< 2304)
 						{
 							AudioManager::ClearSequence7Cursor();
@@ -626,7 +626,7 @@ namespace Toy2
 				}
 			}
 
-			if (g_tickState[g_buzzActor.posAngles.pos.y >= -48640 ? 4 : 9] && (*g_randDatBufferPtr++ & 7) == 0)
+			if (g_tickState[g_buzzActor.transform.pos.y >= -48640 ? 4 : 9] && (*g_randDatBufferPtr++ & 7) == 0)
 			{
 				g_unk52F678 = 1;
 			}
@@ -635,13 +635,13 @@ namespace Toy2
 			{
 				int32_t v76 = 32 * Levels::g_recordData[0]->data[g_unk52F6E4].y;
 
-				if (g_buzzActor.posAngles.pos.y - v76 > 28672 && g_buzzActor.posAngles.pos.y - v76 < 327680)
+				if (g_buzzActor.transform.pos.y - v76 > 28672 && g_buzzActor.transform.pos.y - v76 < 327680)
 				{
 					int32_t v31 = 32 * (Levels::g_recordData[0]->data[g_unk52F6E4].x + 4 * *g_randDatBufferPtr++ - 512);
 					int32_t v32 = 32 * (Levels::g_recordData[0]->data[g_unk52F6E4].z + 4 * *g_randDatBufferPtr++ - 512);
 
-					if (((g_buzzActor.posAngles.pos.x - v31) >> 8) * ((g_buzzActor.posAngles.pos.x - v31) >> 8)
-							+ ((g_buzzActor.posAngles.pos.z - v32) >> 8) * ((g_buzzActor.posAngles.pos.z - v32) >> 8)
+					if (((g_buzzActor.transform.pos.x - v31) >> 8) * ((g_buzzActor.transform.pos.x - v31) >> 8)
+							+ ((g_buzzActor.transform.pos.z - v32) >> 8) * ((g_buzzActor.transform.pos.z - v32) >> 8)
 						< 640000)
 					{
 						Nu3D::Particles::ParticleInstance* v33 = Nu3D::Particles::SpawnFromPreset(v31, v76, v32, 55, 19);
@@ -674,7 +674,7 @@ namespace Toy2
 				if (! g_unk52F658 && ! g_unk52F690)
 				{
 					Levels::Method3(3, 1);
-					AudioManager::PlaySoundEffect(56, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(56, &g_buzzActor.transform.pos);
 					g_unk52F658 = 30;
 					g_unk52F690 = 3072;
 				}
@@ -717,7 +717,7 @@ namespace Toy2
 			}
 			else
 			{
-				if (Buzz::g_groundSlamTicker == -40 && (Platform::GetFlags(7) & 3) == 2 && g_buzzActor.posAngles.pos.y < 17408)
+				if (Buzz::g_groundSlamTicker == -40 && (Platform::GetFlags(7) & 3) == 2 && g_buzzActor.transform.pos.y < 17408)
 				{
 					g_unk52F6C0 = 1448;
 				}
@@ -957,13 +957,13 @@ namespace Toy2
 					{
 						Buzz::g_groundSlamTicker = 0;
 						Levels::Method3(2, 1);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 						Levels::Method2(-4224, 2);
 
 						g_buzzActor.actorFlags |= 0x44;
 						g_buzzActor.velX = Numerics::g_sinCosLUT[0];
 						g_buzzActor.velForward = Numerics::g_sinCosLUT[1024];
-						g_buzzActor.posAngles.angles.yaw = 0;
+						g_buzzActor.transform.angles.yaw = 0;
 						g_buzzActor.facingAngle = 0;
 						Camera::g_unk52AD98 = 64;
 					}
@@ -1022,7 +1022,7 @@ namespace Toy2
 
 			if (! g_unk52F5EC)
 			{
-				if (g_buzzActor.posAngles.pos.y < -66297)
+				if (g_buzzActor.transform.pos.y < -66297)
 				{
 					if (MoveableObject::g_moveableObjects[1].segProgress)
 					{
@@ -1064,8 +1064,8 @@ namespace Toy2
 
 			if (! g_unk52F664)
 			{
-				if (g_buzzActor.collisionFlags && g_buzzActor.posAngles.pos.y < -466944 && g_buzzActor.posAngles.pos.x > 134342
-					&& g_buzzActor.posAngles.pos.x < 221126 && g_buzzActor.posAngles.pos.z > 184692 && g_buzzActor.posAngles.pos.z < 313332)
+				if (g_buzzActor.collisionFlags && g_buzzActor.transform.pos.y < -466944 && g_buzzActor.transform.pos.x > 134342
+					&& g_buzzActor.transform.pos.x < 221126 && g_buzzActor.transform.pos.z > 184692 && g_buzzActor.transform.pos.z < 313332)
 				{
 					g_unk52F664 = 1; // Entered cutscene
 					Dialogue::Begin(26, 9, "ha ha ha ha ... defeat the ^zurg kite^ to get a ^token^!", -1, 0, -1);
@@ -1124,9 +1124,9 @@ namespace Toy2
 				g_zKiteYawPhase = v65;
 				int32_t v67 = Numerics::g_sinCosLUT[v65] >> 5;
 
-				int32_t v70 = (g_buzzActor.posAngles.pos.x - g_unk52F628.x) >> 8;
-				int32_t v71 = (g_buzzActor.posAngles.pos.y - g_unk52F628.y) >> 8;
-				int32_t v77 = (g_buzzActor.posAngles.pos.z - g_unk52F628.z) >> 8;
+				int32_t v70 = (g_buzzActor.transform.pos.x - g_unk52F628.x) >> 8;
+				int32_t v71 = (g_buzzActor.transform.pos.y - g_unk52F628.y) >> 8;
+				int32_t v77 = (g_buzzActor.transform.pos.z - g_unk52F628.z) >> 8;
 
 				g_unk52F628.x += v67;
 				g_unk52F628.y += 192;
@@ -1146,7 +1146,7 @@ namespace Toy2
 				KiteTail::Activate(0);
 			}
 
-			g_levelActors[0].visibilityDistance = Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -511196, -161372, -481680, -656) ? 3800 : 1800;
+			g_levelActors[0].visibilityDistance = Actor::IsInsideBounds(&g_buzzActor.transform.pos, -511196, -161372, -481680, -656) ? 3800 : 1800;
 
 			if (g_curSectorCopy1 == 1)
 			{
@@ -1167,7 +1167,7 @@ namespace Toy2
 			if (! Buzz::g_unk53C5E4 && ! g_unk52F6A8 && Buzz::g_unk53C668)
 			{
 				g_unk52F6A8 = 2;
-				AudioManager::PlaySoundEffect(33, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(33, &g_buzzActor.transform.pos);
 				data[1].x = 2;
 			}
 

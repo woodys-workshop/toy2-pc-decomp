@@ -480,7 +480,7 @@ namespace Toy2
 					Levels::Method2(-2432, 2);
 				}
 
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 			}
 
 			if (g_buzzActor.unkShort40)
@@ -635,10 +635,10 @@ namespace Toy2
 
 					if (Buzz::g_unk53C668 > 0 && ! Buzz::g_unk53C5E4)
 					{
-						g_buzzActor.posAngles.pos.y += g_unk52F910.y + Levels::g_recordData[61]->data[1].y - Levels::g_recordData[61]->data[0].y;
+						g_buzzActor.transform.pos.y += g_unk52F910.y + Levels::g_recordData[61]->data[1].y - Levels::g_recordData[61]->data[0].y;
 
-						g_buzzActor.posAngles.pos.x = g_unk52F910.x;
-						g_buzzActor.posAngles.pos.z = g_unk52F910.z;
+						g_buzzActor.transform.pos.x = g_unk52F910.x;
+						g_buzzActor.transform.pos.z = g_unk52F910.z;
 
 						Levels::g_recordData[61]->data[1].x = 3;
 					}
@@ -775,10 +775,10 @@ namespace Toy2
 
 					if (Buzz::g_unk53C668 > 0 && Buzz::g_unk53C5E4 == 6)
 					{
-						g_buzzActor.posAngles.pos.y += g_unk52F920.y + Levels::g_recordData[61]->data[3].y - Levels::g_recordData[61]->data[2].y;
+						g_buzzActor.transform.pos.y += g_unk52F920.y + Levels::g_recordData[61]->data[3].y - Levels::g_recordData[61]->data[2].y;
 
-						g_buzzActor.posAngles.pos.x = g_unk52F920.x;
-						g_buzzActor.posAngles.pos.z = g_unk52F920.z;
+						g_buzzActor.transform.pos.x = g_unk52F920.x;
+						g_buzzActor.transform.pos.z = g_unk52F920.z;
 
 						Levels::g_recordData[61]->data[3].x = 3;
 					}
@@ -903,7 +903,7 @@ namespace Toy2
 			Nu3D::Link::SetPositionRawAndCommit(15, a2.x >> 7, a2.y >> 7, a2.z >> 7);
 
 			v23 = g_unk52F930 - (int32_t)Renderer::g_frameDelta < 0;
-			Buzz::g_underwaterYLevel = g_buzzActor.posAngles.pos.z >= 0xF32A0 ? 0x70000 : 0x10000;
+			Buzz::g_underwaterYLevel = g_buzzActor.transform.pos.z >= 0xF32A0 ? 0x70000 : 0x10000;
 			g_unk52F930 -= (int32_t)Renderer::g_frameDelta;
 
 			if (v23)
@@ -1219,14 +1219,14 @@ namespace Toy2
 					< 1000000)
 				{
 					Renderer::LensFlare::RegisterLight(v39, v38, v37, 64, 48, 32, 128);
-					if (((g_buzzActor.posAngles.pos.y - v38 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v38 - 0x2000) >> 8)
-							+ ((g_buzzActor.posAngles.pos.z - v37) >> 8) * ((g_buzzActor.posAngles.pos.z - v37) >> 8)
-							+ ((g_buzzActor.posAngles.pos.x - v39) >> 8) * ((g_buzzActor.posAngles.pos.x - v39) >> 8)
+					if (((g_buzzActor.transform.pos.y - v38 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v38 - 0x2000) >> 8)
+							+ ((g_buzzActor.transform.pos.z - v37) >> 8) * ((g_buzzActor.transform.pos.z - v37) >> 8)
+							+ ((g_buzzActor.transform.pos.x - v39) >> 8) * ((g_buzzActor.transform.pos.x - v39) >> 8)
 						< v47)
 					{
-						v47 = ((g_buzzActor.posAngles.pos.y - v38 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v38 - 0x2000) >> 8)
-							+ ((g_buzzActor.posAngles.pos.z - v37) >> 8) * ((g_buzzActor.posAngles.pos.z - v37) >> 8)
-							+ ((g_buzzActor.posAngles.pos.x - v39) >> 8) * ((g_buzzActor.posAngles.pos.x - v39) >> 8);
+						v47 = ((g_buzzActor.transform.pos.y - v38 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v38 - 0x2000) >> 8)
+							+ ((g_buzzActor.transform.pos.z - v37) >> 8) * ((g_buzzActor.transform.pos.z - v37) >> 8)
+							+ ((g_buzzActor.transform.pos.x - v39) >> 8) * ((g_buzzActor.transform.pos.x - v39) >> 8);
 						v49 = v46;
 					}
 				}

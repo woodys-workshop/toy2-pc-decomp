@@ -20,7 +20,7 @@ namespace Nu3D
 		};
 
 		void RenderWorldGeometry(int32_t sectorIndex, RenderLayerFlags layerFlags);
-		void RenderActors(Toy2::Actor::Toy2Actor** activeActorList);
+		void RenderActors(Toy2::CreatureActor** activeActorList);
 		int32_t RenderCellsInRadius(int32_t radius, int32_t layer, NGNLoader::NGNImage* ngnImage);
 	}
 }

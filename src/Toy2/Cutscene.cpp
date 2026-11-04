@@ -108,17 +108,17 @@ namespace Toy2
 						}
 						else
 						{
-							g_buzzActor.posAngles.pos.x = 32 * record->data[script[2]].x;
-							g_buzzActor.posAngles.pos.y = 32 * record->data[script[2]].y;
-							g_buzzActor.posAngles.pos.z = 32 * record->data[script[2]].z;
-							g_buzzActor.posAngles.pos.y = Nu3D::Collision::GetGroundHeight(&g_buzzActor.posAngles, 0);
+							g_buzzActor.transform.pos.x = 32 * record->data[script[2]].x;
+							g_buzzActor.transform.pos.y = 32 * record->data[script[2]].y;
+							g_buzzActor.transform.pos.z = 32 * record->data[script[2]].z;
+							g_buzzActor.transform.pos.y = Nu3D::Collision::GetGroundHeight(&g_buzzActor.transform, 0);
 							g_buzzActor.velX = 0;
 							g_buzzActor.gravityVel = 0;
 							g_buzzActor.velForward = 0;
 							g_buzzActor.unkVar30 = 0;
 							g_buzzActor.unkVar31 = 0;
 							g_buzzActor.unkVar37 = 1;
-							g_buzzActor.motionTargetPos = g_buzzActor.posAngles.pos;
+							g_buzzActor.motionTargetPos = g_buzzActor.transform.pos;
 
 							ResetBuzzState();
 
@@ -155,7 +155,7 @@ namespace Toy2
 							uint16_t yaw = script[2];
 
 							script += 3;
-							g_buzzActor.posAngles.angles.yaw = yaw;
+							g_buzzActor.transform.angles.yaw = yaw;
 							g_buzzActor.facingAngle = script[-1];
 							Camera::g_gameplayCameraState.orbitYaw = script[-1];
 							Camera::g_unk50A294 = script;

@@ -27,18 +27,18 @@ namespace Toy2
 			int16_t* viewMatrix = (int16_t*)&mathScratch[229];
 			int16_t* cameraMatrix = (int16_t*)&mathScratch[245];
 
-			g_buzzActor.posAngles.pos.y -= 0x2000;
+			g_buzzActor.transform.pos.y -= 0x2000;
 
 			if (g_curSectorCopy2 == -1 || g_levelFileIndex == 2)
-				g_curSectorCopy2 = Levels::GetSectorAtPosition(&g_buzzActor.posAngles.pos);
+				g_curSectorCopy2 = Levels::GetSectorAtPosition(&g_buzzActor.transform.pos);
 			else
 				Portal::UpdateActiveSector();
 
-			g_unk54D920.x = g_buzzActor.posAngles.pos.x;
-			g_unk54D920.y = g_buzzActor.posAngles.pos.y;
-			g_unk54D920.z = g_buzzActor.posAngles.pos.z;
+			g_unk54D920.x = g_buzzActor.transform.pos.x;
+			g_unk54D920.y = g_buzzActor.transform.pos.y;
+			g_unk54D920.z = g_buzzActor.transform.pos.z;
 
-			g_buzzActor.posAngles.pos.y += 0x2000;
+			g_buzzActor.transform.pos.y += 0x2000;
 
 			int32_t movedToSectorOnly = 1;
 			int32_t sectorAtCamera = Levels::GetSectorAtPosition((Vector3I*)&mathScratch[221]);

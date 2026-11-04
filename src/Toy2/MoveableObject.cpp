@@ -136,7 +136,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00433700
-		void Update(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		void Update(Toy2::BuzzActor* buzzActor)
 		{
 			int32_t frameDelta = Renderer::g_frameDelta;
 
@@ -164,17 +164,17 @@ namespace Toy2
 								int16_t* contactFace = (int16_t*)Platform::GetContactFace32(object->platformIdx);
 								int32_t grabAngle = (Nu3D::Math::CartesianToFixedAngle(contactFace[0], contactFace[2]) - 2048) & 0xFFF;
 
-								if (((grabAngle - buzzActor->posAngles.angles.yaw + 384) & 0xFFF) < 0x300)
+								if (((grabAngle - buzzActor->transform.angles.yaw + 384) & 0xFFF) < 0x300)
 								{
 									Buzz::g_unk53C624 = grabAngle;
 
 									Buzz::g_curMoveableObject = index + 1;
-									g_grabOffsetX = (object->pos.x - buzzActor->posAngles.pos.x) >> 5;
-									g_grabOffsetZ = (object->pos.z - buzzActor->posAngles.pos.z) >> 5;
+									g_grabOffsetX = (object->pos.x - buzzActor->transform.pos.x) >> 5;
+									g_grabOffsetZ = (object->pos.z - buzzActor->transform.pos.z) >> 5;
 
 									if (! g_moveableGrabSoundCooldown)
 									{
-										AudioManager::Preset::PlayOneShotSound2(45, (Actor::Toy2Actor*)buzzActor);
+										AudioManager::Preset::PlayOneShotSound2(45, (CreatureActor*)buzzActor);
 										g_moveableGrabSoundCooldown = 40;
 									}
 
@@ -398,8 +398,8 @@ namespace Toy2
 						Nu3D::Link::SetPositionRawAndCommit(object->modelNode, object->pos.x >> 5, object->pos.y >> 5, posZ >> 5);
 
 					Platform::SetOrigin(object->platformIdx & 0x7FFF, object->pos.x, object->pos.y, object->pos.z);
-					buzzActor->velX = object->pos.x - 32 * g_grabOffsetX - buzzActor->posAngles.pos.x;
-					buzzActor->velForward = object->pos.z - 32 * g_grabOffsetZ - buzzActor->posAngles.pos.z;
+					buzzActor->velX = object->pos.x - 32 * g_grabOffsetX - buzzActor->transform.pos.x;
+					buzzActor->velForward = object->pos.z - 32 * g_grabOffsetZ - buzzActor->transform.pos.z;
 
 					if (pushing)
 					{
@@ -410,9 +410,9 @@ namespace Toy2
 							int32_t randOffset = *g_randDatBufferPtr++ - 128;
 
 							Nu3D::Particles::SpawnFromPreset(
-								buzzActor->posAngles.pos.x + ((randOffset * buzzActor->velForward) >> 4) + 6 * buzzActor->velX,
-								buzzActor->posAngles.pos.y,
-								buzzActor->posAngles.pos.z + ((randOffset * buzzActor->velX) >> 4) + 6 * buzzActor->velForward,
+								buzzActor->transform.pos.x + ((randOffset * buzzActor->velForward) >> 4) + 6 * buzzActor->velX,
+								buzzActor->transform.pos.y,
+								buzzActor->transform.pos.z + ((randOffset * buzzActor->velX) >> 4) + 6 * buzzActor->velForward,
 								2,
 								1);
 						}

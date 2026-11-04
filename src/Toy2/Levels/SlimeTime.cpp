@@ -89,7 +89,7 @@ namespace Toy2
 			
 			g_tintBlink = (g_tintBlink - 1) & 1;
 
-			Actor::Toy2Actor* slimeMan = &g_levelActors[0];
+			CreatureActor* slimeMan = &g_levelActors[0];
 
 			if (slimeMan->actorPhase && slimeMan->actorPhase != g_lastSlimeManPhase)
 			{
@@ -147,7 +147,7 @@ namespace Toy2
 				}
 			}
 
-			if (! Actor::IsInsideBounds(slimeMan, -233647, 233647, -139166, 139166))
+			if (! Actor::IsInsideBounds(&slimeMan->transform.pos, -233647, 233647, -139166, 139166))
 				g_isOutsideBounds = 1;
 			else
 				g_isOutsideBounds = 0;
@@ -173,7 +173,7 @@ namespace Toy2
 				}
 			}
 
-			if (g_buzzActor.posAngles.pos.x < 204702 && ! g_slimeManState)
+			if (g_buzzActor.transform.pos.x < 204702 && ! g_slimeManState)
 			{
 				AudioManager::PlayMusicLooping(g_levelIndex);
 				g_slimeManState = 1;
@@ -189,7 +189,7 @@ namespace Toy2
 				if (! g_hitTimer)
 					AudioManager::PlaySoundEffect(97, &slimeMan->transform.pos);
 
-				if (! g_soundCooldown && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &slimeMan->transform.pos, 400))
+				if (! g_soundCooldown && Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &slimeMan->transform.pos, 400))
 				{
 					int32_t cameraYawDelta = (g_lastCameraYaw - Camera::g_activeCameraTransform.angles.yaw) & 0xFFF;
 
@@ -252,7 +252,7 @@ namespace Toy2
 
 				if (g_tickState[11] && ! g_hitTimer)
 				{
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &slimeMan->transform.pos, 400))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &slimeMan->transform.pos, 400))
 					{
 						Nu3D::Particles::SpawnInstance(
 							slimeMan->transform.pos.x,
@@ -271,8 +271,8 @@ namespace Toy2
 				if (g_attackCycleTimer > 300)
 				{
 					slimeMan->motionTargetPos.y = 3 * Numerics::g_sinCosLUT[g_outOfBoundsRiseAngle + 1024] - 68371;
-					slimeMan->motionTargetPos.x = g_buzzActor.posAngles.pos.x;
-					slimeMan->motionTargetPos.z = g_buzzActor.posAngles.pos.z;
+					slimeMan->motionTargetPos.x = g_buzzActor.transform.pos.x;
+					slimeMan->motionTargetPos.z = g_buzzActor.transform.pos.z;
 
 					if (g_attackCycleTimer < 550)
 					{
@@ -282,7 +282,7 @@ namespace Toy2
 						if (g_unkSoundTimer < 0)
 						{
 							g_unkSoundTimer = 400;
-							AudioManager::Preset::PlayOneShotSound(208, (Actor::Toy2Actor*)&g_buzzActor);
+							AudioManager::Preset::PlayOneShotSound(208, (CreatureActor*)&g_buzzActor);
 						}
 					}
 

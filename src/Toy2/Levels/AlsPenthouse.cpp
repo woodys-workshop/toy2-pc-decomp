@@ -253,9 +253,9 @@ namespace Toy2
 			{
 				x = a1->x;
 				v3 = a1->y - 0x4000;
-				v4 = a1->x + ((*g_randDatBufferPtr - 128) << 7) - g_buzzActor.posAngles.pos.x;
+				v4 = a1->x + ((*g_randDatBufferPtr - 128) << 7) - g_buzzActor.transform.pos.x;
 				spawnZ = a1->z;
-				v5 = (spawnZ + ((*++g_randDatBufferPtr - 128) << 7) - g_buzzActor.posAngles.pos.z) >> 5;
+				v5 = (spawnZ + ((*++g_randDatBufferPtr - 128) << 7) - g_buzzActor.transform.pos.z) >> 5;
 				++g_randDatBufferPtr;
 				v6 = (int32_t)sqrt((double)((v4 >> 5) * (v4 >> 5) + v5 * v5));
 				if (v6 >= 2000)
@@ -266,7 +266,7 @@ namespace Toy2
 						v3,
 						spawnZ,
 						v7 * Numerics::g_sinCosLUT[(a2 + 1024) & 0xFFF] / 0x4000,
-						((g_buzzActor.posAngles.pos.y - v3) << 7) / ((v6 << 12) / v7) - (((v6 << 12) / v7) << 7) / 256,
+						((g_buzzActor.transform.pos.y - v3) << 7) / ((v6 << 12) / v7) - (((v6 << 12) / v7) << 7) / 256,
 						v7 * Numerics::g_sinCosLUT[(a2 - 2048) & 0xFFF] / 0x4000,
 						128,
 						0,
@@ -561,9 +561,9 @@ namespace Toy2
 
 			if (g_unk52FD4C)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_unk52FD98, 48))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &g_unk52FD98, 48))
 				{
-					v0 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - g_unk52FD98.x, g_buzzActor.posAngles.pos.z - g_unk52FD98.z);
+					v0 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - g_unk52FD98.x, g_buzzActor.transform.pos.z - g_unk52FD98.z);
 					Buzz::HandleDamage(v0, 1u);
 					g_unk52FDF0 = 16;
 					if (g_unk52FDB4 > 40)
@@ -790,11 +790,11 @@ namespace Toy2
 			Vector3I p_v1;
 
 			Nu3D::Link::GetCurrentPosFixed(linkId, &p_v1);
-			if (g_curSectorCopy2 == a1 && Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.posAngles.pos, 1152))
+			if (g_curSectorCopy2 == a1 && Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.transform.pos, 1152))
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v1, 50))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &p_v1, 50))
 				{
-					v4 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - p_v1.x, g_buzzActor.posAngles.pos.z - p_v1.z);
+					v4 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - p_v1.x, g_buzzActor.transform.pos.z - p_v1.z);
 					if ((g_unk52FD48 & a4) != 0)
 						Buzz::HandleDamage(v4, 1u);
 					else
@@ -811,10 +811,10 @@ namespace Toy2
 				}
 				else
 				{
-					v5 = g_buzzActor.posAngles.pos.x - p_v1.x;
-					v10.x = g_buzzActor.posAngles.pos.x - p_v1.x;
-					v6 = g_buzzActor.posAngles.pos.z - p_v1.z;
-					v10.z = g_buzzActor.posAngles.pos.z - p_v1.z;
+					v5 = g_buzzActor.transform.pos.x - p_v1.x;
+					v10.x = g_buzzActor.transform.pos.x - p_v1.x;
+					v6 = g_buzzActor.transform.pos.z - p_v1.z;
+					v10.z = g_buzzActor.transform.pos.z - p_v1.z;
 					v10.y = p_v1.y;
 					while (abs(v5) > 0x4000 || abs(v6) > 0x4000)
 					{
@@ -906,9 +906,9 @@ namespace Toy2
 				{
 					Nu3D::Link::GetCurrentPosFixed(v0[-1], &p_v1);
 
-					if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.posAngles.pos, 1120))
+					if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.transform.pos, 1120))
 					{
-						if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.posAngles.pos, 992))
+						if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.transform.pos, 992))
 						{
 							if ((g_unk52FD48 & 0x200) != 0 || g_unk52FDF8 <= 768)
 							{
@@ -1402,7 +1402,7 @@ namespace Toy2
 			p_v1.y = 192043;
 			p_v1.z = -195587;
 
-			if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.posAngles.pos, 128))
+			if (Nu3D::Math::IsWithinDistance(&p_v1, &g_buzzActor.transform.pos, 128))
 			{
 				Method6(16);
 				g_unk52FD30 = 0;
@@ -1483,7 +1483,7 @@ namespace Toy2
 					Levels::Method2(-2432, 2);
 				}
 
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 			}
 
 			v20 = g_unk52FD54;
@@ -1711,7 +1711,7 @@ namespace Toy2
 
 			if (! g_unk52FD40)
 			{
-				if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -726990, -656078, -241532, -177452) && g_buzzActor.posAngles.pos.y < 128072)
+				if (Actor::IsInsideBounds(&g_buzzActor.transform.pos, -726990, -656078, -241532, -177452) && g_buzzActor.transform.pos.y < 128072)
 				{
 					g_unk52FD40 = 1;
 					Dialogue::Begin(11, 16, "ha ha ha ha ... defeat the ^gunslinger^ boss to get a pizza planet ^token^!", -1, 0, -1);
@@ -1791,9 +1791,9 @@ namespace Toy2
 					{
 						Renderer::LensFlare::RegisterLight(v42, v40, v41, 32, 32, 32, 128);
 
-						v43 = g_buzzActor.posAngles.pos.x - v42;
-						v44 = ((g_buzzActor.posAngles.pos.z - v41) >> 8) * ((g_buzzActor.posAngles.pos.z - v41) >> 8)
-							+ ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v40 - 0x2000) >> 8);
+						v43 = g_buzzActor.transform.pos.x - v42;
+						v44 = ((g_buzzActor.transform.pos.z - v41) >> 8) * ((g_buzzActor.transform.pos.z - v41) >> 8)
+							+ ((g_buzzActor.transform.pos.y - v40 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v40 - 0x2000) >> 8);
 
 						v45 = (v43 >> 8) * (v43 >> 8);
 

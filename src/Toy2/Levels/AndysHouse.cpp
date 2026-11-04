@@ -275,7 +275,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00417380 [MATCHED]
 		void AnimateBobbingPlatform(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t roll, int32_t platformId)
 		{
-			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640))
+			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.transform.pos, 640))
 			{
 				int32_t phase = cycleTime & 0x1FFF;
 				int32_t angle;
@@ -329,7 +329,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00417510 [MATCHED]
 		void AnimateStretchingObject(int16_t cycleTime, int32_t linkId, Vector3I* pos, int16_t yaw)
 		{
-			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.posAngles.pos, 640) != 0)
+			if (Nu3D::Math::IsWithinDistance(pos, &g_buzzActor.transform.pos, 640) != 0)
 			{
 				int32_t phase = cycleTime & 0x1FFF;
 				int32_t angle;
@@ -419,7 +419,7 @@ namespace Toy2
 
 				if (g_levelActors[0].creatureRam->defenseMode || g_levelActors[2].creatureRam->defenseMode)
 				{
-					if (g_buzzActor.posAngles.pos.x < 311924)
+					if (g_buzzActor.transform.pos.x < 311924)
 					{
 						if (g_levelActors[0].creatureRam->defenseMode)
 							g_levelActors[0].creatureRam->defenseMode = 4;
@@ -493,8 +493,8 @@ namespace Toy2
 
 			if (! g_link21Scale)
 			{
-				if (g_buzzActor.posAngles.pos.z < -321858u && g_buzzActor.posAngles.pos.z > -361602u && g_buzzActor.posAngles.pos.x < 314294
-					&& g_buzzActor.posAngles.pos.x > 287606 && g_buzzActor.posAngles.pos.y < 18432 && g_buzzActor.posAngles.pos.y > 0 && g_buzzActor.unkShort40)
+				if (g_buzzActor.transform.pos.z < -321858u && g_buzzActor.transform.pos.z > -361602u && g_buzzActor.transform.pos.x < 314294
+					&& g_buzzActor.transform.pos.x > 287606 && g_buzzActor.transform.pos.y < 18432 && g_buzzActor.transform.pos.y > 0 && g_buzzActor.unkShort40)
 				{
 					Collision::MarkPlatformAsMoving(8);
 					g_link21Scale = 8;
@@ -522,7 +522,7 @@ namespace Toy2
 				transform.pos.y = 157472;
 				transform.pos.z = -529601;
 
-				if (Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.posAngles.pos, 640))
+				if (Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.transform.pos, 640))
 				{
 					if (g_tickState[11])
 					{
@@ -587,7 +587,7 @@ namespace Toy2
 				transform.pos.y = 147262;
 				transform.pos.z = -418634;
 
-				int32_t withinDistance = Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.posAngles.pos, 640);
+				int32_t withinDistance = Nu3D::Math::IsWithinDistance(&transform.pos, &g_buzzActor.transform.pos, 640);
 
 				if (withinDistance)
 				{
@@ -615,12 +615,12 @@ namespace Toy2
 					{
 						Buzz::g_groundSlamTicker = 0;
 						Levels::Method2(-3072, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 					}
 					else
 					{
 						Levels::Method2(-2432, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 					}
 				}
 
@@ -659,7 +659,7 @@ namespace Toy2
 				if (Buzz::g_unk53C5E4 == 48 && ! g_liftVelocity)
 				{
 					g_liftVelocity = 2;
-					AudioManager::PlaySoundEffect(33, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(33, &g_buzzActor.transform.pos);
 				}
 
 				int32_t soundTime;
@@ -733,8 +733,8 @@ namespace Toy2
 					{
 						// which side of the car Buzz is on, to count the laps
 						int32_t side = 0;
-						int32_t buzzZ = g_buzzActor.posAngles.pos.z;
-						int32_t buzzX = g_buzzActor.posAngles.pos.x;
+						int32_t buzzZ = g_buzzActor.transform.pos.z;
+						int32_t buzzX = g_buzzActor.transform.pos.x;
 
 						if (buzzZ < -106496u)
 							side = 1;
@@ -841,12 +841,12 @@ namespace Toy2
 							Levels::Method3(0, 1);
 							Buzz::g_groundSlamTicker = 0;
 							Levels::Method2(-4736, 2);
-							AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 							g_buzzActor.velX = Numerics::g_sinCosLUT[286];
 
 							g_buzzActor.actorFlags |= 0x44;
 							g_buzzActor.velForward = Numerics::g_sinCosLUT[1310];
-							g_buzzActor.posAngles.angles.yaw = 286;
+							g_buzzActor.transform.angles.yaw = 286;
 							g_buzzActor.facingAngle = 286;
 							Camera::g_unk52AD98 = 64;
 						}
@@ -910,21 +910,21 @@ namespace Toy2
 			// the camera stays between the ceiling and the floor of the stairs
 			if (Buzz::g_unk53C5E4 == 60)
 			{
-				if (g_buzzActor.posAngles.pos.y > -150000 && g_buzzActor.posAngles.pos.y < -100000 && Camera::g_gameplayCameraState.pos.y > -150000)
+				if (g_buzzActor.transform.pos.y > -150000 && g_buzzActor.transform.pos.y < -100000 && Camera::g_gameplayCameraState.pos.y > -150000)
 				{
 					Camera::g_gameplayCameraState.pos.y = -150000;
 					Camera::g_gameplayCameraState.targetPos.y = -150000;
 					Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch - 768) / -8;
 				}
 
-				if (g_buzzActor.posAngles.pos.y >= -100000 && g_buzzActor.posAngles.pos.y < -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
+				if (g_buzzActor.transform.pos.y >= -100000 && g_buzzActor.transform.pos.y < -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
 				{
 					Camera::g_gameplayCameraState.pos.y = -50000;
 					Camera::g_gameplayCameraState.targetPos.y = -50000;
 					Camera::g_gameplayCameraState.orbitPitch += frameDelta * (Camera::g_gameplayCameraState.orbitPitch + 256) / -8;
 				}
 
-				if (g_buzzActor.posAngles.pos.y >= -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
+				if (g_buzzActor.transform.pos.y >= -68288 && Camera::g_gameplayCameraState.pos.y < -50000)
 				{
 					Camera::g_gameplayCameraState.pos.y = -50000;
 					Camera::g_gameplayCameraState.targetPos.y = -50000;
@@ -941,7 +941,7 @@ namespace Toy2
 				Game::InitActor(&g_levelActors[29], 0);
 			}
 
-			if (g_buzzActor.posAngles.pos.y > -276188 && g_buzzActor.posAngles.pos.z > -291419 && g_buzzActor.posAngles.pos.y < -137750
+			if (g_buzzActor.transform.pos.y > -276188 && g_buzzActor.transform.pos.z > -291419 && g_buzzActor.transform.pos.y < -137750
 				&& g_inTinRobotFight == 2)
 				g_hudWidgetTimers[7] = 90;
 

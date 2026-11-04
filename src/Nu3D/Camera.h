@@ -125,7 +125,7 @@ namespace Nu3D
 		void UnprojectPointsFromCamera(Vector3F* out, Vector3F* in, int32_t count);
 		int32_t ClipViewToPortal(CameraInstance* camera, Portal::AreaPortal* portal);
 		void WorldToView(Vector3I* a1, Vector3I* a2);
-		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor);
+		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::CreatureActor* actor);
 		void EnableCameraSkew();
 		int32_t SetObjectViewPosition(Nu3D::Camera::NineWords* a1);
 		int32_t ProjectQuad(Vector3I* a1, Vector3I* a2, Vector3I* a3, Vector3I* a4, int32_t a5, int32_t a6, int32_t a7, int32_t a8);

@@ -228,11 +228,11 @@ namespace Toy2
 				}
 
 				g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
-				g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
-				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+				g_gameplayCameraState.orbitYaw = g_buzzActor.transform.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
 
 				g_gameplayCameraState.distance = 1200;
-				g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				g_gameplayCameraState.pos.y = g_buzzActor.transform.pos.y - 12288;
 				g_gameplayCameraState.angles.pitch = 0;
 				g_gameplayCameraState.targetPos.x = g_gameplayCameraState.pos.x;
 				g_gameplayCameraState.unkShort6 = 0;
@@ -252,7 +252,7 @@ namespace Toy2
 			g_cutsceneFocusPos = *target;
 
 			int16_t angle =
-				Nu3D::Math::CartesianToFixedAngle(g_cutsceneFocusPos.x - g_buzzActor.posAngles.pos.x, g_cutsceneFocusPos.z - g_buzzActor.posAngles.pos.z)
+				Nu3D::Math::CartesianToFixedAngle(g_cutsceneFocusPos.x - g_buzzActor.transform.pos.x, g_cutsceneFocusPos.z - g_buzzActor.transform.pos.z)
 				& 0xFFF;
 
 			int32_t sinValue = Numerics::g_sinCosLUT[(angle - 2048) & 0xFFF];
@@ -285,11 +285,11 @@ namespace Toy2
 				}
 
 				g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
-				g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
-				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+				g_gameplayCameraState.orbitYaw = g_buzzActor.transform.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
 
 				g_gameplayCameraState.distance = 1200;
-				g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				g_gameplayCameraState.pos.y = g_buzzActor.transform.pos.y - 12288;
 				g_gameplayCameraState.angles.pitch = 0;
 				g_gameplayCameraState.targetPos.x = g_gameplayCameraState.pos.x;
 				g_gameplayCameraState.unkShort6 = 0;
@@ -304,14 +304,14 @@ namespace Toy2
 			g_buzzActor.actorFlags |= Actor::ACTOR_LOCKED_MOVE;
 			InputManager::g_directionInputState &= DIR_SECRET_MENU | DIR_MENU | DIR_CAMERA_LEFT | DIR_CAMERA_RIGHT;
 
-			g_cutsceneFocusPos.z = g_buzzActor.posAngles.pos.z;
-			g_cutsceneFocusPos.x = g_buzzActor.posAngles.pos.x;
+			g_cutsceneFocusPos.z = g_buzzActor.transform.pos.z;
+			g_cutsceneFocusPos.x = g_buzzActor.transform.pos.x;
 			g_cameraBlendTimer = 64;
-			g_cutsceneFocusPos.y = g_buzzActor.posAngles.pos.y - 12288;
+			g_cutsceneFocusPos.y = g_buzzActor.transform.pos.y - 12288;
 
 			int16_t angle =
 				Nu3D::Math::CartesianToFixedAngle(
-					g_buzzActor.posAngles.pos.x - g_activeCameraTransform.pos.x, g_buzzActor.posAngles.pos.z - g_activeCameraTransform.pos.z)
+					g_buzzActor.transform.pos.x - g_activeCameraTransform.pos.x, g_buzzActor.transform.pos.z - g_activeCameraTransform.pos.z)
 				& 0xFFF;
 
 			g_cutsceneEyePos.x = g_cutsceneFocusPos.x + Numerics::g_sinCosLUT[(angle - 2048) & 0xFFF];
@@ -325,7 +325,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00403450
-		void InitGameplayCamera(Toy2::Camera::GameplayCameraState* cameraState, Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		void InitGameplayCamera(Toy2::Camera::GameplayCameraState* cameraState, Toy2::BuzzActor* buzzActor)
 		{
 			g_activeCameraTransform.pos.x = 0;
 			g_activeCameraTransform.pos.y = 0;
@@ -346,24 +346,24 @@ namespace Toy2
 
 			cameraState->distance = 1200;
 
-			uint16_t yaw = buzzActor->posAngles.angles.yaw;
+			uint16_t yaw = buzzActor->transform.angles.yaw;
 
 			cameraState->angles.yaw = yaw;
 			cameraState->orbitYaw = yaw;
 
 			cameraState->angles.pitch = 0;
 			cameraState->roll = 0;
-			cameraState->pos.x = buzzActor->posAngles.pos.x + ((1200 * Numerics::g_sinCosLUT[(yaw - 2048) & 0xFFF]) >> 9);
-			cameraState->pos.z = buzzActor->posAngles.pos.z + ((1200 * Numerics::g_sinCosLUT[(yaw - 1024) & 0xFFF]) >> 9);
-			cameraState->pos.y = buzzActor->posAngles.pos.y;
+			cameraState->pos.x = buzzActor->transform.pos.x + ((1200 * Numerics::g_sinCosLUT[(yaw - 2048) & 0xFFF]) >> 9);
+			cameraState->pos.z = buzzActor->transform.pos.z + ((1200 * Numerics::g_sinCosLUT[(yaw - 1024) & 0xFFF]) >> 9);
+			cameraState->pos.y = buzzActor->transform.pos.y;
 
 			int32_t groundHeight = Nu3D::Collision::GetGroundHeight((Transform*)cameraState, 0);
 			cameraState->pos.y = groundHeight;
 
 			if (groundHeight == 0x80000000)
-				cameraState->pos.y = buzzActor->posAngles.pos.y;
+				cameraState->pos.y = buzzActor->transform.pos.y;
 
-			int32_t buzzY = buzzActor->posAngles.pos.y;
+			int32_t buzzY = buzzActor->transform.pos.y;
 
 			if (cameraState->pos.y > buzzY - 0x4000)
 				cameraState->pos.y = buzzY - 0x4000;
@@ -386,8 +386,8 @@ namespace Toy2
 			g_freezeBuzz = 0;
 
 			cameraState->collisionFlags = 0;
-			cameraState->followY = g_buzzActor.posAngles.pos.y;
-			cameraState->smoothedY = g_buzzActor.posAngles.pos.y;
+			cameraState->followY = g_buzzActor.transform.pos.y;
+			cameraState->smoothedY = g_buzzActor.transform.pos.y;
 			cameraState->smoothedYaw = 0;
 
 			g_cameraState = 0;
@@ -643,11 +643,11 @@ namespace Toy2
 				g_unk50A4DC = reinterpret_cast<Nu3D::Particles::ParticleInstance*>(-1);
 			}
 
-			cameraState->orbitYaw = Toy2::g_buzzActor.posAngles.angles.yaw;
-			Toy2::g_buzzActor.facingAngle = Toy2::g_buzzActor.posAngles.angles.yaw;
+			cameraState->orbitYaw = Toy2::g_buzzActor.transform.angles.yaw;
+			Toy2::g_buzzActor.facingAngle = Toy2::g_buzzActor.transform.angles.yaw;
 			cameraState->distance = 1200;
 
-			int32_t yPos = Toy2::g_buzzActor.posAngles.pos.y - 12288;
+			int32_t yPos = Toy2::g_buzzActor.transform.pos.y - 12288;
 
 			cameraState->angles.pitch = 0;
 			cameraState->pos.y = yPos;
@@ -664,7 +664,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004037E0
-		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::Actor::Toy2Actor* actor, int32_t flag)
+		BOOL GetActorLockOnPoint(Vector3I* pos, Toy2::CreatureActor* actor, int32_t flag)
 		{
 			int16_t yawAngle = actor->transform.angles.yaw;
 
@@ -731,9 +731,9 @@ namespace Toy2
 			// from the third state on, the camera sits at Buzz
 			if (g_cameraState >= 3)
 			{
-				state->pos.x = g_buzzActor.posAngles.pos.x;
-				state->pos.y = g_buzzActor.posAngles.pos.y - 12288;
-				state->pos.z = g_buzzActor.posAngles.pos.z;
+				state->pos.x = g_buzzActor.transform.pos.x;
+				state->pos.y = g_buzzActor.transform.pos.y - 12288;
+				state->pos.z = g_buzzActor.transform.pos.z;
 				cameraState = g_cameraState;
 			}
 
@@ -742,11 +742,11 @@ namespace Toy2
 			// entering the visor
 			if (cameraState == 3)
 			{
-				AudioManager::PlaySoundEffect(42, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(42, &g_buzzActor.transform.pos);
 				state->angles.pitch = 0;
-				state->angles.yaw = g_buzzActor.posAngles.angles.yaw;
+				state->angles.yaw = g_buzzActor.transform.angles.yaw;
 				state->targetPos.x = 0;
-				g_unk50A290 = g_buzzActor.posAngles.angles.yaw;
+				g_unk50A290 = g_buzzActor.transform.angles.yaw;
 				targetIdx = -1;
 				g_buzzActor.actorFlags &= ~Actor::ACTOR_CUTSCENE_MOVE;
 				g_unk50A28C = 0;
@@ -770,12 +770,12 @@ namespace Toy2
 
 			// collect the actors (and grapple points) that can be locked on to
 			{
-				Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+				CreatureActor* actor = Actor::g_activeActors[0];
 				candidateCount = 0;
 
 				if (Actor::g_activeActors[0])
 				{
-					Actor::Toy2Actor** activeActor = Actor::g_activeActors;
+					CreatureActor** activeActor = Actor::g_activeActors;
 					int32_t* candidate = g_lockOnCandidates;
 
 					do
@@ -884,7 +884,7 @@ namespace Toy2
 					g_lockOnActorIdx = g_lockOnCandidates[current + 1];
 			}
 
-			AudioManager::PlaySoundEffect(41, &g_buzzActor.posAngles.pos);
+			AudioManager::PlaySoundEffect(41, &g_buzzActor.transform.pos);
 			targetIdx = g_lockOnActorIdx;
 			g_unk50A14C = 0;
 
@@ -1099,7 +1099,7 @@ namespace Toy2
 
 				if (g_tickState[8])
 				{
-					AudioManager::PlaySoundEffect(40, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(40, &g_buzzActor.transform.pos);
 					marker = g_unk50A4DC;
 					targetIdx = g_lockOnActorIdx;
 				}
@@ -1152,7 +1152,7 @@ namespace Toy2
 			}
 
 			{
-				int32_t yawDelta = (Nu3D::Math::CartesianToFixedAngle(lockX, lockZ) - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+				int32_t yawDelta = (Nu3D::Math::CartesianToFixedAngle(lockX, lockZ) - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 				if (yawDelta >= 2048)
 					yawDelta -= 4096;
@@ -1174,7 +1174,7 @@ namespace Toy2
 			}
 
 		LBL_APPLY_AIM_VELOCITY:
-			g_buzzActor.posAngles.angles.yaw = (g_buzzActor.posAngles.angles.yaw + yawVel * frameDelta / 16) & 0xFFF;
+			g_buzzActor.transform.angles.yaw = (g_buzzActor.transform.angles.yaw + yawVel * frameDelta / 16) & 0xFFF;
 
 			{
 				int32_t pitch = ((state->targetPos.x + 1024) & 0xFFF) + pitchTarget * frameDelta / 16;
@@ -1216,7 +1216,7 @@ namespace Toy2
 
 				state->angles.pitch = (state->angles.pitch + (pitchDelta * (int32_t)Renderer::g_frameDelta) / 8) & 0xFFF;
 
-				int32_t yawDelta = (g_buzzActor.posAngles.angles.yaw - state->angles.yaw) & 0xFFF;
+				int32_t yawDelta = (g_buzzActor.transform.angles.yaw - state->angles.yaw) & 0xFFF;
 
 				if (yawDelta >= 0x800)
 					yawDelta -= 4096;
@@ -1231,9 +1231,9 @@ namespace Toy2
 				uint16_t pitch = state->angles.pitch;
 				int32_t cosPitch = Numerics::g_sinCosLUT[(1024 - pitch) & 0xFFF];
 
-				startPos.pos.x = g_buzzActor.posAngles.pos.x;
-				startPos.pos.y = g_buzzActor.posAngles.pos.y - 11264;
-				startPos.pos.z = g_buzzActor.posAngles.pos.z;
+				startPos.pos.x = g_buzzActor.transform.pos.x;
+				startPos.pos.y = g_buzzActor.transform.pos.y - 11264;
+				startPos.pos.z = g_buzzActor.transform.pos.z;
 
 				uint16_t yaw = state->angles.yaw;
 
@@ -1293,7 +1293,7 @@ namespace Toy2
 
 				g_unk50A28C = (g_unk50A28C - ((pitchLag * (int32_t)Renderer::g_frameDelta) / 6)) & 0xFFF;
 
-				int32_t yawLag = (g_unk50A290 - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+				int32_t yawLag = (g_unk50A290 - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 				if (yawLag >= 0x800)
 					yawLag -= 4096;
@@ -1303,14 +1303,14 @@ namespace Toy2
 				int32_t linkAngleOffset = Numerics::g_sinCosLUT[g_unk50A4C8] >> 10;
 
 				Nu3D::Link::SetPositionRawAndCommit(
-					45, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+					45, g_buzzActor.transform.pos.x >> 5, (g_buzzActor.transform.pos.y - 12288) >> 5, g_buzzActor.transform.pos.z >> 5);
 				Nu3D::Link::SetPositionRawAndCommit(
-					46, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+					46, g_buzzActor.transform.pos.x >> 5, (g_buzzActor.transform.pos.y - 12288) >> 5, g_buzzActor.transform.pos.z >> 5);
 				Nu3D::Link::SetPositionRawAndCommit(
-					47, g_buzzActor.posAngles.pos.x >> 5, (g_buzzActor.posAngles.pos.y - 12288) >> 5, g_buzzActor.posAngles.pos.z >> 5);
+					47, g_buzzActor.transform.pos.x >> 5, (g_buzzActor.transform.pos.y - 12288) >> 5, g_buzzActor.transform.pos.z >> 5);
 
 				Nu3D::Link::SetRotationRelative8bit(
-					45, 0, (g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF, ((linkAngleOffset / 2) + state->targetPos.x) & 0xFFF);
+					45, 0, (g_buzzActor.transform.angles.yaw - 1024) & 0xFFF, ((linkAngleOffset / 2) + state->targetPos.x) & 0xFFF);
 				Nu3D::Link::SetRotationRelative8bit(46, 0, (g_unk50A290 - 1024) & 0xFFF, (linkAngleOffset + g_unk50A28C) & 0xFFF);
 				Nu3D::Link::SetRotationRelative8bit(47, 0, (g_unk50A290 - 1024) & 0xFFF, (g_unk50A28C + (linkAngleOffset / 2)) & 0xFFF);
 			}
@@ -1341,7 +1341,7 @@ namespace Toy2
 			if ((InputManager::g_directionInputState & 0x400) != 0 && (InputManager::g_prevDirectionInputState & 0x400) == 0 && cameraState == 4)
 			{
 				g_cameraState = 5;
-				AudioManager::PlaySoundEffect(43, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(43, &g_buzzActor.transform.pos);
 				cameraState = g_cameraState;
 			}
 
@@ -1359,11 +1359,11 @@ namespace Toy2
 					g_unk50A4DC = (Nu3D::Particles::ParticleInstance*)-1;
 				}
 
-				state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
-				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+				state->orbitYaw = g_buzzActor.transform.angles.yaw;
+				g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
 				int32_t posX = state->pos.x;
 				state->distance = 1200;
-				state->pos.y = g_buzzActor.posAngles.pos.y - 12288;
+				state->pos.y = g_buzzActor.transform.pos.y - 12288;
 				state->angles.pitch = 0;
 				state->targetPos.x = posX;
 				state->unkShort6 = 0;
@@ -1402,9 +1402,9 @@ namespace Toy2
 					g_unk50A4E0 = 0;
 			}
 
-			int32_t buzzZ = g_buzzActor.posAngles.pos.z;
-			int32_t buzzY = g_buzzActor.posAngles.pos.y;
-			int32_t buzzX = g_buzzActor.posAngles.pos.x;
+			int32_t buzzZ = g_buzzActor.transform.pos.z;
+			int32_t buzzY = g_buzzActor.transform.pos.y;
+			int32_t buzzX = g_buzzActor.transform.pos.x;
 
 			if (state->distance > g_buzzCameraDistance)
 			{
@@ -1452,7 +1452,7 @@ namespace Toy2
 						&& (InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) == 0)
 					{
 						snapToTarget = 1;
-						state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+						state->orbitYaw = g_buzzActor.transform.angles.yaw;
 					}
 				}
 
@@ -1471,7 +1471,7 @@ namespace Toy2
 							turn = -32 * frameDelta / 2;
 
 						g_buzzActor.facingAngle = (g_buzzActor.facingAngle + turn) & 0xFFF;
-						g_buzzActor.posAngles.angles.yaw = g_buzzActor.facingAngle;
+						g_buzzActor.transform.angles.yaw = g_buzzActor.facingAngle;
 					}
 
 					if (idleCameraTimer < 100)
@@ -1501,7 +1501,7 @@ namespace Toy2
 
 				if (recenter)
 				{
-					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 					if (yawDelta >= 2048)
 						yawDelta -= 4096;
@@ -1511,14 +1511,14 @@ namespace Toy2
 						state->orbitYaw += frameDelta * turnSpeed;
 
 						if (yawDelta + frameDelta * turnSpeed >= 0)
-							state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+							state->orbitYaw = g_buzzActor.transform.angles.yaw;
 					}
 					else if (yawDelta > 0)
 					{
 						state->orbitYaw -= frameDelta * turnSpeed;
 
 						if (yawDelta - frameDelta * turnSpeed <= 0)
-							state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+							state->orbitYaw = g_buzzActor.transform.angles.yaw;
 					}
 				}
 
@@ -1560,18 +1560,18 @@ namespace Toy2
 					}
 				}
 
-				state->followY -= (state->followY - g_buzzActor.posAngles.pos.y + 4096) >> 5;
+				state->followY -= (state->followY - g_buzzActor.transform.pos.y + 4096) >> 5;
 				state->smoothedY -= frameDelta * (state->smoothedY - state->followY) / 16;
 
 				if (g_unk50A4E0)
 					state->smoothedY =
-						g_buzzActor.posAngles.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.posAngles.pos.y - state->smoothedY - 4096) / 256) - 4096;
+						g_buzzActor.transform.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.transform.pos.y - state->smoothedY - 4096) / 256) - 4096;
 
 				if (g_unk50A118.x != 0x80000000)
 				{
 					int16_t orbitYaw = state->orbitYaw;
 					int32_t yawDelta =
-						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z))
+						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.transform.pos.x, g_unk50A118.z - g_buzzActor.transform.pos.z))
 						& 0xFFF;
 
 					if (yawDelta >= 2048)
@@ -1620,28 +1620,28 @@ namespace Toy2
 			{
 				g_unk50A534 = 0;
 
-				if (g_buzzActor.posAngles.pos.y > state->followY + 0x4000)
-					state->followY = g_buzzActor.posAngles.pos.y - 0x4000;
+				if (g_buzzActor.transform.pos.y > state->followY + 0x4000)
+					state->followY = g_buzzActor.transform.pos.y - 0x4000;
 
-				if (g_buzzActor.posAngles.pos.y < state->followY - 0x4000)
-					state->followY = g_buzzActor.posAngles.pos.y + 0x4000;
+				if (g_buzzActor.transform.pos.y < state->followY - 0x4000)
+					state->followY = g_buzzActor.transform.pos.y + 0x4000;
 
-				if ((g_buzzActor.unkShort40 && g_buzzActor.unkVar30) || g_buzzActor.posAngles.pos.y < state->followY + 4096)
-					state->followY -= (state->followY - g_buzzActor.posAngles.pos.y + 4096) >> 5;
+				if ((g_buzzActor.unkShort40 && g_buzzActor.unkVar30) || g_buzzActor.transform.pos.y < state->followY + 4096)
+					state->followY -= (state->followY - g_buzzActor.transform.pos.y + 4096) >> 5;
 
 				state->smoothedY -= frameDelta * (state->smoothedY - state->followY) / 16;
 
 				if (g_unk50A4E0)
 					state->smoothedY =
-						g_buzzActor.posAngles.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.posAngles.pos.y - state->smoothedY - 4096) / 256) - 4096;
+						g_buzzActor.transform.pos.y - (256 - g_unk50A4E0) * ((g_buzzActor.transform.pos.y - state->smoothedY - 4096) / 256) - 4096;
 
-				if (g_gravityBootsDuration && state->smoothedY > g_buzzActor.posAngles.pos.y - 4096)
-					state->smoothedY = g_buzzActor.posAngles.pos.y - 4096;
+				if (g_gravityBootsDuration && state->smoothedY > g_buzzActor.transform.pos.y - 4096)
+					state->smoothedY = g_buzzActor.transform.pos.y - 4096;
 
 				if ((SaveManager::g_save0Data.cameraType & SaveManager::CAMERA_ACTIVE) != 0)
 				{
 					int32_t turnDivisor = 42;
-					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 					if (yawDelta >= 2048)
 						yawDelta -= 4096;
@@ -1670,12 +1670,12 @@ namespace Toy2
 					state->orbitYaw += turn;
 
 					if ((InputManager::g_curButtonsPressed & INPUT_CANCEL) != 0 && (InputManager::g_prevButtonsPressed & INPUT_CANCEL) == 0)
-						state->orbitYaw = g_buzzActor.posAngles.angles.yaw;
+						state->orbitYaw = g_buzzActor.transform.angles.yaw;
 				}
 
 				if (Buzz::g_unk53C618 || g_rocketBootsDuration || Buzz::g_unk53C818 || g_grappleState == 2 || (g_buzzActor.actorFlags & 0x40) != 0)
 				{
-					int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+					int32_t yawDelta = (state->orbitYaw - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 					if (yawDelta >= 2048)
 						yawDelta -= 4096;
@@ -1778,7 +1778,7 @@ namespace Toy2
 						if ((state->collisionFlags & 2) == 0)
 							state->collisionFlags = 8;
 					case 7: {
-						int32_t yawDelta = (state->orbitYaw - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+						int32_t yawDelta = (state->orbitYaw - g_buzzActor.transform.angles.yaw) & 0xFFF;
 
 						if (yawDelta >= 2048)
 							yawDelta -= 4096;
@@ -1879,7 +1879,7 @@ namespace Toy2
 				{
 					int16_t orbitYaw = state->orbitYaw;
 					int32_t yawDelta =
-						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.posAngles.pos.x, g_unk50A118.z - g_buzzActor.posAngles.pos.z))
+						(orbitYaw - Nu3D::Math::CartesianToFixedAngle(g_unk50A118.x - g_buzzActor.transform.pos.x, g_unk50A118.z - g_buzzActor.transform.pos.z))
 						& 0xFFF;
 
 					if (yawDelta >= 2048)
@@ -2186,7 +2186,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00435F30
-		int32_t HandleLedgeClimb(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		int32_t HandleLedgeClimb(Toy2::BuzzActor* buzzActor)
 		{
 			int32_t y;
 			int32_t v4;
@@ -2198,29 +2198,29 @@ namespace Toy2
 
 			if (buzzActor->gravityVel > 0 && (Buzz::g_buzzActionState & 0xFFF7F) == 0)
 			{
-				y = buzzActor->posAngles.pos.y;
+				y = buzzActor->transform.pos.y;
 
 				if (buzzActor->floorYPos - y > 0x2000 && buzzActor->floorYPos != (int32_t)0x80000000)
 				{
 					probePos.pos.y = y - 13824;
-					v4 = Numerics::g_sinCosLUT[buzzActor->posAngles.angles.yaw & 0xFFF] / 3;
-					v5 = Numerics::g_sinCosLUT[(buzzActor->posAngles.angles.yaw + 1024) & 0xFFF] / 3;
-					probePos.pos.x = v4 + buzzActor->posAngles.pos.x;
-					probePos.pos.z = v5 + buzzActor->posAngles.pos.z;
+					v4 = Numerics::g_sinCosLUT[buzzActor->transform.angles.yaw & 0xFFF] / 3;
+					v5 = Numerics::g_sinCosLUT[(buzzActor->transform.angles.yaw + 1024) & 0xFFF] / 3;
+					probePos.pos.x = v4 + buzzActor->transform.pos.x;
+					probePos.pos.z = v5 + buzzActor->transform.pos.z;
 
 					v7 = Nu3D::Collision::GetGroundHeight(&probePos, 0) - 200;
 
 					if (Collision::g_floorSlope.y < -15000)
 					{
-						if (v7 < buzzActor->posAngles.pos.y - 13824 && v7 >= buzzActor->motionTargetPos.y - 13824)
+						if (v7 < buzzActor->transform.pos.y - 13824 && v7 >= buzzActor->motionTargetPos.y - 13824)
 						{
-							startPos.pos.y = buzzActor->posAngles.pos.y;
-							startPos.pos.x = buzzActor->posAngles.pos.x - v4 / 4;
-							startPos.pos.z = buzzActor->posAngles.pos.z - v5 / 4;
+							startPos.pos.y = buzzActor->transform.pos.y;
+							startPos.pos.x = buzzActor->transform.pos.x - v4 / 4;
+							startPos.pos.z = buzzActor->transform.pos.z - v5 / 4;
 
 							displacement.pos.x = 0;
 							displacement.pos.z = 0;
-							displacement.pos.y = v7 - buzzActor->posAngles.pos.y;
+							displacement.pos.y = v7 - buzzActor->transform.pos.y;
 
 							if (! Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
 							{
@@ -2231,12 +2231,12 @@ namespace Toy2
 
 								if (! Nu3D::Collision::SweepAndSlide(&startPos, &displacement, 0x8000, 0, 4000))
 								{
-									AudioManager::PlaySoundEffect(23, &buzzActor->posAngles.pos);
-									Toy2::Portal::UpdateActiveSectorAt(buzzActor->posAngles.pos.x, v7, buzzActor->posAngles.pos.z);
+									AudioManager::PlaySoundEffect(23, &buzzActor->transform.pos);
+									Toy2::Portal::UpdateActiveSectorAt(buzzActor->transform.pos.x, v7, buzzActor->transform.pos.z);
 
-									buzzActor->posAngles.pos.x += v4;
-									buzzActor->posAngles.pos.y = v7;
-									buzzActor->posAngles.pos.z += v5;
+									buzzActor->transform.pos.x += v4;
+									buzzActor->transform.pos.y = v7;
+									buzzActor->transform.pos.z += v5;
 
 									Buzz::g_unk53C660 = 82;
 									Platform::g_unk559E80 = Collision::GetGroundContactIdx();
@@ -2255,12 +2255,12 @@ namespace Toy2
 
 			if (Buzz::g_unk53C660)
 			{
-				int32_t turn = (buzzActor->posAngles.angles.yaw - buzzActor->facingAngle) & 0xFFF;
+				int32_t turn = (buzzActor->transform.angles.yaw - buzzActor->facingAngle) & 0xFFF;
 
 				if (turn > 0x800)
 					turn -= 4096;
 
-				buzzActor->posAngles.angles.yaw = (buzzActor->posAngles.angles.yaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+				buzzActor->transform.angles.yaw = (buzzActor->transform.angles.yaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 				g_gameplayCameraState.orbitYaw = (g_gameplayCameraState.orbitYaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 
 				Buzz::g_unk53C660 -= Renderer::g_frameDelta;
@@ -2281,11 +2281,11 @@ namespace Toy2
 		{
 			if (Actor::g_activeActors[0])
 			{
-				Actor::Toy2Actor** activeActors = Actor::g_activeActors;
+				CreatureActor** activeActors = Actor::g_activeActors;
 
 				do
 				{
-					Actor::Toy2Actor* curActor = *activeActors;
+					CreatureActor* curActor = *activeActors;
 					int32_t visibilityDistance = curActor->visibilityDistance;
 					int16_t actorFlags = curActor->actorFlags;
 					int32_t creatureId = curActor->creatureId;
@@ -2330,14 +2330,14 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A4BB0
-		void UpdateGravityBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		void UpdateGravityBoots(Toy2::BuzzActor* buzzActor)
 		{
 			int32_t effectOffset;
 
 			Buzz::g_unk53C838 = 0;
 			buzzActor->collisionFlags = 0;
 
-			if (buzzActor->posAngles.pos.y >= buzzActor->floorYPos - g_gravityBootsHoverHeight)
+			if (buzzActor->transform.pos.y >= buzzActor->floorYPos - g_gravityBootsHoverHeight)
 			{
 				buzzActor->gravityVel = -32 * Renderer::g_frameDelta + buzzActor->gravityVel;
 
@@ -2389,9 +2389,9 @@ namespace Toy2
 				int32_t effectType = effectOffset + 81;
 
 				Nu3D::Particles::SpawnInstance(
-					buzzActor->posAngles.pos.x,
-					buzzActor->posAngles.pos.y,
-					buzzActor->posAngles.pos.z,
+					buzzActor->transform.pos.x,
+					buzzActor->transform.pos.y,
+					buzzActor->transform.pos.z,
 					0,
 					0,
 					0,
@@ -2401,9 +2401,9 @@ namespace Toy2
 					effectOffset + 81);
 
 				Nu3D::Particles::SpawnInstance(
-					buzzActor->posAngles.pos.x,
-					buzzActor->posAngles.pos.y,
-					buzzActor->posAngles.pos.z,
+					buzzActor->transform.pos.x,
+					buzzActor->transform.pos.y,
+					buzzActor->transform.pos.z,
 					0,
 					0,
 					0,
@@ -2414,7 +2414,7 @@ namespace Toy2
 			}
 
 		LABEL_20:
-			AudioManager::PlaySoundEffect(80, &g_buzzActor.posAngles.pos);
+			AudioManager::PlaySoundEffect(80, &g_buzzActor.transform.pos);
 			g_gravityBootsDuration -= Renderer::g_frameDelta;
 
 			if (g_gravityBootsDuration <= 0)
@@ -2422,7 +2422,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004A4F80
-		BOOL UpdateRocketBoots(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement)
+		BOOL UpdateRocketBoots(Toy2::BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movement)
 		{
 			BOOL result;
 
@@ -2440,7 +2440,7 @@ namespace Toy2
 			if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
 				CalculateMaxTurnAngle(airAccel);
 
-			uint16_t yawAngle = buzzActor->posAngles.angles.yaw;
+			uint16_t yawAngle = buzzActor->transform.angles.yaw;
 			uint32_t angularDiff = (yawAngle - buzzActor->facingAngle) & 0xFFF;
 
 			if (angularDiff < 2048)
@@ -2449,8 +2449,8 @@ namespace Toy2
 					angularDiff = movement->maxTurnRate;
 
 				result = 1;
-				buzzActor->posAngles.angles.yaw = yawAngle - (angularDiff * Renderer::g_frameDelta) / 8;
-				buzzActor->posAngles.angles.yaw &= 0xFFF;
+				buzzActor->transform.angles.yaw = yawAngle - (angularDiff * Renderer::g_frameDelta) / 8;
+				buzzActor->transform.angles.yaw &= 0xFFF;
 			}
 			else
 			{
@@ -2459,8 +2459,8 @@ namespace Toy2
 				if ((4096 - angularDiff) > movement->maxTurnRate)
 					yawAdd = movement->maxTurnRate;
 
-				buzzActor->posAngles.angles.yaw = yawAngle + yawAdd * Renderer::g_frameDelta / 8;
-				buzzActor->posAngles.angles.yaw &= 0xFFF;
+				buzzActor->transform.angles.yaw = yawAngle + yawAdd * Renderer::g_frameDelta / 8;
+				buzzActor->transform.angles.yaw &= 0xFFF;
 
 				return 1;
 			}
@@ -2478,7 +2478,7 @@ namespace Toy2
 			int16_t cameraAngleFromPos;
 
 			cameraAngleFromPos = Nu3D::Math::CartesianToFixedAngle(
-				(g_buzzActor.posAngles.pos.x - g_gameplayCameraState.targetPos.x) >> 5, (g_buzzActor.posAngles.pos.z - g_gameplayCameraState.targetPos.z) >> 5);
+				(g_buzzActor.transform.pos.x - g_gameplayCameraState.targetPos.x) >> 5, (g_buzzActor.transform.pos.z - g_gameplayCameraState.targetPos.z) >> 5);
 
 			if ((InputManager::g_directionalInputCount == 1 || InputManager::g_directionalInputCount == 2) && ! g_demoMode)
 			{
@@ -2526,15 +2526,15 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004A5870
 		int32_t SweepSegmentVsActors(Transform* startPos, Transform* displacement, int32_t damageMode)
 		{
-			Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
-			Toy2::Actor::Toy2Actor* hitActor = 0;
+			Toy2::CreatureActor* actor = Actor::g_activeActors[0];
+			Toy2::CreatureActor* hitActor = 0;
 			int32_t hit = 0;
 			Vector3I dir;
 
 			if (! actor)
 				return hit;
 
-			Toy2::Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+			Toy2::CreatureActor** nextActor = Actor::g_activeActors;
 
 			do
 			{
@@ -2615,9 +2615,9 @@ namespace Toy2
 				return hit;
 
 			if (damageMode == 1)
-				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 2);
+				Actor::HandleDamage(hitActor, g_buzzActor.transform.angles.yaw, 2);
 			else
-				Actor::HandleDamage(hitActor, g_buzzActor.posAngles.angles.yaw, 3);
+				Actor::HandleDamage(hitActor, g_buzzActor.transform.angles.yaw, 3);
 
 			if ((hitActor->creatureRam->defenseMode & 1) != 0)
 				return hit;

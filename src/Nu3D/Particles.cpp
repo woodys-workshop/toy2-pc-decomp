@@ -803,7 +803,7 @@ namespace Nu3D
 					110,
 					2);
 
-			if (Toy2::Actor::IsInsideBounds((Toy2::Actor::Toy2Actor*)particle, -153302, 57514, -111593, 111255))
+			if (Toy2::Actor::IsInsideBounds(&particle->pos, -153302, 57514, -111593, 111255))
 			{
 				if (particle->groundHeightY == 0x80000000)
 					particle->groundHeightY = -76755;
@@ -904,7 +904,7 @@ namespace Nu3D
 			int16_t lifetime;
 			int32_t homingScale;
 			int32_t homingDivisor;
-			Toy2::Actor::Toy2Actor* targetActor;
+			Toy2::CreatureActor* targetActor;
 			int32_t dirX;
 			int32_t dirY;
 			int32_t dirZ;
@@ -967,13 +967,13 @@ namespace Nu3D
 					if (particle->lifetime > 0)
 					{
 						// velY holds a pointer to the actor to home in on, or -1 for Buzz
-						targetActor = (Toy2::Actor::Toy2Actor*)particle->velY;
+						targetActor = (Toy2::CreatureActor*)particle->velY;
 
 						if ((int32_t)targetActor == -1)
 						{
-							dirX = (Toy2::g_buzzActor.posAngles.pos.x - particle->pos.x) >> 5;
-							dirY = (Toy2::g_buzzActor.posAngles.pos.y - particle->pos.y - 0x2000) >> 5;
-							dirZ = (Toy2::g_buzzActor.posAngles.pos.z - particle->pos.z) >> 5;
+							dirX = (Toy2::g_buzzActor.transform.pos.x - particle->pos.x) >> 5;
+							dirY = (Toy2::g_buzzActor.transform.pos.y - particle->pos.y - 0x2000) >> 5;
+							dirZ = (Toy2::g_buzzActor.transform.pos.z - particle->pos.z) >> 5;
 						}
 						else
 						{
@@ -1242,10 +1242,10 @@ namespace Nu3D
 					case 0xC:
 						value = particle->lifetime;
 						colorRampMode = 1;
-						particle->pos.x = Toy2::g_buzzActor.posAngles.pos.x;
-						value2 = Toy2::g_buzzActor.posAngles.pos.y - 554 * value;
+						particle->pos.x = Toy2::g_buzzActor.transform.pos.x;
+						value2 = Toy2::g_buzzActor.transform.pos.y - 554 * value;
 						particle->width += -8 * frameDelta;
-						value3 = Toy2::g_buzzActor.posAngles.pos.z;
+						value3 = Toy2::g_buzzActor.transform.pos.z;
 						particle->pos.y = value2;
 						particle->pos.z = value3;
 						particle->height = particle->width;
@@ -1254,9 +1254,9 @@ namespace Nu3D
 
 					case 0xD:
 						colorRampMode = 1;
-						particle->pos.x = Toy2::g_buzzActor.posAngles.pos.x;
-						value = Toy2::g_buzzActor.posAngles.pos.z;
-						particle->pos.y = Toy2::g_buzzActor.posAngles.pos.y - 400 * (particle->lifetime + 16);
+						particle->pos.x = Toy2::g_buzzActor.transform.pos.x;
+						value = Toy2::g_buzzActor.transform.pos.z;
+						particle->pos.y = Toy2::g_buzzActor.transform.pos.y - 400 * (particle->lifetime + 16);
 						particle->pos.z = value;
 						particle->width += -5 * frameDelta;
 						particle->height = particle->width;
@@ -1346,10 +1346,10 @@ namespace Nu3D
 						goto LABEL_243;
 
 					case 0x15:
-						value = Toy2::g_buzzActor.posAngles.pos.z;
-						particle->pos.x = Toy2::g_buzzActor.posAngles.pos.x;
+						value = Toy2::g_buzzActor.transform.pos.z;
+						particle->pos.x = Toy2::g_buzzActor.transform.pos.x;
 
-						yaw = Toy2::g_buzzActor.posAngles.angles.yaw;
+						yaw = Toy2::g_buzzActor.transform.angles.yaw;
 						colorRampMode = 1;
 						particle->pos.z = value;
 
@@ -1366,7 +1366,7 @@ namespace Nu3D
 
 						particle->pos.x = spawnX;
 						particle->pos.z += Numerics::g_sinCosLUT[offset & 0xFFF] >> 2;
-						particle->pos.y = Toy2::g_buzzActor.posAngles.pos.y - 1024;
+						particle->pos.y = Toy2::g_buzzActor.transform.pos.y - 1024;
 
 						if (particle->lifetime > 4)
 						{
@@ -1533,7 +1533,7 @@ namespace Nu3D
 						if (Toy2::g_tickState[8])
 							AudioManager::PlaySoundEffect(85, &particle->pos);
 
-						targetActor = (Toy2::Actor::Toy2Actor*)particle->velY;
+						targetActor = (Toy2::CreatureActor*)particle->velY;
 						attach = (int16_t*)(targetActor->unkVar34 + 16 * targetActor->primaryAnimIdx);
 						value = targetActor->transform.pos.z;
 
@@ -1669,20 +1669,20 @@ namespace Nu3D
 
 					case 0x24:
 						colorRampMode = 1;
-						value = (Toy2::g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF;
-						value2 = Numerics::g_sinCosLUT[(Toy2::g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] / 10;
+						value = (Toy2::g_buzzActor.transform.angles.yaw - 2048) & 0xFFF;
+						value2 = Numerics::g_sinCosLUT[(Toy2::g_buzzActor.transform.angles.yaw + 1024) & 0xFFF] / 10;
 						value3 = Numerics::g_sinCosLUT[value] / 10;
 
 						if (particle->rotSpeed < 0)
 						{
-							value2 = Numerics::g_sinCosLUT[(Toy2::g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] / -10;
+							value2 = Numerics::g_sinCosLUT[(Toy2::g_buzzActor.transform.angles.yaw + 1024) & 0xFFF] / -10;
 							value3 = Numerics::g_sinCosLUT[value] / -10;
 						}
 
 						offset = particle->lifetime;
-						particle->pos.x = value2 + Toy2::g_buzzActor.posAngles.pos.x;
-						particle->pos.y = Toy2::g_buzzActor.posAngles.pos.y + 288 * (24 - offset);
-						spawnZ = value3 + Toy2::g_buzzActor.posAngles.pos.z;
+						particle->pos.x = value2 + Toy2::g_buzzActor.transform.pos.x;
+						particle->pos.y = Toy2::g_buzzActor.transform.pos.y + 288 * (24 - offset);
+						spawnZ = value3 + Toy2::g_buzzActor.transform.pos.z;
 
 						particle->width += 4 * frameDelta;
 						particle->pos.z = spawnZ;

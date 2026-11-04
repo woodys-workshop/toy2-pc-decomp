@@ -43,10 +43,10 @@ namespace Toy2
 		int32_t g_unk50A548;
 
 		// FUNCTION: TOY2 0x00406220
-		void Zurg3(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Zurg3(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t localStrafeSpeed = context->localStrafeSpeed;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if (localStrafeSpeed <= 256)
 			{
@@ -75,7 +75,7 @@ namespace Toy2
 					{
 						actor->primaryAnimIdx = 1;
 						actor->unkVar30 = (int32_t)Actor::g_unk4E0588[8];
-						actor->unkVar7 = *Actor::g_unk4E0588[8] << 16;
+						actor->primaryAnimTime = *Actor::g_unk4E0588[8] << 16;
 					}
 
 					if (previousTimer > 182 && actor->unkShort4 <= 182)
@@ -118,7 +118,7 @@ namespace Toy2
 					{
 						actor->primaryAnimIdx = 0;
 						actor->unkVar30 = (int32_t)Actor::g_unk4E0588[7];
-						actor->unkVar7 = *Actor::g_unk4E0588[7] << 16;
+						actor->primaryAnimTime = *Actor::g_unk4E0588[7] << 16;
 					}
 				}
 				else
@@ -139,7 +139,7 @@ namespace Toy2
 				{
 					actor->primaryAnimIdx = 0;
 					actor->unkVar30 = (int32_t)Actor::g_unk4E0588[7];
-					actor->unkVar7 = *Actor::g_unk4E0588[7] << 16;
+					actor->primaryAnimTime = *Actor::g_unk4E0588[7] << 16;
 				}
 
 				actor->unkShort4 = 260;
@@ -147,9 +147,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004064A0
-		void ZgCar(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void ZgCar(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if (! actor->unkShort4)
 				actor->unkShort4 = actor->actorPhase;
@@ -200,10 +200,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406620
-		void ZPod(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void ZPod(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t localStrafeSpeed = context->localStrafeSpeed;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			Transform transform;
 			Transform displacement;
 
@@ -278,10 +278,10 @@ namespace Toy2
 
 					Renderer::LensFlare::RegisterLight(transform.pos.x, transform.pos.y, transform.pos.z, 0, 128, 0, 32);
 
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&transform, 25))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, (Vector3I*)&transform, 25))
 					{
 						int16_t hitAngle =
-							Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - transform.pos.x, g_buzzActor.posAngles.pos.z - transform.pos.z);
+							Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - transform.pos.x, g_buzzActor.transform.pos.z - transform.pos.z);
 						Buzz::HandleDamage(hitAngle, 3);
 					}
 				}
@@ -293,9 +293,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004068E0
-		void Box(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Box(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if (actor->unkShort4)
 			{
@@ -323,9 +323,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406960
-		void BPlane(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void BPlane(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			Vector3I particlePos;
 
 			if (actor->unkVar29 >= 0)
@@ -338,7 +338,7 @@ namespace Toy2
 			{
 				actor->unkShort4 = 0;
 
-				Toy2::Actor::Toy2Actor* actorBefore = actor - 1;
+				Toy2::CreatureActor* actorBefore = actor - 1;
 
 				if (actor[-1].creatureId != Actor::CREATURE_3_BOX)
 					actorBefore = actor - 2;
@@ -366,7 +366,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406A60
-		void RCCar(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void RCCar(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			if (g_levelFileIndex == 1)
 				RCCar_Level1(context);
@@ -376,9 +376,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406A90
-		void FatBloke(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void FatBloke(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			Transform position;
 			Transform displacement;
 
@@ -394,7 +394,7 @@ namespace Toy2
 
 				int32_t angle =
 					Nu3D::Math::CartesianToFixedAngle(
-						g_buzzActor.posAngles.pos.x - position.pos.x - offsetX, g_buzzActor.posAngles.pos.z - position.pos.z - offsetZ)
+						g_buzzActor.transform.pos.x - position.pos.x - offsetX, g_buzzActor.transform.pos.z - position.pos.z - offsetZ)
 					& 0xFFF;
 
 				if (((angle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
@@ -445,9 +445,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00406C70
-		void Buzzard(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Buzzard(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int16_t timer = actor->unkShort4;
 
 			if (timer != actor->actorPhase)
@@ -463,9 +463,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00416A60
-		void Sheep(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Sheep(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if ((actor->actorFlags & Toy2::Actor::ACTOR_PLAYER_TRIGGER) != 0)
 			{
@@ -477,9 +477,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00416AB0
-		void TinMan(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void TinMan(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (AndysHouse::g_tinRobotFlash - 1) & 1;
 			bool timerExpired = AndysHouse::g_tinRobotFlashTimer - (int32_t)Renderer::g_frameDelta < 0;
 			int32_t insideBounds;
@@ -568,8 +568,8 @@ namespace Toy2
 				RawLoader::CreatureListRam* creatureRam = actor->creatureRam;
 				int32_t sinValue = Numerics::g_sinCosLUT[8 * creatureRam->boundAngle] >> 2;
 				int32_t cosValue = Numerics::g_sinCosLUT[(8 * creatureRam->boundAngle + 1024) & 0xFFF] >> 2;
-				int32_t deltaX = (g_buzzActor.posAngles.pos.x - actor->boundary.x) >> 5;
-				int32_t deltaZ = (g_buzzActor.posAngles.pos.z - actor->boundary.z) >> 5;
+				int32_t deltaX = (g_buzzActor.transform.pos.x - actor->boundary.x) >> 5;
+				int32_t deltaZ = (g_buzzActor.transform.pos.z - actor->boundary.z) >> 5;
 
 				if ((uint32_t)((creatureRam->boundHalfX << 8) + ((deltaX * cosValue - deltaZ * sinValue) >> 7)) >= (uint32_t)(creatureRam->boundHalfX << 9)
 					|| (insideBounds = 1,
@@ -582,7 +582,7 @@ namespace Toy2
 
 			if (actor->primaryAnimIdx == 7)
 			{
-				if ((int32_t)(actor->unkVar7 & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
+				if ((int32_t)(actor->primaryAnimTime & 0xFFFF0000) >= 851968 && ! Collectables::g_pickupSlots[4].state)
 					Collectables::Activate(4, 0);
 
 				int32_t yawAngle = actor->transform.angles.yaw;
@@ -599,7 +599,7 @@ namespace Toy2
 
 				char randomBits = *g_randDatBufferPtr++ & 3;
 
-				if (randomBits && (actor->unkVar7 & 0xFFFF0000) == 0xE0000)
+				if (randomBits && (actor->primaryAnimTime & 0xFFFF0000) == 0xE0000)
 				{
 					Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(trailX, trailY, trailZ, 4, 4);
 					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
@@ -615,14 +615,14 @@ namespace Toy2
 					actor->movementData = Actor::g_movementData[5] + 10;
 				}
 			}
-			else if ((uint32_t)g_buzzActor.posAngles.pos.y > 0xFFFCDEC6u)
+			else if ((uint32_t)g_buzzActor.transform.pos.y > 0xFFFCDEC6u)
 			{
 				if (AndysHouse::g_inTinRobotFight)
 				{
 					if (AndysHouse::g_inTinRobotFight == 2)
 						Camera::g_unk50A118 = actor->transform.pos;
 				}
-				else if (g_buzzActor.unkShort40 && g_buzzActor.posAngles.pos.y < -179566)
+				else if (g_buzzActor.unkShort40 && g_buzzActor.transform.pos.y < -179566)
 				{
 					Dialogue::Begin(8, 26, "ha ha ha ha ... defeat the ^tin robot^ to get a ^token^!", 3619, 1792, -1);
 					AndysHouse::g_inTinRobotFight = 1;
@@ -653,10 +653,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00416F30
-		void RCCar_Level1(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void RCCar_Level1(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t state = 0;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t animIdx = 2;
 
 			actor->actorFlags |= Actor::ACTOR_UNUSED_1000;
@@ -689,7 +689,7 @@ namespace Toy2
 
 				int16_t primaryAnimIdx = actor->primaryAnimIdx;
 
-				if (state != primaryAnimIdx && (state || primaryAnimIdx != 1 || (actor->unkVar7 & 0xFFFF0000) >= 917504))
+				if (state != primaryAnimIdx && (state || primaryAnimIdx != 1 || (actor->primaryAnimTime & 0xFFFF0000) >= 917504))
 					Actor::SetAnimation(actor, state, animIdx);
 			}
 
@@ -745,9 +745,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00418610
-		void Army(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Army(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if (actor->actorPhase == 102)
 			{
@@ -796,10 +796,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00418720
-		void RCCar_Level2(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void RCCar_Level2(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t state = 0;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t animIdx = 2;
 
 			actor->actorFlags |= Actor::ACTOR_UNUSED_1000;
@@ -832,7 +832,7 @@ namespace Toy2
 
 				int16_t primaryAnimIdx = actor->primaryAnimIdx;
 
-				if (state != primaryAnimIdx && (state || primaryAnimIdx != 1 || (actor->unkVar7 & 0xFFFF0000) >= 917504))
+				if (state != primaryAnimIdx && (state || primaryAnimIdx != 1 || (actor->primaryAnimTime & 0xFFFF0000) >= 917504))
 					Actor::SetAnimation(actor, state, animIdx);
 			}
 
@@ -888,10 +888,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004189C0
-		void ZKite(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void ZKite(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t flashToggle = (AndysNeighborhood::g_unk52F63C - 1) & 1;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			bool timerExpired = AndysNeighborhood::g_zKiteFlashTimer - (int32_t)Renderer::g_frameDelta < 0;
 			int32_t buzzYPos;
 			int32_t forceReturn;
@@ -924,15 +924,15 @@ namespace Toy2
 
 			AndysNeighborhood::g_zKiteYawPhase = (AndysNeighborhood::g_zKiteYawPhase + (Renderer::g_frameDelta << 6)) & 0xFFF;
 			actor->targetYaw =
-				(Nu3D::Math::CartesianToFixedAngle(actor->transform.pos.x - g_buzzActor.posAngles.pos.x, actor->transform.pos.z - g_buzzActor.posAngles.pos.z)
+				(Nu3D::Math::CartesianToFixedAngle(actor->transform.pos.x - g_buzzActor.transform.pos.x, actor->transform.pos.z - g_buzzActor.transform.pos.z)
 				 - 2048)
 				& 0xFFF;
 
 			if (AndysNeighborhood::g_unk52F664 == 2)
 			{
-				buzzYPos = g_buzzActor.posAngles.pos.y;
+				buzzYPos = g_buzzActor.transform.pos.y;
 
-				if (g_buzzActor.posAngles.pos.y <= -466944)
+				if (g_buzzActor.transform.pos.y <= -466944)
 				{
 					g_hudWidgetTimers[7] = 90;
 					Camera::g_unk50A118 = actor->transform.pos;
@@ -985,9 +985,9 @@ namespace Toy2
 				else
 				{
 					actor->unkShort4 = 2;
-					actor->motionTargetPos.x = g_buzzActor.posAngles.pos.x;
+					actor->motionTargetPos.x = g_buzzActor.transform.pos.x;
 					actor->motionTargetPos.y = Numerics::g_sinCosLUT[AndysNeighborhood::g_zKiteYawPhase] + buzzYPos - 12288;
-					actor->motionTargetPos.z = g_buzzActor.posAngles.pos.z;
+					actor->motionTargetPos.z = g_buzzActor.transform.pos.z;
 
 					if (actor->motionTargetPos.y > -475565)
 						actor->motionTargetPos.y = -475565;
@@ -1015,9 +1015,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00418CE0
-		void LawnMower(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void LawnMower(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t index;
 			uint8_t* rand;
 			int32_t angle;
@@ -1077,10 +1077,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041B780
-		void Drill(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Drill(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
-			Toy2::Actor::Toy2Actor* v1 = actor;
+			Toy2::CreatureActor* actor = context->actor;
+			Toy2::CreatureActor* v1 = actor;
 			int32_t x;
 			int32_t cell;
 			int32_t* v5;
@@ -1110,9 +1110,9 @@ namespace Toy2
 				AudioManager::PlaySoundEffect(154, &actor->transform.pos);
 			}
 
-			if (Camera::g_unk50A510 || ! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300))
+			if (Camera::g_unk50A510 || ! Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 300))
 			{
-				if (Camera::g_unk50A510 < 20 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 100))
+				if (Camera::g_unk50A510 < 20 && Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 100))
 					Camera::g_unk50A510 = 40;
 			}
 			else
@@ -1216,7 +1216,7 @@ namespace Toy2
 			if (ConstructionYard::g_unk52F804 < 3 && g_tickState[4])
 				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y, actor->transform.pos.z, 4, 9)->lifetime = 32;
 
-			if (ConstructionYard::g_unk52F804 == 2 && g_buzzActor.posAngles.pos.y < -515621)
+			if (ConstructionYard::g_unk52F804 == 2 && g_buzzActor.transform.pos.y < -515621)
 			{
 				if (g_tickState[10])
 				{
@@ -1233,9 +1233,9 @@ namespace Toy2
 					}
 					else
 					{
-						v16 = spawnY - g_buzzActor.posAngles.pos.y;
-						v17 = (spawnZ - g_buzzActor.posAngles.pos.z) >> 5;
-						v18 = (spawnX - g_buzzActor.posAngles.pos.x) >> 5;
+						v16 = spawnY - g_buzzActor.transform.pos.y;
+						v17 = (spawnZ - g_buzzActor.transform.pos.z) >> 5;
+						v18 = (spawnX - g_buzzActor.transform.pos.x) >> 5;
 						v19 = Nu3D::Math::CartesianToFixedAngle(v18, v17) & 0xFFF;
 
 						// $TODO: IDA types this as __int64, the disassembly truncates the sqrt with __ftol
@@ -1266,9 +1266,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041BB80
-		void LTyke(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void LTyke(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -1288,9 +1288,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041DDB0
-		void Clown(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Clown(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (AlleysAndGullies::g_unk52F8FC - 1) & 1;
 
 			AlleysAndGullies::g_unk52F8FC = flash;
@@ -1346,9 +1346,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041DEC0
-		void Ducks(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Ducks(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -1368,9 +1368,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0041DF70
-		void ZBoat(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void ZBoat(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			Vector3I spawnPos;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
@@ -1397,9 +1397,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00420AF0
-		void Dino(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor)
+		void Dino(Toy2::CreatureActor::ActorBehaviourContext* l_actor)
 		{
-			Toy2::Actor::Toy2Actor* actor = l_actor->actor;
+			Toy2::CreatureActor* actor = l_actor->actor;
 			int16_t yawAngle;
 			int32_t angle;
 			int32_t velX;
@@ -1542,7 +1542,7 @@ namespace Toy2
 
 				char randomBits = *g_randDatBufferPtr++ & 3;
 
-				if (randomBits && (actor->unkVar7 & 0xFFFF0000) == 0xA0000)
+				if (randomBits && (actor->primaryAnimTime & 0xFFFF0000) == 0xA0000)
 				{
 					particle = Nu3D::Particles::SpawnFromPreset(fireX, fireY, fireZ, 4, 4);
 					particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
@@ -1560,9 +1560,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00420ED0
-		void Chick(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Chick(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -1582,9 +1582,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00422660
-		void BBuggy(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void BBuggy(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int16_t localForwardSpeed = context->localForwardSpeed;
 			int32_t flash;
 			int16_t hitAngle;
@@ -1668,23 +1668,23 @@ namespace Toy2
 							origin.pos.z = actor->transform.pos.z + (Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 2);
 							SpawnBeamShot(0, actor->transform.angles.yaw, 0, &origin, (Transform*)headOffset, 4, 0);
 
-							if (actor->transform.pos.y - 4096 < g_buzzActor.posAngles.pos.y)
+							if (actor->transform.pos.y - 4096 < g_buzzActor.transform.pos.y)
 							{
-								if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 512))
+								if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 512))
 								{
 									hitAngle = Nu3D::Math::CartesianToFixedAngle(
-										g_buzzActor.posAngles.pos.x - actor->transform.pos.x, g_buzzActor.posAngles.pos.z - actor->transform.pos.z);
+										g_buzzActor.transform.pos.x - actor->transform.pos.x, g_buzzActor.transform.pos.z - actor->transform.pos.z);
 
 									if (((hitAngle - actor->transform.angles.yaw + 32) & 0xFFFu) < 0x40)
 									{
 										Buzz::HandleDamage(hitAngle, 2);
 										Lighting::SpawnLight(
-											g_buzzActor.posAngles.pos.x,
-											g_buzzActor.posAngles.pos.y,
-											g_buzzActor.posAngles.pos.z,
+											g_buzzActor.transform.pos.x,
+											g_buzzActor.transform.pos.y,
+											g_buzzActor.transform.pos.z,
 											15728640,
 											16,
-											g_buzzActor.posAngles.pos.z);
+											g_buzzActor.transform.pos.z);
 									}
 								}
 							}
@@ -1707,7 +1707,7 @@ namespace Toy2
 					if (AlsSpaceLand::g_unk52FB7C <= 0)
 					{
 						AlsSpaceLand::g_unk52FB7C = *g_randDatBufferPtr++ + 1800;
-						AudioManager::Preset::PlayOneShotSound(212, (Toy2::Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::Preset::PlayOneShotSound(212, (Toy2::CreatureActor*)&g_buzzActor);
 					}
 				}
 
@@ -1765,7 +1765,7 @@ namespace Toy2
 			{
 				primaryAnimIdx = actor->primaryAnimIdx;
 
-				if (primaryAnimIdx == 1 && actor->unkVar7 < 0x80000)
+				if (primaryAnimIdx == 1 && actor->primaryAnimTime < 0x80000)
 					wheelState = 2;
 
 				if (primaryAnimIdx || abs(context->localStrafeSpeed) <= 0x200)
@@ -1826,9 +1826,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00422C70
-		void Martian(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Martian(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -1848,9 +1848,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00425700
-		void GunsP(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void GunsP(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (ElevatorHop::g_unk52FC20 - 1) & 1;
 			int32_t shotIndex;
 			int32_t rotSpeed;
@@ -1907,7 +1907,7 @@ namespace Toy2
 
 					ElevatorHop::g_unk52FC40 = ElevatorHop::g_unk4F3780[shotIndex];
 
-					if (g_buzzActor.posAngles.pos.y > -1844489)
+					if (g_buzzActor.transform.pos.y > -1844489)
 					{
 						spawnPos.x = 0;
 						spawnPos.y = -500;
@@ -1939,7 +1939,7 @@ namespace Toy2
 					}
 				}
 
-				if (ElevatorHop::g_unk52FC34 > 1024 || Actor::IsInsideBounds(actor, -31232, 31232, -31232, 31232))
+				if (ElevatorHop::g_unk52FC34 > 1024 || Actor::IsInsideBounds(&actor->transform.pos, -31232, 31232, -31232, 31232))
 				{
 					int32_t boundaryY = actor->boundary.y;
 					actor->actorFlags |= 0x10;
@@ -1967,7 +1967,7 @@ namespace Toy2
 
 				g_unk52B7E0 = 54 * actor->actorPhase / 30;
 
-				if (g_buzzActor.posAngles.pos.y <= -1844489)
+				if (g_buzzActor.transform.pos.y <= -1844489)
 				{
 					*(uint8_t*)&actor->creatureRam->defenseMode = 4;
 				}
@@ -1982,9 +1982,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004259B0
-		void Mouse(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Mouse(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if (actor->actorPhase == 102)
 			{
@@ -2013,9 +2013,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004282D0
-		void GunsL_Level11(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void GunsL_Level11(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (AlsPenthouse::g_unk52FD70 - 1) & 1;
 			int32_t fired;
 			int32_t yawAngle;
@@ -2055,7 +2055,7 @@ namespace Toy2
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
 		LBL_UPDATE_ATTACK:
-			if (g_buzzActor.posAngles.pos.y < 113825 || g_buzzActor.posAngles.pos.y > 140293)
+			if (g_buzzActor.transform.pos.y < 113825 || g_buzzActor.transform.pos.y > 140293)
 			{
 				actor->motionTargetPos.x = actor->boundary.x;
 				actor->motionTargetPos.z = actor->boundary.z;
@@ -2096,7 +2096,7 @@ namespace Toy2
 					AudioManager::PlaySoundEffect(148, &actor->transform.pos);
 				}
 
-				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - spawnPos.x, g_buzzActor.posAngles.pos.z - spawnPos.z) & 0xFFF;
+				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - spawnPos.x, g_buzzActor.transform.pos.z - spawnPos.z) & 0xFFF;
 
 				if (((yawAngle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
 					yawAngle = actor->transform.angles.yaw;
@@ -2131,7 +2131,7 @@ namespace Toy2
 			{
 				g_unk52B7E0 = 54 * (actor->actorPhase - 9) / 20;
 
-				if (g_curSectorCopy1 == 2 && g_buzzActor.posAngles.pos.y < 140293)
+				if (g_curSectorCopy1 == 2 && g_buzzActor.transform.pos.y < 140293)
 					g_hudWidgetTimers[7] = 90;
 			}
 
@@ -2172,9 +2172,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00428650
-		void Rabid(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Rabid(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -2194,9 +2194,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042BE60
-		void ProsP_Level13(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor)
+		void ProsP_Level13(Toy2::CreatureActor::ActorBehaviourContext* l_actor)
 		{
-			Toy2::Actor::Toy2Actor* actor = l_actor->actor;
+			Toy2::CreatureActor* actor = l_actor->actor;
 			int32_t flash = (AirportInfiltration::g_unk52FF2C - 1) & 1;
 			int32_t soundIndex;
 			int32_t randValue;
@@ -2255,7 +2255,7 @@ namespace Toy2
 		LABEL_11:
 			if ((l_actor->targetFlags & 1) != 0)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 200))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 200))
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
@@ -2265,13 +2265,13 @@ namespace Toy2
 						actor->creatureRam->speedTarget = 0;
 						AirportInfiltration::g_unk52FEE8 = 44;
 
-						if (! AudioManager::IsActorSoundPlaying((Buzz::Toy2BuzzActor*)actor))
+						if (! AudioManager::IsActorSoundPlaying((BuzzActor*)actor))
 							AudioManager::Preset::PlayOneShotSound2(194, actor);
 					}
 				}
 			}
 
-			if (actor->primaryAnimIdx == 3 && (actor->unkVar7 & 0xFFFF0000) > 1376256)
+			if (actor->primaryAnimIdx == 3 && (actor->primaryAnimTime & 0xFFFF0000) > 1376256)
 			{
 				actor->unkShort1 = 0;
 				actor->movementData = Actor::g_movementData[41] + 16;
@@ -2324,9 +2324,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042C150
-		void Pilot(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Pilot(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			actor->unkShort4 -= Renderer::g_frameDelta;
 
@@ -2346,9 +2346,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042D3E0
-		void Smith_Level14(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Smith_Level14(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (TarmacTrouble::g_unk52FF4C - 1) & 1;
 			int32_t throwTimer;
 			Vector3I spawnPos;
@@ -2385,7 +2385,7 @@ namespace Toy2
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
 		LABEL_9:
-			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 200)
+			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 200)
 				&& actor->primaryAnimIdx == 1)
 			{
 				Actor::SetAnimation(actor, 3, 24);
@@ -2398,7 +2398,7 @@ namespace Toy2
 				throwTimer = TarmacTrouble::g_unk52FFE8;
 			}
 
-			if (actor->primaryAnimIdx == 3 && (actor->unkVar7 & 0xFFFF0000) > 3014656)
+			if (actor->primaryAnimIdx == 3 && (actor->primaryAnimTime & 0xFFFF0000) > 3014656)
 			{
 				actor->unkShort1 = 0;
 				actor->movementData = Actor::g_movementData[39] + 16;
@@ -2444,9 +2444,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042D620
-		void Luggage(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Luggage(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 
 			if ((actor->actorFlags & Actor::ACTOR_PLAYER_TRIGGER) != 0 && actor->actorPhase == 102)
 			{
@@ -2458,10 +2458,10 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042F310
-		void Smith(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void Smith(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			int32_t flash = (FinalShowdown::g_unk530054 - 1) & 1;
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t throwTimer;
 			Vector3I spawnPos;
 
@@ -2497,7 +2497,7 @@ namespace Toy2
 			actor->actorTint.g = 0x2000;
 			actor->actorTint.b = 0x2000;
 		LABEL_9:
-			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300)
+			if ((context->targetFlags & 1) != 0 && Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 300)
 				&& actor->primaryAnimIdx == 1)
 			{
 				Actor::SetAnimation(actor, 3, 24);
@@ -2510,7 +2510,7 @@ namespace Toy2
 				throwTimer = FinalShowdown::g_unk530060;
 			}
 
-			if (actor->primaryAnimIdx == 3 && (actor->unkVar7 & 0xFFFF0000) > 3014656)
+			if (actor->primaryAnimIdx == 3 && (actor->primaryAnimTime & 0xFFFF0000) > 3014656)
 			{
 				actor->unkShort1 = 0;
 				actor->movementData = Actor::g_movementData[39] + 16;
@@ -2553,9 +2553,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042F530
-		void GunsL(Toy2::Actor::Toy2Actor::ActorBehaviourContext* context)
+		void GunsL(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
-			Toy2::Actor::Toy2Actor* actor = context->actor;
+			Toy2::CreatureActor* actor = context->actor;
 			int32_t flash = (FinalShowdown::g_unk530050 - 1) & 1;
 			int32_t fired;
 			int32_t yawAngle;
@@ -2626,7 +2626,7 @@ namespace Toy2
 				}
 
 				AudioManager::PlaySoundEffect(86, &actor->transform.pos);
-				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - spawnPos.x, g_buzzActor.posAngles.pos.z - spawnPos.z) & 0xFFF;
+				yawAngle = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - spawnPos.x, g_buzzActor.transform.pos.z - spawnPos.z) & 0xFFF;
 
 				if (((yawAngle - actor->transform.angles.yaw + 256) & 0xFFFu) > 0x200)
 					yawAngle = actor->transform.angles.yaw;
@@ -2673,9 +2673,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0042F7B0
-		void ProsP(Toy2::Actor::Toy2Actor::ActorBehaviourContext* l_actor)
+		void ProsP(Toy2::CreatureActor::ActorBehaviourContext* l_actor)
 		{
-			Toy2::Actor::Toy2Actor* actor = l_actor->actor;
+			Toy2::CreatureActor* actor = l_actor->actor;
 			int32_t flash = (FinalShowdown::g_unk53004C - 1) & 1;
 			int32_t soundIndex;
 			int32_t randValue;
@@ -2739,7 +2739,7 @@ namespace Toy2
 		LABEL_13:
 			if ((l_actor->targetFlags & 1) != 0)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &actor->transform.pos, 300))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &actor->transform.pos, 300))
 				{
 					if (actor->primaryAnimIdx == 4)
 					{
@@ -2749,13 +2749,13 @@ namespace Toy2
 						actor->creatureRam->speedTarget = 0;
 						FinalShowdown::g_unk53005C = 44;
 
-						if (! AudioManager::IsActorSoundPlaying((Buzz::Toy2BuzzActor*)actor))
+						if (! AudioManager::IsActorSoundPlaying((BuzzActor*)actor))
 							AudioManager::Preset::PlayOneShotSound2(194, actor);
 					}
 				}
 			}
 
-			if (actor->primaryAnimIdx == 3 && (actor->unkVar7 & 0xFFFF0000) > 1376256)
+			if (actor->primaryAnimIdx == 3 && (actor->primaryAnimTime & 0xFFFF0000) > 1376256)
 			{
 				actor->unkShort1 = 0;
 				actor->movementData = Actor::g_movementData[41] + 16;
@@ -2805,7 +2805,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x0043C070
-		void RCCar_Method1(Toy2::Actor::Toy2Actor* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5)
+		void RCCar_Method1(Toy2::CreatureActor* a1, int32_t a2, int32_t a3, int32_t a4, int32_t a5)
 		{
 			int32_t boneIndex = *(int16_t*)(CharacterLoader::g_unk547CD4[a1->creatureId] + 4) + a2;
 			AnglesWithRoll* angles = (AnglesWithRoll*)&Collision::g_mathScratch[237 * 4];

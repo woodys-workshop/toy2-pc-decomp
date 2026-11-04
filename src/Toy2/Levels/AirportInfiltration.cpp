@@ -211,7 +211,7 @@ namespace Toy2
 					&& (Platform::GetFlags(Platform::g_pathPlatforms[arg0].platformIdx) & 2) == 2)
 				{
 					Buzz::g_groundSlamTicker = 0;
-					AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 					Levels::Method2(-3072, 2);
 					unkShort3 = Platform::g_pathPlatforms[arg0].linkId;
 					g_unk52FE38 = -512;
@@ -425,9 +425,9 @@ namespace Toy2
 								}
 
 								v4 = v3->data[v0].x / 8;
-								v31 = v4 - g_buzzActor.posAngles.pos.x / 256;
-								v5 = v3->data[v0].y / 8 - g_buzzActor.posAngles.pos.y / 256;
-								v6 = v3->data[v0].z / 8 - g_buzzActor.posAngles.pos.z / 256;
+								v31 = v4 - g_buzzActor.transform.pos.x / 256;
+								v5 = v3->data[v0].y / 8 - g_buzzActor.transform.pos.y / 256;
+								v6 = v3->data[v0].z / 8 - g_buzzActor.transform.pos.z / 256;
 								v7 = v4 - v3->data[v0 + 1].x / 8 - 32;
 
 								if (v5 * v5 + v6 * v6 < 0x10000 && v31 > 0 && v31 < v7)
@@ -451,7 +451,7 @@ namespace Toy2
 				Buzz::g_groundSlamTicker = 0;
 				Levels::Method2(-3072, 2);
 				Levels::Method3(0, 1);
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 				g_unk52FE38 = -512;
 				g_unk52FE3C = 9;
 			}
@@ -462,7 +462,7 @@ namespace Toy2
 			{
 				Buzz::g_groundSlamTicker = 0;
 				Levels::Method2(-3072, 2);
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 				Levels::Method3(1, 1);
 				g_unk52FE38 = -512;
 				g_unk52FE3C = 28;
@@ -630,7 +630,7 @@ namespace Toy2
 			v16 = g_unk52FF1C;
 			if (! g_unk52FF1C)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[32].transform.pos, 300) && g_buzzActor.posAngles.pos.y < -222734
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &g_levelActors[32].transform.pos, 300) && g_buzzActor.transform.pos.y < -222734
 					&& g_buzzActor.collisionFlags)
 				{
 					g_unk52FF1C = 1;
@@ -693,14 +693,14 @@ namespace Toy2
 					< 1000000)
 				{
 					Renderer::LensFlare::RegisterLight(v21, v19, v20, 48, 64, 80, 64);
-					if (((g_buzzActor.posAngles.pos.y - v19 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v19 - 0x2000) >> 8)
-							+ ((g_buzzActor.posAngles.pos.z - v20) >> 8) * ((g_buzzActor.posAngles.pos.z - v20) >> 8)
-							+ ((g_buzzActor.posAngles.pos.x - v21) >> 8) * ((g_buzzActor.posAngles.pos.x - v21) >> 8)
+					if (((g_buzzActor.transform.pos.y - v19 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v19 - 0x2000) >> 8)
+							+ ((g_buzzActor.transform.pos.z - v20) >> 8) * ((g_buzzActor.transform.pos.z - v20) >> 8)
+							+ ((g_buzzActor.transform.pos.x - v21) >> 8) * ((g_buzzActor.transform.pos.x - v21) >> 8)
 						< v27)
 					{
-						v27 = ((g_buzzActor.posAngles.pos.y - v19 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v19 - 0x2000) >> 8)
-							+ ((g_buzzActor.posAngles.pos.z - v20) >> 8) * ((g_buzzActor.posAngles.pos.z - v20) >> 8)
-							+ ((g_buzzActor.posAngles.pos.x - v21) >> 8) * ((g_buzzActor.posAngles.pos.x - v21) >> 8);
+						v27 = ((g_buzzActor.transform.pos.y - v19 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v19 - 0x2000) >> 8)
+							+ ((g_buzzActor.transform.pos.z - v20) >> 8) * ((g_buzzActor.transform.pos.z - v20) >> 8)
+							+ ((g_buzzActor.transform.pos.x - v21) >> 8) * ((g_buzzActor.transform.pos.x - v21) >> 8);
 						v29 = v25;
 					}
 

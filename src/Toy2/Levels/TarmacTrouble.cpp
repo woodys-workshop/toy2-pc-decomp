@@ -346,7 +346,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x0042E600
 		void Initialize()
 		{
-			Actor::Toy2Actor* actor;
+			CreatureActor* actor;
 			int32_t i;
 			int32_t recordCount;
 			Levels::Type63* entry;
@@ -488,10 +488,10 @@ namespace Toy2
 						p_v2.x = v10;
 						p_v2.y += 3072;
 						p_v2.z = v9;
-						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v2, 80))
+						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &p_v2, 80))
 							break;
 					LABEL_16:
-						v11 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - p_v2.x, g_buzzActor.posAngles.pos.z - p_v2.z);
+						v11 = Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - p_v2.x, g_buzzActor.transform.pos.z - p_v2.z);
 						Buzz::HandleDamage(v11, 3u);
 						break;
 					case 11:
@@ -499,7 +499,7 @@ namespace Toy2
 						p_v2.x = v10;
 						p_v2.z = v9;
 						p_v2.y += 3072;
-						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v2, 80))
+						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &p_v2, 80))
 							break;
 						goto LABEL_16;
 					case 13:
@@ -507,7 +507,7 @@ namespace Toy2
 						p_v2.x = v10;
 						p_v2.z = v9;
 						p_v2.y += 3072;
-						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v2, 80))
+						if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &p_v2, 80))
 							break;
 						goto LABEL_16;
 					default:
@@ -640,7 +640,7 @@ namespace Toy2
 			p_v2.y = -63991;
 			p_v2.z = -626034;
 
-			if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &p_v2, 500))
+			if (! Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &p_v2, 500))
 				goto LABEL_37;
 
 			if (! g_unk52FFB4)
@@ -692,7 +692,7 @@ namespace Toy2
 							Nu3D::Link::GetCurrentPosFixed(116, &p_v2);
 							Camera::BeginScriptedCutsceneAtPoint(&p_v2, 300, 32);
 							Camera::g_cutsceneEyePos.y += 0x8000;
-							AudioManager::StartSoundSequenceOnActor(-5, (Actor::Toy2Actor*)&g_buzzActor);
+							AudioManager::StartSoundSequenceOnActor(-5, (CreatureActor*)&g_buzzActor);
 						}
 
 						Nu3D::Link::GetCurrentPosFixed(116, &p_v2);
@@ -729,7 +729,7 @@ namespace Toy2
 					Method2();
 
 					if (! Camera::g_cutsceneTimer)
-						AudioManager::StartSoundSequenceOnActor(-6, (Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::StartSoundSequenceOnActor(-6, (CreatureActor*)&g_buzzActor);
 				}
 
 				goto LABEL_37;
@@ -889,7 +889,7 @@ namespace Toy2
 
 			if (! g_unk52FFAC)
 			{
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[46].transform.pos, 300))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &g_levelActors[46].transform.pos, 300))
 				{
 					g_unk52FFAC = 1;
 					Dialogue::Begin(46, 1, "ha ha ha ha ... defeat the ^blacksmith^ boss to get a pizza planet ^token^!", -1, 0, -1);
@@ -1018,8 +1018,8 @@ namespace Toy2
 			v21 = Levels::g_recordData[40];
 			v36 = 0x7FFFFFFF;
 
-			if ((g_buzzActor.posAngles.pos.x >> 8) * (g_buzzActor.posAngles.pos.x >> 8)
-					+ (g_buzzActor.posAngles.pos.z >> 8) * (g_buzzActor.posAngles.pos.z >> 8)
+			if ((g_buzzActor.transform.pos.x >> 8) * (g_buzzActor.transform.pos.x >> 8)
+					+ (g_buzzActor.transform.pos.z >> 8) * (g_buzzActor.transform.pos.z >> 8)
 				>= 0x8E5144)
 			{
 				v22 = 16;
@@ -1083,11 +1083,11 @@ namespace Toy2
 						Renderer::LensFlare::RegisterLight(v25, v23, v24, v26, v28, v27, 128);
 					}
 
-					v29 = g_buzzActor.posAngles.pos.x - v25;
+					v29 = g_buzzActor.transform.pos.x - v25;
 					v21 = Levels::g_recordData[40];
 
-					v30 = ((g_buzzActor.posAngles.pos.z - v24) >> 8) * ((g_buzzActor.posAngles.pos.z - v24) >> 8)
-						+ ((g_buzzActor.posAngles.pos.y - v23 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v23 - 0x2000) >> 8);
+					v30 = ((g_buzzActor.transform.pos.z - v24) >> 8) * ((g_buzzActor.transform.pos.z - v24) >> 8)
+						+ ((g_buzzActor.transform.pos.y - v23 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v23 - 0x2000) >> 8);
 
 					v31 = (v29 >> 8) * (v29 >> 8);
 

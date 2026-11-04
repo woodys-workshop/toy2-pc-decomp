@@ -335,7 +335,7 @@ namespace Toy2
 				}
 			}
 
-			if (g_buzzActor.posAngles.pos.x < -93145 && ! g_unk52FFF8)
+			if (g_buzzActor.transform.pos.x < -93145 && ! g_unk52FFF8)
 			{
 				g_unk52FFF8 = 80;
 				Camera::BeginScriptedCutsceneAtPoint(&g_unk530038, 480, 56);
@@ -590,14 +590,14 @@ namespace Toy2
 						}
 
 						Renderer::LensFlare::RegisterLight(v29, v28, v27, 128, v31, v32, 128);
-						if (((g_buzzActor.posAngles.pos.y - v28 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v28 - 0x2000) >> 8)
-								+ ((g_buzzActor.posAngles.pos.z - v27) >> 8) * ((g_buzzActor.posAngles.pos.z - v27) >> 8)
-								+ ((g_buzzActor.posAngles.pos.x - v29) >> 8) * ((g_buzzActor.posAngles.pos.x - v29) >> 8)
+						if (((g_buzzActor.transform.pos.y - v28 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v28 - 0x2000) >> 8)
+								+ ((g_buzzActor.transform.pos.z - v27) >> 8) * ((g_buzzActor.transform.pos.z - v27) >> 8)
+								+ ((g_buzzActor.transform.pos.x - v29) >> 8) * ((g_buzzActor.transform.pos.x - v29) >> 8)
 							< p_xa)
 						{
-							p_xa = ((g_buzzActor.posAngles.pos.y - v28 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v28 - 0x2000) >> 8)
-								+ ((g_buzzActor.posAngles.pos.z - v27) >> 8) * ((g_buzzActor.posAngles.pos.z - v27) >> 8)
-								+ ((g_buzzActor.posAngles.pos.x - v29) >> 8) * ((g_buzzActor.posAngles.pos.x - v29) >> 8);
+							p_xa = ((g_buzzActor.transform.pos.y - v28 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v28 - 0x2000) >> 8)
+								+ ((g_buzzActor.transform.pos.z - v27) >> 8) * ((g_buzzActor.transform.pos.z - v27) >> 8)
+								+ ((g_buzzActor.transform.pos.x - v29) >> 8) * ((g_buzzActor.transform.pos.x - v29) >> 8);
 							v38 = p_ya;
 						}
 					}

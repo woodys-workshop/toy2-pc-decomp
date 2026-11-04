@@ -1153,7 +1153,7 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00448F00
-		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::Actor::Toy2Actor* actor)
+		BOOL LineOfSightCheck(Nu3D::Camera::ActiveCameraTransform* cam, Toy2::CreatureActor* actor)
 		{
 			BOOL result = 0;
 

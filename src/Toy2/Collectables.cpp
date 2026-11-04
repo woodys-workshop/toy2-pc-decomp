@@ -284,10 +284,10 @@ namespace Toy2
 					}
 
 					g_buzzActor.actorFlags |= Actor::ACTOR_CUTSCENE_MOVE;
-					Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
-					g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
+					Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.transform.angles.yaw;
+					g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
 					Camera::g_gameplayCameraState.distance = 1200;
-					Camera::g_gameplayCameraState.pos.y = g_buzzActor.posAngles.pos.y - 12288;
+					Camera::g_gameplayCameraState.pos.y = g_buzzActor.transform.pos.y - 12288;
 					Camera::g_gameplayCameraState.angles.pitch = 0;
 					Camera::g_gameplayCameraState.targetPos.x = Camera::g_gameplayCameraState.pos.x;
 					Camera::g_gameplayCameraState.unkShort6 = 0;
@@ -353,9 +353,9 @@ namespace Toy2
 					Dialogue::g_unk50A518 = 0;
 				}
 
-				g_buzzActor.posAngles.angles.yaw = (int16_t)g_tokenTable[index].yaw;
-				g_buzzActor.facingAngle = g_buzzActor.posAngles.angles.yaw;
-				Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.posAngles.angles.yaw;
+				g_buzzActor.transform.angles.yaw = (int16_t)g_tokenTable[index].yaw;
+				g_buzzActor.facingAngle = g_buzzActor.transform.angles.yaw;
+				Camera::g_gameplayCameraState.orbitYaw = g_buzzActor.transform.angles.yaw;
 			}
 		}
 
@@ -619,9 +619,9 @@ namespace Toy2
 			// Buzz picks up the objects of the level
 			int32_t soundId = 0;
 			Levels::Type63* data = (Levels::Type63*)Levels::g_recordData[63]->data;
-			int32_t buzzX = g_buzzActor.posAngles.pos.x >> 5;
-			int32_t buzzY = (g_buzzActor.posAngles.pos.y >> 5) - 230;
-			int32_t buzzZ = g_buzzActor.posAngles.pos.z >> 5;
+			int32_t buzzX = g_buzzActor.transform.pos.x >> 5;
+			int32_t buzzY = (g_buzzActor.transform.pos.y >> 5) - 230;
+			int32_t buzzZ = g_buzzActor.transform.pos.z >> 5;
 
 			if (Levels::g_recordData[63]->recordCount)
 			{
@@ -968,13 +968,13 @@ namespace Toy2
 					if (state == 9)
 					{
 						Camera::g_cutsceneTimer = 1000;
-						uint16_t yaw = g_buzzActor.posAngles.angles.yaw;
-						int32_t yawDelta = (Camera::g_activeCameraTransform.angles.yaw - g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF;
+						uint16_t yaw = g_buzzActor.transform.angles.yaw;
+						int32_t yawDelta = (Camera::g_activeCameraTransform.angles.yaw - g_buzzActor.transform.angles.yaw - 2048) & 0xFFF;
 
 						if (yawDelta >= 0x800)
 							yawDelta -= 4096;
 
-						g_buzzActor.posAngles.angles.yaw = (g_buzzActor.posAngles.angles.yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+						g_buzzActor.transform.angles.yaw = (g_buzzActor.transform.angles.yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 						g_buzzActor.facingAngle = (yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 					}
 					else
@@ -986,26 +986,26 @@ namespace Toy2
 								Levels::Method2(-3072, 5);
 								g_unk830CC4 = 4;
 								g_levelTransitionTimer = 68;
-								AudioManager::PlaySoundEffect(51, &g_buzzActor.posAngles.pos);
+								AudioManager::PlaySoundEffect(51, &g_buzzActor.transform.pos);
 								g_unk830D28 = g_buzzActor.gravityVel;
 							}
 
-							uint16_t yaw = g_buzzActor.posAngles.angles.yaw;
-							int32_t yawDelta = (Camera::g_activeCameraTransform.angles.yaw - g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF;
+							uint16_t yaw = g_buzzActor.transform.angles.yaw;
+							int32_t yawDelta = (Camera::g_activeCameraTransform.angles.yaw - g_buzzActor.transform.angles.yaw - 2048) & 0xFFF;
 
 							if (yawDelta >= 0x800)
 								yawDelta -= 4096;
 
-							g_buzzActor.posAngles.angles.yaw = (g_buzzActor.posAngles.angles.yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
+							g_buzzActor.transform.angles.yaw = (g_buzzActor.transform.angles.yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 							g_buzzActor.facingAngle = (yaw + (yawDelta * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
 							state = g_unk830CC4;
 						}
 
 						if (state == 4)
 						{
-							Camera::g_cutsceneFocusPos.x = g_buzzActor.posAngles.pos.x;
-							Camera::g_cutsceneFocusPos.y = g_buzzActor.posAngles.pos.y - 12288;
-							Camera::g_cutsceneFocusPos.z = g_buzzActor.posAngles.pos.z;
+							Camera::g_cutsceneFocusPos.x = g_buzzActor.transform.pos.x;
+							Camera::g_cutsceneFocusPos.y = g_buzzActor.transform.pos.y - 12288;
+							Camera::g_cutsceneFocusPos.z = g_buzzActor.transform.pos.z;
 							g_unk830D28 = g_buzzActor.gravityVel;
 						}
 					}

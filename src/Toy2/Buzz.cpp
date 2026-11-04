@@ -250,13 +250,13 @@ namespace Toy2
 			if (g_levelFileIndex == 12)
 				EvilEmperorZurg::BuzzRespawn();
 
-			g_buzzActor.posAngles.pos = g_buzzActor.respawnPos;
+			g_buzzActor.transform.pos = g_buzzActor.respawnPos;
 			g_buzzActor.motionTargetPos = g_buzzActor.respawnPos;
 			g_buzzActor.floorYPos = g_buzzActor.respawnPos.y;
 
 			--g_buzzActor.lives;
-			g_buzzActor.posAngles.angles.pitch = 0;
-			g_buzzActor.posAngles.angles.yaw = g_buzzActor.respawnYawAngle;
+			g_buzzActor.transform.angles.pitch = 0;
+			g_buzzActor.transform.angles.yaw = g_buzzActor.respawnYawAngle;
 			g_buzzActor.rollAngle = 0;
 			g_buzzActor.facingAngle = g_buzzActor.respawnYawAngle;
 			g_buzzActor.velX = 0;
@@ -386,7 +386,7 @@ namespace Toy2
 						animationState = 1;
 						g_unk50A098 = 1;
 
-						if (((g_buzzActor.actorFlags & 0x100) != 0 && g_currentFluidType >= 2) || g_buzzActor.floorYPos - g_buzzActor.posAngles.pos.y <= 4096
+						if (((g_buzzActor.actorFlags & 0x100) != 0 && g_currentFluidType >= 2) || g_buzzActor.floorYPos - g_buzzActor.transform.pos.y <= 4096
 							|| g_buzzActor.floorYPos == 0x80000000)
 						{
 						LBL_SELECT_IDLE_VARIATION:
@@ -408,7 +408,7 @@ namespace Toy2
 										if (g_fireChargeTimer <= 0 && ! g_unk53C83C && ! g_unk53C650 && (Camera::g_inCutscene & 1) == 0)
 										{
 											g_unk50A0B0 = (g_unk50A0B0 != 207) + 206;
-											AudioManager::Preset::PlayOneShotSound(g_unk50A0B0, (Actor::Toy2Actor*)&g_buzzActor);
+											AudioManager::Preset::PlayOneShotSound(g_unk50A0B0, (CreatureActor*)&g_buzzActor);
 											animationState = g_unk50A098;
 										}
 									}
@@ -419,24 +419,24 @@ namespace Toy2
 						}
 						else
 						{
-							probePos.pos.y = g_buzzActor.posAngles.pos.y;
-							probePos.pos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF] >> 2);
-							probePos.pos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] >> 2);
+							probePos.pos.y = g_buzzActor.transform.pos.y;
+							probePos.pos.x = g_buzzActor.transform.pos.x + (Numerics::g_sinCosLUT[g_buzzActor.transform.angles.yaw & 0xFFF] >> 2);
+							probePos.pos.z = g_buzzActor.transform.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw + 1024) & 0xFFF] >> 2);
 
 							groundHeight = Nu3D::Collision::GetGroundHeight(&probePos, 0);
 
-							if (groundHeight - g_buzzActor.posAngles.pos.y > 4096 && groundHeight != 0x80000000)
+							if (groundHeight - g_buzzActor.transform.pos.y > 4096 && groundHeight != 0x80000000)
 							{
 								animationState = 10;
 								goto LBL_STORE_IDLE_STATE;
 							}
 
-							probePos.pos.x = g_buzzActor.posAngles.pos.x + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 2);
-							probePos.pos.z = g_buzzActor.posAngles.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF] >> 2);
+							probePos.pos.x = g_buzzActor.transform.pos.x + (Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw - 2048) & 0xFFF] >> 2);
+							probePos.pos.z = g_buzzActor.transform.pos.z + (Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw - 1024) & 0xFFF] >> 2);
 
 							groundHeight = Nu3D::Collision::GetGroundHeight(&probePos, 0);
 
-							if (groundHeight - g_buzzActor.posAngles.pos.y > 4096 && groundHeight != 0x80000000)
+							if (groundHeight - g_buzzActor.transform.pos.y > 4096 && groundHeight != 0x80000000)
 							{
 								animationState = 11;
 								goto LBL_STORE_IDLE_STATE;
@@ -552,7 +552,7 @@ namespace Toy2
 						if ((g_unk53C668 & 4) != 0)
 						{
 							g_buzzActor.unkVar37 = 16;
-							AudioManager::PlaySoundEffect(35, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(35, &g_buzzActor.transform.pos);
 							animationState = g_buzzActor.unkVar37;
 						}
 					}
@@ -700,12 +700,12 @@ namespace Toy2
 			}
 
 			g_buzzActor.primaryAnimIdx = primaryAnim;
-			g_buzzActor.unkVar7 = primaryFrame;
+			g_buzzActor.primaryAnimTime = primaryFrame;
 			g_buzzActor.secondaryAnimIdx = secondaryAnim;
-			g_buzzActor.unkVar8 = secondaryFrame;
+			g_buzzActor.secondaryAnimTime = secondaryFrame;
 
 			if (primaryAnim == secondaryAnim)
-				g_buzzActor.unkVar8 = primaryFrame;
+				g_buzzActor.secondaryAnimTime = primaryFrame;
 			else
 				Animation::EvaluateClip(*(int16_t**)(CharacterLoader::g_unk547CD4[0] + 4 * secondaryAnim + 8), secondaryFrame, 0, 0);
 
@@ -723,9 +723,9 @@ namespace Toy2
 
 				Nu3D::Link::TransformVectorInt3x3(47, &g_unk50A0A0);
 
-				g_unk50A0A0.x += g_buzzActor.posAngles.pos.x;
-				g_unk50A0A0.y = g_unk50A0A0.y + g_buzzActor.posAngles.pos.y - 12288;
-				g_unk50A0A0.z += g_buzzActor.posAngles.pos.z;
+				g_unk50A0A0.x += g_buzzActor.transform.pos.x;
+				g_unk50A0A0.y = g_unk50A0A0.y + g_buzzActor.transform.pos.y - 12288;
+				g_unk50A0A0.z += g_buzzActor.transform.pos.z;
 			}
 			else
 			{
@@ -733,7 +733,7 @@ namespace Toy2
 				g_unk50A0A0.y = -211;
 				g_unk50A0A0.z = -6;
 
-				Actor::ResolveBoneAttachmentPos(&g_unk50A0A0, (Actor::Toy2Actor*)&g_buzzActor, 15);
+				Actor::ResolveBoneAttachmentPos(&g_unk50A0A0, (CreatureActor*)&g_buzzActor, 15);
 			}
 
 			int32_t absVelZ = abs(g_buzzActor.unkVar31);
@@ -803,7 +803,7 @@ namespace Toy2
 					if (Camera::g_cameraState)
 						Camera::g_cameraState = 5;
 
-					AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
+					AudioManager::Preset::PlayOneShotSound2(21, (CreatureActor*)&g_buzzActor);
 
 					if (g_feedbackTimerA < 14)
 						g_feedbackTimerA = 14;
@@ -836,7 +836,7 @@ namespace Toy2
 						if (Camera::g_cameraState)
 							Camera::g_cameraState = 5;
 
-						AudioManager::Preset::PlayOneShotSound2(21, (Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::Preset::PlayOneShotSound2(21, (CreatureActor*)&g_buzzActor);
 
 						if (g_feedbackTimerA < 14)
 							g_feedbackTimerA = 14;
@@ -855,7 +855,7 @@ namespace Toy2
 					g_buzzActor.stunTimer = 90;
 
 					if (! AudioManager::IsActorSoundPlaying(&g_buzzActor))
-						AudioManager::Preset::PlayOneShotSound2(26, (Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::Preset::PlayOneShotSound2(26, (CreatureActor*)&g_buzzActor);
 
 					if (g_feedbackTimerA < 14)
 						g_feedbackTimerA = 14;
@@ -872,9 +872,9 @@ namespace Toy2
 			int32_t collisionFlags = 0;
 			Nu3D::Particles::ParticleInstance* hitInstance;
 			int32_t remaining = 64;
-			int32_t x = g_buzzActor.posAngles.pos.x;
-			int32_t y = g_buzzActor.posAngles.pos.y - 7360;
-			int32_t z = g_buzzActor.posAngles.pos.z;
+			int32_t x = g_buzzActor.transform.pos.x;
+			int32_t y = g_buzzActor.transform.pos.y - 7360;
+			int32_t z = g_buzzActor.transform.pos.z;
 
 			Nu3D::Particles::ParticleInstance* instance = Nu3D::Particles::g_particleInstances;
 
@@ -976,7 +976,7 @@ namespace Toy2
 						if ((g_unk53C650 > 20 || g_unk53C83C <= -120) && hitType == 2)
 						{
 							hitAngle =
-								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - instance->pos.x, g_buzzActor.posAngles.pos.z - instance->pos.z);
+								Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - instance->pos.x, g_buzzActor.transform.pos.z - instance->pos.z);
 
 							((uint8_t*)&instance->renderFlags)[0] &= 0xF5;
 							int32_t knockbackIdx = (hitAngle + 3072) & 0xFFF;
@@ -1012,7 +1012,7 @@ namespace Toy2
 			if (hitType)
 			{
 				hitAngle =
-					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.posAngles.pos.x - hitInstance->pos.x, g_buzzActor.posAngles.pos.z - hitInstance->pos.z);
+					Nu3D::Math::CartesianToFixedAngle(g_buzzActor.transform.pos.x - hitInstance->pos.x, g_buzzActor.transform.pos.z - hitInstance->pos.z);
 
 				HandleDamage(hitAngle, 3);
 			}
@@ -1022,7 +1022,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004340D0
-		void UpdateJumpAndGravity(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t initialJumpVelocity, int32_t forceJump)
+		void UpdateJumpAndGravity(Toy2::BuzzActor* buzzActor, int32_t initialJumpVelocity, int32_t forceJump)
 		{
 			int32_t gravityScale;
 			int32_t maxFallSpeed;
@@ -1086,7 +1086,7 @@ namespace Toy2
 					|| (! jumpState && g_unk53C838 == 80))
 				{
 					g_unk53C838 = 0;
-					fallenHeight = g_unk53C674 - buzzActor->posAngles.pos.y;
+					fallenHeight = g_unk53C674 - buzzActor->transform.pos.y;
 
 					if (fallenHeight > 0 && g_unk53C61C)
 					{
@@ -1106,7 +1106,7 @@ namespace Toy2
 
 					buzzActor->unkWord15 = 5;
 					buzzActor->unkVar37 = 8;
-					AudioManager::PlaySoundEffect(16, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(16, &g_buzzActor.transform.pos);
 					groundSlamTimer = g_unk53C838;
 				}
 
@@ -1131,7 +1131,7 @@ namespace Toy2
 				else
 				{
 					if (! AudioManager::IsActorSoundPlaying(buzzActor))
-						AudioManager::Preset::PlayOneShotSound2(25, (Actor::Toy2Actor*)buzzActor);
+						AudioManager::Preset::PlayOneShotSound2(25, (CreatureActor*)buzzActor);
 
 					g_buzzActor.unkWord15 = 1;
 					g_buzzActor.collisionFlags = 0;
@@ -1141,7 +1141,7 @@ namespace Toy2
 					g_curMoveableObject = 0;
 					g_buzzSlipTimer = 0;
 					g_unk53C61C = 0;
-					fallenHeight = buzzActor->posAngles.pos.y;
+					fallenHeight = buzzActor->transform.pos.y;
 					g_unk53C61C = 1;
 					g_unk53C674 = fallenHeight;
 				}
@@ -1155,9 +1155,9 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004343D0
-		int32_t UpdateHorizontalMovement(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams, int32_t flag)
+		int32_t UpdateHorizontalMovement(Toy2::BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams, int32_t flag)
 		{
-			uint16_t yaw = buzzActor->posAngles.angles.yaw;
+			uint16_t yaw = buzzActor->transform.angles.yaw;
 			int32_t velX = buzzActor->velX;
 			int16_t* cosEntry = &Numerics::g_sinCosLUT[(yaw + 1024) & 0xFFF];
 			int32_t sinValue = Numerics::g_sinCosLUT[(yaw - 2048) & 0xFFF] >> 2;
@@ -1237,7 +1237,7 @@ namespace Toy2
 			buzzActor->unkVar30 = forward;
 			buzzActor->unkVar31 = sideways;
 
-			sinValue = Numerics::g_sinCosLUT[buzzActor->posAngles.angles.yaw] >> 2;
+			sinValue = Numerics::g_sinCosLUT[buzzActor->transform.angles.yaw] >> 2;
 			cosValue = *cosEntry >> 2;
 			buzzActor->velX = (sinValue * forward + cosValue * sideways) / 4096;
 			result = (cosValue * forward - sinValue * sideways) / 4096;
@@ -1247,7 +1247,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004346C0
-		int32_t UpdateFacing(Toy2::Buzz::Toy2BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams)
+		int32_t UpdateFacing(Toy2::BuzzActor* buzzActor, Toy2::Buzz::MovementParams* movementParams)
 		{
 			int32_t flag = 0;
 			int32_t turnDiff;
@@ -1263,7 +1263,7 @@ namespace Toy2
 				{
 					if (! g_unk53C678)
 					{
-						g_unk53C5D0 = buzzActor->posAngles.angles.yaw;
+						g_unk53C5D0 = buzzActor->transform.angles.yaw;
 						goto LBL_ADVANCE_TURN_TIMER;
 					}
 
@@ -1302,14 +1302,14 @@ namespace Toy2
 			}
 
 			facingAngle = buzzActor->facingAngle;
-			yawAngle = buzzActor->posAngles.angles.yaw;
+			yawAngle = buzzActor->transform.angles.yaw;
 			turnDiff = (yawAngle - facingAngle) & 0xFFF;
 
 			if (turnDiff <= 0x800)
 			{
-				if (((buzzActor->posAngles.angles.yaw - facingAngle) & 0xFFFu) > 0x5DC && ! g_unk53C818)
+				if (((buzzActor->transform.angles.yaw - facingAngle) & 0xFFFu) > 0x5DC && ! g_unk53C818)
 				{
-					buzzActor->posAngles.angles.yaw = facingAngle;
+					buzzActor->transform.angles.yaw = facingAngle;
 					g_unk53C5D0 = facingAngle;
 					slipping = (g_buzzActionState & 0xFF481) == 1;
 
@@ -1318,7 +1318,7 @@ namespace Toy2
 					{
 						g_buzzSlipTimer = 26;
 						buzzActor->unkVar38 = -1;
-						AudioManager::PlaySoundEffect(18, &buzzActor->posAngles.pos);
+						AudioManager::PlaySoundEffect(18, &buzzActor->transform.pos);
 					}
 
 					goto LBL_WRAP_YAW;
@@ -1327,7 +1327,7 @@ namespace Toy2
 				if (turnDiff > movementParams->maxTurnRate)
 					turnDiff = movementParams->maxTurnRate;
 
-				buzzActor->posAngles.angles.yaw = yawAngle - turnDiff * (int32_t)Renderer::g_frameDelta / 8;
+				buzzActor->transform.angles.yaw = yawAngle - turnDiff * (int32_t)Renderer::g_frameDelta / 8;
 			}
 			else
 			{
@@ -1335,7 +1335,7 @@ namespace Toy2
 
 				if (4096 - turnDiff > 1500 && ! g_unk53C818)
 				{
-					buzzActor->posAngles.angles.yaw = facingAngle;
+					buzzActor->transform.angles.yaw = facingAngle;
 					g_unk53C5D0 = facingAngle;
 
 					slipping = (g_buzzActionState & 0xFF481) == 1;
@@ -1345,11 +1345,11 @@ namespace Toy2
 				if (turnRate > movementParams->maxTurnRate)
 					turnRate = movementParams->maxTurnRate;
 
-				buzzActor->posAngles.angles.yaw = yawAngle + turnRate * (int32_t)Renderer::g_frameDelta / 8;
+				buzzActor->transform.angles.yaw = yawAngle + turnRate * (int32_t)Renderer::g_frameDelta / 8;
 			}
 
 		LBL_WRAP_YAW:
-			buzzActor->posAngles.angles.yaw &= 0xFFF;
+			buzzActor->transform.angles.yaw &= 0xFFF;
 
 			if (g_curMoveableObject)
 			{
@@ -1360,7 +1360,7 @@ namespace Toy2
 					return flag;
 				}
 
-				buzzActor->posAngles.angles.yaw = g_unk53C624;
+				buzzActor->transform.angles.yaw = g_unk53C624;
 			}
 
 			return flag;
@@ -1370,8 +1370,8 @@ namespace Toy2
 		void FireDiscLauncher(int16_t pitch)
 		{
 			int32_t closestDist = 0x7FFFFFFF;
-			Toy2::Actor::Toy2Actor* closestActor;
-			Toy2::Actor::Toy2Actor* targetActor;
+			Toy2::CreatureActor* closestActor;
+			Toy2::CreatureActor* targetActor;
 			Nu3D::Particles::ParticleInstance* disc;
 			uint32_t velY;
 
@@ -1379,11 +1379,11 @@ namespace Toy2
 			{
 				if (Camera::g_cameraState < 3)
 				{
-					Toy2::Actor::Toy2Actor* actor = Actor::g_activeActors[0];
+					Toy2::CreatureActor* actor = Actor::g_activeActors[0];
 
 					if (actor)
 					{
-						Toy2::Actor::Toy2Actor** nextActor = Actor::g_activeActors;
+						Toy2::CreatureActor** nextActor = Actor::g_activeActors;
 
 						do
 						{
@@ -1391,12 +1391,12 @@ namespace Toy2
 							{
 								if (actor->unkVar29 >= 0 && (actor->actorFlags & (Actor::ACTOR_CUTSCENE_MOVE | Actor::ACTOR_VISIBLE_ACTIVE)) == 3)
 								{
-									int32_t deltaX = (actor->transform.pos.x - g_buzzActor.posAngles.pos.x) >> 5;
-									int32_t deltaYSq = ((actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >> 5)
-										* ((actor->transform.pos.y - g_buzzActor.posAngles.pos.y) >> 5);
+									int32_t deltaX = (actor->transform.pos.x - g_buzzActor.transform.pos.x) >> 5;
+									int32_t deltaYSq = ((actor->transform.pos.y - g_buzzActor.transform.pos.y) >> 5)
+										* ((actor->transform.pos.y - g_buzzActor.transform.pos.y) >> 5);
 									int32_t distance = deltaX * deltaX + deltaYSq
-										+ ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5)
-											* ((actor->transform.pos.z - g_buzzActor.posAngles.pos.z) >> 5);
+										+ ((actor->transform.pos.z - g_buzzActor.transform.pos.z) >> 5)
+											* ((actor->transform.pos.z - g_buzzActor.transform.pos.z) >> 5);
 
 									if (closestDist > distance)
 									{
@@ -1422,14 +1422,14 @@ namespace Toy2
 
 				LABEL_16:
 					disc =
-						Nu3D::Particles::SpawnInstance(g_unk50A0A0.x, g_unk50A0A0.y, g_unk50A0A0.z, 0, -2, 0, 4 * g_buzzActor.posAngles.angles.yaw, 0, 0, 71);
+						Nu3D::Particles::SpawnInstance(g_unk50A0A0.x, g_unk50A0A0.y, g_unk50A0A0.z, 0, -2, 0, 4 * g_buzzActor.transform.angles.yaw, 0, 0, 71);
 
 					// the target actor is stored in the velY field
 					disc->velY = (int32_t)targetActor;
 					disc->pitchAngle = pitch & 0xFFF;
 
 				LABEL_18:
-					AudioManager::PlaySoundEffect(84, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(84, &g_buzzActor.transform.pos);
 					--g_discLauncherAmmo;
 					--g_discLauncherTimer;
 
@@ -1446,9 +1446,9 @@ namespace Toy2
 					g_unk50A0A0.x,
 					g_unk50A0A0.y,
 					g_unk50A0A0.z,
-					((cosPitch * Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF]) >> 14) / 3,
+					((cosPitch * Numerics::g_sinCosLUT[g_buzzActor.transform.angles.yaw & 0xFFF]) >> 14) / 3,
 					(velY >> 31) + velY,
-					((cosPitch * Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF]) >> 14) / 3,
+					((cosPitch * Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw + 1024) & 0xFFF]) >> 14) / 3,
 					0,
 					0,
 					0,
@@ -1464,20 +1464,20 @@ namespace Toy2
 			int32_t dominantDist;
 			Transform direction;
 
-			AudioManager::PlaySoundEffect(81, &g_buzzActor.posAngles.pos);
+			AudioManager::PlaySoundEffect(81, &g_buzzActor.transform.pos);
 
 			int32_t lockOnIdx = Camera::g_lockOnActorIdx - 1000;
 			int32_t targetX = Levels::g_recordData[59]->data[lockOnIdx].x;
 			int32_t targetZ = Levels::g_recordData[59]->data[lockOnIdx].z;
 			int32_t targetY = Levels::g_recordData[59]->data[lockOnIdx].y;
 
-			g_grappleTargetPos.pos.x = g_buzzActor.posAngles.pos.x;
-			direction.pos.y = 32 * (targetY - 192) - (g_buzzActor.posAngles.pos.y - 11264);
-			g_grappleTargetPos.pos.y = g_buzzActor.posAngles.pos.y - 11264;
-			g_grappleTargetPos.pos.z = g_buzzActor.posAngles.pos.z;
+			g_grappleTargetPos.pos.x = g_buzzActor.transform.pos.x;
+			direction.pos.y = 32 * (targetY - 192) - (g_buzzActor.transform.pos.y - 11264);
+			g_grappleTargetPos.pos.y = g_buzzActor.transform.pos.y - 11264;
+			g_grappleTargetPos.pos.z = g_buzzActor.transform.pos.z;
 
-			direction.pos.x = 32 * targetX - g_buzzActor.posAngles.pos.x;
-			direction.pos.z = 32 * targetZ - g_buzzActor.posAngles.pos.z;
+			direction.pos.x = 32 * targetX - g_buzzActor.transform.pos.x;
+			direction.pos.z = 32 * targetZ - g_buzzActor.transform.pos.z;
 
 			g_grappleState = Nu3D::Collision::SweepAndSlide(&g_grappleTargetPos, &direction, 0x8000, 0, 256) != 0 ? 3 : 1;
 
@@ -1496,17 +1496,17 @@ namespace Toy2
 			if (abs(direction.pos.x >> 1) <= abs(direction.pos.y >> 1))
 			{
 				dominantVel = direction.pos.y >> 1;
-				dominantDist = g_grappleTargetPos.pos.y - g_buzzActor.posAngles.pos.y + 5632;
+				dominantDist = g_grappleTargetPos.pos.y - g_buzzActor.transform.pos.y + 5632;
 			}
 			else
 			{
-				dominantDist = g_grappleTargetPos.pos.x - g_buzzActor.posAngles.pos.x;
+				dominantDist = g_grappleTargetPos.pos.x - g_buzzActor.transform.pos.x;
 			}
 
 			if (abs(dominantVel) <= abs(direction.pos.z >> 1))
 			{
 				dominantVel = direction.pos.z >> 1;
-				dominantDist = g_grappleTargetPos.pos.z - g_buzzActor.posAngles.pos.z;
+				dominantDist = g_grappleTargetPos.pos.z - g_buzzActor.transform.pos.z;
 			}
 
 			if (! dominantVel)
@@ -1733,12 +1733,12 @@ namespace Toy2
 					else
 					{
 						if (shotType == 1)
-							AudioManager::PlaySoundEffect(2, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(2, &g_buzzActor.transform.pos);
 						else
-							AudioManager::PlaySoundEffect(6, &g_buzzActor.posAngles.pos);
+							AudioManager::PlaySoundEffect(6, &g_buzzActor.transform.pos);
 
 						// quirk: the auto aim parameter is a flag here (0 or 1), not an actor
-						BeamShot* beamShot = SpawnBeamShot(shotType - 1, yaw, pitch, &origin, &headOffset, 4, (Toy2::Actor::Toy2Actor*)autoAim);
+						BeamShot* beamShot = SpawnBeamShot(shotType - 1, yaw, pitch, &origin, &headOffset, 4, (Toy2::CreatureActor*)autoAim);
 
 						if (beamShot)
 						{
@@ -1772,7 +1772,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00434D20
-		int32_t TickGroundSlam(Toy2::Actor::Toy2Actor* actor)
+		int32_t TickGroundSlam(Toy2::CreatureActor* actor)
 		{
 			int32_t ticker;
 
@@ -1821,7 +1821,7 @@ namespace Toy2
 				Camera::g_unk50A510 = 40;
 				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y - 1024, actor->transform.pos.z, 18, 11);
 				Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y - 1024, actor->transform.pos.z, 19, 12);
-				AudioManager::PlaySoundEffect(15, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(15, &g_buzzActor.transform.pos);
 
 				return 0;
 			}
@@ -1838,7 +1838,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00434EB0
-		void TickSpinHover(Toy2::Buzz::Toy2BuzzActor* buzz)
+		void TickSpinHover(Toy2::BuzzActor* buzz)
 		{
 			int32_t v1 = g_unk53C650;
 			int32_t v3;
@@ -1861,7 +1861,7 @@ namespace Toy2
 				{
 					int32_t v2 = *g_randDatBufferPtr++ & 1;
 
-					Nu3D::Particles::SpawnFromPreset(buzz->posAngles.pos.x, buzz->posAngles.pos.y, buzz->posAngles.pos.z, v2 + 22, 2)->groundAlignRot =
+					Nu3D::Particles::SpawnFromPreset(buzz->transform.pos.x, buzz->transform.pos.y, buzz->transform.pos.z, v2 + 22, 2)->groundAlignRot =
 						(-g_unk53C650 & 0xF) << 7;
 					v1 = g_unk53C650;
 				}
@@ -1886,7 +1886,7 @@ namespace Toy2
 					}
 
 					g_unk53C83C = 1;
-					AudioManager::PlaySoundEffect(17, &buzz->posAngles.pos);
+					AudioManager::PlaySoundEffect(17, &buzz->transform.pos);
 				}
 
 				v3 = g_unk53C83C;
@@ -1909,7 +1909,7 @@ namespace Toy2
 				}
 
 				AudioManager::g_pitchArray[3] = 80 * v5 + 2048;
-				AudioManager::PlaySoundEffect(39, &buzz->posAngles.pos);
+				AudioManager::PlaySoundEffect(39, &buzz->transform.pos);
 
 				return;
 			}
@@ -1920,19 +1920,19 @@ namespace Toy2
 
 				if ((int32_t)(Renderer::g_frameDelta + v3) <= -120)
 				{
-					AudioManager::PlaySoundEffect(38, &buzz->posAngles.pos);
+					AudioManager::PlaySoundEffect(38, &buzz->transform.pos);
 
 					if (g_tickState[2])
 					{
 						v7 = (*g_randDatBufferPtr++ & 1) + 20;
-						Nu3D::Particles::SpawnFromPreset(buzz->posAngles.pos.x, buzz->posAngles.pos.y - 12288, buzz->posAngles.pos.z, v7, 2)->groundAlignRot =
+						Nu3D::Particles::SpawnFromPreset(buzz->transform.pos.x, buzz->transform.pos.y - 12288, buzz->transform.pos.z, v7, 2)->groundAlignRot =
 							192 * (-g_unk53C83C & 0xF);
 					}
 				}
 				else
 				{
 					if (v3 <= -120)
-						AudioManager::PlaySoundEffect(24, &buzz->posAngles.pos);
+						AudioManager::PlaySoundEffect(24, &buzz->transform.pos);
 
 					buzz->actorFlags |= 4;
 				}
@@ -1955,7 +1955,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00435100
-		int32_t HandleSwing(Toy2::Buzz::Toy2BuzzActor* buzz)
+		int32_t HandleSwing(Toy2::BuzzActor* buzz)
 		{
 			int32_t result = 0;
 			int32_t v2;
@@ -1993,7 +1993,7 @@ namespace Toy2
 				{
 					do
 					{
-						int32_t heightDiff = buzz->posAngles.pos.y - data->y;
+						int32_t heightDiff = buzz->transform.pos.y - data->y;
 
 						if (heightDiff > 0 && heightDiff < 0x4000)
 						{
@@ -2003,16 +2003,16 @@ namespace Toy2
 							dir.z = v23;
 							Nu3D::Math::NormalizeToFixedPoint(&dir, &dir);
 
-							v9 = (dir.x * ((buzz->posAngles.pos.x - data->x) >> 5) + dir.z * ((buzz->posAngles.pos.z - data->z) >> 5)) >> 12;
+							v9 = (dir.x * ((buzz->transform.pos.x - data->x) >> 5) + dir.z * ((buzz->transform.pos.z - data->z) >> 5)) >> 12;
 
 							if (v9 > 0 && v9 <= (v24 * dir.x + v23 * dir.z) >> 12)
 							{
-								int32_t offX = ((buzz->posAngles.pos.x - data->x) >> 5) - ((dir.x * v9) >> 12);
-								int32_t offZ = ((buzz->posAngles.pos.z - data->z) >> 5) - ((dir.z * v9) >> 12);
+								int32_t offX = ((buzz->transform.pos.x - data->x) >> 5) - ((dir.x * v9) >> 12);
+								int32_t offZ = ((buzz->transform.pos.z - data->z) >> 5) - ((dir.z * v9) >> 12);
 
 								if (offX * offX + offZ * offZ < 4096)
 								{
-									AudioManager::PlaySoundEffect(27, &buzz->posAngles.pos);
+									AudioManager::PlaySoundEffect(27, &buzz->transform.pos);
 									g_unk53C66C = 69;
 									buzz->unkVar37 = 26;
 									buzz->unkVar38 = -1;
@@ -2021,7 +2021,7 @@ namespace Toy2
 									g_unk53C5F8 = data->z + ((dir.z * v9) >> 7);
 									g_unk53C654 = (Nu3D::Math::CartesianToFixedAngle(dir.x, dir.z) + 1024) & 0xFFF;
 
-									if (((g_unk53C654 - buzz->posAngles.angles.yaw + 1024) & 0xFFFu) > 0x800)
+									if (((g_unk53C654 - buzz->transform.angles.yaw + 1024) & 0xFFFu) > 0x800)
 										g_unk53C654 = (g_unk53C654 - 2048) & 0xFFF;
 
 									g_buzzActionState |= 0x400;
@@ -2048,13 +2048,13 @@ namespace Toy2
 			{
 				g_unk53C61C = 0;
 				buzz->gravityVel = -1536;
-				buzz->velX = Numerics::g_sinCosLUT[buzz->posAngles.angles.yaw] >> 1;
-				buzz->velForward = Numerics::g_sinCosLUT[(buzz->posAngles.angles.yaw + 1024) & 0xFFF] >> 1;
+				buzz->velX = Numerics::g_sinCosLUT[buzz->transform.angles.yaw] >> 1;
+				buzz->velForward = Numerics::g_sinCosLUT[(buzz->transform.angles.yaw + 1024) & 0xFFF] >> 1;
 
 				if ((InputManager::g_directionInputState & 0x4000) == 0)
 					buzz->unkWord15 = 2;
 
-				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 				result = 1;
 			}
 
@@ -2062,23 +2062,23 @@ namespace Toy2
 			{
 				if (g_unk53C66C > 15)
 				{
-					buzz->posAngles.pos.x -= (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.x - g_unk53C5F0) / 16;
-					buzz->posAngles.pos.y -= (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.y - g_unk53C5F4) / 16;
-					v16 = (int32_t)Renderer::g_frameDelta * (buzz->posAngles.pos.z - g_unk53C5F8);
+					buzz->transform.pos.x -= (int32_t)Renderer::g_frameDelta * (buzz->transform.pos.x - g_unk53C5F0) / 16;
+					buzz->transform.pos.y -= (int32_t)Renderer::g_frameDelta * (buzz->transform.pos.y - g_unk53C5F4) / 16;
+					v16 = (int32_t)Renderer::g_frameDelta * (buzz->transform.pos.z - g_unk53C5F8);
 					buzz->velX = 0;
 					buzz->gravityVel = 0;
 					buzz->velForward = 0;
-					buzz->posAngles.pos.z -= v16 / 16;
+					buzz->transform.pos.z -= v16 / 16;
 
-					int32_t turn = (buzz->posAngles.angles.yaw - g_unk53C654) & 0xFFF;
+					int32_t turn = (buzz->transform.angles.yaw - g_unk53C654) & 0xFFF;
 
 					if (turn >= 0x800)
 						turn -= 4096;
 
-					buzz->posAngles.angles.yaw -= (turn * (int32_t)Renderer::g_frameDelta) / 16;
+					buzz->transform.angles.yaw -= (turn * (int32_t)Renderer::g_frameDelta) / 16;
 					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw - (turn * (int32_t)Renderer::g_frameDelta) / 16) & 0xFFF;
-					buzz->posAngles.angles.yaw &= 0xFFFu;
-					buzz->facingAngle = buzz->posAngles.angles.yaw;
+					buzz->transform.angles.yaw &= 0xFFFu;
+					buzz->facingAngle = buzz->transform.angles.yaw;
 
 					return 2;
 				}
@@ -2095,7 +2095,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004354E0
-		int32_t HandlePoleClimb(Toy2::Buzz::Toy2BuzzActor* buzz)
+		int32_t HandlePoleClimb(Toy2::BuzzActor* buzz)
 		{
 			int32_t* data;
 			int32_t v2 = 0;
@@ -2128,12 +2128,12 @@ namespace Toy2
 				{
 					if (pole[3] != 3)
 					{
-						int32_t dz = (buzz->posAngles.pos.z - pole[2]) >> 8;
-						int32_t dx = (buzz->posAngles.pos.x - pole[0]) >> 8;
+						int32_t dz = (buzz->transform.pos.z - pole[2]) >> 8;
+						int32_t dx = (buzz->transform.pos.x - pole[0]) >> 8;
 
 						if (dx * dx + dz * dz < 512)
 						{
-							int32_t dy = pole[1] - buzz->posAngles.pos.y;
+							int32_t dy = pole[1] - buzz->transform.pos.y;
 
 							if (dy >= -7680 && dy <= pole[4] - 13824)
 								break;
@@ -2147,8 +2147,8 @@ namespace Toy2
 				g_unk53C668 = 8;
 				g_unk53C658 = 10;
 				g_unk53C5E4 = 6 * v3;
-				buzz->posAngles.pos.x -= (buzz->posAngles.pos.x - data[g_unk53C5E4]) >> 2;
-				buzz->posAngles.pos.z -= (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 2;
+				buzz->transform.pos.x -= (buzz->transform.pos.x - data[g_unk53C5E4]) >> 2;
+				buzz->transform.pos.z -= (buzz->transform.pos.z - data[g_unk53C5E4 + 2]) >> 2;
 				buzz->gravityVel = 0;
 				v11 = g_unk53C5E4;
 				v2 = 0;
@@ -2157,8 +2157,8 @@ namespace Toy2
 			{
 				v11 = g_unk53C5E4;
 
-				int32_t dz = (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 5;
-				int32_t dx = (buzz->posAngles.pos.x - data[g_unk53C5E4]) >> 5;
+				int32_t dz = (buzz->transform.pos.z - data[g_unk53C5E4 + 2]) >> 5;
+				int32_t dx = (buzz->transform.pos.x - data[g_unk53C5E4]) >> 5;
 
 				if (dx * dx + dz * dz > 33792)
 				{
@@ -2172,7 +2172,7 @@ namespace Toy2
 			{
 				v11 = g_unk53C5E4;
 
-				int32_t dy = data[g_unk53C5E4 + 1] - buzz->posAngles.pos.y;
+				int32_t dy = data[g_unk53C5E4 + 1] - buzz->transform.pos.y;
 
 				if (dy < -7680)
 				{
@@ -2188,7 +2188,7 @@ namespace Toy2
 				{
 					buzz->gravityVel = 0;
 					v2 = 2;
-					buzz->posAngles.pos.y = (data[g_unk53C5E4 + 1] - data[g_unk53C5E4 + 4]) + 13824;
+					buzz->transform.pos.y = (data[g_unk53C5E4 + 1] - data[g_unk53C5E4 + 4]) + 13824;
 					v11 = g_unk53C5E4;
 				}
 			}
@@ -2196,10 +2196,10 @@ namespace Toy2
 			if (g_unk53C668 <= 0)
 				return 0;
 
-			buzz->posAngles.pos.x -= (buzz->posAngles.pos.x - data[v11]) >> 2;
+			buzz->transform.pos.x -= (buzz->transform.pos.x - data[v11]) >> 2;
 			buzz->velX = 0;
 			buzz->velForward = 0;
-			buzz->posAngles.pos.z -= (buzz->posAngles.pos.z - data[g_unk53C5E4 + 2]) >> 2;
+			buzz->transform.pos.z -= (buzz->transform.pos.z - data[g_unk53C5E4 + 2]) >> 2;
 
 			if (data[g_unk53C5E4 + 3] == 2)
 			{
@@ -2248,7 +2248,7 @@ namespace Toy2
 					if (buzz->gravityVel > 1024)
 						buzz->gravityVel = 1024;
 
-					buzz->posAngles.angles.yaw += (int32_t)Renderer::g_frameDelta * buzz->gravityVel / 16;
+					buzz->transform.angles.yaw += (int32_t)Renderer::g_frameDelta * buzz->gravityVel / 16;
 					g_unk53C668 |= 4;
 				}
 				else
@@ -2262,13 +2262,13 @@ namespace Toy2
 			}
 
 			if ((InputManager::g_directionInputState & DIR_LEFT) != 0)
-				buzz->posAngles.angles.yaw += -64 * (int32_t)Renderer::g_frameDelta / 2;
+				buzz->transform.angles.yaw += -64 * (int32_t)Renderer::g_frameDelta / 2;
 
 			if ((InputManager::g_directionInputState & DIR_RIGHT) != 0)
-				buzz->posAngles.angles.yaw += ((int32_t)Renderer::g_frameDelta << 6) / 2;
+				buzz->transform.angles.yaw += ((int32_t)Renderer::g_frameDelta << 6) / 2;
 
-			buzz->posAngles.angles.yaw &= 0xFFFu;
-			buzz->facingAngle = buzz->posAngles.angles.yaw;
+			buzz->transform.angles.yaw &= 0xFFFu;
+			buzz->facingAngle = buzz->transform.angles.yaw;
 
 			if (v2 != 2 || (v24 = 1, data[g_unk53C5E4 + 3] != 1))
 				v24 = 0;
@@ -2288,20 +2288,20 @@ namespace Toy2
 				if ((InputManager::g_directionInputState & (DIR_UP | DIR_RIGHT | DIR_DOWN | DIR_LEFT)) != 0)
 				{
 					Camera::CalculateMaxTurnAngle((uint16_t)InputManager::g_directionInputState);
-					buzz->posAngles.angles.yaw = buzz->facingAngle;
+					buzz->transform.angles.yaw = buzz->facingAngle;
 				}
 
-				buzz->velX = Numerics::g_sinCosLUT[buzz->posAngles.angles.yaw & 0xFFF] >> 1;
-				buzz->velForward = Numerics::g_sinCosLUT[(buzz->posAngles.angles.yaw + 1024) & 0xFFF] >> 1;
+				buzz->velX = Numerics::g_sinCosLUT[buzz->transform.angles.yaw & 0xFFF] >> 1;
+				buzz->velForward = Numerics::g_sinCosLUT[(buzz->transform.angles.yaw + 1024) & 0xFFF] >> 1;
 				buzz->unkWord15 = 1;
 				g_unk53C61C = 0;
-				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 
 				g_unk53C668 = -1;
 				buzz->collisionFlags = 0;
 				buzz->unkShort40 = 0;
 				buzz->unkVar37 = 2;
-				buzz->facingAngle = buzz->posAngles.angles.yaw;
+				buzz->facingAngle = buzz->transform.angles.yaw;
 
 				return 1;
 			}
@@ -2311,20 +2311,20 @@ namespace Toy2
 			buzz->velX = 0;
 			buzz->velForward = 0;
 			buzz->unkWord15 = 2;
-			AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)buzz);
+			AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)buzz);
 			g_unk53C61C = 0;
 
 			g_unk53C668 = -1;
 			buzz->collisionFlags = 0;
 			buzz->unkShort40 = 0;
 			buzz->unkVar37 = 2;
-			buzz->facingAngle = buzz->posAngles.angles.yaw;
+			buzz->facingAngle = buzz->transform.angles.yaw;
 
 			return 1;
 		}
 
 		// FUNCTION: TOY2 0x004359D0
-		int32_t HandleZipline(Toy2::Buzz::Toy2BuzzActor* actor)
+		int32_t HandleZipline(Toy2::BuzzActor* actor)
 		{
 			Vector3I* data;
 			int32_t v1;
@@ -2375,12 +2375,12 @@ namespace Toy2
 
 						if (v4 < 0)
 						{
-							if ((uint32_t)(actor->posAngles.pos.x - data[1].x + 2048) > (uint32_t)(4096 - v4))
+							if ((uint32_t)(actor->transform.pos.x - data[1].x + 2048) > (uint32_t)(4096 - v4))
 								goto next;
 						}
 						else
 						{
-							if ((uint32_t)(actor->posAngles.pos.x - data->x + 2048) > (uint32_t)(v4 + 4096))
+							if ((uint32_t)(actor->transform.pos.x - data->x + 2048) > (uint32_t)(v4 + 4096))
 								goto next;
 						}
 
@@ -2388,12 +2388,12 @@ namespace Toy2
 
 						if (v6 < 0)
 						{
-							if ((uint32_t)(actor->posAngles.pos.z - data[1].z + 2048) > (uint32_t)(4096 - v6))
+							if ((uint32_t)(actor->transform.pos.z - data[1].z + 2048) > (uint32_t)(4096 - v6))
 								goto next;
 						}
 						else
 						{
-							if ((uint32_t)(actor->posAngles.pos.z - data->z + 2048) > (uint32_t)(v6 + 4096))
+							if ((uint32_t)(actor->transform.pos.z - data->z + 2048) > (uint32_t)(v6 + 4096))
 								goto next;
 						}
 
@@ -2401,18 +2401,18 @@ namespace Toy2
 
 						if (v9 < 0)
 						{
-							if ((uint32_t)(actor->posAngles.pos.y - data[1].y + 4096) > (uint32_t)(19968 - v9))
+							if ((uint32_t)(actor->transform.pos.y - data[1].y + 4096) > (uint32_t)(19968 - v9))
 								goto next;
 						}
 						else
 						{
-							if ((uint32_t)(actor->posAngles.pos.y - data->y + 4096) > (uint32_t)(v9 + 19968))
+							if ((uint32_t)(actor->transform.pos.y - data->y + 4096) > (uint32_t)(v9 + 19968))
 								goto next;
 						}
 
 						v26 = v4 >> 5;
-						v31 = (actor->posAngles.pos.z - data->z) >> 5;
-						v10 = (actor->posAngles.pos.x - data->x) >> 5;
+						v31 = (actor->transform.pos.z - data->z) >> 5;
+						v10 = (actor->transform.pos.x - data->x) >> 5;
 						v11 = v9 >> 5;
 						v12 = v6 >> 5;
 
@@ -2430,11 +2430,11 @@ namespace Toy2
 						v29 = v11 * v10 / v13;
 						v14 = v12 * v10 / v13;
 						v34 = v14;
-						v21 = v14 + ((data->z - actor->posAngles.pos.z) >> 5);
+						v21 = v14 + ((data->z - actor->transform.pos.z) >> 5);
 
-						if (v21 * v21 + (v32 + ((data->x - actor->posAngles.pos.x) >> 5)) * (v32 + ((data->x - actor->posAngles.pos.x) >> 5)) < 0x2000)
+						if (v21 * v21 + (v32 + ((data->x - actor->transform.pos.x) >> 5)) * (v32 + ((data->x - actor->transform.pos.x) >> 5)) < 0x2000)
 						{
-							int32_t v16 = data->y + 32 * (v29 + 496) - actor->posAngles.pos.y;
+							int32_t v16 = data->y + 32 * (v29 + 496) - actor->transform.pos.y;
 
 							if (v16 > -4096 && v16 < 15872)
 							{
@@ -2469,7 +2469,7 @@ namespace Toy2
 			}
 			else
 			{
-				if (g_unk53C604 - actor->posAngles.pos.y + 15872 >= 0)
+				if (g_unk53C604 - actor->transform.pos.y + 15872 >= 0)
 				{
 					actor->velX = 0;
 					actor->velForward = 0;
@@ -2485,29 +2485,29 @@ namespace Toy2
 				}
 			}
 
-			AudioManager::PlaySoundEffect(35, &actor->posAngles.pos);
+			AudioManager::PlaySoundEffect(35, &actor->transform.pos);
 			segment = &Levels::g_recordData[62]->data[g_unk53C610];
 			g_unk53C604 += Renderer::g_frameDelta;
 
 			if (g_unk53C604 > 48)
 				g_unk53C604 = 48;
 
-			actor->posAngles.pos.x = segment->x + ((g_ziplineDirection.x * g_unk53C614) >> 7);
-			actor->posAngles.pos.y = ((g_ziplineDirection.y * g_unk53C614) >> 7) + segment->y + 15872;
+			actor->transform.pos.x = segment->x + ((g_ziplineDirection.x * g_unk53C614) >> 7);
+			actor->transform.pos.y = ((g_ziplineDirection.y * g_unk53C614) >> 7) + segment->y + 15872;
 			v1 = g_ziplineDirection.z * g_unk53C614;
 			v21 = segment->z;
 			actor->velX = 0;
 			actor->gravityVel = 0;
-			actor->posAngles.pos.z = v21 + (v1 >> 7);
+			actor->transform.pos.z = v21 + (v1 >> 7);
 			actor->velForward = 0;
 
-			v21 = (actor->posAngles.angles.yaw - Nu3D::Math::CartesianToFixedAngle(g_ziplineDirection.x, g_ziplineDirection.z)) & 0xFFF;
+			v21 = (actor->transform.angles.yaw - Nu3D::Math::CartesianToFixedAngle(g_ziplineDirection.x, g_ziplineDirection.z)) & 0xFFF;
 
 			if (v21 >= 2048)
 				v21 -= 4096;
 
-			actor->posAngles.angles.yaw = (actor->posAngles.angles.yaw - (int32_t)Renderer::g_frameDelta * (v21 >> 3) / 2) & 0xFFF;
-			actor->facingAngle = actor->posAngles.angles.yaw;
+			actor->transform.angles.yaw = (actor->transform.angles.yaw - (int32_t)Renderer::g_frameDelta * (v21 >> 3) / 2) & 0xFFF;
+			actor->facingAngle = actor->transform.angles.yaw;
 
 			g_unk53C614 += Renderer::g_frameDelta * g_unk53C604;
 
@@ -2519,8 +2519,8 @@ namespace Toy2
 
 			g_unk53C618 = 0;
 			g_unk53C600 = 30;
-			actor->velX = g_unk53C604 * (Numerics::g_sinCosLUT[actor->posAngles.angles.yaw & 0xFFF] >> 5);
-			actor->velForward = g_unk53C604 * (Numerics::g_sinCosLUT[(actor->posAngles.angles.yaw + 1024) & 0xFFF] >> 5);
+			actor->velX = g_unk53C604 * (Numerics::g_sinCosLUT[actor->transform.angles.yaw & 0xFFF] >> 5);
+			actor->velForward = g_unk53C604 * (Numerics::g_sinCosLUT[(actor->transform.angles.yaw + 1024) & 0xFFF] >> 5);
 			actor->gravityVel = -1472;
 			actor->unkWord15 = 1;
 			g_unk53C61C = 0;
@@ -2529,23 +2529,23 @@ namespace Toy2
 			actor->unkVar37 = 3;
 
 			if ((InputManager::g_directionInputState & 0x4000) != 0)
-				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::Actor::Toy2Actor*)actor);
+				AudioManager::Preset::PlayOneShotSound2(25, (Toy2::CreatureActor*)actor);
 
 			return 1;
 		}
 
 		// FUNCTION: TOY2 0x004863A0
-		int32_t UpdateFloorHeight(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		int32_t UpdateFloorHeight(Toy2::BuzzActor* buzzActor)
 		{
 			int32_t triangleCount = Collision::g_candidateTriangleCount;
 			Transform transform;
 
-			Nu3D::Collision::GatherTrianglesAtXZ(&buzzActor->posAngles);
+			Nu3D::Collision::GatherTrianglesAtXZ(&buzzActor->transform);
 
-			transform.pos.x = buzzActor->posAngles.pos.x;
-			transform.pos.z = buzzActor->posAngles.pos.z;
-			transform.angles = buzzActor->posAngles.angles;
-			transform.pos.y = buzzActor->posAngles.pos.y - 1024;
+			transform.pos.x = buzzActor->transform.pos.x;
+			transform.pos.z = buzzActor->transform.pos.z;
+			transform.angles = buzzActor->transform.angles;
+			transform.pos.y = buzzActor->transform.pos.y - 1024;
 
 			Nu3D::Collision::ResolveGroundCeiling(&transform, 0x10000);
 
@@ -2564,12 +2564,12 @@ namespace Toy2
 
 				if ((flags & 8) == 8)
 				{
-					buzzY = Toy2::g_buzzActor.posAngles.pos.y;
+					buzzY = Toy2::g_buzzActor.transform.pos.y;
 
 					if (buzzY > transform.pos.y + 512 && buzzY < transform.pos.y + 24576)
 					{
 						buzzY = transform.pos.y - 448;
-						Toy2::g_buzzActor.posAngles.pos.y = transform.pos.y - 448;
+						Toy2::g_buzzActor.transform.pos.y = transform.pos.y - 448;
 
 						if (Collision::g_floorSlope.y >= (int16_t)0xE000)
 						{
@@ -2579,7 +2579,7 @@ namespace Toy2
 					}
 				}
 				else
-					buzzY = Toy2::g_buzzActor.posAngles.pos.y;
+					buzzY = Toy2::g_buzzActor.transform.pos.y;
 
 				if (transform.pos.y - buzzY < 512 && transform.pos.y - buzzY > -1024 && Collision::g_floorSlope.y < (int16_t)0xE000)
 				{
@@ -2603,7 +2603,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00484380
-		void ResolveCollisions(Toy2::Buzz::Toy2BuzzActor* buzzActor, Vector3I* velocity, uint8_t* flags, int32_t index, int32_t halfStep)
+		void ResolveCollisions(Toy2::BuzzActor* buzzActor, Vector3I* velocity, uint8_t* flags, int32_t index, int32_t halfStep)
 		{
 			int32_t savedIndex;
 			int32_t speed;
@@ -2670,7 +2670,7 @@ namespace Toy2
 			Matrix3x3I16* rotation = (Matrix3x3I16*)&Collision::g_mathScratch[948];
 
 			savedIndex = index;
-			buzzActor->posAngles.pos.y += -192 - Collision::g_buzzCollisionStates[index].floorOffset;
+			buzzActor->transform.pos.y += -192 - Collision::g_buzzCollisionStates[index].floorOffset;
 
 			Collision::g_buzzCollisionStates[index].platformIdx = -1;
 			Collision::g_buzzCollisionStates[index].pushbackVel.x = 0;
@@ -2820,10 +2820,10 @@ namespace Toy2
 
 			meshCount = 0;
 			doubleRadius = 2 * radius;
-			posX = radius + buzzActor->posAngles.pos.x;
+			posX = radius + buzzActor->transform.pos.x;
 			nodeMargin = (radius + 15) / 16;
-			posZ = radius + buzzActor->posAngles.pos.z;
-			posY = radius + buzzActor->posAngles.pos.y;
+			posZ = radius + buzzActor->transform.pos.z;
+			posY = radius + buzzActor->transform.pos.y;
 
 			meshList = (int16_t*)Collision::g_mathScratch;
 
@@ -2938,9 +2938,9 @@ namespace Toy2
 
 						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&angles16, rotation);
 
-						localY = (buzzActor->posAngles.pos.y - mesh->origin.y) >> 5;
-						localX = (buzzActor->posAngles.pos.x - mesh->origin.x) >> 5;
-						localZ = (buzzActor->posAngles.pos.z - mesh->origin.z) >> 5;
+						localY = (buzzActor->transform.pos.y - mesh->origin.y) >> 5;
+						localX = (buzzActor->transform.pos.x - mesh->origin.x) >> 5;
+						localZ = (buzzActor->transform.pos.z - mesh->origin.z) >> 5;
 
 						platformX = radius + mesh->origin.x + (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 128;
 						platformY = radius + mesh->origin.y + (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 128;
@@ -2948,9 +2948,9 @@ namespace Toy2
 					}
 					else
 					{
-						platformX = radius + buzzActor->posAngles.pos.x;
-						platformY = radius + buzzActor->posAngles.pos.y;
-						platformZ = radius + buzzActor->posAngles.pos.z;
+						platformX = radius + buzzActor->transform.pos.x;
+						platformY = radius + buzzActor->transform.pos.y;
+						platformZ = radius + buzzActor->transform.pos.z;
 					}
 
 					if ((uint32_t)(platformX - mesh->boundsMin.x) >= (uint32_t)(doubleRadius + mesh->boundsExt.x)
@@ -3033,8 +3033,8 @@ namespace Toy2
 					}
 				}
 
-				posZ = radius + buzzActor->posAngles.pos.z;
-				posX = radius + buzzActor->posAngles.pos.x;
+				posZ = radius + buzzActor->transform.pos.z;
+				posX = radius + buzzActor->transform.pos.x;
 			}
 
 			// the wall segments, a list of nodes of 16 points each
@@ -3120,7 +3120,7 @@ namespace Toy2
 
 			if (Collision::g_candidateTriangleCount > 0 || Collision::g_unk72D2AC > 0)
 			{
-				memcpy(&vectorAngles, &buzzActor->posAngles, sizeof(vectorAngles));
+				memcpy(&vectorAngles, &buzzActor->transform, sizeof(vectorAngles));
 				Collision::g_unk72D298 = 0;
 
 				resolvedVelocity.vel.x = (int16_t)velocity->x;
@@ -3198,7 +3198,7 @@ namespace Toy2
 					--stepCount;
 				} while (substepResult > 0);
 
-				memcpy(&buzzActor->posAngles, &vectorAngles, sizeof(vectorAngles));
+				memcpy(&buzzActor->transform, &vectorAngles, sizeof(vectorAngles));
 
 				if (! index)
 				{
@@ -3216,15 +3216,15 @@ namespace Toy2
 
 				if (halfStep)
 				{
-					buzzActor->posAngles.pos.x += velocity->x / 2;
-					buzzActor->posAngles.pos.y += velocity->y / 2;
-					buzzActor->posAngles.pos.z += velocity->z / 2;
+					buzzActor->transform.pos.x += velocity->x / 2;
+					buzzActor->transform.pos.y += velocity->y / 2;
+					buzzActor->transform.pos.z += velocity->z / 2;
 				}
 				else
 				{
-					buzzActor->posAngles.pos.x += velocity->x;
-					buzzActor->posAngles.pos.y = velocity->y + buzzActor->posAngles.pos.y;
-					buzzActor->posAngles.pos.z = velocity->z + buzzActor->posAngles.pos.z;
+					buzzActor->transform.pos.x += velocity->x;
+					buzzActor->transform.pos.y = velocity->y + buzzActor->transform.pos.y;
+					buzzActor->transform.pos.z = velocity->z + buzzActor->transform.pos.z;
 				}
 
 				Collision::g_buzzCollisionStates[index].pushbackVel.x = 0;
@@ -3232,12 +3232,12 @@ namespace Toy2
 				Collision::g_buzzCollisionStates[index].pushbackVel.z = 0;
 			}
 
-			posY = Collision::g_buzzCollisionStates[index].floorOffset + 192 + buzzActor->posAngles.pos.y;
-			posX = buzzActor->posAngles.pos.x;
-			buzzActor->posAngles.pos.y = posY;
+			posY = Collision::g_buzzCollisionStates[index].floorOffset + 192 + buzzActor->transform.pos.y;
+			posX = buzzActor->transform.pos.x;
+			buzzActor->transform.pos.y = posY;
 
 			if (posX == Toy2::g_buzzActor.motionTargetPos.x && posY == Toy2::g_buzzActor.motionTargetPos.y
-				&& buzzActor->posAngles.pos.z == Toy2::g_buzzActor.motionTargetPos.z && stuck > 0)
+				&& buzzActor->transform.pos.z == Toy2::g_buzzActor.motionTargetPos.z && stuck > 0)
 				Collision::g_buzzCollisionStates[index].stuckTimer += Renderer::g_frameDelta;
 			else
 				Collision::g_buzzCollisionStates[index].stuckTimer = 0;
@@ -3254,7 +3254,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x004855F0
-		void HandleCollisions(Toy2::Buzz::Toy2BuzzActor* buzzActor, Vector3I* velocity, uint8_t* flags, int32_t index)
+		void HandleCollisions(Toy2::BuzzActor* buzzActor, Vector3I* velocity, uint8_t* flags, int32_t index)
 		{
 			if (velocity->z * velocity->z + velocity->y * velocity->y + velocity->x * velocity->x <= 0x400000)
 			{
@@ -3273,7 +3273,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00434550
-		void ResolveFooting(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		void ResolveFooting(Toy2::BuzzActor* buzzActor)
 		{
 			int32_t velX = buzzActor->velX;
 			int32_t gravityVel = buzzActor->gravityVel;
@@ -3315,12 +3315,12 @@ namespace Toy2
 					{
 						HandleDamage(0, 4);
 
-						buzzActor->posAngles.pos.x = velX + buzzActor->motionTargetPos.x;
+						buzzActor->transform.pos.x = velX + buzzActor->motionTargetPos.x;
 						buzzActor->gravityVel = gravityVel;
 						buzzActor->velX = velX;
 						buzzActor->velForward = velForward;
-						buzzActor->posAngles.pos.y = gravityVel + buzzActor->motionTargetPos.y;
-						buzzActor->posAngles.pos.z = velForward + buzzActor->motionTargetPos.z;
+						buzzActor->transform.pos.y = gravityVel + buzzActor->motionTargetPos.y;
+						buzzActor->transform.pos.z = velForward + buzzActor->motionTargetPos.z;
 						buzzActor->collisionFlags = 0;
 						buzzActor->unkShort40 = 0;
 
@@ -3398,7 +3398,7 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00436220
-		void HandleGameplay(Toy2::Buzz::Toy2BuzzActor* buzzActor)
+		void HandleGameplay(Toy2::BuzzActor* buzzActor)
 		{
 			MovementParams movementParams;
 			int32_t frameDelta = Renderer::g_frameDelta;
@@ -3457,13 +3457,13 @@ namespace Toy2
 			{
 				if (g_currentFluidType == 1)
 				{
-					if (buzzActor->posAngles.pos.y <= g_underwaterYLevel + 0x2000)
+					if (buzzActor->transform.pos.y <= g_underwaterYLevel + 0x2000)
 						goto LBL_APPLY_SURFACE_ACCELERATION;
 
 					goto LBL_SET_FLUID_FLAG;
 				}
 
-				if (g_currentFluidType > 1 && g_currentFluidType <= 3 && buzzActor->posAngles.pos.y > g_underwaterYLevel)
+				if (g_currentFluidType > 1 && g_currentFluidType <= 3 && buzzActor->transform.pos.y > g_underwaterYLevel)
 				{
 				LBL_SET_FLUID_FLAG:
 					actorFlags |= 0x100;
@@ -3484,7 +3484,7 @@ namespace Toy2
 			{
 				g_buzzActor.actorFlags &= ~4;
 				movementParams.maxTurnRate = 0;
-				turnDelta = g_unk53C814 - buzzActor->posAngles.angles.yaw;
+				turnDelta = g_unk53C814 - buzzActor->transform.angles.yaw;
 
 				movementParams.groundAccel = 16 * frameDelta / 4;
 				movementParams.airAccel = movementParams.groundAccel;
@@ -3508,8 +3508,8 @@ namespace Toy2
 					if (angleDiff > 2048)
 						angleDiff -= 4096;
 
-					newYaw = (buzzActor->posAngles.angles.yaw + (angleDiff >> 3)) & 0xFFF;
-					buzzActor->posAngles.angles.yaw = newYaw;
+					newYaw = (buzzActor->transform.angles.yaw + (angleDiff >> 3)) & 0xFFF;
+					buzzActor->transform.angles.yaw = newYaw;
 					buzzActor->facingAngle = newYaw;
 				}
 
@@ -3754,9 +3754,9 @@ namespace Toy2
 
 			gunFlags = Camera::g_cameraState != 0 ? 8 : 0;
 
-			TickGunFire(&buzzActor->posAngles);
+			TickGunFire(&buzzActor->transform);
 
-			moveFlags = gunFlags | TickGroundSlam((Actor::Toy2Actor*)buzzActor);
+			moveFlags = gunFlags | TickGroundSlam((CreatureActor*)buzzActor);
 
 			TickSpinHover(buzzActor);
 
@@ -3862,9 +3862,9 @@ namespace Toy2
 			}
 
 		LBL_RESOLVE_MOVEMENT:
-			y = buzzActor->posAngles.pos.y;
-			z = buzzActor->posAngles.pos.z;
-			buzzActor->motionTargetPos.x = buzzActor->posAngles.pos.x;
+			y = buzzActor->transform.pos.y;
+			z = buzzActor->transform.pos.z;
+			buzzActor->motionTargetPos.x = buzzActor->transform.pos.x;
 			gravityVel = buzzActor->gravityVel;
 			buzzActor->motionTargetPos.y = y;
 			buzzActor->motionTargetPos.z = z;
@@ -3901,9 +3901,9 @@ namespace Toy2
 				buzzActor->unkShort40 = 6;
 			}
 
-			Shadow::QueueStretchedForBuzz(buzzActor->posAngles.pos.x, buzzActor->floorYPos, buzzActor->posAngles.pos.z, 100);
+			Shadow::QueueStretchedForBuzz(buzzActor->transform.pos.x, buzzActor->floorYPos, buzzActor->transform.pos.z, 100);
 
-			if (g_unk53C818 && buzzActor->collisionFlags && abs(buzzActor->floorYPos - buzzActor->posAngles.pos.y) < 4096)
+			if (g_unk53C818 && buzzActor->collisionFlags && abs(buzzActor->floorYPos - buzzActor->transform.pos.y) < 4096)
 				g_unk53C814 = Nu3D::Math::CartesianToFixedAngle(Collision::g_floorSlope.x, Collision::g_floorSlope.z) & 0xFFF;
 
 			if ((g_buzzActionState & 0x18010) != 0)
@@ -3928,7 +3928,7 @@ namespace Toy2
 						g_unk53C838 = -70;
 						g_unk53C634 |= 0x10;
 
-						AudioManager::PlaySoundEffect(47, &buzzActor->posAngles.pos);
+						AudioManager::PlaySoundEffect(47, &buzzActor->transform.pos);
 
 						buzzActor->velX = 0;
 						buzzActor->gravityVel = 0;
@@ -3954,7 +3954,7 @@ namespace Toy2
 
 				if (frameDelta + groundSlamTimer > 60)
 				{
-					AudioManager::PlaySoundEffect(22, &buzzActor->posAngles.pos);
+					AudioManager::PlaySoundEffect(22, &buzzActor->transform.pos);
 					g_buzzActor.actorFlags &= ~4;
 					g_unk53C838 = 80;
 					g_unk53C83C = 0;
@@ -3967,7 +3967,7 @@ namespace Toy2
 			if (buzzActor->collisionFlags)
 				g_unk53C62C = 0;
 
-			if (buzzActor->posAngles.pos.y > Collision::g_unk729124 + 0x2000 && ! g_levelTransition)
+			if (buzzActor->transform.pos.y > Collision::g_unk729124 + 0x2000 && ! g_levelTransition)
 			{
 				if (g_unk53C62C < 1)
 				{
@@ -3982,38 +3982,38 @@ namespace Toy2
 		}
 
 		// FUNCTION: TOY2 0x00433D50
-		void Init(Toy2::Buzz::Toy2BuzzActor* buzzActor, int32_t levelIndex)
+		void Init(Toy2::BuzzActor* buzzActor, int32_t levelIndex)
 		{
 			int16_t lives = buzzActor->lives;
 			int16_t health = buzzActor->health;
 
-			memset(buzzActor, 0, sizeof(Toy2BuzzActor));
+			memset(buzzActor, 0, sizeof(BuzzActor));
 
 			SpawnLocation* spawnLocation = &g_spawnLocations[levelIndex];
 
-			buzzActor->posAngles.pos.x = spawnLocation->x;
-			buzzActor->posAngles.pos.y = spawnLocation->y;
-			buzzActor->posAngles.pos.z = spawnLocation->z;
+			buzzActor->transform.pos.x = spawnLocation->x;
+			buzzActor->transform.pos.y = spawnLocation->y;
+			buzzActor->transform.pos.z = spawnLocation->z;
 
 			int32_t floorY = UpdateFloorHeight(buzzActor);
 
 			floorY -= 256;
 
-			buzzActor->motionTargetPos.x = buzzActor->posAngles.pos.x;
-			buzzActor->posAngles.pos.y = floorY;
+			buzzActor->motionTargetPos.x = buzzActor->transform.pos.x;
+			buzzActor->transform.pos.y = floorY;
 			buzzActor->motionTargetPos.y = floorY;
-			buzzActor->motionTargetPos.z = buzzActor->posAngles.pos.z;
+			buzzActor->motionTargetPos.z = buzzActor->transform.pos.z;
 
 			buzzActor->respawnPos.y = floorY;
-			buzzActor->respawnPos.x = buzzActor->posAngles.pos.x;
+			buzzActor->respawnPos.x = buzzActor->transform.pos.x;
 			buzzActor->respawnYawAngle = (int16_t)spawnLocation->rotation;
 
-			buzzActor->posAngles.angles.yaw = (uint16_t)spawnLocation->rotation;
+			buzzActor->transform.angles.yaw = (uint16_t)spawnLocation->rotation;
 			buzzActor->facingAngle = (int16_t)spawnLocation->rotation;
 			buzzActor->surfaceClampY = 0x80000000;
 			buzzActor->lives = lives;
 			buzzActor->health = health;
-			buzzActor->respawnPos.z = buzzActor->posAngles.pos.z;
+			buzzActor->respawnPos.z = buzzActor->transform.pos.z;
 			buzzActor->isOnWalkableFloor = 0;
 			buzzActor->primaryAnimIdx = -1;
 			buzzActor->secondaryAnimIdx = -1;
@@ -4055,7 +4055,7 @@ namespace Toy2
 			g_unk50A098 = 0;
 			g_unk53C678 = 0;
 			g_unk53C5D0 = 0;
-			g_unk53C674 = buzzActor->posAngles.pos.y;
+			g_unk53C674 = buzzActor->transform.pos.y;
 			g_unk53C61C = 0;
 			g_unk53C664 = 0;
 			g_unk53C5DC = 0;
@@ -4070,8 +4070,8 @@ namespace Toy2
 				&& (g_unk52B81C & 0xFFFFFFFC) != 0)
 			{
 				g_buzzActor.actorFlags |= 8;
-				g_buzzActor.respawnPos = g_buzzActor.posAngles.pos;
-				g_buzzActor.respawnYawAngle = g_buzzActor.posAngles.angles.yaw;
+				g_buzzActor.respawnPos = g_buzzActor.transform.pos;
+				g_buzzActor.respawnYawAngle = g_buzzActor.transform.angles.yaw;
 			}
 		}
 
@@ -4101,7 +4101,7 @@ namespace Toy2
 			Nu3D::Particles::ParticleInstance* particle;
 			Vector3I soundPos;
 
-			inFluid = g_currentFluidType && g_buzzActor.posAngles.pos.y > g_underwaterYLevel;
+			inFluid = g_currentFluidType && g_buzzActor.transform.pos.y > g_underwaterYLevel;
 
 			// the charge orb on Buzz's hand
 			if (! g_fireChargeTimer || (Camera::g_lockOnActorIdx >= 1000 && Camera::g_cameraState) || g_discLauncherTimer)
@@ -4160,15 +4160,15 @@ namespace Toy2
 			if ((flags & 1) != 0)
 			{
 				stepSound = 1;
-				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw + 1024) & 0xFFF] >> 4;
-				stepDZ = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 2048) & 0xFFF] >> 4;
+				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw + 1024) & 0xFFF] >> 4;
+				stepDZ = Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw - 2048) & 0xFFF] >> 4;
 			}
 
 			if ((flags & 2) != 0)
 			{
 				stepSound = 1;
-				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.posAngles.angles.yaw - 1024) & 0xFFF] >> 4;
-				stepDZ = Numerics::g_sinCosLUT[g_buzzActor.posAngles.angles.yaw & 0xFFF] >> 4;
+				stepDX = Numerics::g_sinCosLUT[(g_buzzActor.transform.angles.yaw - 1024) & 0xFFF] >> 4;
+				stepDZ = Numerics::g_sinCosLUT[g_buzzActor.transform.angles.yaw & 0xFFF] >> 4;
 			}
 
 			if (! inFluid)
@@ -4212,12 +4212,12 @@ namespace Toy2
 							if (g_unk53C60C > 0 && flags > 0 && flags <= 3)
 							{
 								particle = Nu3D::Particles::SpawnFromPreset(
-									g_buzzActor.posAngles.pos.x + spawnX,
-									g_buzzActor.posAngles.pos.y,
-									g_buzzActor.posAngles.pos.z + spawnZ,
+									g_buzzActor.transform.pos.x + spawnX,
+									g_buzzActor.transform.pos.y,
+									g_buzzActor.transform.pos.z + spawnZ,
 									(g_unk53C60C & 0xFFFF) + 30,
 									2);
-								particle->groundAlignRot = (-1024 - g_buzzActor.posAngles.angles.yaw) & 0xFFF;
+								particle->groundAlignRot = (-1024 - g_buzzActor.transform.angles.yaw) & 0xFFF;
 								flags = g_unk53C634;
 							}
 
@@ -4230,7 +4230,7 @@ namespace Toy2
 									do
 									{
 										Nu3D::Particles::SpawnFromPreset(
-											g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 2, 2);
+											g_buzzActor.transform.pos.x, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z, 2, 2);
 										++i;
 									} while (i < g_tickState[2]);
 								}
@@ -4242,7 +4242,7 @@ namespace Toy2
 							if (! v6)
 							{
 								Nu3D::Particles::SpawnFromPreset(
-									g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 30, 4);
+									g_buzzActor.transform.pos.x + spawnX, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z + spawnZ, 30, 4);
 							}
 							else
 							{
@@ -4251,7 +4251,7 @@ namespace Toy2
 								do
 								{
 									Nu3D::Particles::SpawnFromPreset(
-										g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 30, 4);
+										g_buzzActor.transform.pos.x + spawnX, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z + spawnZ, 30, 4);
 									--count;
 								} while (count);
 							}
@@ -4259,7 +4259,7 @@ namespace Toy2
 						case 4:
 							g_unk53C60C = 0xB40002;
 							Nu3D::Particles::SpawnFromPreset(
-								g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, v6 + 27, 2);
+								g_buzzActor.transform.pos.x + spawnX, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z + spawnZ, v6 + 27, 2);
 							break;
 						case 5:
 							g_unk53C60C = 11796483;
@@ -4271,14 +4271,14 @@ namespace Toy2
 								do
 								{
 									Nu3D::Particles::SpawnFromPreset(
-										g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 29, 4);
+										g_buzzActor.transform.pos.x + spawnX, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z + spawnZ, 29, 4);
 									--count;
 								} while (count);
 							}
 							else if ((flags & 4) != 0)
 							{
 								Nu3D::Particles::SpawnFromPreset(
-									g_buzzActor.posAngles.pos.x + spawnX, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z + spawnZ, 29, 4);
+									g_buzzActor.transform.pos.x + spawnX, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z + spawnZ, 29, 4);
 							}
 							break;
 						default:
@@ -4314,7 +4314,7 @@ namespace Toy2
 
 				i = (*g_randDatBufferPtr - 128) << 8;
 				g_randDatBufferPtr += 2;
-				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x + i, g_underwaterYLevel, i + g_buzzActor.posAngles.pos.z, 57, 2);
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x + i, g_underwaterYLevel, i + g_buzzActor.transform.pos.z, 57, 2);
 			}
 
 			fluidType = g_currentFluidType;
@@ -4393,7 +4393,7 @@ namespace Toy2
 				spriteBase = 51;
 			}
 
-			if (g_buzzActor.posAngles.pos.y <= surfaceY)
+			if (g_buzzActor.transform.pos.y <= surfaceY)
 			{
 				if (g_unk830D30 > surfaceY)
 				{
@@ -4422,13 +4422,13 @@ namespace Toy2
 						if (g_currentFluidType == 1)
 						{
 							particle =
-								Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 13, presetIdx);
+								Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, g_underwaterYLevel, g_buzzActor.transform.pos.z, 13, presetIdx);
 						}
 
 						if (g_currentFluidType == 2)
 						{
 							particle =
-								Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_underwaterYLevel, g_buzzActor.posAngles.pos.z, 53, presetIdx);
+								Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, g_underwaterYLevel, g_buzzActor.transform.pos.z, 53, presetIdx);
 						}
 
 						if (presetIdx == 14)
@@ -4444,9 +4444,9 @@ namespace Toy2
 					} while (count);
 
 					if (g_currentFluidType == 1)
-						AudioManager::PlaySoundEffect(58, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(58, &g_buzzActor.transform.pos);
 					else
-						AudioManager::PlaySoundEffect(78, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(78, &g_buzzActor.transform.pos);
 				}
 
 				surfaceY = g_underwaterYLevel;
@@ -4458,10 +4458,10 @@ namespace Toy2
 			if (g_buzzActor.unkVar30 || g_buzzActor.unkVar31)
 				bandIdx = altIdx;
 
-			if (g_buzzActor.posAngles.pos.y > surfaceY && g_buzzActor.posAngles.pos.y < surfaceY + 12288 && g_tickState[bandIdx])
+			if (g_buzzActor.transform.pos.y > surfaceY && g_buzzActor.transform.pos.y < surfaceY + 12288 && g_tickState[bandIdx])
 			{
 				Nu3D::Particles::SpawnFromPreset(
-					g_buzzActor.posAngles.pos.x, surfaceY, g_buzzActor.posAngles.pos.z, spriteBase + (*g_randDatBufferPtr++ & 1), 2);
+					g_buzzActor.transform.pos.x, surfaceY, g_buzzActor.transform.pos.z, spriteBase + (*g_randDatBufferPtr++ & 1), 2);
 			}
 
 			if (g_unk53C650 || (bubbleIdx = 7, g_unk53C83C < -120))
@@ -4480,9 +4480,9 @@ namespace Toy2
 							count = *g_randDatBufferPtr;
 							g_randDatBufferPtr += 3;
 							Nu3D::Particles::SpawnFromPreset(
-								g_buzzActor.posAngles.pos.x + 16 * (count - 128),
-								g_buzzActor.posAngles.pos.y + 16 * (count - 640),
-								16 * (count - 128) + g_buzzActor.posAngles.pos.z,
+								g_buzzActor.transform.pos.x + 16 * (count - 128),
+								g_buzzActor.transform.pos.y + 16 * (count - 640),
+								16 * (count - 128) + g_buzzActor.transform.pos.z,
 								45,
 								18);
 						}
@@ -4492,7 +4492,7 @@ namespace Toy2
 							count = *g_randDatBufferPtr - 128;
 							g_randDatBufferPtr += 2;
 							Nu3D::Particles::SpawnFromPreset(
-								g_buzzActor.posAngles.pos.x + 16 * count, g_underwaterYLevel, 16 * count + g_buzzActor.posAngles.pos.z, 53, 4);
+								g_buzzActor.transform.pos.x + 16 * count, g_underwaterYLevel, 16 * count + g_buzzActor.transform.pos.z, 53, 4);
 						}
 
 						++i;
@@ -4500,7 +4500,7 @@ namespace Toy2
 				}
 			}
 		LABEL_144:
-			g_unk830D30 = g_buzzActor.posAngles.pos.y;
+			g_unk830D30 = g_buzzActor.transform.pos.y;
 
 			if (g_buzzActor.unkShort40 && stepSound)
 			{
@@ -4530,9 +4530,9 @@ namespace Toy2
 					}
 				}
 
-				soundPos.x = g_buzzActor.posAngles.pos.x + 8 * stepDX;
-				soundPos.y = g_buzzActor.posAngles.pos.y;
-				soundPos.z = g_buzzActor.posAngles.pos.z + 8 * stepDZ;
+				soundPos.x = g_buzzActor.transform.pos.x + 8 * stepDX;
+				soundPos.y = g_buzzActor.transform.pos.y;
+				soundPos.z = g_buzzActor.transform.pos.z + 8 * stepDZ;
 				AudioManager::PlaySoundEffect(soundIdx, &soundPos);
 			}
 		}
@@ -4571,20 +4571,20 @@ namespace Toy2
 			g_rocketBootsDuration = 250;
 
 			Nu3D::Particles::ParticleInstance* particle1 =
-				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 47, 2);
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z, 47, 2);
 
 			particle1->rotSpeed = -32;
 			particle1->groundAlignRot = 128;
 			particle1->lifetime = g_rocketBootsDuration;
 
 			Nu3D::Particles::ParticleInstance* particle2 =
-				Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, g_buzzActor.posAngles.pos.y, g_buzzActor.posAngles.pos.z, 47, 2);
+				Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, g_buzzActor.transform.pos.y, g_buzzActor.transform.pos.z, 47, 2);
 
 			particle2->unkByte1 = 101;
 			particle2->rotSpeed = 32;
 			particle2->lifetime = g_rocketBootsDuration;
 
-			AudioManager::PlaySoundEffect(76, &g_buzzActor.posAngles.pos);
+			AudioManager::PlaySoundEffect(76, &g_buzzActor.transform.pos);
 		}
 
 		// FUNCTION: TOY2 0x004A5170
@@ -4595,20 +4595,20 @@ namespace Toy2
 
 			if (g_cosmicShieldPickup)
 			{
-				pos.x = (g_buzzActor.posAngles.pos.x - Camera::g_activeCameraTransform.pos.x) >> 5;
-				pos.y = (g_buzzActor.posAngles.pos.y - Camera::g_activeCameraTransform.pos.y - 0x2000) >> 5;
-				pos.z = (g_buzzActor.posAngles.pos.z - Camera::g_activeCameraTransform.pos.z) >> 5;
+				pos.x = (g_buzzActor.transform.pos.x - Camera::g_activeCameraTransform.pos.x) >> 5;
+				pos.y = (g_buzzActor.transform.pos.y - Camera::g_activeCameraTransform.pos.y - 0x2000) >> 5;
+				pos.z = (g_buzzActor.transform.pos.z - Camera::g_activeCameraTransform.pos.z) >> 5;
 
 				Nu3D::Math::NormalizeToFixedPoint(&pos, &pos);
 
-				pos.y = (g_buzzActor.posAngles.pos.y - pos.y - 0x2000) >> 5;
-				pos.z = (g_buzzActor.posAngles.pos.z - pos.z) >> 5;
-				pos.x = (g_buzzActor.posAngles.pos.x - pos.x) >> 5;
+				pos.y = (g_buzzActor.transform.pos.y - pos.y - 0x2000) >> 5;
+				pos.z = (g_buzzActor.transform.pos.z - pos.z) >> 5;
+				pos.x = (g_buzzActor.transform.pos.x - pos.x) >> 5;
 
 				Nu3D::Link::SetPositionRawAndCommit(g_cosmicShieldPickup->props.linkId, pos.x, pos.y, pos.z);
 				Nu3D::Link::SetRotationRelative8bit(g_cosmicShieldPickup->props.linkId, 0, g_cosmicShieldRotYaw, g_cosmicShieldSpin);
 
-				g_cosmicShieldRotYaw = -g_buzzActor.posAngles.angles.yaw & 0xFFF;
+				g_cosmicShieldRotYaw = -g_buzzActor.transform.angles.yaw & 0xFFF;
 				g_cosmicShieldSpin = (g_cosmicShieldSpin - Renderer::g_frameDelta * (g_buzzActor.unkVar30 >> 4)) & 0xFFF;
 
 				BOOL playSound = 1;
@@ -4628,7 +4628,7 @@ namespace Toy2
 				if (playSound)
 				{
 					AudioManager::g_pitchArray[0] = 4 * (2048 - g_buzzActor.inhibitMovementTimer);
-					AudioManager::PlaySoundEffect(77, &g_buzzActor.posAngles.pos);
+					AudioManager::PlaySoundEffect(77, &g_buzzActor.transform.pos);
 				}
 
 				Renderer::BlitTextureByIndexOffset(16, 128, 192, 64, 64, 4 * g_tickAccumulators.tick16Acc, 2 * g_tickAccumulators.tick32Acc, 0, -64);
@@ -4683,16 +4683,16 @@ namespace Toy2
 						g_buzzActor.actorFlags &= ~4;
 						g_grappleState = 0;
 
-						g_buzzActor.posAngles.pos.x = g_grappleTargetPos.pos.x;
-						g_buzzActor.posAngles.pos.y = g_grappleTargetPos.pos.y + 5632;
-						g_buzzActor.posAngles.pos.z = g_grappleTargetPos.pos.z;
+						g_buzzActor.transform.pos.x = g_grappleTargetPos.pos.x;
+						g_buzzActor.transform.pos.y = g_grappleTargetPos.pos.y + 5632;
+						g_buzzActor.transform.pos.z = g_grappleTargetPos.pos.z;
 						g_buzzActor.velX = 0;
 						g_buzzActor.gravityVel = 0;
 						g_buzzActor.velForward = 0;
 					}
 					else
 					{
-						AudioManager::PlaySoundEffect(83, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(83, &g_buzzActor.transform.pos);
 
 						direction.pos.x = g_grappleTargetPos.pos.x - g_unk50A0A0.x;
 						direction.pos.y = g_grappleTargetPos.pos.y - g_unk50A0A0.y;
@@ -4700,9 +4700,9 @@ namespace Toy2
 
 						Renderer::Beam::QueueBeam(34, 30, 400, (Transform*)&g_unk50A0A0, &direction, 0x80, 0x60, 0x20);
 
-						direction.pos.y = (g_grappleTargetPos.pos.y - g_buzzActor.posAngles.pos.y + 5632) >> 3;
-						direction.pos.x = (g_grappleTargetPos.pos.x - g_buzzActor.posAngles.pos.x) >> 3;
-						direction.pos.z = (g_grappleTargetPos.pos.z - g_buzzActor.posAngles.pos.z) >> 3;
+						direction.pos.y = (g_grappleTargetPos.pos.y - g_buzzActor.transform.pos.y + 5632) >> 3;
+						direction.pos.x = (g_grappleTargetPos.pos.x - g_buzzActor.transform.pos.x) >> 3;
+						direction.pos.z = (g_grappleTargetPos.pos.z - g_buzzActor.transform.pos.z) >> 3;
 
 						Nu3D::Math::NormalizeToFixedPoint((Vector3I*)&direction, (Vector3I*)&direction);
 
@@ -4720,7 +4720,7 @@ namespace Toy2
 				return;
 			}
 
-			AudioManager::PlaySoundEffect(82, &g_buzzActor.posAngles.pos);
+			AudioManager::PlaySoundEffect(82, &g_buzzActor.transform.pos);
 
 			if (g_grappleState != 3)
 			{
@@ -4730,7 +4730,7 @@ namespace Toy2
 				if (Camera::g_cameraState)
 					Camera::SnapBehindBuzz(&Camera::g_gameplayCameraState);
 
-				if ((g_buzzActor.posAngles.angles.yaw & 0x200) != 0)
+				if ((g_buzzActor.transform.angles.yaw & 0x200) != 0)
 					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw + 1024) & 0xFFF;
 				else
 					Camera::g_gameplayCameraState.orbitYaw = (Camera::g_gameplayCameraState.orbitYaw - 1024) & 0xFFF;
@@ -4812,10 +4812,10 @@ namespace Toy2
 
 			if (g_rocketBootsDuration)
 			{
-				if (g_underwaterYLevel && g_buzzActor.posAngles.pos.y > g_underwaterYLevel && g_buzzActor.gravityVel > -768)
+				if (g_underwaterYLevel && g_buzzActor.transform.pos.y > g_underwaterYLevel && g_buzzActor.gravityVel > -768)
 					g_buzzActor.gravityVel += -128 * Renderer::g_frameDelta;
 
-				AudioManager::PlaySoundEffect(64, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(64, &g_buzzActor.transform.pos);
 				g_rocketBootsDuration -= Renderer::g_frameDelta;
 
 				if (g_rocketBootsDuration <= 0)

@@ -292,7 +292,7 @@ namespace Toy2
 					}
 				}
 
-				z = Toy2::g_buzzActor.posAngles.pos.z;
+				z = Toy2::g_buzzActor.transform.pos.z;
 				index = 0;
 				descriptor = &g_platformDescriptors[0];
 
@@ -347,9 +347,9 @@ namespace Toy2
 							{
 								z += velZ;
 								carried = index;
-								Toy2::g_buzzActor.posAngles.pos.z = z;
-								Toy2::g_buzzActor.posAngles.pos.x += x;
-								Toy2::g_buzzActor.posAngles.pos.y += y;
+								Toy2::g_buzzActor.transform.pos.z = z;
+								Toy2::g_buzzActor.transform.pos.x += x;
+								Toy2::g_buzzActor.transform.pos.y += y;
 
 								if ((flags & 8) != 0)
 								{
@@ -369,25 +369,25 @@ namespace Toy2
 									originY = Collision::g_collisionMeshInstances[descriptor->meshInstanceId].origin.y;
 									originX = Collision::g_collisionMeshInstances[descriptor->meshInstanceId].origin.x;
 
-									localX = (Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m20
-										+ (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m10
-										+ (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m00;
-									localY = (Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m21
-										+ (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m11
-										+ (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m01;
-									localZ = (Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m22
-										+ (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m12
-										+ (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m02;
+									localX = (Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m20
+										+ (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m10
+										+ (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m00;
+									localY = (Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m21
+										+ (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m11
+										+ (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m01;
+									localZ = (Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m22
+										+ (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m12
+										+ (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m02;
 
 									lowZ = localZ & 0xFFF;
 									lowY = localY & 0xFFF;
 									lowX = localX & 0xFFF;
 
-									Toy2::g_buzzActor.posAngles.pos.x = originX
+									Toy2::g_buzzActor.transform.pos.x = originX
 										+ (localZ / 4096 * nextRotation->m02 + localY / 4096 * nextRotation->m01 + localX / 4096 * nextRotation->m00
 										   + lowZ * nextRotation->m02 / 4096 + lowY * nextRotation->m01 / 4096 + lowX * nextRotation->m00 / 4096)
 											/ 4096;
-									Toy2::g_buzzActor.posAngles.pos.y = originY
+									Toy2::g_buzzActor.transform.pos.y = originY
 										+ (localZ / 4096 * nextRotation->m12 + localY / 4096 * nextRotation->m11 + localX / 4096 * nextRotation->m10
 										   + lowZ * nextRotation->m12 / 4096 + lowY * nextRotation->m11 / 4096 + lowX * nextRotation->m10 / 4096)
 											/ 4096;
@@ -399,7 +399,7 @@ namespace Toy2
 									descriptor->rotAngle.y += descriptor->angVel.y;
 									z = originZ + velY / 4096;
 									descriptor->rotAngle.z += descriptor->angVel.z;
-									Toy2::g_buzzActor.posAngles.pos.z = z;
+									Toy2::g_buzzActor.transform.pos.z = z;
 								}
 							}
 
@@ -428,12 +428,12 @@ namespace Toy2
 
 						Nu3D::Math::EulerToRotationMatrix((AnglesWithRoll*)&angles, nextRotation);
 
-						z = Toy2::g_buzzActor.posAngles.pos.z;
+						z = Toy2::g_buzzActor.transform.pos.z;
 						meshInstanceId = descriptor->meshInstanceId;
 
-						localZ = Toy2::g_buzzActor.posAngles.pos.z - Collision::g_collisionMeshInstances[meshInstanceId].origin.z;
-						localY = Toy2::g_buzzActor.posAngles.pos.y - Collision::g_collisionMeshInstances[meshInstanceId].origin.y;
-						localX = Toy2::g_buzzActor.posAngles.pos.x - Collision::g_collisionMeshInstances[meshInstanceId].origin.x;
+						localZ = Toy2::g_buzzActor.transform.pos.z - Collision::g_collisionMeshInstances[meshInstanceId].origin.z;
+						localY = Toy2::g_buzzActor.transform.pos.y - Collision::g_collisionMeshInstances[meshInstanceId].origin.y;
+						localX = Toy2::g_buzzActor.transform.pos.x - Collision::g_collisionMeshInstances[meshInstanceId].origin.x;
 
 						highX = (localZ * rotation->m20 + localY * rotation->m10 + localX * rotation->m00) / 4096;
 						highY = (localZ * rotation->m21 + localY * rotation->m11 + localX * rotation->m01) / 4096;
@@ -441,13 +441,13 @@ namespace Toy2
 
 						Collision::g_buzzCollisionStates[0].pushbackVel.x += (uint16_t)Collision::g_collisionMeshInstances[meshInstanceId].origin.x
 							+ (highX * nextRotation->m00 + highY * nextRotation->m01 + highZ * nextRotation->m02) / 4096
-							- (uint16_t)Toy2::g_buzzActor.posAngles.pos.x;
+							- (uint16_t)Toy2::g_buzzActor.transform.pos.x;
 						Collision::g_buzzCollisionStates[0].pushbackVel.y += (uint16_t)Collision::g_collisionMeshInstances[meshInstanceId].origin.y
 							+ (highX * nextRotation->m10 + highY * nextRotation->m11 + highZ * nextRotation->m12) / 4096
-							- (uint16_t)Toy2::g_buzzActor.posAngles.pos.y;
+							- (uint16_t)Toy2::g_buzzActor.transform.pos.y;
 						Collision::g_buzzCollisionStates[0].pushbackVel.z += (uint16_t)Collision::g_collisionMeshInstances[meshInstanceId].origin.z
 							+ (highX * nextRotation->m20 + highY * nextRotation->m21 + highZ * nextRotation->m22) / 4096
-							- (uint16_t)Toy2::g_buzzActor.posAngles.pos.z;
+							- (uint16_t)Toy2::g_buzzActor.transform.pos.z;
 					}
 
 					*(uint8_t*)&descriptor->flags &= ~0x10;
@@ -468,13 +468,13 @@ namespace Toy2
 
 					velX = descriptor->linVel.x;
 					velY = descriptor->linVel.y / 2;
-					Toy2::g_buzzActor.posAngles.pos.y += velY;
+					Toy2::g_buzzActor.transform.pos.y += velY;
 					velZ = descriptor->linVel.z;
 					result = (char)descriptor->flags;
-					Toy2::g_buzzActor.posAngles.pos.z = velZ / 2 + z;
+					Toy2::g_buzzActor.transform.pos.z = velZ / 2 + z;
 					Toy2::g_buzzActor.velForward += velZ / 2;
 					x = velX / 2;
-					Toy2::g_buzzActor.posAngles.pos.x += x;
+					Toy2::g_buzzActor.transform.pos.x += x;
 					Toy2::g_buzzActor.velX += x;
 					Toy2::g_buzzActor.gravityVel += velY;
 
@@ -497,25 +497,25 @@ namespace Toy2
 						originX = Collision::g_collisionMeshInstances[meshInstanceId].origin.x;
 						originY = Collision::g_collisionMeshInstances[meshInstanceId].origin.y;
 
-						highX = ((Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m20 + (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m10
-								 + (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m00)
+						highX = ((Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m20 + (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m10
+								 + (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m00)
 							/ 4096;
-						highY = ((Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m21 + (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m11
-								 + (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m01)
+						highY = ((Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m21 + (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m11
+								 + (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m01)
 							/ 4096;
-						highZ = ((Toy2::g_buzzActor.posAngles.pos.z - originZ) * rotation->m22 + (Toy2::g_buzzActor.posAngles.pos.y - originY) * rotation->m12
-								 + (Toy2::g_buzzActor.posAngles.pos.x - originX) * rotation->m02)
+						highZ = ((Toy2::g_buzzActor.transform.pos.z - originZ) * rotation->m22 + (Toy2::g_buzzActor.transform.pos.y - originY) * rotation->m12
+								 + (Toy2::g_buzzActor.transform.pos.x - originX) * rotation->m02)
 							/ 4096;
 
 						localX = originX + (highX * nextRotation->m00 + highY * nextRotation->m01 + highZ * nextRotation->m02) / 4096;
-						Toy2::g_buzzActor.posAngles.pos.x += (localX - Toy2::g_buzzActor.posAngles.pos.x) / 2;
+						Toy2::g_buzzActor.transform.pos.x += (localX - Toy2::g_buzzActor.transform.pos.x) / 2;
 						localY = originY + (highX * nextRotation->m10 + highY * nextRotation->m11 + highZ * nextRotation->m12) / 4096;
-						Toy2::g_buzzActor.posAngles.pos.y += (localY - Toy2::g_buzzActor.posAngles.pos.y) / 2;
+						Toy2::g_buzzActor.transform.pos.y += (localY - Toy2::g_buzzActor.transform.pos.y) / 2;
 						localZ = (highX * nextRotation->m20 + highY * nextRotation->m21 + highZ * nextRotation->m22) / 4096 + originZ;
-						Toy2::g_buzzActor.posAngles.pos.z += (localZ - Toy2::g_buzzActor.posAngles.pos.z) / 2;
-						Toy2::g_buzzActor.velX += (localX - Toy2::g_buzzActor.posAngles.pos.x) / 2;
-						Toy2::g_buzzActor.gravityVel += (localY - Toy2::g_buzzActor.posAngles.pos.y) / 2;
-						result = (localZ - Toy2::g_buzzActor.posAngles.pos.z) / 2;
+						Toy2::g_buzzActor.transform.pos.z += (localZ - Toy2::g_buzzActor.transform.pos.z) / 2;
+						Toy2::g_buzzActor.velX += (localX - Toy2::g_buzzActor.transform.pos.x) / 2;
+						Toy2::g_buzzActor.gravityVel += (localY - Toy2::g_buzzActor.transform.pos.y) / 2;
+						result = (localZ - Toy2::g_buzzActor.transform.pos.z) / 2;
 						Toy2::g_buzzActor.velForward += result;
 					}
 				}
@@ -989,11 +989,11 @@ namespace Toy2
 				Nu3D::Link::GetCurrentPosFixed(linkId, &vec);
 
 				int32_t distAcross =
-					(cosYaw * ((Toy2::g_buzzActor.posAngles.pos.x - vec.x) >> 5) + sinYaw * ((Toy2::g_buzzActor.posAngles.pos.z - vec.z) >> 5)) / 4096;
+					(cosYaw * ((Toy2::g_buzzActor.transform.pos.x - vec.x) >> 5) + sinYaw * ((Toy2::g_buzzActor.transform.pos.z - vec.z) >> 5)) / 4096;
 				int32_t distance =
 					(int32_t)sqrt((
 						double)(distAcross * distAcross
-								+ ((Toy2::g_buzzActor.posAngles.pos.y - vec.y) >> 5) * ((Toy2::g_buzzActor.posAngles.pos.y - vec.y) >> 5)))
+								+ ((Toy2::g_buzzActor.transform.pos.y - vec.y) >> 5) * ((Toy2::g_buzzActor.transform.pos.y - vec.y) >> 5)))
 					>> 5;
 				int32_t force = distance + ((distance * Buzz::g_unk53C810) >> 9);
 

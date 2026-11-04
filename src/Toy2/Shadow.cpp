@@ -66,7 +66,7 @@ namespace Toy2
 		// FUNCTION: TOY2 0x004857E0
 		void QueueStretchedForBuzz(int32_t x, int32_t baseY, int32_t z, int32_t size)
 		{
-			int32_t heightBias = (g_buzzActor.posAngles.pos.y - baseY) / 1024 + 64;
+			int32_t heightBias = (g_buzzActor.transform.pos.y - baseY) / 1024 + 64;
 
 			if (heightBias >= 0)
 			{

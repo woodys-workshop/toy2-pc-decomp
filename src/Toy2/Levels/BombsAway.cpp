@@ -155,14 +155,14 @@ namespace Toy2
 				g_introSoundTimer -= Renderer::g_frameDelta;
 
 				if (g_introSoundTimer < 0)
-					AudioManager::Preset::PlayOneShotSound(210, (Actor::Toy2Actor*)&g_buzzActor);
+					AudioManager::Preset::PlayOneShotSound(210, (CreatureActor*)&g_buzzActor);
 			}
 
 			g_tintPhaseR = (g_tintPhaseR + 31 * Renderer::g_frameDelta) & 0xFFF;
 			g_tintPhaseG &= 0xFFFu;
 			g_tintPhaseB = (g_tintPhaseB + 63 * Renderer::g_frameDelta) & 0xFFF;
 
-			if (! g_bossState && Nu3D::Math::IsWithinDistanceXZ(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 380))
+			if (! g_bossState && Nu3D::Math::IsWithinDistanceXZ(&g_buzzActor.transform.pos, &g_levelActors[0].transform.pos, 380))
 			{
 				g_bossState = 1;
 				g_levelActors[0].transform.pos.y -= 11000;
@@ -206,13 +206,13 @@ namespace Toy2
 					if (g_tauntTimer <= 0)
 					{
 						g_tauntTimer = *g_randDatBufferPtr++ + 1800;
-						AudioManager::Preset::PlayOneShotSound(209, (Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::Preset::PlayOneShotSound(209, (CreatureActor*)&g_buzzActor);
 					}
 
-					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, &g_levelActors[0].transform.pos, 50))
+					if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, &g_levelActors[0].transform.pos, 50))
 					{
 						int16_t hitAngle = Nu3D::Math::CartesianToFixedAngle(
-							g_buzzActor.posAngles.pos.x - g_levelActors[0].transform.pos.x, g_buzzActor.posAngles.pos.z - g_levelActors[0].transform.pos.z);
+							g_buzzActor.transform.pos.x - g_levelActors[0].transform.pos.x, g_buzzActor.transform.pos.z - g_levelActors[0].transform.pos.z);
 
 						Buzz::HandleDamage(hitAngle & 0xFFF, 3u);
 					}
@@ -253,15 +253,15 @@ namespace Toy2
 									g_levelActors[0].unkShort1 = 0;
 									g_bossState = 1000;
 									g_levelActors[0].transform.pos.y -= 11000;
-									g_buzzActor.posAngles.pos.x += 10000;
-									g_buzzActor.posAngles.pos.z += 10000;
+									g_buzzActor.transform.pos.x += 10000;
+									g_buzzActor.transform.pos.z += 10000;
 
 									Camera::BeginScriptedCutsceneAtPoint(&g_levelActors[0].transform.pos, 420, 16);
 
 									g_levelActors[0].actorFlags &= 0xFE7Fu;
-									g_buzzActor.posAngles.pos.z -= 10000;
+									g_buzzActor.transform.pos.z -= 10000;
 									g_levelActors[0].transform.pos.y += 11000;
-									g_buzzActor.posAngles.pos.x -= 10000;
+									g_buzzActor.transform.pos.x -= 10000;
 
 									g_dropY = g_levelActors[0].transform.pos.y - 12000;
 									SaveManager::g_save0Data.tokens[g_levelFileIndex] = 128;
@@ -437,7 +437,7 @@ namespace Toy2
 			if (g_bossState < 1001)
 			{
 				g_levelActors[0].secondaryAnimIdx = g_levelActors[0].primaryAnimIdx - 1;
-				g_levelActors[0].unkVar8 = g_levelActors[0].unkVar7;
+				g_levelActors[0].secondaryAnimTime = g_levelActors[0].primaryAnimTime;
 				g_levelActors[0].unkVar13_ = -301;
 
 				int32_t unkInt1 = -12000 - g_currentSize;
@@ -524,9 +524,9 @@ namespace Toy2
 				Lighting::g_dynamicLights[1].lifetime = 0;
 			}
 
-			transform.pos.x = (transform.pos.x - g_buzzActor.posAngles.pos.x) >> 7;
-			transform.pos.y = (transform.pos.y - g_buzzActor.posAngles.pos.y) >> 7;
-			transform.pos.z = (transform.pos.z - g_buzzActor.posAngles.pos.z) >> 7;
+			transform.pos.x = (transform.pos.x - g_buzzActor.transform.pos.x) >> 7;
+			transform.pos.y = (transform.pos.y - g_buzzActor.transform.pos.y) >> 7;
+			transform.pos.z = (transform.pos.z - g_buzzActor.transform.pos.z) >> 7;
 
 			Nu3D::Math::NormalizeToFixedPoint(&transform.pos, &transform.pos);
 

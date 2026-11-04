@@ -268,7 +268,7 @@ namespace Toy2
 				if (l_waypointIndex >= l_waypointTablePtr->recordCount)
 					g_laserWaypointIdx[laserIndex] = l_waypointIndex - l_waypointTablePtr->recordCount;
 
-				l_buzzPosY = g_buzzActor.posAngles.pos.y;
+				l_buzzPosY = g_buzzActor.transform.pos.y;
 				l_waypointData = l_waypointTablePtr;
 
 				l_posXIndex = laserIndex;
@@ -278,14 +278,14 @@ namespace Toy2
 				g_laserPositions[l_posXIndex].pos.z = l_posX;
 
 				if (l_buzzPosY > -5391
-					&& ((g_laserPositions[laserIndex].pos.x - g_buzzActor.posAngles.pos.x)
-						>> 8) * ((g_laserPositions[laserIndex].pos.x - g_buzzActor.posAngles.pos.x) >> 8)
+					&& ((g_laserPositions[laserIndex].pos.x - g_buzzActor.transform.pos.x)
+						>> 8) * ((g_laserPositions[laserIndex].pos.x - g_buzzActor.transform.pos.x) >> 8)
 							+ ((g_laserPositions[laserIndex].pos.y - l_buzzPosY) >> 8) * ((g_laserPositions[laserIndex].pos.y - l_buzzPosY) >> 8)
-							+ ((l_posX - g_buzzActor.posAngles.pos.z) >> 8) * ((l_posX - g_buzzActor.posAngles.pos.z) >> 8)
+							+ ((l_posX - g_buzzActor.transform.pos.z) >> 8) * ((l_posX - g_buzzActor.transform.pos.z) >> 8)
 						< 250000)
 				{
-					l_targetPosZ = g_buzzActor.posAngles.pos.z;
-					g_laserPositions[laserIndex].pos.x = g_buzzActor.posAngles.pos.x;
+					l_targetPosZ = g_buzzActor.transform.pos.z;
+					g_laserPositions[laserIndex].pos.x = g_buzzActor.transform.pos.x;
 					g_laserPositions[laserIndex].pos.y = l_buzzPosY - 2048;
 					g_laserPositions[laserIndex].pos.z = l_targetPosZ;
 				}
@@ -331,10 +331,10 @@ namespace Toy2
 
 				AudioManager::PlaySoundEffect(7, (Vector3I*)&g_laserPositions[v14]);
 
-				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.posAngles.pos, (Vector3I*)&g_laserPositions[v14], 25))
+				if (Nu3D::Math::IsWithinDistance(&g_buzzActor.transform.pos, (Vector3I*)&g_laserPositions[v14], 25))
 				{
 					v22 = Nu3D::Math::CartesianToFixedAngle(
-						g_buzzActor.posAngles.pos.x - v21->pos.x, g_buzzActor.posAngles.pos.z - g_laserPositions[laserIndex].pos.z);
+						g_buzzActor.transform.pos.x - v21->pos.x, g_buzzActor.transform.pos.z - g_laserPositions[laserIndex].pos.z);
 
 					Buzz::HandleDamage(v22, 2u);
 				}
@@ -466,10 +466,10 @@ namespace Toy2
 
 			if (g_buzzActor.unkShort40)
 			{
-				if (g_buzzActor.posAngles.pos.y >= -82330)
+				if (g_buzzActor.transform.pos.y >= -82330)
 					goto LABEL_20;
 
-				if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -468572, -393436, 76232, 102728))
+				if (Actor::IsInsideBounds(&g_buzzActor.transform.pos, -468572, -393436, 76232, 102728))
 				{
 					g_unk52F2F8 = 3;
 					g_unk52AD64 = 3;
@@ -477,7 +477,7 @@ namespace Toy2
 					goto LABEL_21;
 				}
 
-				if (! Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -37452, -8268, -392596, -252820))
+				if (! Actor::IsInsideBounds(&g_buzzActor.transform.pos, -37452, -8268, -392596, -252820))
 				LABEL_20:
 					g_unk52F2F8 = 4;
 			}
@@ -547,7 +547,7 @@ namespace Toy2
 				g_unk52FADC = 0;
 				g_unk52F2F8 = 0;
 			}
-			if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, 171683, 633635, -455667, -25203))
+			if (Actor::IsInsideBounds(&g_buzzActor.transform.pos, 171683, 633635, -455667, -25203))
 			{
 				FireLaser(0);
 				FireLaser(1);
@@ -556,7 +556,7 @@ namespace Toy2
 			if (g_curSectorCopy2 != 4)
 				goto LABEL_114;
 
-			if (g_clawInitialized || ! Nu3D::Math::IsWithinDistanceXZ(&g_tokenPos, &g_buzzActor.posAngles.pos, 1000))
+			if (g_clawInitialized || ! Nu3D::Math::IsWithinDistanceXZ(&g_tokenPos, &g_buzzActor.transform.pos, 1000))
 			{
 				l_randByte1 = g_clawSwingZ;
 			}
@@ -868,8 +868,8 @@ namespace Toy2
 			if (! g_unk52FB8C)
 			{
 				Nu3D::Link::SetRotationRelative8bit(19, Numerics::g_sinCosLUT[64 * g_tickAccumulators.tick64Acc] >> 7, 0, 0);
-				if (g_buzzActor.posAngles.pos.y < -109317 && g_buzzActor.collisionFlags
-					&& Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, 431100, 480252, 307948, 341740))
+				if (g_buzzActor.transform.pos.y < -109317 && g_buzzActor.collisionFlags
+					&& Actor::IsInsideBounds(&g_buzzActor.transform.pos, 431100, 480252, 307948, 341740))
 				{
 					MoveableObject::g_moveableObjects[2].pushState = -1;
 					g_unk52FB8C = 1;
@@ -878,7 +878,7 @@ namespace Toy2
 			}
 		LABEL_114:
 
-			if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, 209422, 366094, 158154, 302474))
+			if (Actor::IsInsideBounds(&g_buzzActor.transform.pos, 209422, 366094, 158154, 302474))
 			{
 				v33 = -33280;
 				Buzz::g_currentFluidType = 3;
@@ -893,14 +893,14 @@ namespace Toy2
 
 			if ((g_buzzActor.actorFlags & 0x100) != 0 && g_tickState[4] && (g_buzzActor.unkVar30 > 32 || abs(g_buzzActor.gravityVel) > 32))
 			{
-				v34 = Nu3D::Particles::SpawnFromPreset(g_buzzActor.posAngles.pos.x, v33, g_buzzActor.posAngles.pos.z, 95, 4);
+				v34 = Nu3D::Particles::SpawnFromPreset(g_buzzActor.transform.pos.x, v33, g_buzzActor.transform.pos.z, 95, 4);
 				v35 = *g_randDatBufferPtr++ & 3;
 				v34->colourR = (uint8_t)g_unk4F2F18[v35].r;
 				v34->colourG = (uint8_t)g_unk4F2F18[v35].g;
 				v34->colourB = (uint8_t)g_unk4F2F18[v35].b;
 			}
 
-			if (g_curSectorCopy2 == 2 && g_buzzActor.posAngles.pos.x < 111719)
+			if (g_curSectorCopy2 == 2 && g_buzzActor.transform.pos.x < 111719)
 			{
 				g_unk52FB98 += (int32_t)Renderer::g_frameDelta;
 
@@ -919,11 +919,11 @@ namespace Toy2
 							g_unk52FB98 = 0;
 						}
 
-						if (Nu3D::Math::IsWithinDistance(&l_clawPos, &g_buzzActor.posAngles.pos, 768))
+						if (Nu3D::Math::IsWithinDistance(&l_clawPos, &g_buzzActor.transform.pos, 768))
 						{
-							v37 = (l_clawPos.z - g_buzzActor.posAngles.pos.z) >> 5;
-							v38 = (l_clawPos.x - g_buzzActor.posAngles.pos.x) >> 5;
-							v39 = l_clawPos.y - g_buzzActor.posAngles.pos.y;
+							v37 = (l_clawPos.z - g_buzzActor.transform.pos.z) >> 5;
+							v38 = (l_clawPos.x - g_buzzActor.transform.pos.x) >> 5;
+							v39 = l_clawPos.y - g_buzzActor.transform.pos.y;
 
 							v40 = Nu3D::Math::CartesianToFixedAngle(v38, v37) & 0xFFF;
 							v41 = (int32_t)sqrt((double)(v38 * v38 + v37 * v37));
@@ -971,7 +971,7 @@ namespace Toy2
 
 			if (! g_unk52FAE0)
 			{
-				if (! g_buzzActor.collisionFlags || g_curSectorCopy2 != 5 || g_buzzActor.posAngles.pos.y <= -162432)
+				if (! g_buzzActor.collisionFlags || g_curSectorCopy2 != 5 || g_buzzActor.transform.pos.y <= -162432)
 					goto LABEL_150;
 
 				g_unk52FAE0 = 1;

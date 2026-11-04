@@ -1066,7 +1066,7 @@ namespace CharacterLoader
 
 		for (int32_t i = 0; i < 64; i++)
 		{
-			Toy2::Actor::Toy2Actor* actor = &Toy2::g_levelActors[i];
+			Toy2::CreatureActor* actor = &Toy2::g_levelActors[i];
 
 			if (actor->creatureId > 0)
 			{

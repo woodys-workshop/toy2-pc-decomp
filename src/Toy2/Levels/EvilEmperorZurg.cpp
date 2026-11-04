@@ -130,14 +130,14 @@ namespace Toy2
 						< 1000000)
 					{
 						Renderer::LensFlare::RegisterLight(v5, v3, v4, 128, 128, 128, 64);
-						if (((g_buzzActor.posAngles.pos.y - v3 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v3 - 0x2000) >> 8)
-								+ ((g_buzzActor.posAngles.pos.z - v4) >> 8) * ((g_buzzActor.posAngles.pos.z - v4) >> 8)
-								+ ((g_buzzActor.posAngles.pos.x - v5) >> 8) * ((g_buzzActor.posAngles.pos.x - v5) >> 8)
+						if (((g_buzzActor.transform.pos.y - v3 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v3 - 0x2000) >> 8)
+								+ ((g_buzzActor.transform.pos.z - v4) >> 8) * ((g_buzzActor.transform.pos.z - v4) >> 8)
+								+ ((g_buzzActor.transform.pos.x - v5) >> 8) * ((g_buzzActor.transform.pos.x - v5) >> 8)
 							< v29)
 						{
-							v29 = ((g_buzzActor.posAngles.pos.y - v3 - 0x2000) >> 8) * ((g_buzzActor.posAngles.pos.y - v3 - 0x2000) >> 8)
-								+ ((g_buzzActor.posAngles.pos.z - v4) >> 8) * ((g_buzzActor.posAngles.pos.z - v4) >> 8)
-								+ ((g_buzzActor.posAngles.pos.x - v5) >> 8) * ((g_buzzActor.posAngles.pos.x - v5) >> 8);
+							v29 = ((g_buzzActor.transform.pos.y - v3 - 0x2000) >> 8) * ((g_buzzActor.transform.pos.y - v3 - 0x2000) >> 8)
+								+ ((g_buzzActor.transform.pos.z - v4) >> 8) * ((g_buzzActor.transform.pos.z - v4) >> 8)
+								+ ((g_buzzActor.transform.pos.x - v5) >> 8) * ((g_buzzActor.transform.pos.x - v5) >> 8);
 							v31 = v28;
 						}
 
@@ -205,7 +205,7 @@ namespace Toy2
 
 			if (! g_unk52FE24)
 			{
-				if (g_buzzActor.posAngles.pos.x <= -101163)
+				if (g_buzzActor.transform.pos.x <= -101163)
 					goto LABEL_90;
 
 				AudioManager::PlayMusicLooping(g_levelIndex);
@@ -234,11 +234,11 @@ namespace Toy2
 					}
 				}
 
-				if (g_buzzActor.posAngles.pos.y > -70000)
+				if (g_buzzActor.transform.pos.y > -70000)
 				{
-					g_buzzActor.posAngles.pos.x = -121468;
-					g_buzzActor.posAngles.pos.y = -76752;
-					g_buzzActor.posAngles.pos.z = 63129;
+					g_buzzActor.transform.pos.x = -121468;
+					g_buzzActor.transform.pos.y = -76752;
+					g_buzzActor.transform.pos.z = 63129;
 				}
 				if (Camera::g_cutsceneTimer)
 				{
@@ -284,7 +284,7 @@ namespace Toy2
 				if (g_levelActors[0].actorPhase != g_unk52FE00)
 				{
 					if (! (*g_randDatBufferPtr++ & 3))
-						AudioManager::Preset::PlayOneShotSound(217, (Actor::Toy2Actor*)&g_buzzActor);
+						AudioManager::Preset::PlayOneShotSound(217, (CreatureActor*)&g_buzzActor);
 
 					g_unk52FE00 = g_levelActors[0].actorPhase;
 					g_unk52FE04 = 60;
@@ -404,17 +404,17 @@ namespace Toy2
 			if (g_unk52FE24 != 3)
 				goto LABEL_90;
 
-			if (g_buzzActor.posAngles.pos.y > -70000)
+			if (g_buzzActor.transform.pos.y > -70000)
 			{
-				g_buzzActor.posAngles.pos.x = -121468;
-				g_buzzActor.posAngles.pos.y = -76752;
-				g_buzzActor.posAngles.pos.z = 63129;
+				g_buzzActor.transform.pos.x = -121468;
+				g_buzzActor.transform.pos.y = -76752;
+				g_buzzActor.transform.pos.z = 63129;
 			}
 
 			g_levelActors[0].targetYaw =
 				Nu3D::Math::CartesianToFixedAngle((-48508 - g_levelActors[0].transform.pos.x) >> 5, (153 - g_levelActors[0].transform.pos.z) >> 5) & 0xFFF;
 
-			if (Actor::IsInsideBounds(g_levelActors, -153302, 57514, -111593, 111255))
+			if (Actor::IsInsideBounds(&g_levelActors[0].transform.pos, -153302, 57514, -111593, 111255))
 			{
 				v19 = -Numerics::g_sinCosLUT[((uint16_t)(g_levelActors[0].targetYaw) + 1024) & 0xFFF] >> 4;
 				g_levelActors[0].velX = -Numerics::g_sinCosLUT[g_levelActors[0].targetYaw] >> 4;

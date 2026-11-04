@@ -319,7 +319,7 @@ namespace Toy2
 
 			v0 = g_unk52FA24;
 
-			if (g_unk52FA24 > 1 && g_buzzActor.posAngles.pos.z > -70147)
+			if (g_unk52FA24 > 1 && g_buzzActor.transform.pos.z > -70147)
 			{
 				v0 = 1;
 				goto LABEL_5;
@@ -392,14 +392,14 @@ namespace Toy2
 				g_unk52F9E4 = 1;
 				Buzz::g_groundSlamTicker = 0;
 				Levels::Method2(-3072, 2);
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 
 				Camera::g_unk52AD98 = 64;
 
 				g_buzzActor.velX = Numerics::g_sinCosLUT[2960] / 7;
 				g_buzzActor.actorFlags |= 0x44u;
 				g_buzzActor.velForward = Numerics::g_sinCosLUT[3984] / 7;
-				g_buzzActor.posAngles.angles.yaw = 2960;
+				g_buzzActor.transform.angles.yaw = 2960;
 				g_buzzActor.facingAngle = 2960;
 			}
 
@@ -528,12 +528,12 @@ namespace Toy2
 					{
 						Buzz::g_groundSlamTicker = 0;
 						Levels::Method2(-3072, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 
 						g_buzzActor.actorFlags |= 0x44u;
 						g_buzzActor.velX = Numerics::g_sinCosLUT[2078] >> 3;
 						g_buzzActor.velForward = Numerics::g_sinCosLUT[3102] >> 3;
-						g_buzzActor.posAngles.angles.yaw = 2078;
+						g_buzzActor.transform.angles.yaw = 2078;
 						g_buzzActor.facingAngle = 2078;
 
 						Camera::g_unk52AD98 = 128;
@@ -568,7 +568,7 @@ namespace Toy2
 					Levels::Method2(-2432, 2);
 				}
 
-				AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+				AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 			}
 
 			if (g_unk52F9EC)
@@ -655,12 +655,12 @@ namespace Toy2
 					if ((Platform::GetFlags(10) & 3) == 2)
 					{
 						Levels::Method2(-2560, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 						*(uint8_t*)&g_buzzActor.actorFlags |= 0x44u;
 
 						g_buzzActor.velX = Numerics::g_sinCosLUT[2078] >> 5;
 						g_buzzActor.velForward = Numerics::g_sinCosLUT[3102] >> 5;
-						g_buzzActor.posAngles.angles.yaw = 2078;
+						g_buzzActor.transform.angles.yaw = 2078;
 						g_buzzActor.facingAngle = 2078;
 					}
 				}
@@ -706,12 +706,12 @@ namespace Toy2
 					if ((Platform::GetFlags(14) & 3) == 2)
 					{
 						Levels::Method2(-2560, 2);
-						AudioManager::PlaySoundEffect(28, &g_buzzActor.posAngles.pos);
+						AudioManager::PlaySoundEffect(28, &g_buzzActor.transform.pos);
 						*(uint8_t*)&g_buzzActor.actorFlags |= 0x44u;
 
 						g_buzzActor.velX = Numerics::g_sinCosLUT[2078] >> 4;
 						g_buzzActor.velForward = Numerics::g_sinCosLUT[3102] >> 4;
-						g_buzzActor.posAngles.angles.yaw = 2078;
+						g_buzzActor.transform.angles.yaw = 2078;
 						g_buzzActor.facingAngle = 2078;
 					}
 				}
@@ -788,7 +788,7 @@ namespace Toy2
 
 			if (g_tickState[11])
 			{
-				if (Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -380759, -223831, 28029, 337021))
+				if (Actor::IsInsideBounds(&g_buzzActor.transform.pos, -380759, -223831, 28029, 337021))
 				{
 					v13 = g_unk52FA0C + 1;
 					g_unk52FA0C = v13;
@@ -811,7 +811,7 @@ namespace Toy2
 					AudioManager::PlaySoundEffect(116, &v14->pos);
 				}
 
-				if (g_tickState[11] && Actor::IsInsideBounds((Actor::Toy2Actor*)&g_buzzActor, -244538, -112442, -42973, 298915))
+				if (g_tickState[11] && Actor::IsInsideBounds(&g_buzzActor.transform.pos, -244538, -112442, -42973, 298915))
 				{
 					projectilePointIndex = *g_randDatBufferPtr++ & 7;
 
@@ -1088,7 +1088,7 @@ namespace Toy2
 			v21 = g_unk52FA14;
 			if (! g_unk52FA14)
 			{
-				if (! g_buzzActor.collisionFlags || g_buzzActor.posAngles.pos.y <= -1596 || g_curSectorCopy1 != 4)
+				if (! g_buzzActor.collisionFlags || g_buzzActor.transform.pos.y <= -1596 || g_curSectorCopy1 != 4)
 					goto LABEL_211;
 
 				g_unk52FA14 = 1;
@@ -1133,7 +1133,7 @@ namespace Toy2
 			if (g_levelActors[27].transform.pos.y < g_levelActors[27].boundary.y)
 				g_levelActors[27].transform.pos.y = g_levelActors[27].boundary.y;
 
-			if (g_rocketBootsDuration && g_buzzActor.posAngles.pos.y < -50176 && g_buzzActor.posAngles.pos.y > -53248 && g_buzzActor.collisionFlags)
+			if (g_rocketBootsDuration && g_buzzActor.transform.pos.y < -50176 && g_buzzActor.transform.pos.y > -53248 && g_buzzActor.collisionFlags)
 			{
 				Levels::Method2(-1920, 2);
 			}
