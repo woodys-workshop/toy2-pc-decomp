@@ -408,7 +408,7 @@ namespace Nu3D
 		g_fontWidthScale = scaleX;
 		g_fontScaleFactor = scaleY;
 
-		if (scaleX == 1.0 && scaleY == 1.0)
+		if (scaleX == 1.0f && scaleY == 1.0f)
 		{
 			DrawText = DrawTextString;
 			CalculateTextSize = CalculateUnscaledTextSize;
@@ -558,11 +558,10 @@ namespace Nu3D
 		return g_fontDC;
 	}
 
-	// FUNCTION: TOY2 0x004B4080
+	// FUNCTION: TOY2 0x004B4080 [MATCHED]
 	HBITMAP Font::CreateAtlasBmp(int32_t width, int32_t height)
 	{
 		HBITMAP result;
-		HBITMAP bmpHandle;
 		BITMAPINFO bmpInfo;
 		void* bits;
 
@@ -582,12 +581,10 @@ namespace Nu3D
 			bmpInfo.bmiHeader.biClrUsed = 0;
 			bmpInfo.bmiHeader.biClrImportant = 0;
 
-			bmpHandle = CreateDIBSection(0, &bmpInfo, 0, &bits, 0, 0);
+			result = CreateDIBSection(0, &bmpInfo, 0, &bits, 0, 0);
 
-			if (bmpHandle)
-				g_prevFontDC = SelectObject(g_fontDC, bmpHandle);
-
-			return bmpHandle;
+			if (result)
+				g_prevFontDC = SelectObject(g_fontDC, result);
 		}
 
 		return result;
