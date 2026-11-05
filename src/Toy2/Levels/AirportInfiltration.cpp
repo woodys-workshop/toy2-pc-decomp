@@ -229,27 +229,33 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x0042C810
+		// FUNCTION: TOY2 0x0042C810 [MATCHED]
 		void Method1(Vector3I* spawnPos, int32_t index)
 		{
-			Nu3D::Particles::ParticleInstance* l_particle;
-			int16_t v3;
+			int32_t tickIndex;
+			Nu3D::Particles::ParticleInstance* particle;
+			int16_t rotation;
 
-			if (g_tickState[index != 4 ? 9 : 7])
+			if (index == 4)
+				tickIndex = 7;
+			else
+				tickIndex = 9;
+
+			if (g_tickState[tickIndex])
 			{
-				if (index == 4)
-					l_particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 79, 2);
+				if (index != 4)
+					particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 78, 2);
 				else
-					l_particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 78, 2);
+					particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 79, 2);
 
-				l_particle->velX = g_unk4F4668[index].x;
-				l_particle->velY = g_unk4F4668[index].y;
-				l_particle->velZ = g_unk4F4668[index].z;
+				particle->velX = g_unk4F4668[index].x;
+				particle->velY = g_unk4F4668[index].y;
+				particle->velZ = g_unk4F4668[index].z;
 
-				v3 = g_tickAccumulators.tick32Acc << 6;
+				rotation = 4095 - (g_tickAccumulators.tick32Acc << 6);
 
-				l_particle->rotSpeed = -256;
-				l_particle->groundAlignRot = 4095 - v3;
+				particle->rotSpeed = -256;
+				particle->groundAlignRot = rotation;
 			}
 		}
 
