@@ -1396,7 +1396,7 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x00440E90
+	// FUNCTION: TOY2 0x00440E90 [MATCHED]
 	void DrawCinematicBars()
 	{
 		Vector2F uvTopLeft;
@@ -1408,48 +1408,38 @@ namespace Renderer
 		uvBottomRight.x = 1.0;
 		uvBottomRight.y = 1.0;
 
-		if (! g_enableCinematicBars)
+		if (g_enableCinematicBars)
+		{
+			int32_t timer = g_letterboxTimer + g_frameDelta;
+
+			if (timer > 25)
+				g_letterboxTimer = 25;
+			else
+				g_letterboxTimer = timer;
+		}
+		else
 		{
 			int32_t timer = g_letterboxTimer - g_frameDelta;
 
 			if (timer < 0)
-			{
 				g_letterboxTimer = 0;
-				return;
-			}
-
-			g_letterboxTimer = timer;
-
-			if (timer <= 0)
-				return;
-		}
-		else
-		{
-			int32_t timer = g_frameDelta + g_letterboxTimer;
-
-			if (timer > 25)
-			{
-				g_letterboxTimer = 25;
-			}
 			else
-			{
 				g_letterboxTimer = timer;
-
-				if (timer <= 0)
-					return;
-			}
 		}
 
-		float height = g_letterboxTimer * 0.004f;
+		if (g_letterboxTimer > 0)
+		{
+			float height = g_letterboxTimer * 0.004f;
 
-		RGBA black;
-		black.value = 0xFF000000;
+			RGBA black;
+			black.value = 0xFF000000;
 
-		Sprite::Queue2DSprite(0.0, 0.0, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+			Sprite::Queue2DSprite(0.0, 0.0, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 
-		float yPos = 1.0 - height;
+			float yPos = 1.0f - height;
 
-		Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+			Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
+		}
 	}
 
 	// FUNCTION: TOY2 0x00401B60
