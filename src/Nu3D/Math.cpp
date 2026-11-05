@@ -622,10 +622,10 @@ namespace Nu3D
 
 			int32_t distanceSquared = deltaY * deltaY + deltaZ * deltaZ + deltaX * deltaX;
 
-			if (distanceSquared >= maxDistance * maxDistance)
-				return 0;
+			if (distanceSquared < maxDistance * maxDistance)
+				return distanceSquared + 1;
 
-			return distanceSquared + 1;
+			return 0;
 		}
 
 		// FUNCTION: TOY2 0x004AAC40
