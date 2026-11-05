@@ -259,7 +259,7 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B6F50
+	// FUNCTION: TOY2 0x004B6F50 [MATCHED]
 	void Vertices::ProjectToScreen(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, int32_t headerCount)
 	{
 		LPVOID lockedData;
@@ -270,10 +270,10 @@ namespace Renderer
 			int32_t srcIndex = 0;
 			int32_t verticesPerHeader = headerCount == 2 ? patchVertices->vertexCount / 2 : 1;
 
-			for (int32_t header = 0; header < headerCount; header++, matrix++)
+			for (int32_t header = 0; header < headerCount; header++)
 			{
 				D3DMATRIX combined;
-				Nu3D::Math::MultiplyMatrix3x4(&combined, matrix, Nu3D::Camera::GetProjectionMatrix());
+				Nu3D::Math::MultiplyMatrix3x4(&combined, &matrix[header], Nu3D::Camera::GetProjectionMatrix());
 
 				float xU = combined._11;
 				float yU = combined._21;
@@ -281,19 +281,17 @@ namespace Renderer
 				float xV = combined._12;
 				float yV = combined._22;
 				float zV = combined._32;
-				Nu3D::Vertex* source = patchVertices->data.vertices + srcIndex;
+				Nu3D::Vertex* source = &patchVertices->data.vertices[srcIndex];
 
 				for (int32_t i = 0; i < verticesPerHeader; i++)
 				{
-					float normalX = source->normals.x;
-					float normalY = source->normals.y;
-					float normalZ = source->normals.z;
+					float normalX = source[i].normals.x;
+					float normalY = source[i].normals.y;
+					float normalZ = source[i].normals.z;
 
 					((Nu3D::VertexTL*)lockedData)[destIndex + i].uv.x = (normalZ * zU + normalY * yU + normalX * xU + 1.0f) * 0.5f;
 					((Nu3D::VertexTL*)lockedData)[destIndex + i].uv.y = (1.0f - (normalZ * zV + normalY * yV + normalX * xV)) * 0.5f;
 					((Nu3D::VertexTL*)lockedData)[destIndex + i].diffuse.a = 0x80;
-
-					++source;
 				}
 
 				if (headerCount == 2)
@@ -312,7 +310,7 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B75E0
+	// FUNCTION: TOY2 0x004B75E0 [MATCHED]
 	void Vertices::ApplyMetadata100(Nu3D::Patch::PatchVertices* patchVertices, D3DMATRIX* matrix, Nu3D::Sprite* metadataParams)
 	{
 		LPVOID lockedData;
@@ -336,12 +334,12 @@ namespace Renderer
 				{
 					Vector3F projected;
 
-					Nu3D::Math::ProjectPoint(&projected, &vertices->position, &combined);
+					Nu3D::Math::ProjectPoint(&projected, &vertices[i].position, &combined);
 
 					((Nu3D::VertexTL*)lockedData)[i].uv.x = (projected.x + 1.0f) * 0.5f;
 					((Nu3D::VertexTL*)lockedData)[i].uv.y = 1.0f - (projected.y + 1.0f) * 0.5f;
 
-					Nu3D::Math::TransformPointPerspective(&projected, &vertices++->normals, &combined);
+					Nu3D::Math::TransformPointPerspective(&projected, &vertices[i].normals, &combined);
 
 					((Nu3D::VertexTL*)lockedData)[i].uv.x = (reference.x - projected.x) * params->scale + ((Nu3D::VertexTL*)lockedData)[i].uv.x;
 					((Nu3D::VertexTL*)lockedData)[i].uv.y = ((Nu3D::VertexTL*)lockedData)[i].uv.y - (reference.y - projected.y) * params->scale;
