@@ -422,7 +422,7 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B6660
+	// FUNCTION: TOY2 0x004B6660 [MATCHED]
 	void SetTextureStageState(int32_t newState, DWORD textureStage)
 	{
 		uint32_t stateFlagsToDisable = g_renderStateCache[textureStage + 1] & (newState ^ g_renderStateCache[textureStage + 1]);
@@ -444,10 +444,10 @@ namespace Renderer
 				DrawingDevice::SetTextureStageState(textureStage, D3DTSS_ADDRESS, 3);
 
 			if ((flagsToEnable & RENDER_TEXTURE_CLAMP_U) != 0)
-			{
 				DrawingDevice::SetTextureStageState(textureStage, D3DTSS_ADDRESS, 2);
+
+			if ((flagsToEnable & RENDER_TEXTURE_CLAMP_U) != 0)
 				DrawingDevice::SetTextureStageState(textureStage, D3DTSS_ADDRESS, 4);
-			}
 
 			if ((flagsToEnable & RENDER_COLOR_MODULATE) != 0)
 			{
