@@ -236,44 +236,33 @@ namespace Nu3D
 			Renderer::RenderPatchList(creature->patch, nodeMatrices, creature->flagsList, renderStage);
 		}
 
-		// FUNCTION: TOY2 0x004CDC20
+		// FUNCTION: TOY2 0x004CDC20 [MATCHED]
 		void RenderActors(Toy2::CreatureActor** activeActorList)
 		{
 			int32_t previousFlags = Renderer::Set508718(0);
 
 			if (NGNLoader::g_ngnImage->creatureCount)
 			{
-				Toy2::CreatureActor** actor = activeActorList;
-
-				if (*activeActorList)
+				for (int32_t actorIndex = 0; activeActorList[actorIndex]; ++actorIndex)
 				{
-					D3DMATRIX* nodeMatrices = (D3DMATRIX*)g_nodeMatrices;
-					Toy2::CreatureActor* nextActor;
-
-					do
+					if ((activeActorList[actorIndex]->actorFlags & 1) != 0)
 					{
-						if (((*actor)->actorFlags & 1) != 0)
+						if (activeActorList[actorIndex]->useTint == 1)
 						{
-							if ((*actor)->useTint == 1)
-							{
-								Renderer::SetVertexColorModulation((*actor)->actorTint.r, (*actor)->actorTint.g, (*actor)->actorTint.b);
+							Renderer::SetVertexColorModulation(
+								activeActorList[actorIndex]->actorTint.r, activeActorList[actorIndex]->actorTint.g, activeActorList[actorIndex]->actorTint.b);
 
-								Renderer::EnableVertexColorModulation(1);
-							}
-
-							Nu3D::Creature* creature = NGNLoader::g_ngnImage->creatureData[(*actor)->creatureId];
-
-							if (creature)
-								RenderActor(creature, nodeMatrices, 0);
-
-							if ((*actor)->useTint == 1)
-								Renderer::EnableVertexColorModulation(0);
+							Renderer::EnableVertexColorModulation(1);
 						}
 
-						nextActor = actor[1];
-						++actor;
-						nodeMatrices += 32;
-					} while (nextActor);
+						Nu3D::Creature* creature = NGNLoader::g_ngnImage->creatureData[activeActorList[actorIndex]->creatureId];
+
+						if (creature)
+							RenderActor(creature, g_nodeMatrices[actorIndex].matrices, 0);
+
+						if (activeActorList[actorIndex]->useTint == 1)
+							Renderer::EnableVertexColorModulation(0);
+					}
 				}
 			}
 
