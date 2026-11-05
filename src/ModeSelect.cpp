@@ -181,49 +181,57 @@ namespace ModeSelect
 
 		MarkCompatibleBitDepthDevices();
 
-		DWORD flags = selectionFlags;
-
 		if (! g_forceFullscreen)
-			flags |= 2;
+			selectionFlags |= 2;
 
 		DDAppDevice::App* app;
 		DDAppDevice* device;
 
-		if ((flags & 0x3C) != 0)
+		if ((selectionFlags & 0x3C) != 0)
 		{
 			for (app = g_ddAppListHead; app; app = app->chainDDApp)
 			{
 				for (device = app->deviceListHead; device; device = device->nextDevice)
 				{
-					BOOL matches;
+					BOOL matches = FALSE;
 
 					if (! memcmp(device->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
-						matches = (flags & 4) != 0;
-					else if (! memcmp(device->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
-						matches = (flags & 8) != 0;
-					else
-						matches = ((flags & 16) != 0 && app == g_ddAppListHead) || ((flags & 32) != 0 && app != g_ddAppListHead);
-
-					if (matches)
 					{
-						g_primaryDDApp = app;
-						app->primaryDevice = device;
-						return 0;
+						if (! (selectionFlags & 4))
+							continue;
 					}
+					else if (! memcmp(device->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
+					{
+						if (! (selectionFlags & 8))
+							continue;
+					}
+					else
+					{
+						if ((selectionFlags & 16) && app == g_ddAppListHead)
+							matches = TRUE;
+						if ((selectionFlags & 32) && app != g_ddAppListHead)
+							matches = TRUE;
+
+						if (! matches)
+							continue;
+					}
+
+					g_primaryDDApp = app;
+					app->primaryDevice = device;
+					return 0;
 				}
 			}
 
 			return 0x81000005;
 		}
 
-		uint32_t attemptIndex = 0;
-
-		do
+		for (uint16_t attemptIndex = 0; attemptIndex < 4; ++attemptIndex)
 		{
-			int32_t wantHardware = (~attemptIndex) & 1;
-			int32_t wantWindowed = ((~attemptIndex & 0xFFFF) >> 1) & 1;
+			uint16_t attemptFlags = ~attemptIndex;
+			int32_t wantHardware = attemptFlags & 1;
+			int32_t wantWindowed = (attemptFlags >> 1) & 1;
 
-			if ((wantHardware != 1 || (flags & 1) == 0) && (wantWindowed != 1 || (flags & 2) == 0))
+			if ((wantHardware != 1 || (selectionFlags & 1) == 0) && (wantWindowed != 1 || (selectionFlags & 2) == 0))
 			{
 				for (app = g_ddAppListHead; app; app = app->chainDDApp)
 				{
@@ -242,9 +250,7 @@ namespace ModeSelect
 					}
 				}
 			}
-
-			++attemptIndex;
-		} while ((uint16_t)attemptIndex < 4);
+		}
 
 		if (! g_foundAnyD3DDevice)
 			return 0x81000001;
