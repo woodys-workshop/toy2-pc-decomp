@@ -3359,16 +3359,13 @@ namespace Toy2
 
 			if (g_discLauncherTimer != 0)
 			{
-				// every disc (type 71 or 72) that is still flying takes one away
-				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::g_particleInstances;
-
-				do
+				for (int32_t i = 0; i < 64; ++i)
 				{
+					Nu3D::Particles::ParticleInstance* particle = &Nu3D::Particles::g_particleInstances[i];
+
 					if ((particle->typeId == 71 || particle->typeId == 72) && particle->lifetime > 0)
 						--ammo;
-
-					++particle;
-				} while (particle < &Nu3D::Particles::g_particleInstances[64]);
+				}
 
 				g_discLauncherAmmo = ammo;
 
@@ -4601,9 +4598,9 @@ namespace Toy2
 
 				Nu3D::Math::NormalizeToFixedPoint(&pos, &pos);
 
+				pos.x = (g_buzzActor.transform.pos.x - pos.x) >> 5;
 				pos.y = (g_buzzActor.transform.pos.y - pos.y - 0x2000) >> 5;
 				pos.z = (g_buzzActor.transform.pos.z - pos.z) >> 5;
-				pos.x = (g_buzzActor.transform.pos.x - pos.x) >> 5;
 
 				Nu3D::Link::SetPositionRawAndCommit(g_cosmicShieldPickup->props.linkId, pos.x, pos.y, pos.z);
 				Nu3D::Link::SetRotationRelative8bit(g_cosmicShieldPickup->props.linkId, 0, g_cosmicShieldRotYaw, g_cosmicShieldSpin);
@@ -4613,14 +4610,16 @@ namespace Toy2
 
 				BOOL playSound = 1;
 
-				if (g_buzzActor.inhibitMovementTimer >= 128)
+				if (g_buzzActor.inhibitMovementTimer < 128)
 				{
-					scale = (Numerics::g_sinCosLUT[64 * (g_buzzActor.inhibitMovementTimer & 0x3F)] >> 4) + 12288;
+					scale = 3 * (Numerics::g_sinCosLUT[8 * g_buzzActor.inhibitMovementTimer] >> 2);
+
+					if (g_tickAccumulators.tick16Acc < 8u)
+						playSound = 0;
 				}
 				else
 				{
-					scale = 3 * (Numerics::g_sinCosLUT[8 * g_buzzActor.inhibitMovementTimer] >> 2);
-					playSound = g_tickAccumulators.tick16Acc >= 8u;
+					scale = (Numerics::g_sinCosLUT[64 * (g_buzzActor.inhibitMovementTimer & 0x3F)] >> 4) + 12288;
 				}
 
 				Nu3D::Link::SetScaleFromFixedOffsets(g_cosmicShieldPickup->props.linkId, scale, scale, scale);
