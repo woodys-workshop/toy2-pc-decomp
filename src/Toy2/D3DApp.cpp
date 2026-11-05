@@ -438,42 +438,42 @@ namespace D3DApp
 		g_windowData.wndClass.lpszClassName = "Toy2";
 		g_windowData.wndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 
-		if (RegisterClassExA(&g_windowData.wndClass))
+		if (! RegisterClassExA(&g_windowData.wndClass))
 		{
-			HWND window = CreateWindowExA(WS_EX_TOPMOST, "Toy2", "Toy2", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, 0, 0, g_windowData.hInstance, 0);
-
-			g_windowData.mainHwnd = window;
-			g_d3dAppI.hwnd = window;
-
-			if (window)
-			{
-				UpdateWindow(window);
-				g_windowData.hAccTable = LoadAcceleratorsA(g_windowData.hInstance, "AppAccel");
-
-				if (SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, 1u, &g_sysParamsInfo, 0))
-					atexit(SysParmsOnExit);
-
-				g_windowCreationError = 0;
-
-				return 1;
-			}
-			else
-			{
-				Logger::LogLn("CreateWindowEx failed");
-				return 0;
-			}
-		}
-		else
-		{
-			int32_t lastError = GetLastError();
-
 			char* buffer;
 			FormatMessageA(
-				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, lastError, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, 0);
+				FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+				0,
+				GetLastError(),
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				(LPSTR)&buffer,
+				0,
+				0);
 			MessageBoxA(0, buffer, "GetLastError", MB_ICONINFORMATION);
 			LocalFree(buffer);
 			return 0;
 		}
+
+		HWND window = CreateWindowExA(WS_EX_TOPMOST, "Toy2", "Toy2", WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, 0, 0, g_windowData.hInstance, 0);
+
+		g_windowData.mainHwnd = window;
+		g_d3dAppI.hwnd = window;
+
+		if (! window)
+		{
+			Logger::LogLn("CreateWindowEx failed");
+			return 0;
+		}
+
+		UpdateWindow(window);
+		g_windowData.hAccTable = LoadAcceleratorsA(g_windowData.hInstance, "AppAccel");
+
+		if (SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, 1u, &g_sysParamsInfo, 0))
+			atexit(SysParmsOnExit);
+
+		g_windowCreationError = 0;
+
+		return 1;
 	}
 
 	// FUNCTION: TOY2 0x004A6CC0
@@ -957,21 +957,24 @@ namespace D3DApp
 	// FUNCTION: TOY2 0x004A6D40
 	LRESULT WINAPI NormalWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		WPARAM copyWParam = wParam;
 		LPARAM copyLParam = lParam;
+		WPARAM copyWParam = wParam;
 
-		if (ProcessWndProc(&wParam, &lParam, hWnd, msg, wParam, lParam))
-		{
-			if (msg == WM_DESTROY || msg == WM_NCDESTROY)
-				g_windowData.wndIsExiting = 1;
-
-			return DefWindowProcA(hWnd, msg, copyWParam, copyLParam);
-		}
-		else
+		if (! ProcessWndProc(&wParam, &lParam, hWnd, msg, wParam, lParam))
 		{
 			LogErrorNotSet();
 			return 0;
 		}
+
+		switch (msg)
+		{
+			case WM_DESTROY:
+			case WM_NCDESTROY:
+				g_windowData.wndIsExiting = 1;
+				break;
+		}
+
+		return DefWindowProcA(hWnd, msg, copyWParam, copyLParam);
 	}
 
 	// FUNCTION: TOY2 0x004A6B10
