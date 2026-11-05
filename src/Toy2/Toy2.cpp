@@ -5220,19 +5220,19 @@ namespace Toy2
 				Logger::GetErrorHandler("C:\\projects\\toy2\\direct6.cpp", 111)("Unable to create D3D device\r\n try a lower resolution or screen depth");
 
 			int32_t canDoWindowed = primaryDevice->canRenderWindowedOnPrimary;
-			int32_t fullscreenExclusive = (ModeSelect::g_unusedFlag1 != 0 ? 2 : 0) | (canDoWindowed == 0) | (ModeSelect::g_unusedFlag2 != 0 ? 4 : 0);
+			int32_t fullscreenExclusive = (ModeSelect::g_unusedFlag2 != 0 ? 4 : 0) | (canDoWindowed == 0) | (ModeSelect::g_unusedFlag1 != 0 ? 2 : 0);
 
 			if (! canDoWindowed)
 				Logger::g_showMsgBoxOnThrow = 1;
 
-			if (primaryDevice->isHardwareAccelerated)
-			{
-				Renderer::SetIsSoftwareRendering(0);
-			}
-			else
+			if (! primaryDevice->isHardwareAccelerated)
 			{
 				Renderer::SetIsSoftwareRendering(1);
 				while (Toy2::Graphics::RemoveDetailLevel()) {};
+			}
+			else
+			{
+				Renderer::SetIsSoftwareRendering(0);
 			}
 
 			if (! primaryDevice->isHardwareAccelerated && primaryDevice->canRenderWindowedOnPrimary)
@@ -5265,13 +5265,12 @@ namespace Toy2
 		g_unusedInit = 2;
 	}
 
-	// FUNCTION: TOY2 0x00412D70
+	// FUNCTION: TOY2 0x00412D70 [MATCHED]
 	int32_t ShowModeSelect()
 	{
-		char cdFileName[8];
+		char cdFileName[] = "cd.txt";
 		char cdTrackBuffer[1024];
 
-		strcpy(cdFileName, "cd.txt");
 		memset(cdTrackBuffer, 0, sizeof(cdTrackBuffer));
 
 		int32_t baseCDTrack;
