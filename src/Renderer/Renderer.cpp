@@ -1300,23 +1300,20 @@ namespace Renderer
 	{
 		int32_t preset = detail;
 
-		if (detail > 2)
+		if (detail <= 2)
+		{
+			if (detail < 0)
+				preset = 0;
+		}
+		else
 			preset = 2;
-		else if (detail < 0)
-			preset = 0;
 
 		SetRenderDistance(Toy2::g_viewportPresets[preset].nearDistance, Toy2::g_viewportPresets[preset].farDistance);
 
-		float viewportTB = Toy2::g_viewportPresets[preset].viewportTB;
-		float nearZ = Toy2::g_viewportPresets[preset].nearZ;
-
 		Nu3D::Camera::g_farLayerViewportLR = Toy2::g_viewportPresets[preset].viewportLR;
-
-		float farLayerNearZ = Toy2::g_viewportPresets[preset].farLayerNearZ;
-
-		Nu3D::Camera::g_cameraViewportTB = viewportTB;
-		Nu3D::Camera::g_cameraNearZ = nearZ;
-		Nu3D::Camera::g_farLayerNearZ = farLayerNearZ;
+		Nu3D::Camera::g_cameraViewportTB = Toy2::g_viewportPresets[preset].viewportTB;
+		Nu3D::Camera::g_cameraNearZ = Toy2::g_viewportPresets[preset].nearZ;
+		Nu3D::Camera::g_farLayerNearZ = Toy2::g_viewportPresets[preset].farLayerNearZ;
 
 #ifdef APPLY_FIXES
 		SetRenderDistance(1000000000.0f, 1000000000.0f);
