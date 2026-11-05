@@ -267,18 +267,18 @@ namespace Toy2
 			KiteTail::Init(&g_levelActors[26].transform.pos, 16, 4096, 0, 96);
 		}
 
-		// FUNCTION: TOY2 0x00448080
+		// FUNCTION: TOY2 0x00448080 [MATCHED]
 		void Method1()
 		{
 			int32_t l_index;
 			Levels::Type63* l_data;
-			int16_t l_unk;
+			int16_t groundHeight;
 			Transform l_pos;
 
 			l_index = 0;
 			l_data = (Levels::Type63*)Levels::g_recordData[63]->data;
 
-			if (Levels::g_recordData[63]->recordCount)
+			if (Levels::g_recordData[63]->recordCount > 0)
 			{
 				do
 				{
@@ -288,11 +288,11 @@ namespace Toy2
 						l_pos.pos.z = 32 * l_data->pos.z;
 						l_pos.pos.y = 32 * (l_data->pos.y - 10);
 
-						l_unk = Nu3D::Collision::GetGroundHeightEx(&l_pos, 0, 0) >> 5;
+						groundHeight = Nu3D::Collision::GetGroundHeightEx(&l_pos, 0, 0) >> 5;
 
-						l_data->props.floorPos = l_unk;
+						l_data->props.floorPos = groundHeight;
 
-						if (l_unk == 0x7FFF)
+						if (groundHeight == 0x7FFF)
 							l_data->props.floorPos = 32766;
 
 						if (l_data->props.floorPos - l_data->pos.y > 6144)
