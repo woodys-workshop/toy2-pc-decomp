@@ -688,7 +688,7 @@ namespace AudioManager
 
 	namespace Wave
 	{
-		// FUNCTION: TOY2 0x004A3F10
+		// FUNCTION: TOY2 0x004A3F10 [MATCHED]
 		MMRESULT OpenFile(LPSTR fileName, HMMIO* outHmmio, LPWAVEFORMATEX* outWaveFormat, LPMMCKINFO outRiffChunk)
 		{
 			MMRESULT result;
@@ -709,72 +709,69 @@ namespace AudioManager
 
 			result = mmioDescend(hmmio, outRiffChunk, 0, 0);
 
-			if (! result)
+			if (result)
+				goto LBL_CLOSE_FILE;
+
+			if (outRiffChunk->ckid != mmioFOURCC('R', 'I', 'F', 'F') || outRiffChunk->fccType != mmioFOURCC('W', 'A', 'V', 'E'))
 			{
-				if (outRiffChunk->ckid != mmioFOURCC('R', 'I', 'F', 'F') || outRiffChunk->fccType != mmioFOURCC('W', 'A', 'V', 'E'))
-					goto LBL_INVALID_FORMAT;
+				result = 57601;
+				goto LBL_CLOSE_FILE;
+			}
 
-				fmtChunkInfo.ckid = mmioFOURCC('f', 'm', 't', ' ');
-				result = mmioDescend(hmmio, &fmtChunkInfo, outRiffChunk, MMIO_FINDCHUNK);
+			fmtChunkInfo.ckid = mmioFOURCC('f', 'm', 't', ' ');
+			result = mmioDescend(hmmio, &fmtChunkInfo, outRiffChunk, MMIO_FINDCHUNK);
 
-				if (! result)
+			if (result)
+				goto LBL_CLOSE_FILE;
+
+			if (fmtChunkInfo.cksize < 16)
+			{
+				result = 57601;
+				goto LBL_CLOSE_FILE;
+			}
+
+			if (mmioRead(hmmio, (HPSTR)&waveFormatHeader, 16) != 16)
+			{
+				result = 57602;
+				goto LBL_CLOSE_FILE;
+			}
+
+			if (waveFormatHeader.wf.wFormatTag == WAVE_FORMAT_PCM)
+			{
+				extraFormatBytes = 0;
+			}
+			else
+			{
+				if (mmioRead(hmmio, (HPSTR)&extraFormatBytes, 2) != 2)
 				{
-					if (fmtChunkInfo.cksize < 16)
-					{
-					LBL_INVALID_FORMAT:
-						result = 57601;
-						goto LBL_CLOSE_FILE;
-					}
-
-					if (mmioRead(hmmio, (HPSTR)&waveFormatHeader, 16) == 16)
-					{
-						if (waveFormatHeader.wf.wFormatTag == WAVE_FORMAT_PCM)
-						{
-							extraFormatBytes = 0;
-						}
-						else
-						{
-							if (mmioRead(hmmio, (HPSTR)&extraFormatBytes, 2) != 2)
-							{
-								result = 57602;
-								goto LBL_CLOSE_FILE;
-							}
-						}
-
-						LPWAVEFORMATEX allocatedFormat = (LPWAVEFORMATEX)GlobalAlloc(0, extraFormatBytes + 18);
-						*outWaveFormat = allocatedFormat;
-
-						if (allocatedFormat)
-						{
-							memcpy(allocatedFormat, &waveFormatHeader, 16);
-							allocatedFormat->cbSize = extraFormatBytes;
-
-							if (! extraFormatBytes || mmioRead(hmmio, (HPSTR)((uint8_t*)*outWaveFormat + 18), extraFormatBytes) == extraFormatBytes)
-							{
-								result = mmioAscend(hmmio, &fmtChunkInfo, 0);
-
-								if (! result)
-								{
-									*outHmmio = hmmio;
-									return 0;
-								}
-							}
-							else
-							{
-								result = 0xE101;
-							}
-						}
-						else
-						{
-							result = 57344;
-						}
-					}
-					else
-					{
-						result = 57602;
-					}
+					result = 57602;
+					goto LBL_CLOSE_FILE;
 				}
 			}
+
+			*outWaveFormat = (LPWAVEFORMATEX)GlobalAlloc(0, extraFormatBytes + 18);
+
+			if (! *outWaveFormat)
+			{
+				result = 57344;
+				goto LBL_CLOSE_FILE;
+			}
+
+			memcpy(*outWaveFormat, &waveFormatHeader, 16);
+			(*outWaveFormat)->cbSize = extraFormatBytes;
+
+			if (extraFormatBytes && mmioRead(hmmio, (HPSTR)((uint8_t*)*outWaveFormat + 18), extraFormatBytes) != extraFormatBytes)
+			{
+				result = 0xE101;
+				goto LBL_CLOSE_FILE;
+			}
+
+			result = mmioAscend(hmmio, &fmtChunkInfo, 0);
+
+			if (result)
+				goto LBL_CLOSE_FILE;
+
+			goto LBL_RETURN;
 
 		LBL_CLOSE_FILE:
 			if (*outWaveFormat)
@@ -786,14 +783,11 @@ namespace AudioManager
 			if (hmmio)
 			{
 				mmioClose(hmmio, 0);
-				*outHmmio = 0;
-				return result;
-			}
-			else
-			{
-				*outHmmio = 0;
+				hmmio = 0;
 			}
 
+		LBL_RETURN:
+			*outHmmio = hmmio;
 			return result;
 		}
 
