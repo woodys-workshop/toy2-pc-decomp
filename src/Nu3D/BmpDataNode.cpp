@@ -230,7 +230,6 @@ namespace Nu3D
 
 		LPDIRECTDRAW4 ddraw4 = DrawingDevice::GetDDraw4();
 
-		// yes, this just gets called
 		DrawingDevice::GetD3D();
 
 		LPDIRECT3DDEVICE3 d3dDevice = DrawingDevice::GetD3DDevice();
@@ -260,7 +259,9 @@ namespace Nu3D
 		surfaceDesc.dwTextureStage = 0;
 		surfaceDesc.dwWidth = width;
 		surfaceDesc.dwHeight = height;
-		memset(&findPixelFormat.minAlphaBits, 0, 12);
+		findPixelFormat.needAlpha = 0;
+		findPixelFormat.minAlphaBits = 0;
+		findPixelFormat.valid = 0;
 
 		if ((flags & 0xF) != 0)
 		{
