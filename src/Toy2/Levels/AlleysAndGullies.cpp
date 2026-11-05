@@ -172,7 +172,17 @@ namespace Toy2
 			Vector3I l_origin;
 			Vector3I l_interpolatedPoint;
 
-			if (*pathProgress <= (Levels::g_recordData[recordIndex]->recordCount - 2) << 12)
+			if (*pathProgress > (Levels::g_recordData[recordIndex]->recordCount - 2) << 12)
+			{
+				*pathProgress = 0;
+
+				InterpolatePathPoint(recordIndex, 0, &l_interpolatedPoint);
+
+				Platform::SetOrigin(platformIndex, 32 * l_interpolatedPoint.x, 32 * l_interpolatedPoint.y, 32 * l_interpolatedPoint.z);
+
+				Platform::GetOrigin(platformIndex, &l_origin);
+			}
+			else
 			{
 				InterpolatePathPoint(recordIndex, *pathProgress, &l_interpolatedPoint);
 				Platform::GetOrigin(platformIndex, &l_origin);
@@ -206,16 +216,6 @@ namespace Toy2
 					(speed * l_normalised.x * (int32_t)Renderer::g_frameDelta) >> 10,
 					(speed * l_normalised.y * (int32_t)Renderer::g_frameDelta) >> 10,
 					(speed * l_normalised.z * (int32_t)Renderer::g_frameDelta) >> 10);
-			}
-			else
-			{
-				*pathProgress = 0;
-
-				InterpolatePathPoint(recordIndex, 0, &l_interpolatedPoint);
-
-				Platform::SetOrigin(platformIndex, 32 * l_interpolatedPoint.x, 32 * l_interpolatedPoint.y, 32 * l_interpolatedPoint.z);
-
-				Platform::GetOrigin(platformIndex, &l_origin);
 			}
 
 			if (renderLinkId2)
