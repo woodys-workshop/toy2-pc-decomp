@@ -805,6 +805,8 @@ namespace AudioManager
 		HMMIO wavSourceData;
 		MMCKINFO mmckInfo;
 		MMCKINFO parentChunk;
+		DWORD bytesRead;
+		uint8_t* allocatedData;
 
 		*waveData = 0;
 		*audioConfig = 0;
@@ -815,51 +817,48 @@ namespace AudioManager
 		if (result)
 		{
 			Logger::DebugLog("Unable to open %s\r\n", fileName);
+			goto LBL_ERROR;
+		}
+
+		mmioSeek(wavSourceData, parentChunk.dwDataOffset + 4, 0);
+
+		mmckInfo.ckid = mmioFOURCC('d', 'a', 't', 'a');
+		result = mmioDescend(wavSourceData, &mmckInfo, &parentChunk, MMIO_FINDCHUNK);
+
+		if (result)
+			goto LBL_ERROR;
+
+		allocatedData = (uint8_t*)GlobalAlloc(0, mmckInfo.cksize);
+		*waveData = allocatedData;
+
+		if (! allocatedData)
+		{
+			result = 57344;
+			goto LBL_ERROR;
+		}
+
+		result = WaveReadFile(wavSourceData, mmckInfo.cksize, allocatedData, &mmckInfo, &bytesRead);
+
+		if (result)
+		{
+		LBL_ERROR:
+			if (*waveData)
+			{
+				GlobalFree(*waveData);
+				*waveData = 0;
+			}
+
+			if (*audioConfig)
+			{
+				GlobalFree(*audioConfig);
+				*audioConfig = 0;
+			}
 		}
 		else
 		{
-			mmioSeek(wavSourceData, parentChunk.dwDataOffset + 4, 0);
-
-			mmckInfo.ckid = mmioFOURCC('d', 'a', 't', 'a');
-			result = mmioDescend(wavSourceData, &mmckInfo, &parentChunk, MMIO_FINDCHUNK);
-
-			if (! result)
-			{
-				uint8_t* allocatedData = (uint8_t*)GlobalAlloc(0, mmckInfo.cksize);
-				*waveData = allocatedData;
-
-				if (allocatedData)
-				{
-					DWORD bytesRead;
-
-					result = WaveReadFile(wavSourceData, mmckInfo.cksize, allocatedData, &mmckInfo, &bytesRead);
-
-					if (! result)
-					{
-						*dataSize = bytesRead;
-						goto LABEL_12;
-					}
-				}
-				else
-				{
-					result = 57344;
-				}
-			}
+			*dataSize = bytesRead;
 		}
 
-		if (*waveData)
-		{
-			GlobalFree(*waveData);
-			*waveData = 0;
-		}
-
-		if (*audioConfig)
-		{
-			GlobalFree(*audioConfig);
-			*audioConfig = 0;
-		}
-
-	LABEL_12:
 		if (wavSourceData)
 			mmioClose(wavSourceData, 0);
 
