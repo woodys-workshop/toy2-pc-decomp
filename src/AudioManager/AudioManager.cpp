@@ -1337,7 +1337,7 @@ namespace AudioManager
 			}
 		}
 
-		// FUNCTION: TOY2 0x00437010
+		// FUNCTION: TOY2 0x00437010 [MATCHED]
 		DWORD __cdecl ThreadProc()
 		{
 			g_streamThreadReady = 1;
@@ -1351,45 +1351,40 @@ namespace AudioManager
 					if (wait == -1)
 						break;
 
-					if (wait)
+					switch (wait)
 					{
-						DWORD waitMinus1 = wait - 1;
-
-						if (waitMinus1)
-						{
-							if (waitMinus1 == 1)
+						case 0:
+							if (g_streamFinished == 1)
 							{
-								switch (g_setThreadEvent)
-								{
-									case 1:
-										Stop();
-										ResetEvent(g_streamHandles.streamStopEvent);
-										break;
-									case 2:
-										ThreadPlay(g_fileNameBuffer, g_pendingLoopFlag);
-										break;
-									case 3:
-										ShutdownHandles();
-										break;
-								}
-
-								g_setThreadEvent = 0;
-								ReleaseSemaphore(g_streamHandles.threadSemaphore, 1, 0);
+								Stop();
+								ResetEvent(g_streamHandles.streamStopEvent);
 							}
-						}
-						else
-						{
+							else
+							{
+								FillBuffer();
+							}
+							break;
+						case 1:
 							Stop();
-						}
-					}
-					else if (g_streamFinished == 1)
-					{
-						Stop();
-						ResetEvent(g_streamHandles.streamStopEvent);
-					}
-					else
-					{
-						FillBuffer();
+							break;
+						case 2:
+							switch (g_setThreadEvent)
+							{
+								case 1:
+									Stop();
+									ResetEvent(g_streamHandles.streamStopEvent);
+									break;
+								case 2:
+									ThreadPlay(g_fileNameBuffer, g_pendingLoopFlag);
+									break;
+								case 3:
+									ShutdownHandles();
+									break;
+							}
+
+							g_setThreadEvent = 0;
+							ReleaseSemaphore(g_streamHandles.threadSemaphore, 1, 0);
+							break;
 					}
 				}
 			} while (g_streamThreadReady);
