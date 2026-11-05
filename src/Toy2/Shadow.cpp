@@ -35,16 +35,17 @@ namespace Toy2
 					Renderer::Shadows::g_shadowRecords[idx].worldX = x;
 					Renderer::Shadows::g_shadowRecords[idx].worldZ = z;
 
-					if (slopeY <= -12288)
-						stretch = size;
-					else
+					if (slopeY > -12288)
 						stretch = size * (-2048 - slopeY) / 10240;
-
-					Renderer::Shadows::g_shadowRecords[idx].size = (int16_t)-stretch;
-					int32_t offset = stretch * (Collision::g_floorSlope.z + Collision::g_floorSlope.x) / slopeY;
-					Renderer::Shadows::g_shadowRecords[idx].groundY = baseY + 32 * offset;
+					else
+						stretch = size;
 
 					int32_t slopeZ = Collision::g_floorSlope.z;
+					Renderer::Shadows::g_shadowRecords[idx].size = (int16_t)-stretch;
+
+					int32_t offset = stretch * (Collision::g_floorSlope.x + slopeZ) / slopeY;
+					Renderer::Shadows::g_shadowRecords[idx].groundY = baseY + 32 * offset;
+
 					Renderer::Shadows::g_shadowStretch[idx].skewX0 = (int16_t)(stretch * (slopeZ - Collision::g_floorSlope.x) / slopeY - offset);
 					Renderer::Shadows::g_shadowStretch[idx].skewX1 = (int16_t)(stretch * (Collision::g_floorSlope.x - slopeZ) / slopeY - offset);
 					Renderer::Shadows::g_shadowStretch[idx].skewZ = (int16_t)(-2 * offset);
@@ -84,10 +85,10 @@ namespace Toy2
 					Renderer::Shadows::g_shadowRecords[idx].worldX = x;
 					Renderer::Shadows::g_shadowRecords[idx].worldZ = z;
 
-					if (slopeY <= -12288)
-						stretch = size;
-					else
+					if (slopeY > -12288)
 						stretch = size * (-2048 - slopeY) / 10240;
+					else
+						stretch = size;
 
 					int32_t slopeZ = Collision::g_floorSlopePrev.z;
 					Renderer::Shadows::g_shadowRecords[idx].size = (int16_t)-stretch;
