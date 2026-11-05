@@ -1452,8 +1452,8 @@ namespace Renderer
 		Sprite::Queue2DSprite(0.0, yPos, 1.0, height, &uvTopLeft, &uvBottomRight, 0, black, RENDER_ZWRITE | RENDER_CULL_NONE | RENDER_ALPHA_DEFAULT);
 	}
 
-	// FUNCTION: TOY2 0x00401B60
-	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue)
+	// FUNCTION: TOY2 0x00401B60 [MATCHED]
+	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint32_t red, uint32_t green, uint32_t blue)
 	{
 		Sprite::DrawScaled(xPos, yPos, 6, 1, 0, 0, 0, 96, 8192, height);
 		Sprite::DrawScaled((width >> 12) + xPos - 2, yPos, 6, 1, 0, 0, 0, 96, 8192, height);
