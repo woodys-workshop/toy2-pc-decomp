@@ -232,18 +232,18 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x0042D9C0
+		// FUNCTION: TOY2 0x0042D9C0 [MATCHED]
 		void Method5()
 		{
-			if ((g_unk52FFD0 & INPUT_LEFT) == 0)
-			{
-				Nu3D::Link::SetScaleFromFixedOffsets(31, 4096, 4096, 4096);
-				Nu3D::Link::SetScaleFromFixedOffsets(39, 0, 0, 0);
-			}
-			else
+			if ((g_unk52FFD0 & INPUT_LEFT) != 0)
 			{
 				Nu3D::Link::SetScaleFromFixedOffsets(39, 4096, 4096, 4096);
 				Nu3D::Link::SetScaleFromFixedOffsets(31, 0, 0, 0);
+			}
+			else
+			{
+				Nu3D::Link::SetScaleFromFixedOffsets(31, 4096, 4096, 4096);
+				Nu3D::Link::SetScaleFromFixedOffsets(39, 0, 0, 0);
 			}
 
 			if ((g_unk52FFD0 & INPUT_DOWN) != 0)
