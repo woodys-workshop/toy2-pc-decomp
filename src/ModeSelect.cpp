@@ -263,7 +263,7 @@ namespace ModeSelect
 	// FUNCTION: TOY2 0x004AC390
 	void SetForceFullscreen_T(int32_t forceFullscreen) { SetForceFullscreen(forceFullscreen); }
 
-	// FUNCTION: TOY2 0x004AC9C0
+	// FUNCTION: TOY2 0x004AC9C0 [MATCHED]
 	HRESULT CALLBACK EnumDisplayModes(LPDDSURFACEDESC2 lpDDSurfaceDesc2, LPVOID lpContext)
 	{
 		using namespace DrawingDevice;
@@ -318,38 +318,40 @@ namespace ModeSelect
 
 		DWORD texMem;
 
-		if (rgbBitCount == 16)
+		switch (rgbBitCount)
 		{
-			texMem = 6 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
-		}
-		else if (rgbBitCount == 24)
-		{
-			texMem = 9 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
-		}
-		else
-		{
-			if (rgbBitCount != 32)
+			case 16:
+				texMem = 6 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
+				break;
+
+			case 24:
+				texMem = 9 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
+				break;
+
+			case 32:
+				texMem = 12 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
+				break;
+
+			default:
 				return D3DENUMRET_OK;
-
-			texMem = 12 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
 		}
 
-		// $BUG: On some systems this VRAM calculation can short-circuit and cause the game
-		// to not find a suitable d3d device
+		// $BUG: This VRAM calculation can reject all display modes on some systems.
 
 		if (device->isHardwareAccelerated)
 		{
 			DDAppDevice::App* ddAppParent = device->ddAppParent;
 
-			if (ddAppParent->vidMemTotal == ddAppParent->totalTextureMem)
+			if (ddAppParent->vidMemTotal != ddAppParent->totalTextureMem)
+			{
+				if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
+					return D3DENUMRET_OK;
+			}
+			else
 			{
 				DWORD remaining = ddAppParent->vidMemFree - texMem;
 				if ((int32_t)remaining < 0x80000)
 					return D3DENUMRET_OK;
-			}
-			else if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
-			{
-				return D3DENUMRET_OK;
 			}
 		}
 
