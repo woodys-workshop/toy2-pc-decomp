@@ -286,44 +286,66 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00494130
 		void DrawArrows()
 		{
-			// the arrows zoom in from the edges of the screen, over 55 frames
-			double progress = Renderer::g_frameDelta + g_arrowZoomProgress;
-
-			if (progress <= 55.0)
-				g_arrowZoomProgress = progress;
-			else
-				g_arrowZoomProgress = 55.0;
-
-			float doubleProgress = g_arrowZoomProgress + g_arrowZoomProgress;
-			float invHeight = 1.0 / (384.0 - doubleProgress);
-			float invWidth = 1.0 / (512.0 - doubleProgress);
-
 			RGBA white;
 			white.value = 0xFFFFFFFF;
+			float* rect = g_arrowRects;
 
-			// 7 rects for the left arrows (texture 32), then 7 for the right arrows (texture 33)
-			for (int32_t texture = 0; texture < 2; texture++)
+			float progress = (int32_t)Renderer::g_frameDelta + g_arrowZoomProgress;
+			if (55.0f < progress)
+				g_arrowZoomProgress = 55.0f;
+			else
+				g_arrowZoomProgress = progress;
+
+			float doubleProgress = g_arrowZoomProgress + g_arrowZoomProgress;
+			int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(32);
+			float invHeight = 1.0f / (384.0f - doubleProgress);
+			float invWidth = 1.0f / (512.0f - doubleProgress);
+
+			Vector2F* uv = g_arrowUVs;
+
+			for (int32_t i = 0; i < 7; i++)
 			{
-				int32_t textureDataIndex = NGNLoader::GetTextureDataIndex(32 + texture);
+				float x = *rect++;
+				float y = *rect++;
+				float width = *rect++ - x + 1.0f;
+				float height = *rect++ - y + 1.0f;
 
-				for (int32_t i = 0; i < 7; i++)
-				{
-					float* rect = &g_arrowRects[(texture * 7 + i) * 4];
+				Renderer::Sprite::Queue2DSprite(
+					(x - g_arrowZoomProgress) * invWidth,
+					(y - g_arrowZoomProgress) * invHeight,
+					invWidth * width,
+					invHeight * height,
+					uv,
+					uv + 1,
+					textureDataIndex,
+					white,
+					Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
 
-					float width = invWidth * (rect[2] - rect[0] + 1.0);
-					float height = invHeight * (rect[3] - rect[1] + 1.0);
+				uv += 2;
+			}
 
-					Renderer::Sprite::Queue2DSprite(
-						(rect[0] - g_arrowZoomProgress) * invWidth,
-						(rect[1] - g_arrowZoomProgress) * invHeight,
-						width,
-						height,
-						&g_arrowUVs[i * 2],
-						&g_arrowUVs[i * 2 + 1],
-						textureDataIndex,
-						white,
-						Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
-				}
+			textureDataIndex = NGNLoader::GetTextureDataIndex(33);
+			uv = g_arrowUVs;
+
+			for (i = 0; i < 7; i++)
+			{
+				float x = *rect++;
+				float y = *rect++;
+				float width = *rect++ - x + 1.0f;
+				float height = *rect++ - y + 1.0f;
+
+				Renderer::Sprite::Queue2DSprite(
+					(x - g_arrowZoomProgress) * invWidth,
+					(y - g_arrowZoomProgress) * invHeight,
+					invWidth * width,
+					invHeight * height,
+					uv,
+					uv + 1,
+					textureDataIndex,
+					white,
+					Renderer::RENDER_ZWRITE | Renderer::RENDER_CULL_NONE | Renderer::RENDER_ALPHA_DEFAULT);
+
+				uv += 2;
 			}
 		}
 
