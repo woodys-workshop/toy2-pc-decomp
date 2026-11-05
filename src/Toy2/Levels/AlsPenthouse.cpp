@@ -975,7 +975,7 @@ namespace Toy2
 
 			i = 0;
 
-			if (Levels::g_recordData[63]->recordCount)
+			if (Levels::g_recordData[63]->recordCount > 0)
 			{
 				entry = (Levels::Type63*)Levels::g_recordData[63]->data;
 
