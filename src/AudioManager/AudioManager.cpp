@@ -2367,7 +2367,7 @@ namespace AudioManager
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x0047E850
+	// FUNCTION: TOY2 0x0047E850 [MATCHED]
 	void ReleaseBuffers()
 	{
 		if (g_directSoundInit)
@@ -2382,20 +2382,21 @@ namespace AudioManager
 
 					if (soundBuffer)
 					{
-						char statusByte;
 						DWORD status;
+						DWORD statusFlags;
 
-						if (g_directSoundInit)
+						if (! g_directSoundInit)
 						{
-							g_lastDSoundError = soundBuffer->GetStatus(&status);
-							statusByte = status;
+							statusFlags = 0;
 						}
 						else
 						{
-							statusByte = 0;
+							g_lastDSoundError = soundBuffer->GetStatus(&status);
+							statusFlags = status;
 						}
 
-						if ((statusByte & DSBSTATUS_PLAYING) == 1)
+						statusFlags &= DSBSTATUS_PLAYING;
+						if (statusFlags == 1)
 							g_soundEffectBuffers[i + 767]->Stop();
 
 						g_soundEffectBuffers[i + 767]->Release();
