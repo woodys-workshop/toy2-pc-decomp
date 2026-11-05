@@ -113,7 +113,6 @@ namespace Nu3D
 			Camera::ApplyTransformToCamera(&Camera::g_lastCameraTransform);
 		}
 
-		// Renders every dynamic scaler in the grid cells around the camera
 		// FUNCTION: TOY2 0x004BC720
 		int32_t RenderCellsInRadius(int32_t radius, int32_t layer, NGNLoader::NGNImage* ngnImage)
 		{
@@ -150,17 +149,18 @@ namespace Nu3D
 						Math::VertexAdd(&center, &scaler->translation, &scaler->boundsCenterWorld);
 						Math::VertexSubtract(&offset, &center, &cameraPos);
 
-						double distance = offset.z * offset.z + offset.y * offset.y + offset.x * offset.x;
+						float distance = offset.x * offset.x + offset.y * offset.y + offset.z * offset.z;
 
-						// the far layer is everything beyond the far distance, the near layer everything inside of the near distance
-						if (layer == 1)
+						switch (layer)
 						{
-							if (distance <= Renderer::g_farRenderDistance)
-								continue;
-						}
-						else if (distance >= Renderer::g_nearRenderDistance)
-						{
-							continue;
+							default:
+								if (distance >= Renderer::g_nearRenderDistance)
+									continue;
+								break;
+							case 1:
+								if (distance <= Renderer::g_farRenderDistance)
+									continue;
+								break;
 						}
 
 						int32_t testResult = Frustum::TestSphereAllPlanesAlt(&center, ngnImage->primitives[scaler->shapeId]->boundSphereRadius);
@@ -169,7 +169,6 @@ namespace Nu3D
 						{
 							Renderer::Set508718(scaler->packedFlags);
 
-							// when the sphere is completely inside of the frustum no clipping is needed
 							if (testResult)
 								Renderer::RenderPrimitive(ngnImage->primitives[scaler->shapeId], &scaler->transformMatrix, 0);
 							else
