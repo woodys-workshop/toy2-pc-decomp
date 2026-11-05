@@ -1057,59 +1057,48 @@ namespace NGNLoader
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004C35C0
+	// FUNCTION: TOY2 0x004C35C0 [MATCHED]
 	int32_t ParseGeometry(FILE* stream, NGNImage* ngnImage)
 	{
 		int32_t shapeCount;
 		fread(&shapeCount, sizeof(int32_t), 1, stream);
 
-		if (! shapeCount)
-			return 0;
-
-		g_curPrimCount = ngnImage->primCount;
-
-		if (ngnImage->primCount)
+		if (shapeCount)
 		{
-			shapeCount += ngnImage->primCount;
+			g_curPrimCount = ngnImage->primCount;
 
-			Nu3D::Primitive** primList = (Nu3D::Primitive**)malloc(sizeof(Nu3D::Primitive*) * shapeCount);
-
-			if (primList)
+			if (ngnImage->primCount)
 			{
-				memcpy(primList, ngnImage->primitives, sizeof(Nu3D::Primitive*) * ngnImage->primCount);
-				free(ngnImage->primitives);
+				shapeCount += ngnImage->primCount;
 
-				ngnImage->primitives = primList;
+				Nu3D::Primitive** primList = (Nu3D::Primitive**)malloc(sizeof(Nu3D::Primitive*) * shapeCount);
+
+				if (primList)
+				{
+					memcpy(primList, ngnImage->primitives, sizeof(Nu3D::Primitive*) * ngnImage->primCount);
+					free(ngnImage->primitives);
+
+					ngnImage->primitives = primList;
+				}
+			}
+			else
+				ngnImage->primitives = (Nu3D::Primitive**)malloc(sizeof(Nu3D::Primitive*) * shapeCount);
+
+			if (ngnImage->primitives)
+			{
+				ngnImage->primCount = shapeCount;
+
+				for (int32_t index = g_curPrimCount; index < shapeCount; ++index)
+				{
+					ngnImage->primitives[index] = ObjectLoad::ExtractShapeData(stream);
+					Nu3D::Primitive::CreateAllVertexBuffers(ngnImage->primitives[index], 3);
+				}
+
+				return shapeCount;
 			}
 		}
-		else
-		{
-			ngnImage->primitives = (Nu3D::Primitive**)malloc(sizeof(Nu3D::Primitive*) * shapeCount);
-		}
 
-		if (! ngnImage->primitives)
-			return 0;
-
-		int32_t result = shapeCount;
-
-		ngnImage->primCount = shapeCount;
-
-		int32_t index = g_curPrimCount;
-
-		if (g_curPrimCount < result)
-		{
-			do
-			{
-				ngnImage->primitives[index] = ObjectLoad::ExtractShapeData(stream);
-				Nu3D::Primitive::CreateAllVertexBuffers(ngnImage->primitives[index], 3);
-
-				result = shapeCount;
-				++index;
-
-			} while (index < shapeCount);
-		}
-
-		return result;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004BB2F0
