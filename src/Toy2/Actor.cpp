@@ -1951,11 +1951,13 @@ namespace Toy2
 					int32_t random = *g_randDatBufferPtr++;
 					Gadget::g_periodicHintSoundTimer = 2 * random + 240;
 
+					AudioManager::SoundEffectPreset* soundPreset = &AudioManager::g_soundEffectPresets[soundIdx];
+
 					AudioManager::PlayOneShotSound3DActor(
 						&g_levelActors[actorId],
-						AudioManager::g_soundEffectPresets[soundIdx].soundBufferIndex - 1,
-						AudioManager::g_soundEffectPresets[soundIdx].pitch,
-						AudioManager::g_soundEffectPresets[soundIdx].volume,
+						soundPreset->soundBufferIndex - 1,
+						soundPreset->pitch,
+						soundPreset->volume,
 						&g_levelActors[actorId].transform.pos);
 				}
 			}
