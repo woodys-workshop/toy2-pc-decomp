@@ -712,7 +712,7 @@ namespace NGNLoader
 		return creature;
 	}
 
-	// FUNCTION: TOY2 0x004C4220
+	// FUNCTION: TOY2 0x004C4220 [MATCHED]
 	uint32_t ParseCreatures(FILE* stream, NGNImage* ngnImage)
 	{
 		uint32_t creatureCount;
@@ -733,10 +733,10 @@ namespace NGNLoader
 			uint8_t creatureValidFlags[512];
 			memset(creatureValidFlags, 0, creatureCount);
 
+			int32_t count = 0;
+
 			if ((int32_t)creatureCount > 0)
 			{
-				int32_t count = 0;
-
 				do
 				{
 					int8_t charNameLen;
@@ -759,8 +759,6 @@ namespace NGNLoader
 				if (creatureValidFlags[index])
 					ngnImage->creatureData[index] = ExtractCreatureData(stream);
 			}
-
-			return creatureCount;
 		}
 
 		return creatureCount;
