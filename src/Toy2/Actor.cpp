@@ -1961,58 +1961,41 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x004A28B0
+		// FUNCTION: TOY2 0x004A28B0 [MATCHED]
 		void PopulateActiveActors()
 		{
-			CreatureActor* actor = g_activeActors[0];
 			int32_t actorIndex = 0;
 
-			if (g_activeActors[0])
+			while (g_activeActors[actorIndex])
 			{
-				int32_t arrayIndex = 0;
-
-				do
-				{
-					++actorIndex;
-
-					g_activeActorArray[arrayIndex] = actor;
-
-					arrayIndex = actorIndex;
-
-					actor = g_activeActors[actorIndex];
-				} while (actor);
+				g_activeActorArray[actorIndex] = g_activeActors[actorIndex];
+				++actorIndex;
 			}
 
 			g_activeActorArray[actorIndex] = (CreatureActor*)&g_buzzActor;
 			g_activeActorArray[actorIndex + 1] = 0;
 		}
 
-		// FUNCTION: TOY2 0x004CDBF0
+		// FUNCTION: TOY2 0x004CDBF0 [MATCHED]
 		int32_t FindInActorList(Toy2::CreatureActor* actor)
 		{
 			CreatureActor** next = Animation::g_animActorList;
 
-			if (! Animation::g_animActorList)
-				return -1;
-
-			CreatureActor* cur = *Animation::g_animActorList;
-			int32_t index = 0;
-
-			if (! *Animation::g_animActorList)
-				return -1;
-
-			while (actor != cur)
+			if (next)
 			{
-				cur = next[1];
+				int32_t index = 0;
 
-				++next;
-				++index;
+				while (*next)
+				{
+					if (actor == *next)
+						return index;
 
-				if (! cur)
-					return -1;
+					++next;
+					++index;
+				}
 			}
 
-			return index;
+			return -1;
 		}
 
 		// FUNCTION: TOY2 0x004CDBB0
