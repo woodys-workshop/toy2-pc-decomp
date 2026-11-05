@@ -490,29 +490,29 @@ namespace Nu3D
 			out->z = matrix->_43;
 		}
 
-		// FUNCTION: TOY2 0x004A8BF0
+		// FUNCTION: TOY2 0x004A8BF0 [MATCHED]
 		void TransformPointByMatrix(Vector3F* out, Vector3F* point, D3DMATRIX* matrix)
 		{
 			float y = matrix->_32 * point->z + matrix->_12 * point->x + matrix->_22 * point->y + matrix->_42;
 			float z = matrix->_33 * point->z + matrix->_13 * point->x + matrix->_23 * point->y + matrix->_43;
 			float x = matrix->_31 * point->z + matrix->_21 * point->y + point->x * matrix->_11 + matrix->_41;
 
-			out->z = z;
 			out->x = x;
 			out->y = y;
+			out->z = z;
 		}
 
-		// FUNCTION: TOY2 0x004A8C60
+		// FUNCTION: TOY2 0x004A8C60 [MATCHED]
 		Vector3F* ProjectPoint(Vector3F* out, Vector3F* in, D3DMATRIX* matrix)
 		{
-			float invW = 1.0 / (matrix->_34 * in->z + matrix->_24 * in->y + matrix->_14 * in->x + matrix->_44);
+			float invW = 1.0f / (matrix->_34 * in->z + matrix->_24 * in->y + matrix->_14 * in->x + matrix->_44);
 			float y = (matrix->_32 * in->z + matrix->_22 * in->y + matrix->_12 * in->x + matrix->_42) * invW;
 			float z = (matrix->_33 * in->z + matrix->_23 * in->y + matrix->_13 * in->x + matrix->_43) * invW;
 			Vector3F* result = out;
 			float x = (matrix->_31 * in->z + matrix->_21 * in->y + in->x * matrix->_11 + matrix->_41) * invW;
-			out->z = z;
 			out->x = x;
 			out->y = y;
+			out->z = z;
 			return result;
 		}
 
@@ -543,18 +543,17 @@ namespace Nu3D
 			return matrix;
 		}
 
-		// FUNCTION: TOY2 0x004A8D80
+		// FUNCTION: TOY2 0x004A8D80 [MATCHED]
 		Vector3F* TransformPointPerspective(Vector3F* result, Vector3F* point, D3DMATRIX* matrix)
 		{
-			// like ProjectPoint, but ignoring the translation of the matrix
-			float invW = 1.0 / (matrix->_34 * point->z + matrix->_24 * point->y + matrix->_14 * point->x);
+			float invW = 1.0f / (matrix->_34 * point->z + matrix->_24 * point->y + matrix->_14 * point->x);
 			float y = (matrix->_32 * point->z + matrix->_22 * point->y + matrix->_12 * point->x) * invW;
 			float z = (matrix->_33 * point->z + matrix->_23 * point->y + matrix->_13 * point->x) * invW;
 			float x = (matrix->_31 * point->z + matrix->_21 * point->y + point->x * matrix->_11) * invW;
 
-			result->z = z;
 			result->x = x;
 			result->y = y;
+			result->z = z;
 
 			return result;
 		}
