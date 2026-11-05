@@ -316,11 +316,13 @@ namespace NGNLoader
 		}
 	}
 
-	// FUNCTION: TOY2 0x004C3EB0
+	// FUNCTION: TOY2 0x004C3EB0 [MATCHED]
 	int32_t ParseLinker(FILE* stream, NGNImage* ngnImage)
 	{
 		int32_t maxLinkId;
 		int32_t linkCount;
+		int16_t linkId;
+		int16_t shapeId;
 
 		fread(&linkCount, sizeof(int32_t), 1, stream);
 		fread(&maxLinkId, sizeof(int32_t), 1, stream);
@@ -331,47 +333,37 @@ namespace NGNLoader
 
 		ngnImage->links = linkerArray;
 
-		if (! linkerArray)
-			return 0;
-
-		int32_t count = 0;
-
-		memset(linkerArray, 0, sizeof(Nu3D::Link::Linker) * maxLinkId);
-
-		ngnImage->maxLinkId = maxLinkId;
-
-		if (linkCount > 0)
+		if (linkerArray)
 		{
-			do
-			{
-				int16_t linkId;
-				uint16_t shapeId;
+			memset(linkerArray, 0, sizeof(Nu3D::Link::Linker) * maxLinkId);
 
+			ngnImage->maxLinkId = maxLinkId;
+
+			for (int32_t count = 0; count < linkCount; ++count)
+			{
 				fread(&linkId, sizeof(int16_t), 1, stream);
-				fread(&shapeId, sizeof(uint16_t), 1, stream);
+				fread(&shapeId, sizeof(int16_t), 1, stream);
 
 				if (linkId >= 0 && linkId < maxLinkId)
 				{
 					int32_t type;
 
-					if ((shapeId & 0x8000) == 0)
-					{
-						type = 0;
-					}
-					else
+					if (shapeId < 0)
 					{
 						shapeId = -shapeId & 0x3FFF;
 						type = 1;
+					}
+					else
+					{
+						type = 0;
 					}
 
 					if (shapeId < ngnImage->shapeCounts[type])
 					{
 						Nu3D::Link::Linker* link = &ngnImage->links[linkId];
-						Nu3D::Link::DynamicScaler* dynamicScaler = &ngnImage->dynamicScalers[type][shapeId];
+						link->dynamicScaler = &ngnImage->dynamicScalers[type][shapeId];
 
-						link->dynamicScaler = dynamicScaler;
-
-						memcpy(&link->transformMatrix, &dynamicScaler->transformMatrix, sizeof(link->transformMatrix));
+						memcpy(&link->transformMatrix, &link->dynamicScaler->transformMatrix, sizeof(link->transformMatrix));
 
 						link->dynamicScaler->flags |= 2;
 
@@ -381,16 +373,15 @@ namespace NGNLoader
 						link->currentScale = link->dynamicScaler->scale;
 					}
 				}
+			}
 
-				count += 1;
-
-			} while (count < linkCount);
+			return linkCount;
 		}
 
-		return linkCount;
+		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004CA040
+	// FUNCTION: TOY2 0x004CA040 [MATCHED]
 	int32_t ExtractAnimations(FILE* stream, Nu3D::Creature* creature, int32_t chunkSize)
 	{
 		if (! creature->animData)
@@ -402,17 +393,19 @@ namespace NGNLoader
 				return -1;
 		}
 
-		if (creature->animCount >= 100)
-			return -1;
+		if (creature->animCount < 100)
+		{
+			creature->animData[creature->animCount] = malloc(chunkSize);
 
-		creature->animData[creature->animCount] = malloc(chunkSize);
+			if (creature->animData[creature->animCount])
+			{
+				fread(creature->animData[creature->animCount], 1, chunkSize, stream);
 
-		if (! creature->animData[creature->animCount])
-			return -1;
+				return ++creature->animCount;
+			}
+		}
 
-		fread(creature->animData[creature->animCount], 1, chunkSize, stream);
-
-		return ++creature->animCount;
+		return -1;
 	}
 
 	// FUNCTION: TOY2 0x004CA1D0
