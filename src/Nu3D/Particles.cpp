@@ -878,22 +878,24 @@ namespace Nu3D
 				AudioManager::PlaySoundEffect(67, &particle->pos);
 		}
 
-		// FUNCTION: TOY2 0x0042B250
+		// FUNCTION: TOY2 0x0042B250 [MATCHED]
 		void UpdateDrainTrail(Nu3D::Particles::ParticleInstance* particle)
 		{
-			int32_t z;
-			int32_t x;
+			int32_t deltaX = (-48508 - particle->pos.x) >> 5;
+			int32_t deltaZ = (153 - particle->pos.z) >> 5;
 
-			z = particle->pos.z;
-			x = particle->pos.x;
-
-			if (((-48508 - particle->pos.x) >> 5) * ((-48508 - particle->pos.x) >> 5) + ((153 - z) >> 5) * ((153 - z) >> 5) < 0x100000)
+			if (deltaX * deltaX + deltaZ * deltaZ < 0x100000)
 				particle->lifetime = 0;
 
 			if (particle->lifetime > 4)
 			{
 				if (Toy2::g_tickState[4])
-					SpawnFromPreset(x - Renderer::g_frameDelta * particle->velX, particle->pos.y, z - Renderer::g_frameDelta * particle->velZ, 111, 2);
+					SpawnFromPreset(
+						particle->pos.x - Renderer::g_frameDelta * particle->velX,
+						particle->pos.y,
+						particle->pos.z - Renderer::g_frameDelta * particle->velZ,
+						111,
+						2);
 			}
 		}
 
