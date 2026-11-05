@@ -205,13 +205,23 @@ namespace Nu3D
 			float width = (float)g_pendingViewport.dwWidth;
 			float height = (float)g_pendingViewport.dwHeight;
 
-			memset(&g_screenSpaceMatrixCache, 0, sizeof(g_screenSpaceMatrixCache));
+			g_screenSpaceMatrixCache._12 = 0.0f;
+			g_screenSpaceMatrixCache._13 = 0.0f;
+			g_screenSpaceMatrixCache._14 = 0.0f;
+			g_screenSpaceMatrixCache._21 = 0.0f;
+			g_screenSpaceMatrixCache._23 = 0.0f;
+			g_screenSpaceMatrixCache._24 = 0.0f;
+			g_screenSpaceMatrixCache._31 = 0.0f;
+			g_screenSpaceMatrixCache._32 = 0.0f;
+			g_screenSpaceMatrixCache._33 = 1.0f;
+			g_screenSpaceMatrixCache._34 = 0.0f;
+			g_screenSpaceMatrixCache._43 = 0.0f;
+			g_screenSpaceMatrixCache._44 = 1.0f;
+
 			g_screenSpaceMatrixCache._11 = width * 0.5f;
 			g_screenSpaceMatrixCache._22 = height * -0.5f;
-			g_screenSpaceMatrixCache._33 = 1.0f;
-			g_screenSpaceMatrixCache._41 = (float)g_pendingViewport.dwX + width * 0.5f;
-			g_screenSpaceMatrixCache._42 = (float)g_pendingViewport.dwY + height * 0.5f;
-			g_screenSpaceMatrixCache._44 = 1.0f;
+			g_screenSpaceMatrixCache._41 = (double)g_pendingViewport.dwX + width * 0.5f;
+			g_screenSpaceMatrixCache._42 = (double)g_pendingViewport.dwY + height * 0.5f;
 			g_screenSpaceMatrixDirty = 0;
 		}
 
