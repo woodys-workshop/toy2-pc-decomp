@@ -581,51 +581,45 @@ namespace Toy2
 			return result;
 		}
 
-		// FUNCTION: TOY2 0x00403640
+		// FUNCTION: TOY2 0x00403640 [MATCHED]
 		void SmoothToTarget(Toy2::Camera::ScriptedCameraState* cameraState)
 		{
-			int32_t eyeX = cameraState->eyePos.x;
-			int32_t focusY = cameraState->focusPos.y;
-			int32_t eyeY = cameraState->eyePos.y;
-			int32_t eyeZ;
-			int32_t focusX;
 			int32_t deltaX;
 			int32_t deltaY;
 			int32_t deltaZ;
 			int32_t yawDelta;
 			int32_t pitchDelta;
-			int16_t pitchRaw;
+			int32_t pitchRaw;
 
-			cameraState->pos.x += (eyeX - cameraState->pos.x) >> 3;
-			eyeZ = cameraState->eyePos.z;
+			cameraState->pos.x += (cameraState->eyePos.x - cameraState->pos.x) >> 3;
+			cameraState->pos.y += (cameraState->eyePos.y - cameraState->pos.y) >> 3;
+			cameraState->pos.z += (cameraState->eyePos.z - cameraState->pos.z) >> 3;
 
-			cameraState->pos.y += (eyeY - cameraState->pos.y) >> 3;
-			focusX = cameraState->focusPos.x;
+			deltaX = (cameraState->focusPos.x - cameraState->eyePos.x) >> 5;
+			deltaY = (cameraState->focusPos.y - cameraState->eyePos.y) >> 5;
+			deltaZ = (cameraState->focusPos.z - cameraState->eyePos.z) >> 5;
 
-			cameraState->pos.z += (eyeZ - cameraState->pos.z) >> 3;
-			deltaZ = (cameraState->focusPos.z - eyeZ) >> 5;
-
-			deltaX = (focusX - eyeX) >> 5;
-			deltaY = (focusY - eyeY) >> 5;
-
-			yawDelta = (Nu3D::Math::CartesianToFixedAngle(deltaX, deltaZ) - cameraState->angles.yaw) & 0xFFF;
+			yawDelta = Nu3D::Math::CartesianToFixedAngle(deltaX, deltaZ);
+			yawDelta = (yawDelta - cameraState->angles.yaw) & 0xFFF;
 
 			if (yawDelta >= 2048)
 				yawDelta -= 4096;
 
-			cameraState->angles.yaw = (cameraState->angles.yaw + (yawDelta >> 2)) & 0xFFF;
+			cameraState->angles.yaw += yawDelta >> 2;
+			cameraState->angles.yaw &= 0xFFF;
 
-			if (deltaY >= 0)
-				pitchRaw = Nu3D::Math::CartesianToFixedAngle(-(deltaY * deltaY), deltaX * deltaX + deltaZ * deltaZ);
+			if (deltaY < 0)
+				pitchRaw = -Nu3D::Math::CartesianToFixedAngle(deltaY * deltaY, deltaX * deltaX + deltaZ * deltaZ);
 			else
-				pitchRaw = Nu3D::Math::CartesianToFixedAngle(deltaY * deltaY, deltaX * deltaX + deltaZ * deltaZ);
+				pitchRaw = -Nu3D::Math::CartesianToFixedAngle(-(deltaY * deltaY), deltaX * deltaX + deltaZ * deltaZ);
 
-			pitchDelta = (-pitchRaw - cameraState->angles.pitch) & 0xFFF;
+			pitchDelta = (pitchRaw - cameraState->angles.pitch) & 0xFFF;
 
 			if (pitchDelta >= 2048)
 				pitchDelta -= 4096;
 
-			cameraState->angles.pitch = (cameraState->angles.pitch + (pitchDelta >> 2)) & 0xFFF;
+			cameraState->angles.pitch += pitchDelta >> 2;
+			cameraState->angles.pitch &= 0xFFF;
 		}
 
 		// FUNCTION: TOY2 0x00403730
