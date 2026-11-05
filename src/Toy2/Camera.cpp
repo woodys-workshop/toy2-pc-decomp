@@ -251,7 +251,7 @@ namespace Toy2
 
 			g_cutsceneFocusPos = *target;
 
-			int16_t angle =
+			int32_t angle =
 				Nu3D::Math::CartesianToFixedAngle(g_cutsceneFocusPos.x - g_buzzActor.transform.pos.x, g_cutsceneFocusPos.z - g_buzzActor.transform.pos.z)
 				& 0xFFF;
 
@@ -267,7 +267,7 @@ namespace Toy2
 			InitCutsceneCamera(&g_cutsceneFocusPos, &g_cutsceneEyePos);
 		}
 
-		// FUNCTION: TOY2 0x00402290
+		// FUNCTION: TOY2 0x00402290 [MATCHED]
 		void BeginScriptedCutsceneOnBuzz(int32_t duration)
 		{
 			if (g_cameraState)
@@ -309,7 +309,7 @@ namespace Toy2
 			g_cameraBlendTimer = 64;
 			g_cutsceneFocusPos.y = g_buzzActor.transform.pos.y - 12288;
 
-			int16_t angle =
+			int32_t angle =
 				Nu3D::Math::CartesianToFixedAngle(
 					g_buzzActor.transform.pos.x - g_activeCameraTransform.pos.x, g_buzzActor.transform.pos.z - g_activeCameraTransform.pos.z)
 				& 0xFFF;
@@ -2462,14 +2462,14 @@ namespace Toy2
 			return result;
 		}
 
-		// FUNCTION: TOY2 0x00433F40
+		// FUNCTION: TOY2 0x00433F40 [MATCHED]
 		int32_t CalculateMaxTurnAngle(int32_t directionButtonState)
 		{
 			int32_t cameraSpeed = 0;
 			int32_t analogX;
 			int32_t analogY;
-			int16_t analogStickAngle;
-			int16_t cameraAngleFromPos;
+			int32_t analogStickAngle;
+			int32_t cameraAngleFromPos;
 
 			cameraAngleFromPos = Nu3D::Math::CartesianToFixedAngle(
 				(g_buzzActor.transform.pos.x - g_gameplayCameraState.targetPos.x) >> 5, (g_buzzActor.transform.pos.z - g_gameplayCameraState.targetPos.z) >> 5);
@@ -2478,7 +2478,7 @@ namespace Toy2
 			{
 				analogX = InputManager::g_analogInputX;
 
-				if (abs(InputManager::g_analogInputX) < 6144)
+				if (abs(analogX) < 6144)
 				{
 					analogX = 0;
 					InputManager::g_analogInputX = 0;
@@ -2486,20 +2486,17 @@ namespace Toy2
 
 				analogY = InputManager::g_analogInputY;
 
-				if (abs(InputManager::g_analogInputY) < 6144)
+				if (abs(analogY) < 6144)
 				{
 					analogY = 0;
 					InputManager::g_analogInputY = 0;
 				}
 
-				analogStickAngle = Nu3D::Math::CartesianToFixedAngle(analogX, analogY);
+				analogStickAngle = Nu3D::Math::CartesianToFixedAngle(analogX, analogY) & 0xFFF;
 
-				g_buzzActor.facingAngle =
-					(cameraAngleFromPos + g_cameraAngleOffsetTable[(analogStickAngle & 0xFFF) >> 9]
-					 + (((analogStickAngle & 0x1FF)
-						 * (g_cameraAngleOffsetTable[((analogStickAngle & 0xFFF) >> 9) + 1] - g_cameraAngleOffsetTable[(analogStickAngle & 0xFFF) >> 9]))
-						>> 9))
-					& 0xFFF;
+				int32_t angleOffset = g_cameraAngleOffsetTable[analogStickAngle >> 9];
+				angleOffset += ((analogStickAngle & 0x1FF) * (g_cameraAngleOffsetTable[(analogStickAngle >> 9) + 1] - angleOffset)) >> 9;
+				g_buzzActor.facingAngle = (cameraAngleFromPos + angleOffset) & 0xFFF;
 
 				cameraSpeed = (int32_t)sqrt((
 					double)(InputManager::g_analogInputY / 2 * (InputManager::g_analogInputY / 2)
@@ -2509,12 +2506,13 @@ namespace Toy2
 					cameraSpeed = 16384;
 			}
 
-			if (InputManager::g_directionalInputCount && ! g_demoMode)
-				return cameraSpeed;
+			if (! InputManager::g_directionalInputCount || g_demoMode)
+			{
+				g_buzzActor.facingAngle = (cameraAngleFromPos + g_autoRotationSequence[(directionButtonState >> 4) & 0xF]) & 0xFFF;
+				cameraSpeed = 16384;
+			}
 
-			g_buzzActor.facingAngle = (cameraAngleFromPos + g_autoRotationSequence[(directionButtonState >> 4) & 0xF]) & 0xFFF;
-
-			return 16384;
+			return cameraSpeed;
 		}
 
 		// FUNCTION: TOY2 0x004A5870
