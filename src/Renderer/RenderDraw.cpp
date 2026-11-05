@@ -99,15 +99,12 @@ namespace Renderer
 	// FUNCTION: TOY2 0x004B8450
 	void UnbindMaterial() { BindMaterial(0, 0); }
 
-	// FUNCTION: TOY2 0x004B6760
+	// FUNCTION: TOY2 0x004B6760 [MATCHED]
 	int32_t SetupMaterialRenderState(Nu3D::Material* material, int32_t renderState)
 	{
 		int32_t textureStage = 0;
 
-		if (g_maxSimultaneousTextures <= 0)
-			return 0;
-
-		for (;;)
+		for (; textureStage < g_maxSimultaneousTextures; ++textureStage)
 		{
 			int32_t newState = renderState;
 
@@ -139,7 +136,6 @@ namespace Renderer
 				if (material == Nu3D::g_tex14Version1 || material == Nu3D::g_tex14Version2 || material == Nu3D::g_tex14Version3)
 					newState &= 0xFFFFFE7F;
 
-				// only the stages after the first one take colour modulation from their material
 				if (textureStage != 0)
 				{
 					if ((metadata & 0x40000) != 0)
@@ -150,7 +146,6 @@ namespace Renderer
 				}
 			}
 
-			// the general render state is only set up by the first stage
 			if (textureStage == 0)
 			{
 				newState |= 0x40000;
@@ -161,10 +156,9 @@ namespace Renderer
 
 			if (material)
 				material = material->nextInChain;
-
-			if (++textureStage >= g_maxSimultaneousTextures)
-				return textureStage;
 		}
+
+		return textureStage;
 	}
 
 	// FUNCTION: TOY2 0x004B5E20
