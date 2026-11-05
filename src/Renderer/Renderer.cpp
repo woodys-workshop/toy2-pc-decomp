@@ -1198,36 +1198,22 @@ namespace Renderer
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B8BF0
+	// FUNCTION: TOY2 0x004B8BF0 [MATCHED]
 	RGBA ModulateColorByAlpha(RGBA color, int32_t flags)
 	{
-		uint8_t blue;
-		uint8_t green;
-		uint8_t red;
-
 		if (((flags & 0x4000) != 0 || flags == 0x20000000) && g_srcBlendMode == 2)
 		{
-			blue = (color.a * color.b) >> 8;
-			red = (color.a * color.r) >> 8;
-			green = (color.a * color.g) >> 8;
-
-			color.b = blue;
-			color.r = red;
-			color.g = green;
-		}
-		else
-		{
-			blue = color.b;
-			green = color.g;
-			red = color.r;
+			color.r = (color.a * color.r) >> 8;
+			color.g = (color.a * color.g) >> 8;
+			color.b = (color.a * color.b) >> 8;
 		}
 
 		if (g_alphaBlendDest != 6 || flags != 0x40000000)
 			return color;
 
-		color.a = green;
+		color.a = color.g;
 
-		if (blue == green && blue == red)
+		if (color.r == color.g && color.r == color.b)
 		{
 			color.b = 0;
 			color.g = 0;
@@ -1235,9 +1221,9 @@ namespace Renderer
 			return color;
 		}
 
-		color.b = 255 - blue;
-		color.g = 255 - green;
-		color.r = 255 - red;
+		color.r = 255 - color.r;
+		color.g = 255 - color.g;
+		color.b = 255 - color.b;
 
 		return color;
 	}
