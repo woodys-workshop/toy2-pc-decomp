@@ -133,7 +133,7 @@ namespace Renderer
 		return instance;
 	}
 
-	// FUNCTION: TOY2 0x004B86F0
+	// FUNCTION: TOY2 0x004B86F0 [MATCHED]
 	void RenderEntry::InsertIntoBucket(RenderEntry* renderEntry)
 	{
 		Vector3F cameraPos;
@@ -147,13 +147,14 @@ namespace Renderer
 		cameraPos.y = cameraPos.y * cameraPos.y;
 		cameraPos.z = cameraPos.z * cameraPos.z;
 
-		float distance = cameraPos.z + cameraPos.y + cameraPos.x;
+		float rawDistanceSquared = cameraPos.z + cameraPos.y + cameraPos.x;
+		float distance;
 
-		if (distance < 1.0)
-			distance = 1.0;
+		if (1.0f > rawDistanceSquared)
+			distance = 1.0f;
+		else
+			distance = rawDistanceSquared;
 
-		// TODO: Double check this
-		// the exponent of the float is used as the bucket index, so buckets get exponentially further apart
 		int32_t bucket = (*(uint32_t*)&distance >> 20) - 1016;
 
 		renderEntry->distanceSquared = distance;
@@ -164,7 +165,6 @@ namespace Renderer
 			Nu3D::Sprite* previous = 0;
 			int32_t depth = 0;
 
-			// sorted furthest first inside of a bucket
 			while (current)
 			{
 				if (current->distanceSquared <= distance)
