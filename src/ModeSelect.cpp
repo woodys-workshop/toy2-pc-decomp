@@ -484,28 +484,28 @@ namespace ModeSelect
 		DDSCAPS2 ddsCaps;
 		LPDIRECTDRAW directDraw;
 
-		if (DirectDrawCreate(lpGUID, &directDraw, 0) < 0)
-			return TRUE;
-
-		if (directDraw->QueryInterface(IID_IDirectDraw4, (LPVOID*)&g_ddraw4) < 0)
+		if (DirectDrawCreate(lpGUID, &directDraw, 0) >= 0)
 		{
+			if (directDraw->QueryInterface(IID_IDirectDraw4, (LPVOID*)&g_ddraw4) < 0)
+			{
+				directDraw->Release();
+				return TRUE;
+			}
+
 			directDraw->Release();
-			return TRUE;
-		}
 
-		directDraw->Release();
+			LPDIRECT3D3 d3d3;
+			if (g_ddraw4->QueryInterface(IID_IDirect3D3, (LPVOID*)&d3d3) < 0)
+			{
+				g_ddraw4->Release();
+				return TRUE;
+			}
 
-		LPDIRECT3D3 d3d3;
-		if (g_ddraw4->QueryInterface(IID_IDirect3D3, (LPVOID*)&d3d3) < 0)
-		{
-			g_ddraw4->Release();
-			return TRUE;
-		}
+			DDAppDevice::App* ddApp = new DDAppDevice::App;
 
-		DDAppDevice::App* ddApp = new DDAppDevice::App;
+			if (! ddApp)
+				return FALSE;
 
-		if (ddApp)
-		{
 			memset(ddApp, 0, sizeof(DDAppDevice::App));
 
 			if (lpGUID)
@@ -526,13 +526,13 @@ namespace ModeSelect
 			ddApp->vidMemTotal = ddApp->ddCaps1.dwVidMemTotal;
 			ddApp->vidMemFree = ddApp->ddCaps1.dwVidMemFree;
 
-			memset(&ddsCaps.dwCaps2, 0, 12);
-			ddsCaps.dwCaps = 16896;
+			memset(&ddsCaps, 0, sizeof(ddsCaps));
+			ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_VIDEOMEMORY;
 
 			g_ddraw4->GetAvailableVidMem(&ddsCaps, &ddApp->totalTextureMem, &ddApp->freeTextureMem);
 
-			memset(&ddsCaps.dwCaps2, 0, 12);
-			ddsCaps.dwCaps = 4096;
+			memset(&ddsCaps, 0, sizeof(ddsCaps));
+			ddsCaps.dwCaps = DDSCAPS_TEXTURE;
 
 			g_ddraw4->GetAvailableVidMem(&ddsCaps, &ddApp->totalVideoMem, &ddApp->freeVideoMem);
 			d3d3->EnumDevices(D3DDeviceEnumCallback, ddApp);
@@ -557,11 +557,9 @@ namespace ModeSelect
 
 			d3d3->Release();
 			g_ddraw4->Release();
-
-			return TRUE;
 		}
 
-		return reinterpret_cast<BOOL>(ddApp);
+		return TRUE;
 	}
 
 	// FUNCTION: TOY2 0x004ACBC0
