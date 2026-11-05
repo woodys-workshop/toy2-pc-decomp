@@ -199,17 +199,17 @@ namespace Nu3D
 		}
 
 		// FUNCTION: TOY2 0x00451FD0 [MATCHED]
-		int32_t NormalizeToFixedPoint(Vector3I* v1, Vector3I* v2)
+		int32_t NormalizeToFixedPoint(Vector3I* input, Vector3I* output)
 		{
-			float z = v1->z;
-			float y = v1->y;
-			float x = v1->x;
+			float z = input->z;
+			float y = input->y;
+			float x = input->x;
 
 			float sqrtVal = sqrt(x * x + y * y + z * z);
 
-			v2->x = (v1->x * 4096.0 / sqrtVal);
-			v2->y = (v1->y * 4096.0 / sqrtVal);
-			v2->z = (v1->z * 4096.0 / sqrtVal);
+			output->x = (x * 4096.0f / sqrtVal);
+			output->y = (input->y * 4096.0f / sqrtVal);
+			output->z = (input->z * 4096.0f / sqrtVal);
 
 			return 0;
 		}
