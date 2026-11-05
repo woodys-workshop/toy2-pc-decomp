@@ -5143,7 +5143,7 @@ namespace Toy2
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x00490730
+	// FUNCTION: TOY2 0x00490730 [MATCHED]
 	void CheckForQuit()
 	{
 		if (D3DApp::g_windowData.wndIsExiting)
@@ -5151,13 +5151,14 @@ namespace Toy2
 			Logger::Log("CheckForQuit : Starting shutdown now...\n");
 			DestroyWindow(D3DApp::g_windowData.mainHwnd);
 
-			if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
+			switch (D3DApp::g_renderMode)
 			{
-				SoftwareRenderer::Destroy();
-			}
-			else if (D3DApp::g_renderMode == RENDERMODE_D3D)
-			{
-				Logger::Log("QUIT : Destroying Direct3D renderer.\n");
+				case RENDERMODE_SOFTWARE:
+					SoftwareRenderer::Destroy();
+					break;
+				case RENDERMODE_D3D:
+					Logger::Log("QUIT : Destroying Direct3D renderer.\n");
+					break;
 			}
 
 			Toy2::CleanupManagers();
@@ -5170,10 +5171,10 @@ namespace Toy2
 
 			g_clearScreenSaveResult = SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, 0, &g_setScreenSaveRunning, 0);
 
-			if (g_clearScreenSaveResult)
-				Logger::Log("Managed to clear SCREENSAVERRUNNING\n");
-			else
+			if (! g_clearScreenSaveResult)
 				Logger::Log("Failed to clear SCREENSAVERRUNNING\n");
+			else
+				Logger::Log("Managed to clear SCREENSAVERRUNNING\n");
 
 			exit(D3DApp::g_windowData.wndEventMsg.wParam);
 		}
