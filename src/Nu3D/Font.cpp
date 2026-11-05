@@ -1121,46 +1121,38 @@ namespace Nu3D
 	{
 		int32_t longest;
 		int32_t width;
-		char* textPtr;
-		uint8_t ch;
 
-		if (! g_selectedFont)
+		if (g_selectedFont)
 		{
-			// $TODO: the original returns the string pointer when there is no font selected
-			longest = (int32_t)string;
-			width = (int32_t)string;
-			goto LABEL_13;
-		}
-		longest = 0;
-		width = 0;
-		textPtr = string;
-		g_measuredTextHeight = (int32_t)g_scaledFontHeight;
-		ch = *string;
-		if (*string)
-		{
+			longest = 0;
+			width = 0;
+			g_measuredTextHeight = (int32_t)g_scaledFontHeight;
+			if (! *string)
+				return width;
 			do
 			{
-				if (ch != 9)
+				switch (*string)
 				{
-					if (ch == 10 || ch == 13)
-					{
-						if (longest <= width)
-							longest = width;
+					case 9:
+						break;
+					case 10:
+					case 13:
+						longest = longest > width ? longest : width;
 						g_measuredTextHeight = (int32_t)(g_measuredTextHeight + g_scaledFontHeight);
 						width = 0;
-					}
-					else
-					{
-						width += (int32_t)(g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[ch]].width * g_fontWidthScale);
-					}
+						break;
+					default:
+						width += (int32_t)(g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)*string]].width * g_fontWidthScale);
+						break;
 				}
-				ch = *++textPtr;
-			} while (ch);
-		LABEL_13:
-			if (longest > width)
-				return longest;
+			} while (*++string);
 		}
-		return width;
+		else
+		{
+			longest = (int32_t)string;
+			width = (int32_t)string;
+		}
+		return longest > width ? longest : width;
 	}
 
 	// FUNCTION: TOY2 0x004B5480
@@ -1168,45 +1160,37 @@ namespace Nu3D
 	{
 		int32_t longest;
 		int32_t width;
-		char* textPtr;
-		uint8_t ch;
 
-		if (! g_selectedFont)
+		if (g_selectedFont)
 		{
-			// $TODO: the original returns the string pointer when there is no font selected
-			longest = (int32_t)string;
-			width = (int32_t)string;
-			goto LABEL_13;
-		}
-		longest = 0;
-		width = 0;
-		textPtr = string;
-		g_measuredTextHeight = (int32_t)g_scaledFontHeight;
-		ch = *string;
-		if (*string)
-		{
+			longest = 0;
+			width = 0;
+			g_measuredTextHeight = (int32_t)g_scaledFontHeight;
+			if (! *string)
+				return width;
 			do
 			{
-				if (ch != 9)
+				switch (*string)
 				{
-					if (ch == 10 || ch == 13)
-					{
-						if (longest <= width)
-							longest = width;
+					case 9:
+						break;
+					case 10:
+					case 13:
+						longest = longest > width ? longest : width;
 						width = 0;
 						g_measuredTextHeight = (int32_t)(g_measuredTextHeight + g_scaledFontHeight);
-					}
-					else
-					{
-						width += g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[ch]].width;
-					}
+						break;
+					default:
+						width += g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)*string]].width;
+						break;
 				}
-				ch = *++textPtr;
-			} while (ch);
-		LABEL_13:
-			if (longest > width)
-				return longest;
+			} while (*++string);
 		}
-		return width;
+		else
+		{
+			longest = (int32_t)string;
+			width = (int32_t)string;
+		}
+		return longest > width ? longest : width;
 	}
 }
