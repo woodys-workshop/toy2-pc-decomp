@@ -1479,20 +1479,16 @@ namespace Renderer
 		Sprite::DrawScaled(xPos + 2, yPos + 1, 6, 1, red, green, blue, 0, width - 0x4000, height - 0x2000);
 	}
 
-	// FUNCTION: TOY2 0x00401FB0
+	// FUNCTION: TOY2 0x00401FB0 [MATCHED]
 	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth)
 	{
 		int32_t textLength = 0;
-		char* curText = text;
+		int32_t xPos = useDynamicWidth != 0 ? 256 : 160;
 
-		if (*text)
-		{
-			while (text[++textLength])
-				;
-		}
+		while (text[textLength])
+			++textLength;
 
-		// the text is centered, a character is 8 wide
-		int32_t xPos = (useDynamicWidth != 0 ? 256 : 160) - 4 * textLength;
+		xPos -= 4 * textLength;
 
 		if (textLength > 0)
 		{
@@ -1500,9 +1496,7 @@ namespace Renderer
 
 			do
 			{
-				char curChar = *curText++;
-
-				DrawChar(xPos, yPos, curChar, red, green, blue, useDynamicWidth);
+				DrawChar(xPos, yPos, *text++, red, green, blue, useDynamicWidth);
 
 				xPos += 8;
 				--remainingChars;
