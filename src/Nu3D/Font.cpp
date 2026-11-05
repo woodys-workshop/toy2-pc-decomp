@@ -679,8 +679,8 @@ namespace Nu3D
 		LPDIRECT3DDEVICE3 device;
 		GlyphInfo* glyphInfo;
 		float width;
-		double height;
-		double posY;
+		float height;
+		float posY;
 
 		device = DrawingDevice::GetD3DDevice();
 
@@ -706,9 +706,7 @@ namespace Nu3D
 		g_upperFontVerts[2].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[2].uv.y = glyphInfo->uvMaxY;
 
-		g_lowerFontVerts[0].position.x = g_upperFontVerts[0].position.x;
-		g_lowerFontVerts[0].position.z = g_upperFontVerts[0].position.z;
-		g_lowerFontVerts[0].position.y = g_upperFontVerts[0].position.y;
+		g_lowerFontVerts[0].position = g_upperFontVerts[0].position;
 		g_lowerFontVerts[0].uv = g_upperFontVerts[0].uv;
 
 		memcpy(&g_lowerFontVerts[1], &g_upperFontVerts[2], sizeof(VertexTL));
@@ -968,11 +966,11 @@ namespace Nu3D
 			return 0;
 		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 		posY = (float)(g_textCursorY - g_selectedFont->fontAscent);
-		g_upperFontVerts[0].position.x = (float)(g_textOffsetX + g_textCursorX);
+		g_upperFontVerts[0].position.x = (float)(g_textCursorX + g_textOffsetX);
 		g_upperFontVerts[0].position.y = posY;
 		g_upperFontVerts[0].uv.x = glyphInfo->uvMinX;
 		g_upperFontVerts[0].uv.y = glyphInfo->uvMinY;
-		g_upperFontVerts[1].position.x = (float)(g_textOffsetX + glyphInfo->width + g_textCursorX - 1);
+		g_upperFontVerts[1].position.x = (float)(g_textCursorX + g_textOffsetX + glyphInfo->width - 1);
 		g_upperFontVerts[1].position.y = posY;
 		g_upperFontVerts[1].uv.x = glyphInfo->uvMaxX;
 		g_upperFontVerts[1].uv.y = glyphInfo->uvMinY;
