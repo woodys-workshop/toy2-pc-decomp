@@ -710,11 +710,10 @@ namespace D3DApp
 		return examineContext->displayModeCount != 128;
 	}
 
-	// FUNCTION: TOY2 0x00409130
+	// FUNCTION: TOY2 0x00409130 [MATCHED]
 	HRESULT WINAPI
 	EnumDevices(LPGUID guid, LPSTR deviceDesc, LPSTR deviceName, LPD3DDEVICEDESC d3DHWDeviceDesc, LPD3DDEVICEDESC d3DHELDeviceDesc, LPVOID context)
 	{
-		LPD3DDEVICEDESC hwDeviceDesc = d3DHWDeviceDesc;
 		ExamineDevice* examineContext = (ExamineDevice*)context;
 		InterfaceDevice* item = &examineContext->interfaceDevices[examineContext->deviceCount];
 
@@ -727,55 +726,25 @@ namespace D3DApp
 		lstrcpyA(item->baseName, deviceName);
 		lstrcpyA(item->description, deviceDesc);
 
-		if (! d3DHWDeviceDesc->dcmColorModel)
-			hwDeviceDesc = d3DHELDeviceDesc;
+		if (d3DHWDeviceDesc->dcmColorModel)
+			memcpy(&item->hwDeviceDesc, d3DHWDeviceDesc, sizeof(item->hwDeviceDesc));
+		else
+			memcpy(&item->hwDeviceDesc, d3DHELDeviceDesc, sizeof(item->hwDeviceDesc));
 
-		memcpy(&item->hwDeviceDesc, hwDeviceDesc, sizeof(item->hwDeviceDesc));
-
-		int32_t dwDeviceZBufferBitDepth = item->hwDeviceDesc.dwDeviceZBufferBitDepth;
-		int32_t hasTexturing = item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & 1;
-
-		item->isSquareTexturesOnly = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps >> 5) & 1;
-
-		int32_t hasAlphaBlending = (item->hwDeviceDesc.dpcTriCaps.dwSrcBlendCaps >> 11) & 1;
-
-		item->hasTexturing = hasTexturing;
-		item->hasAlphaBlending = hasAlphaBlending;
-		item->hasZBuffer = dwDeviceZBufferBitDepth != 0;
+		item->hasTexturing = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_PERSPECTIVE) != 0;
+		item->isSquareTexturesOnly = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY) != 0;
+		item->hasAlphaBlending = (item->hwDeviceDesc.dpcTriCaps.dwSrcBlendCaps & D3DPBLENDCAPS_BOTHSRCALPHA) != 0;
+		item->hasZBuffer = item->hwDeviceDesc.dwDeviceZBufferBitDepth != 0;
 
 		Logger::Log("\n");
 		Logger::Log("DIRECT 3D DEVICE BASE NAME : %s.\n", item->baseName);
 		Logger::Log("DIRECT 3D DEVICE DESCRIPTION : %s.\n", item->description);
 
-		const char* texFlag = "TRUE";
-		if (! item->hasTexturing)
-			texFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE TextureFlag\t:\t%s.\n", texFlag);
-
-		const char* zBufferFlag = "TRUE";
-		if (! item->hasZBuffer)
-			zBufferFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE ZBufferFlag : %s.\n", zBufferFlag);
-
-		const char* hardwareAccelFlag = "TRUE";
-		if (! item->isHardwareAccelerated)
-			hardwareAccelFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE HardwareAccel : %s.\n", hardwareAccelFlag);
-
-		const char* squareOnlyFlag = "TRUE";
-		if (! item->isSquareTexturesOnly)
-			squareOnlyFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE SquareOnly : %s.\n", squareOnlyFlag);
-
-		const char* alphaBlending = "ON";
-		if (! item->hasAlphaBlending)
-			alphaBlending = "OFF";
-
-		Logger::Log("DIRECT 3D DEVICE Alpha blending is %s.\n", alphaBlending);
+		Logger::Log("DIRECT 3D DEVICE TextureFlag\t:\t%s.\n", item->hasTexturing ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE ZBufferFlag : %s.\n", item->hasZBuffer ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE HardwareAccel : %s.\n", item->isHardwareAccelerated ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE SquareOnly : %s.\n", item->isSquareTexturesOnly ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE Alpha blending is %s.\n", item->hasAlphaBlending ? "ON" : "OFF");
 		Logger::Log("\n");
 
 		item->valid = 1;
