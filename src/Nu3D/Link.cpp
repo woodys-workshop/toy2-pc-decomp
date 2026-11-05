@@ -279,25 +279,19 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x00438910
 		void FollowWaypointPath(int32_t linkId, int32_t pathTableIdx, int32_t* progress)
 		{
-			// Moves a link along a path (a record of waypoints) a bit further each call, turning it to face the way it goes
 			*progress += 64;
+
+			if ((*progress >> 8) > Toy2::Levels::g_recordData[pathTableIdx]->recordCount - 5)
+				*progress = 0;
 
 			Toy2::Levels::RecordData* path = Toy2::Levels::g_recordData[pathTableIdx];
 
-			// loop back to the start once there are no waypoints left
-			if ((*progress >> 8) > path->recordCount - 5)
-				*progress = 0;
-
-			// the top 24 bits of the progress are the waypoint, the bottom 8 bits are how far to the next one
 			int32_t waypoint = *progress >> 8;
 			int32_t blend = *progress & 0xFF;
 
-			Vector3I* from = &path->data[waypoint];
-			Vector3I* to = &path->data[waypoint + 1];
-
-			int32_t targetX = (blend * to->x + (255 - blend) * from->x) / 8;
-			int32_t targetY = (blend * to->y + (255 - blend) * from->y) / 8;
-			int32_t targetZ = (blend * to->z + (255 - blend) * from->z) / 8;
+			int32_t targetX = (blend * path->data[waypoint + 1].x + (255 - blend) * path->data[waypoint].x) / 8;
+			int32_t targetY = (blend * path->data[waypoint + 1].y + (255 - blend) * path->data[waypoint].y) / 8;
+			int32_t targetZ = (blend * path->data[waypoint + 1].z + (255 - blend) * path->data[waypoint].z) / 8;
 
 			Vector3I currentPos;
 			Vector3I currentRot;
@@ -305,18 +299,14 @@ namespace Nu3D
 			GetCurrentPosFixed(linkId, &currentPos);
 			GetRotation8Bit(linkId, &currentRot);
 
-			int32_t angleToTarget = Math::CartesianToFixedAngle(targetZ - currentPos.z, currentPos.x - targetX);
-			int32_t angleDelta = (currentRot.y - angleToTarget - 2048) & 0xFFF;
+			int32_t angleDelta = (currentRot.y - Math::CartesianToFixedAngle(targetZ - currentPos.z, currentPos.x - targetX) - 2048) & 0xFFF;
 
-			int32_t newRotY;
-
-			// turn a quarter of the way towards the target each time
-			if (angleDelta <= 2048)
-				newRotY = currentRot.y - (angleDelta >> 2);
+			if (angleDelta > 2048)
+				currentRot.y += (4096 - angleDelta) >> 2;
 			else
-				newRotY = ((4096 - angleDelta) >> 2) + currentRot.y;
+				currentRot.y -= angleDelta >> 2;
 
-			SetRotationAbsolute8bit(linkId, 0, newRotY, 0);
+			SetRotationAbsolute8bit(linkId, 0, currentRot.y, 0);
 			SetPositionRawAndCommit(linkId, targetX >> 5, targetY >> 5, targetZ >> 5);
 		}
 
