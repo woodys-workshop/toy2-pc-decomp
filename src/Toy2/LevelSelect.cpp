@@ -156,62 +156,60 @@ namespace Toy2
 			int32_t x = levelSelectCam->lookDir.x;
 			int32_t y = levelSelectCam->lookDir.y;
 
-			int32_t maxTurn = turnRate * Renderer::g_frameDelta;
-
-			// yaw
-			int32_t yaw = levelSelectCam->angles.yaw;
+			int16_t yaw = levelSelectCam->angles.yaw;
 			int32_t yawDelta = (Nu3D::Math::CartesianToFixedAngle(x, z) - yaw) & 0xFFF;
 
-			if (yawDelta >= 2048)
-			{
-				int32_t step = (4096 - yawDelta) >> 3;
-
-				if (step >= maxTurn)
-					yaw -= maxTurn;
-				else
-					yaw -= step;
-			}
-			else
+			if (yawDelta < 2048)
 			{
 				int32_t step = yawDelta >> 3;
 
-				if (step >= maxTurn)
-					yaw += maxTurn;
-				else
+				if (step < turnRate * (int32_t)Renderer::g_frameDelta)
 					yaw += step;
+				else
+					yaw += turnRate * Renderer::g_frameDelta;
+			}
+			else
+			{
+				int32_t step = (4096 - yawDelta) >> 3;
+
+				if (step < turnRate * (int32_t)Renderer::g_frameDelta)
+					yaw -= step;
+				else
+					yaw -= turnRate * Renderer::g_frameDelta;
 			}
 
 			levelSelectCam->angles.yaw = yaw;
 
-			// pitch
-			int32_t pitch = levelSelectCam->angles.pitch;
+			int16_t pitch = levelSelectCam->angles.pitch;
 			int32_t pitchAngle;
 
-			if (y >= 0)
-				pitchAngle = Nu3D::Math::CartesianToFixedAngle(-(y * y), x * x + z * z);
+			if (y < 0)
+				pitchAngle = Nu3D::Math::CartesianToFixedAngle(y * y, z * z + x * x);
 			else
-				pitchAngle = Nu3D::Math::CartesianToFixedAngle(y * y, x * x + z * z);
+				pitchAngle = Nu3D::Math::CartesianToFixedAngle(-(y * y), z * z + x * x);
 
 			int32_t pitchDelta = -(pitch + pitchAngle) & 0xFFF;
 
-			if (pitchDelta >= 2048)
-			{
-				int32_t step = (4096 - pitchDelta) >> 3;
-
-				if (step >= maxTurn)
-					levelSelectCam->angles.pitch = pitch - maxTurn;
-				else
-					levelSelectCam->angles.pitch = pitch - step;
-			}
-			else
+			if (pitchDelta < 2048)
 			{
 				int32_t step = pitchDelta >> 3;
 
-				if (step >= maxTurn)
-					levelSelectCam->angles.pitch = pitch + maxTurn;
+				if (step < turnRate * (int32_t)Renderer::g_frameDelta)
+					pitch += step;
 				else
-					levelSelectCam->angles.pitch = step + pitch;
+					pitch += turnRate * Renderer::g_frameDelta;
 			}
+			else
+			{
+				int32_t step = (4096 - pitchDelta) >> 3;
+
+				if (step < turnRate * (int32_t)Renderer::g_frameDelta)
+					pitch -= step;
+				else
+					pitch -= turnRate * Renderer::g_frameDelta;
+			}
+
+			levelSelectCam->angles.pitch = pitch;
 		}
 
 		// FUNCTION: TOY2 0x00438790
