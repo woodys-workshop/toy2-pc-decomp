@@ -516,10 +516,9 @@ namespace Nu3D
 			return result;
 		}
 
-		// FUNCTION: TOY2 0x00450C70
+		// FUNCTION: TOY2 0x00450C70 [MATCHED]
 		Matrix3x3I16* EulerToRotationMatrix(AnglesWithRoll* angles, Matrix3x3I16* matrix)
 		{
-			// all trig values are 12-bit fixed point (LUT is 14-bit, scaled down by 4)
 			int32_t sinPitch = Numerics::g_sinCosLUT[angles->angles.pitch & 0xFFF] / 4;
 			int32_t cosPitch = Numerics::g_sinCosLUT[(angles->angles.pitch + 1024) & 0xFFF] / 4;
 			int32_t sinYaw = Numerics::g_sinCosLUT[angles->angles.yaw & 0xFFF] / 4;
@@ -527,15 +526,16 @@ namespace Nu3D
 			int32_t sinRoll = Numerics::g_sinCosLUT[angles->roll & 0xFFF] / 4;
 			int32_t cosRoll = Numerics::g_sinCosLUT[(angles->roll + 1024) & 0xFFF] / 4;
 
-			int32_t pitchYaw = sinPitch * sinYaw / 4096;
-			int32_t cosPitchSinYaw = cosPitch * sinYaw / 4096;
-
 			matrix->m00 = cosYaw * cosRoll / 4096;
 			matrix->m01 = cosYaw * sinRoll / -4096;
 			matrix->m02 = sinYaw;
+
+			int32_t pitchYaw = sinPitch * sinYaw / 4096;
 			matrix->m10 = (cosPitch * sinRoll + cosRoll * pitchYaw) / 4096;
 			matrix->m11 = (cosPitch * cosRoll - sinRoll * pitchYaw) / 4096;
 			matrix->m12 = sinPitch * cosYaw / -4096;
+
+			int32_t cosPitchSinYaw = cosPitch * sinYaw / 4096;
 			matrix->m20 = (sinPitch * sinRoll - cosRoll * cosPitchSinYaw) / 4096;
 			matrix->m21 = (sinPitch * cosRoll + sinRoll * cosPitchSinYaw) / 4096;
 			matrix->m22 = cosPitch * cosYaw / 4096;
