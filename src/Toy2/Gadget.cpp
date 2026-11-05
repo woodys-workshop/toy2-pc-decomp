@@ -382,39 +382,29 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x004A27A0
+		// FUNCTION: TOY2 0x004A27A0 [MATCHED]
 		void ApplyUnlockToGeometry(uint8_t* table, int32_t showScale)
 		{
-			uint8_t* entry = table;
-
-			for (uint8_t level = *table; level != 0xFF; entry += 4)
+			for (; *table != 0xFF; table += 4)
 			{
-				if (level == g_levelFileIndex)
+				if (*table == g_levelFileIndex)
 				{
-					Nu3D::Link::SetScaleFromFixedOffsets(entry[1], 0, 0, 0);
-					Nu3D::Link::SetScaleFromFixedOffsets(entry[2], showScale << 10, showScale << 10, showScale << 10);
-					Platform::DisableCollision(entry[3]);
+					Nu3D::Link::SetScaleFromFixedOffsets(table[1], 0, 0, 0);
+					Nu3D::Link::SetScaleFromFixedOffsets(table[2], showScale << 10, showScale << 10, showScale << 10);
+					Platform::DisableCollision(table[3]);
 
-					int32_t objectIdx = 0;
 					Levels::Type63* object = (Levels::Type63*)Levels::g_recordData[63]->data;
+					int32_t objectCount = Levels::g_recordData[63]->recordCount;
 
-					if (Levels::g_recordData[63]->recordCount)
+					for (int32_t objectIdx = 0; objectIdx < objectCount; object++, objectIdx++)
 					{
-						while (object->props.linkId != entry[2])
+						if (object->props.linkId == table[2])
 						{
-							++object;
-							++objectIdx;
-
-							if (objectIdx >= Levels::g_recordData[63]->recordCount)
-								goto LABEL_8;
+							object->props.flags = 31;
+							break;
 						}
-
-						object->props.flags = 31;
 					}
 				}
-
-			LABEL_8:
-				level = entry[4];
 			}
 		}
 	}
