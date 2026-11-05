@@ -234,7 +234,7 @@ namespace Nu3D
 			}
 		}
 
-		// FUNCTION: TOY2 0x004CCE30
+		// FUNCTION: TOY2 0x004CCE30 [MATCHED]
 		void SetPositionRawAndCommit(int32_t linkId, int32_t x, int32_t y, int32_t z)
 		{
 			if (! NGNLoader::g_ngnImage)
@@ -254,9 +254,9 @@ namespace Nu3D
 				{
 					if (scaler->gscaleType)
 					{
-						x *= 4;
-						y *= 4;
-						z *= 4;
+						x <<= 2;
+						y <<= 2;
+						z <<= 2;
 					}
 
 					link->currentPos.x = x;
@@ -267,11 +267,9 @@ namespace Nu3D
 					scaler->transformMatrix._42 = link->currentPos.y;
 					scaler->transformMatrix._43 = link->currentPos.z;
 
-					scaler->translation.x = link->currentPos.x;
-					scaler->translation.y = link->currentPos.y;
-					scaler->translation.z = link->currentPos.z;
+					link->dynamicScaler->translation = link->currentPos;
 
-					UnlinkScalerThenReinsert(scaler, NGNLoader::g_ngnImage);
+					UnlinkScalerThenReinsert(link->dynamicScaler, NGNLoader::g_ngnImage);
 				}
 			}
 		}
@@ -347,9 +345,11 @@ namespace Nu3D
 			}
 		}
 
-		// FUNCTION: TOY2 0x004CCDA0
+		// FUNCTION: TOY2 0x004CCDA0 [MATCHED]
 		void TransformVectorInt3x3(int32_t linkId, Vector3I* out)
 		{
+			Vector3F vector;
+
 			if (NGNLoader::g_ngnImage)
 			{
 				Link::Linker* links = NGNLoader::g_ngnImage->links;
@@ -362,13 +362,12 @@ namespace Nu3D
 
 						if (link->dynamicScaler)
 						{
-							Vector3F vector;
-
 							vector.x = out->x;
 							vector.y = out->y;
 							vector.z = out->z;
 
-							Math::TransformVectorByMatrix(&vector, &vector, &link->dynamicScaler->transformMatrix);
+							D3DMATRIX* matrix = &link->dynamicScaler->transformMatrix;
+							Math::TransformVectorByMatrix(&vector, &vector, matrix);
 
 							out->x = vector.x;
 							out->y = vector.y;
@@ -406,7 +405,7 @@ namespace Nu3D
 			}
 		}
 
-		// FUNCTION: TOY2 0x004CCFF0
+		// FUNCTION: TOY2 0x004CCFF0 [MATCHED]
 		void SnapToOtherLinkUsingScale(int32_t linkIndex1, int32_t linkIndex2)
 		{
 			if (! NGNLoader::g_ngnImage)
@@ -430,24 +429,18 @@ namespace Nu3D
 
 					if (scaler)
 					{
-						double y = (link1->currentPos.y - link2->currentPos.y) * link2->currentScale.y + link2->currentPos.y;
+						float y = (link1->currentPos.y - link2->currentPos.y) * link2->currentScale.y + link2->currentPos.y;
 						float z = (link1->currentPos.z - link2->currentPos.z) * link2->currentScale.z + link2->currentPos.z;
-						double x = (link1->currentPos.x - link2->currentPos.x) * link2->currentScale.x + link2->currentPos.x;
 
-						link1->currentPos.z = z;
-						link1->currentPos.x = x;
-						float rawX = link1->currentPos.x;
+						link1->currentPos.x = (link1->currentPos.x - link2->currentPos.x) * link2->currentScale.x + link2->currentPos.x;
 						link1->currentPos.y = y;
+						link1->currentPos.z = z;
 
-						scaler->transformMatrix._41 = rawX;
+						scaler->transformMatrix._41 = link1->currentPos.x;
 						scaler->transformMatrix._42 = link1->currentPos.y;
 						scaler->transformMatrix._43 = link1->currentPos.z;
 
-						Vector3F* translation = &link1->dynamicScaler->translation;
-
-						translation->x = link1->currentPos.x;
-						translation->y = link1->currentPos.y;
-						translation->z = link1->currentPos.z;
+						link1->dynamicScaler->translation = link1->currentPos;
 
 						UnlinkScalerThenReinsert(link1->dynamicScaler, NGNLoader::g_ngnImage);
 					}
