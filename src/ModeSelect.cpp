@@ -391,7 +391,7 @@ namespace ModeSelect
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice::App* ddApp = reinterpret_cast<DDAppDevice::App*>(lpContext);
+		DDAppDevice::App* ddApp = (DDAppDevice::App*)lpContext;
 
 		if (! lpGuid || ! lpD3DHWDeviceDesc || ! lpD3DHELDeviceDesc || ! ddApp)
 			return D3DENUMRET_CANCEL;
@@ -405,10 +405,10 @@ namespace ModeSelect
 
 		LPD3DDEVICEDESC deviceDesc = lpD3DHWDeviceDesc;
 
-		if (! lpD3DHWDeviceDesc->dwFlags)
+		if (! flags)
 			deviceDesc = lpD3DHELDeviceDesc;
 
-		if (ddApp->ref && ! lpD3DHWDeviceDesc->dwFlags)
+		if (ddApp->ref && ! flags)
 			return D3DENUMRET_OK;
 
 		if (g_ddDeviceFilterCallback && g_ddDeviceFilterCallback(&ddApp->ddCaps1, deviceDesc) < 0)
