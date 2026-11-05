@@ -600,16 +600,18 @@ namespace AudioManager
 			lockResult = soundBuffer->Lock(offset, dataSize, &audioPtr1, &audioBytes1, &audioPtr2, &audioBytes2, 0);
 		}
 
-		if (lockResult)
-			return 0;
+		if (! lockResult)
+		{
+			memcpy(audioPtr1, sourceData, audioBytes1);
 
-		memcpy(audioPtr1, sourceData, audioBytes1);
+			if (audioPtr2)
+				memcpy(audioPtr2, sourceData + audioBytes1, audioBytes2);
 
-		// the lock wrapped around the end of the buffer
-		if (audioPtr2)
-			memcpy(audioPtr2, sourceData + audioBytes1, audioBytes2);
+			if (! soundBuffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2))
+				return 1;
+		}
 
-		return ! soundBuffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2);
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004A4130
@@ -880,14 +882,10 @@ namespace AudioManager
 			strcat(filePath, name);
 			Logger::Log("LoadSoundEffect : Loading %s, effect %d.\n", filePath, effect, 1);
 
-			if (WaveLoadFile(filePath, &g_wavDataSize, &g_unused, &g_audioConfig, (HGLOBAL*)&g_wavSourceData))
-			{
-				Logger::Log("LoadSoundEffect : Calling WaveLoadFile failed - no sound effect %s, effect %d.\n", filePath, effect);
-			}
-			else
+			if (! WaveLoadFile(filePath, &g_wavDataSize, &g_unused, &g_audioConfig, (HGLOBAL*)&g_wavSourceData))
 			{
 				int32_t bufferBaseIndex = 6 * effect;
-				LPDIRECTSOUNDBUFFER* primaryBuffer = &g_soundEffectBuffers[6 * effect];
+				LPDIRECTSOUNDBUFFER* primaryBuffer = &g_soundEffectBuffers[bufferBaseIndex];
 
 				if (CreateDirectSoundBuffer(g_directSound, primaryBuffer, g_wavDataSize) == 1)
 				{
@@ -902,7 +900,7 @@ namespace AudioManager
 					(*primaryBuffer)->SetPan(0);
 					(*primaryBuffer)->SetVolume(0);
 
-					g_soundBufferStates[6 * effect] = (void*)1;
+					g_soundBufferStates[bufferBaseIndex] = (void*)1;
 					int32_t duplicatesRemaining = 5;
 
 					do
@@ -924,6 +922,10 @@ namespace AudioManager
 						--duplicatesRemaining;
 					} while (duplicatesRemaining);
 				}
+			}
+			else
+			{
+				Logger::Log("LoadSoundEffect : Calling WaveLoadFile failed - no sound effect %s, effect %d.\n", filePath, effect);
 			}
 		}
 	}
