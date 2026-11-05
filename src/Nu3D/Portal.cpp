@@ -39,9 +39,10 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004B33B0
 	void Portal::AreaPortal::CalculateBoundingSphere(Portal::AreaPortal* portal)
 	{
-		float z = 3.4028235e38;
-		float y = 3.4028235e38;
-		float x = 3.4028235e38;
+		Vector3F minimum;
+		minimum.z = 3.4028235e38;
+		minimum.y = 3.4028235e38;
+		minimum.x = 3.4028235e38;
 
 		int32_t vertexCount = portal->vertexCount;
 
@@ -57,20 +58,20 @@ namespace Nu3D
 
 			do
 			{
-				if (vertices->x <= x)
-					x = vertices->x;
+				if (vertices->x <= minimum.x)
+					minimum.x = vertices->x;
 
 				if (vertices->x >= vector.x)
 					vector.x = vertices->x;
 
-				if (vertices->y <= y)
-					y = vertices->y;
+				if (vertices->y <= minimum.y)
+					minimum.y = vertices->y;
 
 				if (vertices->y >= vector.y)
 					vector.y = vertices->y;
 
-				if (z >= vertices->z)
-					z = vertices->z;
+				if (minimum.z >= vertices->z)
+					minimum.z = vertices->z;
 
 				if (vertices->z >= vector.z)
 					vector.z = vertices->z;
@@ -81,15 +82,14 @@ namespace Nu3D
 			} while (verticesLeft);
 		}
 
-		portal->center.x = (vector.x + x) * 0.5;
-		portal->center.y = (vector.y + y) * 0.5;
-		portal->center.z = (vector.z + z) * 0.5;
+		portal->center.x = (vector.x + minimum.x) * 0.5f;
+		portal->center.y = (vector.y + minimum.y) * 0.5f;
+		portal->center.z = (vector.z + minimum.z) * 0.5f;
 
 		Nu3D::Math::VertexSubtract(&vector, &vector, &portal->center);
 
 		double radSqrt = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
 
-		// TODO: naming is wrong here
 		portal->radius = radSqrt;
 		portal->radiusSquared = sqrt(radSqrt);
 	}
