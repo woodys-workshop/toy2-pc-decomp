@@ -55,10 +55,9 @@ namespace Toy2
 
 			Nu3D::Math::NormalizeToFixedPoint(&normalised, &normalised);
 
-			int32_t length = (int32_t)sqrt((double)(x * x + z * z));
+			l_moveableObject->segLength = (int32_t)sqrt((double)(x * x + z * z));
 
 			l_moveableObject->segDeltaX = normalised.x;
-			l_moveableObject->segLength = length;
 			l_moveableObject->segDeltaZ = normalised.z;
 			l_moveableObject->pushState = 0;
 
@@ -72,7 +71,7 @@ namespace Toy2
 			}
 		}
 
-		// FUNCTION: TOY2 0x004335D0
+		// FUNCTION: TOY2 0x004335D0 [MATCHED]
 		void InitTable(int16_t* array)
 		{
 			memset(g_moveableObjects, 0, sizeof(g_moveableObjects));
@@ -82,9 +81,10 @@ namespace Toy2
 
 			if (array)
 			{
-				int16_t modelNode = *array;
+				int16_t* entry = array;
+				int16_t modelNode = *entry;
 
-				if (*array != -1)
+				if (*entry != -1)
 				{
 					MoveableObject* moveableObject = g_moveableObjects;
 
@@ -97,16 +97,14 @@ namespace Toy2
 						else
 							waypointIdx = 0;
 
-						int16_t* entry = array + 1;
+						++entry;
 
 						moveableObject->modelNode = modelNode;
 						moveableObject->platformIdx = *entry++;
 
-						int16_t pathIdx = *entry;
-						array = entry + 1;
-						moveableObject->pathIdx = pathIdx;
+						moveableObject->pathIdx = *entry++;
 
-						Levels::RecordData* path = Levels::g_recordData[pathIdx];
+						Levels::RecordData* path = Levels::g_recordData[moveableObject->pathIdx];
 
 						Vector3I* pos = &moveableObject->pos;
 
@@ -116,7 +114,7 @@ namespace Toy2
 						moveableObject->waypointIdx = waypointIdx;
 						moveableObject->minWaypointIdx = 0;
 
-						ComputeSegment(pathIdx, moveableObject);
+						ComputeSegment(moveableObject->pathIdx, moveableObject);
 
 						bool hasNoModel = moveableObject->modelNode < 0;
 						moveableObject->segProgress = 0;
@@ -126,11 +124,11 @@ namespace Toy2
 
 						Platform::SetOrigin(moveableObject->platformIdx, pos->x, pos->y, pos->z);
 
-						++moveableObject;
 						++g_moveableObjectCount;
+						++moveableObject;
 
-						modelNode = *array;
-					} while (*array != -1);
+						modelNode = *entry;
+					} while (*entry != -1);
 				}
 			}
 		}
