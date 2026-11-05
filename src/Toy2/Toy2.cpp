@@ -6688,57 +6688,47 @@ namespace Toy2
 	// FUNCTION: TOY2 0x0049F490
 	void UnusedVarUpdate() { g_unused3 = (g_unused3 + 1) & 0xF; }
 
-	// FUNCTION: TOY2 0x0049FC60
+	// FUNCTION: TOY2 0x0049FC60 [MATCHED]
 	int32_t TickSlide(int32_t widgetIndex)
 	{
 		if (! g_isPaused)
 		{
-			int16_t timer = g_hudWidgetTimers[widgetIndex];
-
-			if (! timer || (Camera::g_inCutscene & 1) != 0)
+			if (g_hudWidgetTimers[widgetIndex] && (Camera::g_inCutscene & 1) == 0)
 			{
-				int16_t position = g_hudWidgetPositions[widgetIndex];
-
-				if (position > 0)
+				if (g_hudWidgetPositions[widgetIndex] < 1024)
 				{
-					int16_t newPosition = position - 32 * Renderer::g_frameDelta;
-					g_hudWidgetPositions[widgetIndex] = newPosition;
+					g_hudWidgetPositions[widgetIndex] += Renderer::g_frameDelta << 5;
 
-					if (newPosition <= 0)
-						g_hudWidgetPositions[widgetIndex] = 0;
+					if (g_hudWidgetPositions[widgetIndex] >= 1024)
+						g_hudWidgetPositions[widgetIndex] = 1024;
+				}
+
+				if (g_hudWidgetTimers[widgetIndex] < 1000)
+				{
+					g_hudWidgetTimers[widgetIndex] -= Renderer::g_frameDelta;
+
+					if (g_hudWidgetTimers[widgetIndex] <= 0)
+						g_hudWidgetTimers[widgetIndex] = 0;
 				}
 			}
 			else
 			{
-				int16_t position = g_hudWidgetPositions[widgetIndex];
-				int16_t frameDelta = Renderer::g_frameDelta;
-
-				if (position < 1024)
+				if (g_hudWidgetPositions[widgetIndex] > 0)
 				{
-					int16_t newPosition = 32 * Renderer::g_frameDelta + position;
-					g_hudWidgetPositions[widgetIndex] = newPosition;
+					g_hudWidgetPositions[widgetIndex] -= Renderer::g_frameDelta << 5;
 
-					if (newPosition >= 1024)
-						g_hudWidgetPositions[widgetIndex] = 1024;
-				}
-
-				if (timer < 1000)
-				{
-					int16_t newTimer = timer - frameDelta;
-					g_hudWidgetTimers[widgetIndex] = newTimer;
-
-					if (newTimer <= 0)
-						g_hudWidgetTimers[widgetIndex] = 0;
+					if (g_hudWidgetPositions[widgetIndex] <= 0)
+						g_hudWidgetPositions[widgetIndex] = 0;
 				}
 			}
 		}
 
 		int16_t position = g_hudWidgetPositions[widgetIndex];
 
-		if (position)
-			return (Numerics::g_sinCosLUT[position] >> 8) - 64;
-		else
+		if (! position)
 			return 1;
+
+		return (Numerics::g_sinCosLUT[position] >> 8) - 64;
 	}
 
 	// FUNCTION: TOY2 0x0049FD40
