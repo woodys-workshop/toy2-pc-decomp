@@ -365,35 +365,35 @@ namespace Toy2
 			g_levelActors[3].rollAngle = 2048;
 		}
 
-		// FUNCTION: TOY2 0x00425EB0
-		void Method1(Vector3I* a2, int32_t arg4, int32_t a3)
+		// FUNCTION: TOY2 0x00425EB0 [MATCHED]
+		void Method1(Vector3I* spawnPos, int32_t directionIndex, int32_t velocityScale)
 		{
-			int32_t v3;
-			Nu3D::Particles::ParticleInstance* v4;
-			int16_t v5;
+			int32_t tickIndex;
+			Nu3D::Particles::ParticleInstance* particle;
+			int16_t rotation;
 
-			if (arg4 == 4)
+			if (directionIndex == 4)
 			{
-				v3 = 7;
+				tickIndex = 7;
 				AudioManager::g_pitchArray[0] = 5120;
-				AudioManager::PlaySoundEffect(140, a2);
+				AudioManager::PlaySoundEffect(140, spawnPos);
 			}
 			else
 			{
-				v3 = 9;
+				tickIndex = 9;
 			}
-			if (g_tickState[v3])
+			if (g_tickState[tickIndex])
 			{
-				if (arg4 == 4)
-					v4 = Nu3D::Particles::SpawnFromPreset(a2->x, a2->y, a2->z, 79, 2);
+				if (directionIndex != 4)
+					particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 78, 2);
 				else
-					v4 = Nu3D::Particles::SpawnFromPreset(a2->x, a2->y, a2->z, 78, 2);
-				v4->velX = a3 * g_unk4F37EC[arg4].x;
-				v4->velY = a3 * g_unk4F37EC[arg4].y;
-				v4->velZ = a3 * g_unk4F37EC[arg4].z;
-				v5 = g_tickAccumulators.tick32Acc << 6;
-				v4->rotSpeed = -256;
-				v4->groundAlignRot = 4095 - v5;
+					particle = Nu3D::Particles::SpawnFromPreset(spawnPos->x, spawnPos->y, spawnPos->z, 79, 2);
+				particle->velX = velocityScale * g_unk4F37EC[directionIndex].x;
+				particle->velY = velocityScale * g_unk4F37EC[directionIndex].y;
+				particle->velZ = velocityScale * g_unk4F37EC[directionIndex].z;
+				rotation = 4095 - (g_tickAccumulators.tick32Acc << 6);
+				particle->rotSpeed = -256;
+				particle->groundAlignRot = rotation;
 			}
 		}
 
