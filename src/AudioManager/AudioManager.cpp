@@ -2806,28 +2806,20 @@ namespace AudioManager
 
 	namespace Preset
 	{
-		// FUNCTION: TOY2 0x0049EA60
+		// FUNCTION: TOY2 0x0049EA60 [MATCHED]
 		int32_t PlayOneShotSound2(int32_t soundIndex, Toy2::CreatureActor* owner)
 		{
-			return PlayOneShotSound3DActor(
-				owner,
-				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
-				g_soundEffectPresets[soundIndex].pitch,
-				g_soundEffectPresets[soundIndex].volume,
-				&owner->transform.pos,
-				0);
+			SoundEffectPreset* soundPreset = &g_soundEffectPresets[soundIndex];
+
+			return PlayOneShotSound3DActor(owner, soundPreset->soundBufferIndex - 1, soundPreset->pitch, soundPreset->volume, &owner->transform.pos, 0);
 		}
 
-		// FUNCTION: TOY2 0x0049EA90
+		// FUNCTION: TOY2 0x0049EA90 [MATCHED]
 		int32_t PlayOneShotSound(int32_t soundIndex, Toy2::CreatureActor* owner)
 		{
-			return PlayOneShotSound3DActor(
-				owner,
-				g_soundEffectPresets[soundIndex].soundBufferIndex - 1,
-				g_soundEffectPresets[soundIndex].pitch,
-				g_soundEffectPresets[soundIndex].volume,
-				&owner->transform.pos,
-				1);
+			SoundEffectPreset* soundPreset = &g_soundEffectPresets[soundIndex];
+
+			return PlayOneShotSound3DActor(owner, soundPreset->soundBufferIndex - 1, soundPreset->pitch, soundPreset->volume, &owner->transform.pos, 1);
 		}
 	}
 }
