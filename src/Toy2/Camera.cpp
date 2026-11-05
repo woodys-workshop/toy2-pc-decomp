@@ -185,25 +185,25 @@ namespace Toy2
 		// GLOBAL: TOY2 0x004F5AC8
 		int16_t g_autoRotationSequence[16] = { 0, 0, 1024, 512, 2048, 0, 1536, 0, 3072, 3584, 0, 0, 2560, 0, 0, 0 };
 
-		// FUNCTION: TOY2 0x00402030
+		// FUNCTION: TOY2 0x00402030 [MATCHED]
 		void InitCutsceneCamera(Vector3I* focusPos, Vector3I* pos)
 		{
 			g_scriptedCameraState.pos = *pos;
 			g_scriptedCameraState.focusPos = *focusPos;
 			g_scriptedCameraState.eyePos = g_scriptedCameraState.pos;
 
-			int32_t z = (g_scriptedCameraState.focusPos.z - g_scriptedCameraState.pos.z) >> 5;
 			int32_t x = (g_scriptedCameraState.focusPos.x - g_scriptedCameraState.pos.x) >> 5;
 			int32_t y = (g_scriptedCameraState.focusPos.y - g_scriptedCameraState.pos.y) >> 5;
+			int32_t z = (g_scriptedCameraState.focusPos.z - g_scriptedCameraState.pos.z) >> 5;
 
 			g_scriptedCameraState.angles.yaw = Nu3D::Math::CartesianToFixedAngle(x, z);
 
 			int16_t angle;
 
-			if (y >= 0)
-				angle = Nu3D::Math::CartesianToFixedAngle(-(y * y), x * x + z * z);
+			if (y < 0)
+				angle = Nu3D::Math::CartesianToFixedAngle(y * y, z * z + x * x);
 			else
-				angle = Nu3D::Math::CartesianToFixedAngle(y * y, x * x + z * z);
+				angle = Nu3D::Math::CartesianToFixedAngle(-(y * y), z * z + x * x);
 
 			g_scriptedCameraRoll = 0;
 
