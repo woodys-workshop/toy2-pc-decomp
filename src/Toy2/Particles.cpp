@@ -46,21 +46,14 @@ namespace Toy2
 
 			do
 			{
-				int32_t ringSin = Numerics::g_sinCosLUT[lutIdx];
+				int32_t ringSin = Numerics::g_sinCosLUT[lutIdx] / 4;
+				int32_t offsetX = (xFactor * ringSin) >> 14;
+				int32_t offsetZ = -(zFactor * ringSin) >> 14;
 				int32_t ringCos = Numerics::g_sinCosLUT[(flags + 1024) & 0xFFF] / 4;
 				int32_t velY = *g_randDatBufferPtr++ - 128;
 
 				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
-					((xFactor * (ringSin / 4)) >> 14) + pos->x,
-					ringCos + pos->y - yOffset,
-					(-(zFactor * (ringSin / 4)) >> 14) + pos->z,
-					(xFactor * (ringSin / 4)) >> 16,
-					(ringCos >> 2) - 1024,
-					-(zFactor * (ringSin / 4)) >> 16,
-					64,
-					flags,
-					velY,
-					125);
+					offsetX + pos->x, ringCos + pos->y - yOffset, offsetZ + pos->z, offsetX >> 2, (ringCos >> 2) - 1024, offsetZ >> 2, 64, flags, velY, 125);
 
 				lutIdx += 512;
 				flags += 512;
@@ -81,35 +74,32 @@ namespace Toy2
 		{
 			int32_t zFactor = Numerics::g_sinCosLUT[Camera::g_activeCameraTransform.angles.yaw & 0xFFF];
 			int32_t xFactor = Numerics::g_sinCosLUT[(Camera::g_activeCameraTransform.angles.yaw + 1024) & 0xFFF];
-			int16_t flags = 0;
-			int32_t lutIdx = 0;
 
-			do
+			for (int32_t lutIdx = 0; lutIdx < 4095; lutIdx += 819)
 			{
-				int32_t ringSin = Numerics::g_sinCosLUT[lutIdx];
-				int32_t ringCos = Numerics::g_sinCosLUT[(flags + 1024) & 0xFFF];
+				int32_t ringSin = Numerics::g_sinCosLUT[lutIdx] / 4;
+				int32_t offsetZ = -(zFactor * ringSin) >> 14;
+				int32_t offsetX = (xFactor * ringSin) >> 14;
+				int32_t ringCos = Numerics::g_sinCosLUT[(lutIdx + 1024) & 0xFFF] / 4;
 				int32_t velY = *g_randDatBufferPtr++ - 128;
 
 				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnInstance(
-					((xFactor * (ringSin / 4)) >> 14) + actor->transform.pos.x,
-					actor->transform.pos.y + ringCos / 4 - yOffset,
-					actor->transform.pos.z + (-(zFactor * (ringSin / 4)) >> 14),
-					(xFactor * (ringSin / 4)) >> 17,
-					((ringCos / 4) >> 3) - 1024,
-					-(zFactor * (ringSin / 4)) >> 17,
+					offsetX + actor->transform.pos.x,
+					actor->transform.pos.y + ringCos - yOffset,
+					actor->transform.pos.z + offsetZ,
+					offsetX >> 3,
+					(ringCos >> 3) - 1024,
+					offsetZ >> 3,
 					64,
-					flags,
+					lutIdx,
 					velY,
 					125);
-
-				lutIdx += 819;
-				flags += 819;
 
 				particle->lifetime = (*g_randDatBufferPtr++ & 0x1F) + 50;
 				particle->colourR = r;
 				particle->colourG = g;
 				particle->colourB = b;
-			} while (lutIdx < 4095);
+			}
 
 			Nu3D::Particles::SpawnInstance(actor->transform.pos.x, actor->transform.pos.y - yOffset, actor->transform.pos.z, 0, -1024, 0, 64, 0, 0, 126);
 			Nu3D::Particles::SpawnInstance(actor->transform.pos.x, actor->transform.pos.y - yOffset, actor->transform.pos.z, 0, -1024, 0, 64, 0, 0, 127);
