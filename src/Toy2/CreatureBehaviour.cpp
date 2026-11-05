@@ -1018,10 +1018,10 @@ namespace Toy2
 		void LawnMower(Toy2::CreatureActor::ActorBehaviourContext* context)
 		{
 			Toy2::CreatureActor* actor = context->actor;
+			Nu3D::Particles::ParticleInstance* particle;
 			int32_t index;
-			uint8_t* rand;
 			int32_t angle;
-			int32_t randByte;
+			uint8_t randByte;
 			int32_t spawnX;
 			int32_t spawnZ;
 
@@ -1031,47 +1031,38 @@ namespace Toy2
 			{
 				if (g_tickState[9])
 				{
-					Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y, actor->transform.pos.z, 49, 2)->groundAlignRot =
-						16 * *g_randDatBufferPtr;
+					particle = Nu3D::Particles::SpawnFromPreset(actor->transform.pos.x, actor->transform.pos.y, actor->transform.pos.z, 49, 2);
+					particle->groundAlignRot = 16 * *g_randDatBufferPtr;
 					++g_randDatBufferPtr;
 				}
 
-				int16_t yawAngle = actor->transform.angles.yaw;
+				int32_t yawAngle = actor->transform.angles.yaw;
 
-				index = 0;
 				spawnX = actor->transform.pos.x + Numerics::g_sinCosLUT[(yawAngle - 2048) & 0xFFF];
 				spawnZ = actor->transform.pos.z + Numerics::g_sinCosLUT[(yawAngle - 1024) & 0xFFF];
 
-				if (g_tickState[2])
+				for (index = 0; index < g_tickState[2]; ++index)
 				{
-					rand = g_randDatBufferPtr;
+					angle = (actor->transform.angles.yaw + 6 * *g_randDatBufferPtr + 1280) & 0xFFF;
 
-					do
-					{
-						angle = (actor->transform.angles.yaw + 6 * *rand + 1280) & 0xFFF;
+					++g_randDatBufferPtr;
+					randByte = *g_randDatBufferPtr;
+					g_randDatBufferPtr += 3;
 
-						g_randDatBufferPtr = rand + 1;
-						randByte = rand[1];
-						g_randDatBufferPtr = rand + 4;
+					particle = Nu3D::Particles::SpawnInstance(
+						spawnX,
+						actor->transform.pos.y,
+						spawnZ,
+						Numerics::g_sinCosLUT[angle] >> 4,
+						randByte - 3072,
+						Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 4,
+						256,
+						16 * randByte,
+						2 * randByte - 256,
+						50);
+					particle->colourG = (*g_randDatBufferPtr >> 2) + 64;
 
-						Nu3D::Particles::SpawnInstance(
-							spawnX,
-							actor->transform.pos.y,
-							spawnZ,
-							Numerics::g_sinCosLUT[angle] >> 4,
-							randByte - 3072,
-							Numerics::g_sinCosLUT[(angle + 1024) & 0xFFF] >> 4,
-							256,
-							16 * randByte,
-							2 * randByte - 256,
-							50)
-							->colourG = (rand[4] >> 2) + 64;
-
-						rand = g_randDatBufferPtr + 1;
-
-						++index;
-						++g_randDatBufferPtr;
-					} while (index < g_tickState[2]);
+					++g_randDatBufferPtr;
 				}
 			}
 		}
