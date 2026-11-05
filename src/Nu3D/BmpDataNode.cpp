@@ -415,33 +415,28 @@ namespace Nu3D
 		fread(&bmpInfo, 1, sizeof(BITMAPINFOHEADER), stream);
 
 		size_t pixelDataSize;
-		uint32_t calcHeight;
 
 		switch (bmpInfo.bmiHeader.biBitCount)
 		{
 			case 1:
 				fread(bmpInfo.bmiColors, 2, 4, stream);
-				calcHeight = bmpInfo.bmiHeader.biHeight;
+				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth / 8;
 				break;
 			case 4:
 				fread(bmpInfo.bmiColors, 16, 4, stream);
-				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight / 2;
-				goto READ_BMDATA;
+				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth / 2;
+				break;
 			case 8:
 				fread(bmpInfo.bmiColors, 256, 4, stream);
 
 				memcpy(g_lastBmpPalette, bmpInfo.bmiColors, sizeof(g_lastBmpPalette));
-				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight;
+				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth;
 
-				goto READ_BMDATA;
+				break;
 			default:
-				calcHeight = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biBitCount;
+				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biBitCount * bmpInfo.bmiHeader.biWidth / 8;
 				break;
 		}
-
-		pixelDataSize = bmpInfo.bmiHeader.biWidth * calcHeight / 8;
-
-	READ_BMDATA:
 
 		fseek(stream, offset + bmpHeader.bfOffBits, 0);
 
@@ -531,65 +526,60 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004AFAF0
 	void SetMinTexSize(int32_t minTexSize) { g_minTextureSize = minTexSize; }
 
-	// FUNCTION: TOY2 0x004B0A30
+	// FUNCTION: TOY2 0x004B0A30 [MATCHED]
 	BmpDataNode* LoadTextureByStream(FILE* handle, const char* rawTexStr, int32_t flags)
 	{
 		HBITMAP mainBmp = ProcessBmpInfoFromStream(handle);
 		HBITMAP alphaBmp = 0;
 
-		if (! mainBmp)
-			return 0;
-
-		if ((flags & 1) != 0)
-			alphaBmp = ProcessBmpInfoFromStream(handle);
-
-		uint32_t* texDataBuffer = ProcessBmpPixelData(mainBmp, alphaBmp, flags);
-
-		if (! texDataBuffer)
+		if (mainBmp)
 		{
+			if ((flags & 1) != 0)
+				alphaBmp = ProcessBmpInfoFromStream(handle);
+
+			uint32_t* texDataBuffer = ProcessBmpPixelData(mainBmp, alphaBmp, flags);
+
+			if (texDataBuffer)
+			{
+				BmpDataNode* bmpDataNode = AllocateBmpDataNode();
+
+				if (bmpDataNode)
+				{
+					bmpDataNode->texData = texDataBuffer;
+
+					int32_t texSize = CalculateTexSize(mainBmp, flags);
+
+					bmpDataNode->textureHeight = texSize;
+					bmpDataNode->textureWidth = texSize;
+					bmpDataNode->bitmapWidth = GetBitmapWidth(mainBmp);
+					bmpDataNode->bitmapHeight = GetBitmapHeight(mainBmp);
+					bmpDataNode->flags = flags;
+
+					strcpy(bmpDataNode->texName, rawTexStr);
+
+					if (alphaBmp)
+						DeleteObject(alphaBmp);
+
+					if ((flags & 32) == 0)
+						DeleteObject(mainBmp);
+					else
+						bmpDataNode->bitmapHandle = mainBmp;
+
+					InitialiseTextureSurface(bmpDataNode);
+
+					return bmpDataNode;
+				}
+
+				free(texDataBuffer);
+			}
+
 			if (alphaBmp)
 				DeleteObject(alphaBmp);
 
 			DeleteObject(mainBmp);
-			return 0;
 		}
 
-		BmpDataNode* bmpDataNode = AllocateBmpDataNode();
-
-		if (! bmpDataNode)
-		{
-			free(texDataBuffer);
-
-			if (alphaBmp)
-				DeleteObject(alphaBmp);
-
-			DeleteObject(mainBmp);
-			return 0;
-		}
-
-		bmpDataNode->texData = texDataBuffer;
-
-		int32_t texSize = CalculateTexSize(mainBmp, flags);
-
-		bmpDataNode->textureHeight = texSize;
-		bmpDataNode->textureWidth = texSize;
-		bmpDataNode->bitmapWidth = GetBitmapWidth(mainBmp);
-		bmpDataNode->bitmapHeight = GetBitmapHeight(mainBmp);
-		bmpDataNode->flags = flags;
-
-		strcpy(bmpDataNode->texName, rawTexStr);
-
-		if (alphaBmp)
-			DeleteObject(alphaBmp);
-
-		if ((flags & 32) != 0)
-			bmpDataNode->bitmapHandle = mainBmp;
-		else
-			DeleteObject(mainBmp);
-
-		InitialiseTextureSurface(bmpDataNode);
-
-		return bmpDataNode;
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004AFC70
