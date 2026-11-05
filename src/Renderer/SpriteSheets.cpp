@@ -1019,19 +1019,12 @@ namespace Renderer
 	{
 		uint32_t levelSheetBytes = 0;
 
-		SpriteSheet** sheet = g_levelSpriteSheets[Toy2::g_levelFileIndex];
-		SpriteSheet** curSheet = sheet + 1;
-		SpriteSheet* nextSheet;
+		SpriteSheet** curSheet = g_levelSpriteSheets[Toy2::g_levelFileIndex];
+		SpriteSheet** sheet = curSheet;
 
-		if (*sheet != SPRITE_SHEET_END)
+		while (*curSheet++ != SPRITE_SHEET_END)
 		{
-			do
-			{
-				nextSheet = *curSheet;
-				levelSheetBytes += 4;
-				++curSheet;
-
-			} while (nextSheet != SPRITE_SHEET_END);
+			levelSheetBytes += 4;
 		}
 
 		memset(g_spriteSheets, 0, 128 * sizeof(SpriteSheet*));
