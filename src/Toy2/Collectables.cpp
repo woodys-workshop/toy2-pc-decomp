@@ -243,25 +243,19 @@ namespace Toy2
 			memset(g_tokenTable, 0, sizeof(g_tokenTable));
 
 			int32_t* result = a1;
-			TokenTableEntry* entry = g_tokenTable;
 
-			do
+			for (int32_t i = 0; i < 10; i++)
 			{
 				int32_t firstValue = *result++;
 
 				if (firstValue < 0)
 					break;
 
-				entry->linkId = firstValue;
-				entry->recordType = *result;
-				result++;
-				entry->text = (const char*)*result;
-				result++;
-				entry->yaw = *result;
-				result++;
-
-				entry++;
-			} while (entry < &g_tokenTable[10]);
+				g_tokenTable[i].linkId = firstValue;
+				g_tokenTable[i].recordType = *result++;
+				g_tokenTable[i].text = (const char*)*result++;
+				g_tokenTable[i].yaw = *result++;
+			}
 
 			return result;
 		}
@@ -473,17 +467,17 @@ namespace Toy2
 				Nu3D::Link::GetCurrentPosFixed(g_pickupSlots[slotIdx].linkId, &pos);
 				*yPosPtr = pos.y >> 5;
 
-				if (skipIntro)
-				{
-					Nu3D::Link::SetScaleFromFixedOffsets(g_pickupSlots[slotIdx].linkId, 4096, 4096, 4096);
-				}
-				else
+				if (! skipIntro)
 				{
 					g_pickupSlots[slotIdx].collectTimer = 132;
 					Camera::BeginScriptedCutsceneAtPoint(&pos, 180, 16);
 
 					if (Camera::g_cameraState)
 						Camera::g_cameraState = 5;
+				}
+				else
+				{
+					Nu3D::Link::SetScaleFromFixedOffsets(g_pickupSlots[slotIdx].linkId, 4096, 4096, 4096);
 				}
 			}
 		}
