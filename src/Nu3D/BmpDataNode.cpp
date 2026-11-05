@@ -331,67 +331,63 @@ namespace Nu3D
 		RGBA color;
 		int32_t bitsPerPixel = mainBmp->bmBitsPixel;
 
-		if (bitsPerPixel == 8)
+		switch (bitsPerPixel)
 		{
-			int32_t scaledY2 = y * mainBmp->bmHeight / textureSize;
+			case 24: {
+				int32_t scaledY = y * mainBmp->bmHeight / textureSize;
 
-			color.a = -1;
+				color.a = 0xFF;
 
-			int32_t paletteIndex = 4 * *((uint8_t*)mainBmp->bmBits + x * mainBmp->bmWidth / textureSize + mainBmp->bmWidthBytes * scaledY2);
+				uint8_t* pixelOffset = (uint8_t*)mainBmp->bmBits + 3 * (x * mainBmp->bmWidth / textureSize) + mainBmp->bmWidthBytes * scaledY;
 
-			color.b = g_lastBmpPalette[paletteIndex];
-			color.g = g_lastBmpPalette[paletteIndex + 1];
-			color.r = g_lastBmpPalette[paletteIndex + 2];
+				color.b = *pixelOffset++;
+				color.g = *pixelOffset;
+				color.r = pixelOffset[1];
 
-			if ((flags & 2) != 0)
-			{
-				color.a = -(color.value != -1);
-				return color;
+				if ((flags & 2) != 0)
+				{
+					color.a = color.value == -1 ? 0 : 255;
+				}
+				else if ((flags & 4) != 0)
+				{
+					color.a = color.value == 0xFF000000 ? 0 : 255;
+				}
+				else if ((flags & 8) != 0 && color.value == 0xFF00FF00)
+				{
+					color.value = 0;
+				}
+
+				if (alphaBmp && alphaBmp->bmBitsPixel == 8)
+				{
+					color.a =
+						*((uint8_t*)alphaBmp->bmBits + x * alphaBmp->bmWidth / textureSize + alphaBmp->bmWidthBytes * (y * alphaBmp->bmHeight / textureSize));
+				}
+				break;
 			}
+			case 8: {
+				int32_t scaledY2 = y * mainBmp->bmHeight / textureSize;
 
-			if ((flags & 4) != 0)
-			{
-				color.a = -(color.value != 0xFF000000);
-				return color;
-			}
+				color.a = -1;
 
-			if ((flags & 8) != 0 && color.value == 0xFF00FF00)
-			{
-				RGBA empty;
-				empty.value = 0;
+				int32_t paletteIndex = 4 * *((uint8_t*)mainBmp->bmBits + x * mainBmp->bmWidth / textureSize + mainBmp->bmWidthBytes * scaledY2);
 
-				return empty;
-			}
-		}
-		else if (bitsPerPixel == 24)
-		{
-			int32_t scaledY = y * mainBmp->bmHeight / textureSize;
+				color.b = g_lastBmpPalette[paletteIndex];
+				color.g = g_lastBmpPalette[paletteIndex + 1];
+				color.r = g_lastBmpPalette[paletteIndex + 2];
 
-			color.a = 0xFF;
-
-			uint8_t* pixelOffset = (uint8_t*)mainBmp->bmBits + 3 * (x * mainBmp->bmWidth / textureSize) + mainBmp->bmWidthBytes * scaledY;
-
-			color.b = pixelOffset[0];
-			color.g = pixelOffset[1];
-			color.r = pixelOffset[2];
-
-			if ((flags & 2) != 0)
-			{
-				color.a = -(color.value != -1);
-			}
-			else if ((flags & 4) != 0)
-			{
-				color.a = -(color.value != 0xFF000000);
-			}
-			else if ((flags & 8) != 0 && color.value == 0xFF00FF00)
-			{
-				color.value = 0;
-			}
-
-			if (alphaBmp && alphaBmp->bmBitsPixel == 8)
-			{
-				color.a = *((uint8_t*)alphaBmp->bmBits + x * alphaBmp->bmWidth / textureSize + alphaBmp->bmWidthBytes * (y * alphaBmp->bmHeight / textureSize));
-				return color;
+				if ((flags & 2) != 0)
+				{
+					color.a = color.value == -1 ? 0 : 255;
+				}
+				else if ((flags & 4) != 0)
+				{
+					color.a = color.value == 0xFF000000 ? 0 : 255;
+				}
+				else if ((flags & 8) != 0 && color.value == 0xFF00FF00)
+				{
+					color.value = 0;
+				}
+				break;
 			}
 		}
 
@@ -476,7 +472,7 @@ namespace Nu3D
 		return textureSize;
 	}
 
-	// FUNCTION: TOY2 0x004B07A0
+	// FUNCTION: TOY2 0x004B07A0 [MATCHED]
 	uint32_t* ProcessBmpPixelData(HANDLE mainBmp, HANDLE alphaBmp, int32_t flags)
 	{
 		int32_t texSize = CalculateTexSize(mainBmp, flags);
@@ -489,35 +485,20 @@ namespace Nu3D
 		if (alphaBmp)
 			GetObjectA(alphaBmp, sizeof(BITMAP), &alphaBmpObj);
 
-		uint32_t* buffer = (uint32_t*)malloc(4 * texSize * texSize);
+		uint32_t* buffer = (uint32_t*)malloc(texSize * texSize * 4);
 
-		if (! buffer)
-			return buffer;
-
-		int32_t row = 0;
-
-		if (texSize > 0)
+		if (buffer)
 		{
-			int32_t rowOffset = 0;
-
-			do
+			for (int32_t row = 0; row < texSize; ++row)
 			{
 				for (int32_t col = 0; col < texSize; ++col)
 				{
-					uint32_t pixelColor;
-
 					if (alphaBmp)
-						pixelColor = SampleBitmapPixel(&mainBmpObj, &alphaBmpObj, col, row, texSize, flags).value;
+						buffer[col + row * texSize] = SampleBitmapPixel(&mainBmpObj, &alphaBmpObj, col, row, texSize, flags).value;
 					else
-						pixelColor = SampleBitmapPixel(&mainBmpObj, 0, col, row, texSize, flags).value;
-
-					buffer[col + rowOffset] = pixelColor;
+						buffer[col + row * texSize] = SampleBitmapPixel(&mainBmpObj, 0, col, row, texSize, flags).value;
 				}
-
-				++row;
-				rowOffset += texSize;
-
-			} while (row < texSize);
+			}
 		}
 
 		return buffer;
