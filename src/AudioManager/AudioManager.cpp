@@ -931,13 +931,10 @@ namespace AudioManager
 	// FUNCTION: TOY2 0x004A3BC0
 	void ResetChannelsTable()
 	{
-		AudioChannel* channel = g_audioChannels;
-
-		do
+		for (int32_t channel = 0; channel < 32; ++channel)
 		{
-			channel->bufferIndex = -1;
-			++channel;
-		} while (channel < &g_audioChannels[32]);
+			g_audioChannels[channel].bufferIndex = -1;
+		}
 	}
 
 	// FUNCTION: TOY2 0x00436C90
@@ -2683,26 +2680,22 @@ namespace AudioManager
 			}
 		}
 
-		AudioChannel* channel = g_audioChannels;
-
-		do
+		for (int32_t channel = 0; channel < 32; ++channel)
 		{
-			if (channel->bufferIndex != -1 && channel->timer != -1)
+			if (g_audioChannels[channel].bufferIndex != -1 && g_audioChannels[channel].timer != -1)
 			{
-				int16_t timer = channel->timer - 1;
-				channel->timer = timer;
+				int16_t timer = g_audioChannels[channel].timer - 1;
+				g_audioChannels[channel].timer = timer;
 
 				if (timer <= 0)
 				{
-					if (ReassertChannelPlaying(channel->bufferIndex))
-						channel->timer = 1;
+					if (ReassertChannelPlaying(g_audioChannels[channel].bufferIndex) == 1)
+						g_audioChannels[channel].timer = 1;
 					else
-						channel->bufferIndex = -1;
+						g_audioChannels[channel].bufferIndex = -1;
 				}
 			}
-
-			++channel;
-		} while (channel < &g_audioChannels[32]);
+		}
 	}
 
 	// FUNCTION: TOY2 0x004A3C80
@@ -2792,22 +2785,18 @@ namespace AudioManager
 	{
 		if (g_directSoundInit)
 		{
-			int32_t index = 0;
-			AudioChannel* voice = g_audioChannels;
-
-			while (voice->bufferIndex == -1 || voice->timer != -1 || g_soundBufferStates[voice->bufferIndex] != buzzActor)
+			for (int32_t index = 0; index < 32; ++index)
 			{
-				++voice;
-				++index;
+				if (g_audioChannels[index].bufferIndex != -1 && g_audioChannels[index].timer == -1
+					&& g_soundBufferStates[g_audioChannels[index].bufferIndex] == buzzActor)
+				{
+					if ((IsEffectPlaying(g_audioChannels[index].bufferIndex) & 1) != 0)
+						return 1;
 
-				if (voice >= &g_audioChannels[32])
-					return 0;
+					g_audioChannels[index].bufferIndex = -1;
+					break;
+				}
 			}
-
-			if ((IsEffectPlaying(g_audioChannels[index].bufferIndex) & 1) != 0)
-				return 1;
-
-			g_audioChannels[index].bufferIndex = -1;
 		}
 
 		return 0;
