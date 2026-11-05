@@ -207,25 +207,23 @@ namespace DrawingDevice
 		if (DirectDrawCreate(lpGUID, &lpDD, 0) < 0)
 			return 0x82000001;
 
-		if (lpDD->QueryInterface(IID_IDirectDraw4, (LPVOID*)&m_pDD) >= 0)
-		{
-			lpDD->Release();
-
-			DWORD coopLevel = DDSCL_NORMAL;
-
-			if (m_bIsFullscreen)
-				coopLevel = DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
-
-			if ((flags & 16) == 0)
-				coopLevel |= DDSCL_FPUSETUP;
-
-			return m_pDD->SetCooperativeLevel(m_hWnd, coopLevel) >= 0 ? 0 : 0x82000002;
-		}
-		else
+		if (lpDD->QueryInterface(IID_IDirectDraw4, (LPVOID*)&m_pDD) < 0)
 		{
 			lpDD->Release();
 			return 0x82000001;
 		}
+
+		lpDD->Release();
+
+		DWORD coopLevel = DDSCL_NORMAL;
+
+		if (m_bIsFullscreen)
+			coopLevel = DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
+
+		if ((flags & 16) == 0)
+			coopLevel |= DDSCL_FPUSETUP;
+
+		return m_pDD->SetCooperativeLevel(m_hWnd, coopLevel) < 0 ? 0x82000002 : 0;
 	}
 
 	// FUNCTION: TOY2 0x004AEF80
@@ -406,7 +404,7 @@ namespace DrawingDevice
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004AF420
+	// FUNCTION: TOY2 0x004AF420 [MATCHED]
 	HRESULT CD3DFramework::CreateZBuffer()
 	{
 		if ((m_ddDeviceDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR) != 0)
@@ -423,10 +421,10 @@ namespace DrawingDevice
 
 		HRESULT result = m_pDD->CreateSurface(&surfaceDesc, &m_pddsZBuffer, 0);
 
-		if (result >= 0)
-			return m_pddsRenderTarget->AddAttachedSurface(m_pddsZBuffer) >= 0 ? 0 : 0x82000005;
-		else
+		if (result < 0)
 			return result != DDERR_OUTOFVIDEOMEMORY ? 0x82000005 : DDERR_OUTOFVIDEOMEMORY;
+
+		return m_pddsRenderTarget->AddAttachedSurface(m_pddsZBuffer) < 0 ? 0x82000005 : 0;
 	}
 
 	// FUNCTION: TOY2 0x004AF4E0 [MATCHED]
@@ -443,7 +441,7 @@ namespace DrawingDevice
 		return m_pD3D->CreateDevice(*guid, m_pddsRenderTarget, &m_pd3dDevice, 0) < 0 ? 0x82000004 : 0;
 	}
 
-	// FUNCTION: TOY2 0x004AF550
+	// FUNCTION: TOY2 0x004AF550 [MATCHED]
 	HRESULT CD3DFramework::CreateAndSetViewport()
 	{
 		D3DVIEWPORT2 viewport2;
@@ -455,10 +453,10 @@ namespace DrawingDevice
 		if (m_pd3dDevice->AddViewport(m_pvViewport) < 0)
 			return 0x82000006;
 
-		if (m_pvViewport->SetViewport2(&viewport2) >= 0)
-			return m_pd3dDevice->SetCurrentViewport(m_pvViewport) >= 0 ? 0 : 0x82000006;
+		if (m_pvViewport->SetViewport2(&viewport2) < 0)
+			return 0x82000006;
 
-		return 0x82000006;
+		return m_pd3dDevice->SetCurrentViewport(m_pvViewport) < 0 ? 0x82000006 : 0;
 	}
 
 	// FUNCTION: TOY2 0x004AF5F0 [MATCHED]
