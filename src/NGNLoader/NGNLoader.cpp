@@ -125,19 +125,17 @@ namespace NGNLoader
 	// FUNCTION: TOY2 0x004AC240
 	Nu3D::BmpDataNode* LoadLocalBmpTexture(const char* rawTexStr, int32_t flags) { return Nu3D::LoadLocalBmpTexture(rawTexStr, flags); }
 
-	// FUNCTION: TOY2 0x004BB3C0
+	// FUNCTION: TOY2 0x004BB3C0 [MATCHED]
 	uint32_t GetOrAllocateTexture(NGNTextureParams* texParams)
 	{
 		char rawTexStrBuffer[256];
 
-		NGNTextureData* cachedTextureData = GetTextureData(texParams, 0);
+		NGNTextureData* textureData = GetTextureData(texParams, 0);
 
-		// If its already cached, return it
-		if (! cachedTextureData)
+		if (! textureData)
 		{
 			NGNTextureCache* textureCache = AllocateTextureCache();
 
-			// Build a new entry if its new
 			if (textureCache)
 			{
 				memcpy(&textureCache->params, texParams, sizeof(textureCache->params));
@@ -146,7 +144,7 @@ namespace NGNLoader
 
 				strcpy(textureCache->texName, texParams->rawTexStr);
 
-				NGNTextureData* textureData = AllocateTextureData();
+				textureData = AllocateTextureData();
 
 				if (textureData)
 				{
@@ -166,15 +164,14 @@ namespace NGNLoader
 
 					textureData->bmpDataNode = LoadLocalBmpTexture(rawTexStrBuffer, flags);
 					textureData->textureCacheIndex = textureCache->textureIndex;
-
-					return textureData->textureIndex;
 				}
 			}
-
-			return 0;
 		}
 
-		return cachedTextureData->textureIndex;
+		if (textureData)
+			return textureData->textureIndex;
+
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004AC220
