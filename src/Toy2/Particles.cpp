@@ -11,27 +11,24 @@ namespace Toy2
 		// FUNCTION: TOY2 0x00410410
 		void SpawnCollectSparkle(int32_t x, int32_t y, int32_t z, int32_t spread)
 		{
-			bool lastIteration;
-
 			spread = 2 * spread;
 			int32_t iterations = 5;
 
 			do
 			{
 				int32_t rand = *g_randDatBufferPtr & 0x3F;
+				int32_t offset = spread * (rand - 32);
 				g_randDatBufferPtr += 3;
 
-				Nu3D::Particles::ParticleInstance* particle =
-					Nu3D::Particles::SpawnFromPreset(x + spread * (rand - 32), spread * (rand - 32) + y, spread * (rand - 32) + z, 41, 15);
+				Nu3D::Particles::ParticleInstance* particle = Nu3D::Particles::SpawnFromPreset(x + offset, y + offset, z + offset, 41, 15);
 
 				particle->rotSpeed = *g_randDatBufferPtr++ - 128;
 				particle->lifetime = 2 * (*g_randDatBufferPtr & 0xF) + 24;
 
-				lastIteration = iterations == 1;
 				++g_randDatBufferPtr;
 
 				--iterations;
-			} while (! lastIteration);
+			} while (iterations);
 
 			Toy2::Lighting::SpawnLight(x, y, z, 0x604000, 16, x);
 		}
