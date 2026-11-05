@@ -870,20 +870,20 @@ namespace Nu3D
 		return (int32_t)width;
 	}
 
-	// FUNCTION: TOY2 0x004B4C10
+	// FUNCTION: TOY2 0x004B4C10 [MATCHED]
 	int32_t Font::ComputeScaledCharClip(char charValue)
 	{
-		int32_t glyphIndex;
+		GlyphInfo* glyphInfo;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
-		g_fontClipRightAmount = g_textCursorX + (int32_t)(g_selectedFont->glyphs[glyphIndex].width * g_fontWidthScale) - g_clipRectRight;
+		g_fontClipRightAmount = g_textCursorX + (int32_t)(glyphInfo->width * g_fontWidthScale) - g_clipRectRight;
 
 		g_fontClipTopAmount = g_clipRectTop - (int32_t)(g_textCursorY - g_scaledFontAscent);
 		g_fontClipBottomAmount = g_textCursorY + (int32_t)(g_scaledFontHeight - g_scaledFontAscent) - g_clipRectBottom;
 
-		return (g_lineStartX - g_textCursorX) & g_fontClipRightAmount & g_fontClipTopAmount & g_fontClipBottomAmount & 0x80000000;
+		return g_fontClipBottomAmount & g_fontClipTopAmount & g_fontClipRightAmount & g_fontClipLeftAmount & 0x80000000;
 	}
 
 	// FUNCTION: TOY2 0x004B4CD0
@@ -1106,17 +1106,17 @@ namespace Nu3D
 		return glyphInfo->width;
 	}
 
-	// FUNCTION: TOY2 0x004B5310
+	// FUNCTION: TOY2 0x004B5310 [MATCHED]
 	int32_t Font::ComputeUnscaledCharClip(char charValue)
 	{
-		int32_t glyphIndex;
+		GlyphInfo* glyphInfo;
 
-		glyphIndex = g_selectedFont->charToGlyphIndex[(uint8_t)charValue];
+		glyphInfo = &g_selectedFont->glyphs[g_selectedFont->charToGlyphIndex[(uint8_t)charValue]];
 		g_fontClipLeftAmount = g_lineStartX - g_textCursorX;
-		g_fontClipRightAmount = g_textCursorX + g_selectedFont->glyphs[glyphIndex].width - g_clipRectRight;
+		g_fontClipRightAmount = g_textCursorX + glyphInfo->width - g_clipRectRight;
 		g_fontClipTopAmount = g_clipRectTop + g_selectedFont->fontAscent - g_textCursorY;
 		g_fontClipBottomAmount = g_textCursorY + g_selectedFont->fontHeight - g_selectedFont->fontAscent - g_clipRectBottom;
-		return (g_lineStartX - g_textCursorX) & g_fontClipRightAmount & g_fontClipTopAmount & g_fontClipBottomAmount & 0x80000000;
+		return g_fontClipBottomAmount & g_fontClipTopAmount & g_fontClipRightAmount & g_fontClipLeftAmount & 0x80000000;
 	}
 
 	// FUNCTION: TOY2 0x004B53D0
