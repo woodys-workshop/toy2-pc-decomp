@@ -605,37 +605,32 @@ namespace ModeSelect
 		return TextOutA(hdc, x, y, buffer, strlen(buffer));
 	}
 
-	// FUNCTION: TOY2 0x00433410
+	// FUNCTION: TOY2 0x00433410 [MATCHED]
 	COLORREF ApplyTextStyle(HDC hdc, HFONT hfont, COLORREF textColor, int32_t styleOp)
 	{
-		COLORREF result;
-
-		if (styleOp == 1)
+		switch (styleOp)
 		{
-			if (hfont)
-				g_savedHeaderFont = SelectObject(hdc, hfont);
+			case 1:
+				if (hfont)
+					g_savedHeaderFont = SelectObject(hdc, hfont);
 
-			g_savedTextColor = SetTextColor(hdc, textColor);
-			result = SetBkMode(hdc, 1);
-			g_savedBkMode = result;
+				g_savedTextColor = SetTextColor(hdc, textColor);
+				g_savedBkMode = SetBkMode(hdc, 1);
+				return g_savedBkMode;
+
+			case 2:
+				if (hfont)
+					SelectObject(hdc, g_savedHeaderFont);
+
+				SetTextColor(hdc, g_savedTextColor);
+				return SetBkMode(hdc, g_savedBkMode);
+
+			default:
+				if (hfont)
+					SelectObject(hdc, hfont);
+
+				return SetTextColor(hdc, textColor);
 		}
-		else if (styleOp == 2)
-		{
-			if (hfont)
-				SelectObject(hdc, g_savedHeaderFont);
-
-			SetTextColor(hdc, g_savedTextColor);
-			return SetBkMode(hdc, g_savedBkMode);
-		}
-		else
-		{
-			if (hfont)
-				SelectObject(hdc, hfont);
-
-			return SetTextColor(hdc, textColor);
-		}
-
-		return result;
 	}
 
 	// FUNCTION: TOY2 0x00432AD0
