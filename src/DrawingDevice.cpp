@@ -247,25 +247,17 @@ namespace DrawingDevice
 		if (m_pD3D->FindDevice(&findDevSearch, &findDevResult) < 0)
 			return 0x82000003;
 
-		D3DDEVICEDESC* ddHwDesc;
-		D3DDEVICEDESC* d3dDesc;
-
-		if (findDevResult.ddHwDesc.dwFlags)
+		if (findDevResult.ddHwDesc.dwFlags == 0)
 		{
-			m_dwDeviceMemType = DDSCAPS_VIDEOMEMORY;
-
-			d3dDesc = &m_ddDeviceDesc;
-			ddHwDesc = &findDevResult.ddHwDesc;
+			m_dwDeviceMemType = DDSCAPS_SYSTEMMEMORY;
+			m_ddDeviceDesc = findDevResult.ddSwDesc;
 		}
 		else
 		{
-			m_dwDeviceMemType = DDSCAPS_SYSTEMMEMORY;
-
-			d3dDesc = &m_ddDeviceDesc;
-			ddHwDesc = &findDevResult.ddSwDesc;
+			m_dwDeviceMemType = DDSCAPS_VIDEOMEMORY;
+			m_ddDeviceDesc = findDevResult.ddHwDesc;
 		}
 
-		memcpy(d3dDesc, ddHwDesc, sizeof(D3DDEVICEDESC));
 		memset(&m_ddpfZBuffer, 0, sizeof(m_ddpfZBuffer));
 
 		if ((flags & 8) != 0)
