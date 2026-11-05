@@ -630,13 +630,11 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x004AAC40
 		void BuildMatrixFromDirection(D3DMATRIX* matrix, Vector3F* direction)
 		{
-			// the third row (forward) is replaced with the requested direction, then the other two rows are
-			// rebuilt via cross products so the matrix stays orthogonal. Each row keeps its original length.
 			Vector3F* yAxis = (Vector3F*)&matrix->_21;
 			Vector3F* zAxis = (Vector3F*)&matrix->_31;
 
 			float xAxisOriginalMagnitude = matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13;
-			float yAxisOriginalMagnitude = yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23;
+			float yAxisOriginalMagnitude = matrix->_21 * matrix->_21 + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23;
 
 			float zAxisScale = sqrt(
 				(zAxis->x * zAxis->x + matrix->_32 * matrix->_32 + matrix->_33 * matrix->_33)
@@ -646,10 +644,16 @@ namespace Nu3D
 			matrix->_32 = zAxisScale * direction->y;
 			matrix->_33 = zAxisScale * direction->z;
 
-			float dotProduct = DotProduct(yAxis, zAxis);
-
-			if (Abs(dotProduct) <= 0.86602539)
+			if (Abs(DotProduct(yAxis, zAxis)) > 0.86602539f)
 			{
+				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
+
+				float yScale = sqrt(yAxisOriginalMagnitude / (matrix->_21 * matrix->_21 + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
+
+				yAxis->x = yScale * yAxis->x;
+				matrix->_22 = yScale * matrix->_22;
+				matrix->_23 = yScale * matrix->_23;
+
 				VertexCrossProduct((Vector3F*)&matrix->_11, yAxis, zAxis);
 
 				float xScale = sqrt(xAxisOriginalMagnitude / (matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13));
@@ -657,25 +661,9 @@ namespace Nu3D
 				matrix->_11 = xScale * matrix->_11;
 				matrix->_12 = xScale * matrix->_12;
 				matrix->_13 = xScale * matrix->_13;
-
-				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
-
-				float yScale = sqrt(yAxisOriginalMagnitude / (yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
-
-				yAxis->x = yScale * yAxis->x;
-				matrix->_22 = yScale * matrix->_22;
-				matrix->_23 = yScale * matrix->_23;
 			}
 			else
 			{
-				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
-
-				float yScale = sqrt(yAxisOriginalMagnitude / (yAxis->x * yAxis->x + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
-
-				yAxis->x = yScale * yAxis->x;
-				matrix->_22 = yScale * matrix->_22;
-				matrix->_23 = yScale * matrix->_23;
-
 				VertexCrossProduct((Vector3F*)&matrix->_11, yAxis, zAxis);
 
 				float xScale = sqrt(xAxisOriginalMagnitude / (matrix->_11 * matrix->_11 + matrix->_12 * matrix->_12 + matrix->_13 * matrix->_13));
@@ -683,6 +671,14 @@ namespace Nu3D
 				matrix->_11 = xScale * matrix->_11;
 				matrix->_12 = xScale * matrix->_12;
 				matrix->_13 = xScale * matrix->_13;
+
+				VertexCrossProduct(yAxis, zAxis, (Vector3F*)&matrix->_11);
+
+				float yScale = sqrt(yAxisOriginalMagnitude / (matrix->_21 * matrix->_21 + matrix->_22 * matrix->_22 + matrix->_23 * matrix->_23));
+
+				yAxis->x = yScale * yAxis->x;
+				matrix->_22 = yScale * matrix->_22;
+				matrix->_23 = yScale * matrix->_23;
 			}
 		}
 
