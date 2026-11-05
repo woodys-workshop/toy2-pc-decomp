@@ -452,7 +452,7 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x004BB850
 		D3DMATRIX* GetProjectionMatrix() { return &g_projMatrix; }
 
-		// FUNCTION: TOY2 0x004BBE10
+		// FUNCTION: TOY2 0x004BBE10 [MATCHED]
 		void TransformPointProjective(Vector3F* outPoints, Vector3F* inPoints, int32_t count, D3DMATRIX* localMatrix)
 		{
 			D3DMATRIX tempMatrix;
@@ -467,8 +467,11 @@ namespace Nu3D
 			if (inPoints < curPoint)
 			{
 				do
-					Nu3D::Math::ProjectPoint(outPoints++, linPoints++, &tempMatrix);
-				while (linPoints < curPoint);
+				{
+					Nu3D::Math::ProjectPoint(outPoints, linPoints, &tempMatrix);
+					++linPoints;
+					++outPoints;
+				} while (linPoints < curPoint);
 			}
 		}
 
