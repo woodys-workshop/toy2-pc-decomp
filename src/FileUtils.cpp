@@ -115,7 +115,7 @@ namespace FileUtils
 		return elemSize;
 	}
 
-	// FUNCTION: TOY2 0x004A6390
+	// FUNCTION: TOY2 0x004A6390 [MATCHED]
 	void ValidateInstall()
 	{
 		HKEY keyHandle;
@@ -137,10 +137,10 @@ namespace FileUtils
 
 				dataSize = 512;
 
-				if (RegQueryValueExA(keyHandle, "cdpath", 0, 0, (LPBYTE)g_cdPathRegValue, &dataSize))
-					strcpy(g_cdPathRegValue, g_pathRegValue);
-				else
+				if (! RegQueryValueExA(keyHandle, "cdpath", 0, 0, (LPBYTE)g_cdPathRegValue, &dataSize))
 					g_cdPathRegValue[dataSize] = 0;
+				else
+					strcpy(g_cdPathRegValue, g_pathRegValue);
 
 				dataSize = 4;
 
