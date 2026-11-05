@@ -78,13 +78,15 @@ namespace NGNLoader
 			return 1;
 		}
 
-		// FUNCTION: TOY2 0x004CB320
+		// FUNCTION: TOY2 0x004CB320 [MATCHED]
 		int32_t ExtractShapeTextures(FILE* stream)
 		{
 			uint16_t nameTableCount;
 			uint16_t texCount;
 			uint8_t nameTableCountOffset;
 			uint8_t nameTableLength;
+			uint8_t texDataLength;
+			int16_t nameIdx;
 
 			fread(&nameTableCount, sizeof(uint16_t), 1, stream);
 			fread(&texCount, sizeof(uint16_t), 1, stream);
@@ -100,14 +102,13 @@ namespace NGNLoader
 			int32_t i = 0;
 			int32_t offset = 0;
 
-			if (nameTableCount)
+			if (nameTableCount > 0)
 			{
 				char** buffer = g_nameTableEntries;
 				do
 				{
 					*buffer = &g_nameTableBuffer[offset];
 
-					uint8_t texDataLength;
 					fread(&texDataLength, sizeof(uint8_t), 1, stream);
 
 					if (texDataLength)
@@ -116,28 +117,29 @@ namespace NGNLoader
 					(*buffer)[texDataLength] = '\0';
 					++buffer;
 
-					++i;
 					offset += texDataLength + 1;
+					++i;
 				} while (i < nameTableCount);
 			}
 
 			i = 0;
 
-			if (texCount)
+			if (texCount > 0)
 			{
 				uint32_t* nextIndex = g_textureTable;
 
 				do
 				{
-					int16_t nameIdx;
+					uint8_t remainingLength = nameTableLength;
 					fread(&nameIdx, sizeof(int16_t), 1, stream);
 
 					NGNTextureParams texParams;
 					texParams.rawTexStr = g_nameTableEntries[nameIdx];
 					fread(&texParams.isTex14, sizeof(NGNTextureParams) - sizeof(char*), 1, stream);
 
-					if (nameTableLength != 26)
-						fseek(stream, (uint8_t)(nameTableLength - 26), SEEK_CUR);
+					remainingLength -= 26;
+					if (remainingLength)
+						fseek(stream, remainingLength, SEEK_CUR);
 
 					*nextIndex = GetOrAllocateTexture(&texParams);
 
