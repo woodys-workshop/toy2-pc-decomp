@@ -131,7 +131,7 @@ namespace Renderer
 	RGBA ModulateColorByAlpha(RGBA color, int32_t flags);
 	void BindTexture(int32_t texIndex);
 
-	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint8_t red, uint8_t green, uint8_t blue);
+	void DrawBlackBorderBox(int16_t xPos, int16_t yPos, int32_t width, int32_t height, uint32_t red, uint32_t green, uint32_t blue);
 	void DrawString(int16_t yPos, char* text, uint8_t red, uint8_t green, uint8_t blue, int32_t useDynamicWidth);
 	void BlitTextureByIndexOffset(
 		int32_t texIndex,
