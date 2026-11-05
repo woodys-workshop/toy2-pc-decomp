@@ -250,14 +250,14 @@ namespace InputManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x004157E0
+	// FUNCTION: TOY2 0x004157E0 [MATCHED]
 	uint8_t IsKeyPressed(int32_t inputCode)
 	{
 		uint8_t currentState = g_inputStates[inputCode];
-		uint8_t updated = ~currentState;
-		uint8_t result = g_previousInputStates[inputCode] & currentState;
+		uint8_t previousState = g_previousInputStates[inputCode];
+		uint8_t result = currentState & previousState;
 
-		g_previousInputStates[inputCode] = updated;
+		g_previousInputStates[inputCode] = ~g_inputStates[inputCode];
 
 		return result;
 	}
@@ -520,22 +520,19 @@ namespace InputManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x00415800
+	// FUNCTION: TOY2 0x00415800 [MATCHED]
 	int32_t FindKeyPressed()
 	{
 		for (int32_t i = 1; i < 256; i++)
 		{
 			uint8_t currentState = g_inputStates[i];
 			uint8_t previousState = g_previousInputStates[i];
-			uint8_t result;
+			uint8_t result = currentState & previousState;
 
-			if (result = currentState & previousState)
-			{
-				g_previousInputStates[i] = ~currentState;
+			g_previousInputStates[i] = ~g_inputStates[i];
+
+			if (result)
 				return i;
-			}
-
-			g_previousInputStates[i] = ~currentState;
 		}
 
 		return 0;
