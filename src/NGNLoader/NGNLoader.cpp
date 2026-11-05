@@ -266,8 +266,10 @@ namespace NGNLoader
 		int32_t textureCount;
 		fread(&textureCount, sizeof(int32_t), 1, stream);
 
-		for (uint32_t textureIndex = textureCount; textureIndex != 0; --textureIndex)
+		while (textureCount)
 		{
+			textureCount--;
+
 			uint32_t dataOffset;
 			uint32_t rawTexStrLen;
 
