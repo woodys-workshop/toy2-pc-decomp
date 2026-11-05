@@ -549,7 +549,7 @@ namespace Nu3D
 			return SpawnInstance(spawnX, spawnY, spawnZ, velXRange, velYRange, velZRange, scaleRange, preset->spawnFlags, preset->spawnOffset, particleIndex);
 		}
 
-		// FUNCTION: TOY2 0x00410850
+		// FUNCTION: TOY2 0x00410850 [MATCHED]
 		void SpawnBreakBurst(Nu3D::Particles::ParticleInstance* particle, uint8_t flag)
 		{
 			int32_t bigPreset;
@@ -557,13 +557,7 @@ namespace Nu3D
 
 			int32_t spawnY = particle->pos.y + 32 * particle->height;
 
-			if ((flag & 1) != 0)
-			{
-				bigPreset = 56;
-				particleIndex = 30;
-				AudioManager::PlaySoundEffect(74, &particle->pos);
-			}
-			else
+			if ((flag & 1) == 0)
 			{
 				bigPreset = 14;
 				particleIndex = 13;
@@ -572,6 +566,12 @@ namespace Nu3D
 					AudioManager::PlaySoundEffect(12, &particle->pos);
 				else
 					AudioManager::PlaySoundEffect(100, &particle->pos);
+			}
+			else
+			{
+				bigPreset = 56;
+				particleIndex = 30;
+				AudioManager::PlaySoundEffect(74, &particle->pos);
 			}
 
 			int32_t count = 5;
