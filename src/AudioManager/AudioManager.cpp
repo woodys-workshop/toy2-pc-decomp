@@ -1397,10 +1397,11 @@ namespace AudioManager
 			return 1;
 		}
 
-		// FUNCTION: TOY2 0x00412FF0
+		// FUNCTION: TOY2 0x00412FF0 [MATCHED]
 		int32_t Init()
 		{
 			DWORD threadId;
+			HANDLE threadSemaphore = 0;
 
 			if (g_audioStreamInitialized)
 				return 0;
@@ -1413,63 +1414,65 @@ namespace AudioManager
 
 			g_streamHandles.streamStopEvent = CreateEventA(0, 0, 0, 0);
 
-			if (! g_streamHandles.streamStopEvent)
+			if (g_streamHandles.streamStopEvent)
 			{
-			LBL_BUFFER_NOTIFY:
+				g_streamHandles.threadEvent = CreateEventA(0, 0, 0, 0);
+
+				if (g_streamHandles.threadEvent)
+				{
+					threadSemaphore = CreateSemaphoreA(0, 0, 1, 0);
+					g_streamHandles.threadSemaphore = threadSemaphore;
+
+					if (! threadSemaphore)
+					{
+						CloseHandle(g_streamHandles.threadEvent);
+						g_streamHandles.threadEvent = 0;
+					}
+				}
+
+				if (! threadSemaphore)
+				{
+					CloseHandle(g_streamHandles.streamStopEvent);
+					g_streamHandles.streamStopEvent = 0;
+				}
+			}
+
+			if (! threadSemaphore)
+			{
 				CloseHandle(g_streamHandles.bufferNotifyEvent);
 				g_streamHandles.bufferNotifyEvent = 0;
 				return 0;
 			}
 
-			g_streamHandles.threadEvent = CreateEventA(0, 0, 0, 0);
-
-			if (! g_streamHandles.threadEvent)
+			if (CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadProc, 0, 0, &threadId))
 			{
-			LBL_STREAM_STOP:
-				CloseHandle(g_streamHandles.streamStopEvent);
-				g_streamHandles.streamStopEvent = 0;
-				goto LBL_BUFFER_NOTIFY;
+				while (! IsThreadReady())
+					;
+
+				g_audioStreamInitialized = 1;
+				atexit(OnExit);
+
+				return 1;
 			}
 
-			g_streamHandles.threadSemaphore = CreateSemaphoreA(0, 0, 1, 0);
+			if (g_streamHandles.threadSemaphore)
+				CloseHandle(g_streamHandles.threadSemaphore);
 
-			if (! g_streamHandles.threadSemaphore)
-			{
+			if (g_streamHandles.threadEvent)
 				CloseHandle(g_streamHandles.threadEvent);
-				g_streamHandles.threadEvent = 0;
-				goto LBL_STREAM_STOP;
-			}
 
-			if (! CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadProc, 0, 0, &threadId))
-			{
-				if (g_streamHandles.threadSemaphore)
-					CloseHandle(g_streamHandles.threadSemaphore);
+			if (g_streamHandles.streamStopEvent)
+				CloseHandle(g_streamHandles.streamStopEvent);
 
-				if (g_streamHandles.threadEvent)
-					CloseHandle(g_streamHandles.threadEvent);
+			if (g_streamHandles.bufferNotifyEvent)
+				CloseHandle(g_streamHandles.bufferNotifyEvent);
 
-				if (g_streamHandles.streamStopEvent)
-					CloseHandle(g_streamHandles.streamStopEvent);
+			g_streamHandles.threadSemaphore = 0;
+			g_streamHandles.threadEvent = 0;
+			g_streamHandles.streamStopEvent = 0;
+			g_streamHandles.bufferNotifyEvent = 0;
 
-				if (g_streamHandles.bufferNotifyEvent)
-					CloseHandle(g_streamHandles.bufferNotifyEvent);
-
-				g_streamHandles.threadSemaphore = 0;
-				g_streamHandles.threadEvent = 0;
-
-				g_streamHandles.streamStopEvent = 0;
-
-				g_streamHandles.bufferNotifyEvent = 0;
-				return 0;
-			}
-
-			while (! IsThreadReady())
-				;
-
-			g_audioStreamInitialized = 1;
-			atexit(OnExit);
-
-			return 1;
+			return 0;
 		}
 
 	}
