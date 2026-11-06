@@ -2592,20 +2592,17 @@ namespace AudioManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x0049E910
+	// FUNCTION: TOY2 0x0049E910 [MATCHED]
 	void StartSoundSequenceOnActor(int32_t scriptIndex, Toy2::CreatureActor* actor)
 	{
 		Toy2::g_soundSequencePlayers[7].pos.x = actor->transform.pos.x;
 		Toy2::g_soundSequencePlayers[7].pos.y = actor->transform.pos.y;
-
-		int32_t z = actor->transform.pos.z;
-
+		Toy2::g_soundSequencePlayers[7].pos.z = actor->transform.pos.z;
+		Toy2::g_soundSequencePlayers[7].scriptCursor = g_soundScripts[-scriptIndex - 1];
 		Toy2::g_soundSequencePlayers[7].countdown = 0;
-		Toy2::g_soundSequencePlayers[7].pos.z = z;
 
-		int16_t* scriptCursor = g_soundScripts[-scriptIndex - 1];
-
-		Toy2::g_soundSequencePlayers[7].scriptCursor = scriptCursor + 3;
+		int16_t* scriptCursor = Toy2::g_soundSequencePlayers[7].scriptCursor;
+		Toy2::g_soundSequencePlayers[7].scriptCursor += 3;
 
 		int16_t feedbackA = *scriptCursor;
 
@@ -2632,42 +2629,43 @@ namespace AudioManager
 	// FUNCTION: TOY2 0x0049E9D0
 	void UpdateSoundSequences()
 	{
-		// the original stops at the address of g_freezeBuzz, which is behind the 8 players
-		Toy2::SoundSequencePlayer* sequence = Toy2::g_soundSequencePlayers;
-
-		do
+		for (int32_t player = 0; player < 8; ++player)
 		{
-			if (sequence->scriptCursor)
+			if (Toy2::g_soundSequencePlayers[player].scriptCursor)
 			{
-				sequence->countdown -= (uint16_t)Renderer::g_frameDelta;
+				Toy2::g_soundSequencePlayers[player].countdown -= (uint16_t)Renderer::g_frameDelta;
 
-				if ((int16_t)sequence->countdown < 0)
+				if ((int16_t)Toy2::g_soundSequencePlayers[player].countdown < 0)
 				{
-					int16_t* scriptCursor = sequence->scriptCursor;
+					int16_t* scriptCursor = Toy2::g_soundSequencePlayers[player].scriptCursor;
 					int16_t command = *scriptCursor;
 
-					while (command < 0)
+					while (true)
 					{
-						if (command == -1)
-							sequence->scriptCursor = 0;
+						if (command < 0)
+						{
+							if (command == -1)
+								Toy2::g_soundSequencePlayers[player].scriptCursor = 0;
 
-						if (*scriptCursor != -2)
-							goto LBL_NEXT_SEQUENCE;
+							if (*scriptCursor != -2)
+								break;
 
-						scriptCursor = sequence->scriptCursor - scriptCursor[1];
-						sequence->scriptCursor = scriptCursor;
-						command = *scriptCursor;
+							Toy2::g_soundSequencePlayers[player].scriptCursor += -scriptCursor[1];
+							scriptCursor = Toy2::g_soundSequencePlayers[player].scriptCursor;
+							command = *scriptCursor;
+
+							if (command < 0)
+								continue;
+						}
+
+						PlayOneShotSound3D(*scriptCursor - 1, scriptCursor[1], scriptCursor[2], &Toy2::g_soundSequencePlayers[player].pos);
+						Toy2::g_soundSequencePlayers[player].countdown = scriptCursor[3];
+						Toy2::g_soundSequencePlayers[player].scriptCursor += 4;
+						break;
 					}
-
-					PlayOneShotSound3D(*scriptCursor - 1, scriptCursor[1], scriptCursor[2], &sequence->pos);
-					sequence->countdown = scriptCursor[3];
-					sequence->scriptCursor += 4;
 				}
 			}
-
-		LBL_NEXT_SEQUENCE:
-			++sequence;
-		} while (sequence < &Toy2::g_soundSequencePlayers[8]);
+		}
 	}
 
 	// FUNCTION: TOY2 0x004A3BE0
