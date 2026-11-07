@@ -13,6 +13,7 @@
 #include <STDLIB.H>
 #include <STRING.H>
 #include <MATH.H>
+#include <WINDOWSX.H>
 
 // TODO: probably refactor into a couple files, its a little large
 
@@ -614,256 +615,504 @@ namespace AudioManager
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004A4130
-	MMRESULT WaveReadFile(HMMIO hmmio, int32_t ckSize, uint8_t* buffer, LPMMCKINFO dataChunk, DWORD* outBytesRead)
+	enum
 	{
-		MMIOINFO mmioInfo;
-		uint32_t bytesToRead;
-		DWORD chunkSize;
-		uint32_t totalBytesRead;
+		ER_MEM = 0xE000,
+		ER_CANNOTOPEN = 0xE100,
+		ER_NOTWAVEFILE = 0xE101,
+		ER_CANNOTREAD = 0xE102,
+		ER_CORRUPTWAVEFILE = 0xE103,
+		ER_CANNOTWRITE = 0xE104
+	};
 
-		MMRESULT result = mmioGetInfo(hmmio, &mmioInfo, 0);
+	STATIC_ASSERT(sizeof(PCMWAVEFORMAT) == 0x10);
+	STATIC_ASSERT(sizeof(WAVEFORMATEX) == 0x12);
+	STATIC_ASSERT(sizeof(MMCKINFO) == 0x14);
+	STATIC_ASSERT(sizeof(MMIOINFO) == 0x48);
 
-		if (result)
-			goto ERROR_LBL;
+	BOOL riffCopyChunk(HMMIO hmmioSrc, HMMIO hmmioDst, const LPMMCKINFO lpck);
 
-		bytesToRead = ckSize;
-		chunkSize = dataChunk->cksize;
+	// FUNCTION: TOY2 0x004A3F10 [MATCHED]
+	int32_t WaveOpenFile(char* pszFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF)
+	{
+		HMMIO hmmioIn;
+		MMCKINFO ckIn;
+		PCMWAVEFORMAT pcmWaveFormat;
+		WORD cbExtraAlloc;
+		int32_t nError;
+		FILE* fileHandle;
 
-		if (ckSize > chunkSize)
-			bytesToRead = dataChunk->cksize;
+		*ppwfxInfo = NULL;
+		nError = 0;
+		hmmioIn = NULL;
 
-		totalBytesRead = 0;
-		dataChunk->cksize = chunkSize - bytesToRead;
-
-		if (! bytesToRead)
+		fileHandle = fopen(pszFileName, "rb");
+		if (! fileHandle || (fclose(fileHandle), hmmioIn = mmioOpen(pszFileName, NULL, MMIO_ALLOCBUF | MMIO_READ), hmmioIn == NULL))
 		{
-		FINALISE_LBL:
-			result = mmioSetInfo(hmmio, &mmioInfo, 0);
-
-			if (! result)
-			{
-				*outBytesRead = bytesToRead;
-				return result;
-			}
-
-		ERROR_LBL:
-			*outBytesRead = 0;
-			return result;
+			nError = ER_CANNOTOPEN;
+			goto ERROR_READING_WAVE;
 		}
 
-		HPSTR endRead = mmioInfo.pchEndRead;
+		if ((nError = mmioDescend(hmmioIn, pckInRIFF, NULL, 0)) != 0)
+			goto ERROR_READING_WAVE;
 
-		char* next = mmioInfo.pchNext;
-
-		while (1)
+		if (pckInRIFF->ckid != FOURCC_RIFF || pckInRIFF->fccType != mmioFOURCC('W', 'A', 'V', 'E'))
 		{
-			if (next == endRead)
-			{
-				result = mmioAdvance(hmmio, &mmioInfo, 0);
-
-				if (result)
-					goto ERROR_LBL;
-
-				next = mmioInfo.pchNext;
-				endRead = mmioInfo.pchEndRead;
-
-				if (mmioInfo.pchNext == mmioInfo.pchEndRead)
-					break;
-			}
-
-			uint8_t byteValue = *next++;
-			buffer[totalBytesRead++] = byteValue;
-			mmioInfo.pchNext = next;
-
-			if (totalBytesRead >= bytesToRead)
-				goto FINALISE_LBL;
+			nError = ER_NOTWAVEFILE;
+			goto ERROR_READING_WAVE;
 		}
 
-		result = 57603;
-		*outBytesRead = 0;
+		ckIn.ckid = mmioFOURCC('f', 'm', 't', ' ');
+		if ((nError = mmioDescend(hmmioIn, &ckIn, pckInRIFF, MMIO_FINDCHUNK)) != 0)
+			goto ERROR_READING_WAVE;
 
-		return result;
+		if (ckIn.cksize < sizeof(PCMWAVEFORMAT))
+		{
+			nError = ER_NOTWAVEFILE;
+			goto ERROR_READING_WAVE;
+		}
+
+		if (mmioRead(hmmioIn, (HPSTR)&pcmWaveFormat, sizeof(pcmWaveFormat)) != sizeof(pcmWaveFormat))
+		{
+			nError = ER_CANNOTREAD;
+			goto ERROR_READING_WAVE;
+		}
+
+		if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
+			cbExtraAlloc = 0;
+		else
+		{
+			if (mmioRead(hmmioIn, (HPSTR)&cbExtraAlloc, sizeof(cbExtraAlloc)) != sizeof(cbExtraAlloc))
+			{
+				nError = ER_CANNOTREAD;
+				goto ERROR_READING_WAVE;
+			}
+		}
+
+		if ((*ppwfxInfo = (WAVEFORMATEX*)GlobalAlloc(GMEM_FIXED, sizeof(WAVEFORMATEX) + cbExtraAlloc)) == NULL)
+		{
+			nError = ER_MEM;
+			goto ERROR_READING_WAVE;
+		}
+
+		memcpy(*ppwfxInfo, &pcmWaveFormat, sizeof(pcmWaveFormat));
+		(*ppwfxInfo)->cbSize = cbExtraAlloc;
+
+		if (cbExtraAlloc != 0)
+		{
+			if (mmioRead(hmmioIn, (HPSTR)((BYTE*)&(*ppwfxInfo)->cbSize + sizeof(cbExtraAlloc)), cbExtraAlloc) != cbExtraAlloc)
+			{
+				nError = ER_NOTWAVEFILE;
+				goto ERROR_READING_WAVE;
+			}
+		}
+
+		if ((nError = mmioAscend(hmmioIn, &ckIn, 0)) != 0)
+			goto ERROR_READING_WAVE;
+
+		goto TEMPCLEANUP;
+
+	ERROR_READING_WAVE:
+		if (*ppwfxInfo != NULL)
+		{
+			GlobalFree(*ppwfxInfo);
+			*ppwfxInfo = NULL;
+		}
+
+		if (hmmioIn != NULL)
+		{
+			mmioClose(hmmioIn, 0);
+			hmmioIn = NULL;
+		}
+
+	TEMPCLEANUP:
+		*phmmioIn = hmmioIn;
+		return nError;
 	}
 
-	namespace Wave
+	// FUNCTION: TOY2 0x004A40F0 [MATCHED]
+	int32_t WaveStartDataRead(HMMIO* phmmioIn, MMCKINFO* pckIn, MMCKINFO* pckInRIFF)
 	{
-		// FUNCTION: TOY2 0x004A3F10
-		MMRESULT OpenFile(LPSTR fileName, HMMIO* outHmmio, LPWAVEFORMATEX* outWaveFormat, LPMMCKINFO outRiffChunk)
+		int32_t nError;
+
+		mmioSeek(*phmmioIn, pckInRIFF->dwDataOffset + sizeof(FOURCC), SEEK_SET);
+		pckIn->ckid = mmioFOURCC('d', 'a', 't', 'a');
+		if ((nError = mmioDescend(*phmmioIn, pckIn, pckInRIFF, MMIO_FINDCHUNK)) != 0)
+			goto ERROR_READING_WAVE;
+
+		goto LBL_CLEANUP;
+
+	ERROR_READING_WAVE:
+	LBL_CLEANUP:
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A4130 [MATCHED]
+	int32_t WaveReadFile(HMMIO hmmioIn, UINT cbRead, BYTE* pbDest, MMCKINFO* pckIn, UINT* cbActualRead)
+	{
+		MMIOINFO mmioinfoIn;
+		int32_t nError;
+		UINT cT;
+		UINT cbDataIn;
+
+		if ((nError = mmioGetInfo(hmmioIn, &mmioinfoIn, 0)) != 0)
+			goto ERROR_CANNOT_READ;
+
+		cbDataIn = cbRead;
+		if (cbDataIn > pckIn->cksize)
+			cbDataIn = pckIn->cksize;
+
+		pckIn->cksize -= cbDataIn;
+
+		for (cT = 0; cT < cbDataIn; cT++)
 		{
-			MMRESULT result;
-			PCMWAVEFORMAT waveFormatHeader;
-			MMCKINFO fmtChunkInfo;
-			WORD extraFormatBytes;
-
-			*outWaveFormat = 0;
-
-			HMMIO hmmio = 0;
-			FILE* fileHandle = fopen(fileName, "rb");
-
-			if (! fileHandle || (fclose(fileHandle), hmmio = mmioOpenA(fileName, 0, MMIO_ALLOCBUF | MMIO_READ), hmmio == 0))
+			if (mmioinfoIn.pchNext == mmioinfoIn.pchEndRead)
 			{
-				result = 57600;
-				goto LBL_CLOSE_FILE;
-			}
+				if ((nError = mmioAdvance(hmmioIn, &mmioinfoIn, MMIO_READ)) != 0)
+					goto ERROR_CANNOT_READ;
 
-			result = mmioDescend(hmmio, outRiffChunk, 0, 0);
-
-			if (! result)
-			{
-				if (outRiffChunk->ckid != mmioFOURCC('R', 'I', 'F', 'F') || outRiffChunk->fccType != mmioFOURCC('W', 'A', 'V', 'E'))
-					goto LBL_INVALID_FORMAT;
-
-				fmtChunkInfo.ckid = mmioFOURCC('f', 'm', 't', ' ');
-				result = mmioDescend(hmmio, &fmtChunkInfo, outRiffChunk, MMIO_FINDCHUNK);
-
-				if (! result)
+				if (mmioinfoIn.pchNext == mmioinfoIn.pchEndRead)
 				{
-					if (fmtChunkInfo.cksize < 16)
-					{
-					LBL_INVALID_FORMAT:
-						result = 57601;
-						goto LBL_CLOSE_FILE;
-					}
-
-					if (mmioRead(hmmio, (HPSTR)&waveFormatHeader, 16) == 16)
-					{
-						if (waveFormatHeader.wf.wFormatTag == WAVE_FORMAT_PCM)
-						{
-							extraFormatBytes = 0;
-						}
-						else
-						{
-							if (mmioRead(hmmio, (HPSTR)&extraFormatBytes, 2) != 2)
-							{
-								result = 57602;
-								goto LBL_CLOSE_FILE;
-							}
-						}
-
-						LPWAVEFORMATEX allocatedFormat = (LPWAVEFORMATEX)GlobalAlloc(0, extraFormatBytes + 18);
-						*outWaveFormat = allocatedFormat;
-
-						if (allocatedFormat)
-						{
-							memcpy(allocatedFormat, &waveFormatHeader, 16);
-							allocatedFormat->cbSize = extraFormatBytes;
-
-							if (! extraFormatBytes || mmioRead(hmmio, (HPSTR)((uint8_t*)*outWaveFormat + 18), extraFormatBytes) == extraFormatBytes)
-							{
-								result = mmioAscend(hmmio, &fmtChunkInfo, 0);
-
-								if (! result)
-								{
-									*outHmmio = hmmio;
-									return 0;
-								}
-							}
-							else
-							{
-								result = 0xE101;
-							}
-						}
-						else
-						{
-							result = 57344;
-						}
-					}
-					else
-					{
-						result = 57602;
-					}
+					nError = ER_CORRUPTWAVEFILE;
+					goto ERROR_CANNOT_READ;
 				}
 			}
 
-		LBL_CLOSE_FILE:
-			if (*outWaveFormat)
-			{
-				GlobalFree(*outWaveFormat);
-				*outWaveFormat = 0;
-			}
-
-			if (hmmio)
-			{
-				mmioClose(hmmio, 0);
-				*outHmmio = 0;
-				return result;
-			}
-			else
-			{
-				*outHmmio = 0;
-			}
-
-			return result;
+			pbDest[cT] = (BYTE)*mmioinfoIn.pchNext++;
 		}
 
+		if ((nError = mmioSetInfo(hmmioIn, &mmioinfoIn, 0)) != 0)
+			goto ERROR_CANNOT_READ;
+
+		*cbActualRead = cbDataIn;
+		goto FINISHED_READING;
+
+	ERROR_CANNOT_READ:
+		*cbActualRead = 0;
+
+	FINISHED_READING:
+		return nError;
 	}
 
-	// FUNCTION: TOY2 0x004A4680
-	MMRESULT WaveLoadFile(LPSTR fileName, int32_t* dataSize, int32_t* unused, AudioConfig** audioConfig, HGLOBAL* waveData)
+	// FUNCTION: TOY2 0x004A4200 [MATCHED]
+	int32_t WaveCloseReadFile(HMMIO* phmmio, WAVEFORMATEX** ppwfxSrc)
 	{
-		HMMIO wavSourceData;
-		MMCKINFO mmckInfo;
-		MMCKINFO parentChunk;
-
-		*waveData = 0;
-		*audioConfig = 0;
-		*dataSize = 0;
-
-		MMRESULT result = Wave::OpenFile(fileName, &wavSourceData, (LPWAVEFORMATEX*)audioConfig, &parentChunk);
-
-		if (result)
+		if (*ppwfxSrc != NULL)
 		{
-			Logger::DebugLog("Unable to open %s\r\n", fileName);
+			GlobalFree(*ppwfxSrc);
+			*ppwfxSrc = NULL;
+		}
+
+		if (*phmmio != NULL)
+		{
+			mmioClose(*phmmio, 0);
+			*phmmio = NULL;
+		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004A4240
+	int32_t WaveCreateFile(char* pszFileName, HMMIO* phmmioOut, WAVEFORMATEX* pwfxDest, MMCKINFO* pckOut, MMCKINFO* pckOutRIFF)
+	{
+		int32_t nError;
+		DWORD dwFactChunk;
+		MMCKINFO ckOut1;
+
+		dwFactChunk = (DWORD)-1;
+		nError = 0;
+
+		*phmmioOut = mmioOpen(pszFileName, NULL, MMIO_ALLOCBUF | MMIO_READWRITE | MMIO_CREATE);
+		if (*phmmioOut == NULL)
+		{
+			nError = ER_CANNOTWRITE;
+			goto ERROR_CANNOT_WRITE;
+		}
+
+		pckOutRIFF->fccType = mmioFOURCC('W', 'A', 'V', 'E');
+		pckOutRIFF->cksize = 0;
+		if ((nError = mmioCreateChunk(*phmmioOut, pckOutRIFF, MMIO_CREATERIFF)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		pckOut->ckid = mmioFOURCC('f', 'm', 't', ' ');
+		pckOut->cksize = sizeof(PCMWAVEFORMAT);
+		if ((nError = mmioCreateChunk(*phmmioOut, pckOut, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		if (pwfxDest->wFormatTag == WAVE_FORMAT_PCM)
+		{
+			if (mmioWrite(*phmmioOut, (HPSTR)pwfxDest, sizeof(PCMWAVEFORMAT)) != sizeof(PCMWAVEFORMAT))
+			{
+				nError = ER_CANNOTWRITE;
+				goto ERROR_CANNOT_WRITE;
+			}
 		}
 		else
 		{
-			mmioSeek(wavSourceData, parentChunk.dwDataOffset + 4, 0);
-
-			mmckInfo.ckid = mmioFOURCC('d', 'a', 't', 'a');
-			result = mmioDescend(wavSourceData, &mmckInfo, &parentChunk, MMIO_FINDCHUNK);
-
-			if (! result)
+			if ((UINT)mmioWrite(*phmmioOut, (HPSTR)pwfxDest, sizeof(*pwfxDest) + pwfxDest->cbSize) != sizeof(*pwfxDest) + pwfxDest->cbSize)
 			{
-				uint8_t* allocatedData = (uint8_t*)GlobalAlloc(0, mmckInfo.cksize);
-				*waveData = allocatedData;
-
-				if (allocatedData)
-				{
-					DWORD bytesRead;
-
-					result = WaveReadFile(wavSourceData, mmckInfo.cksize, allocatedData, &mmckInfo, &bytesRead);
-
-					if (! result)
-					{
-						*dataSize = bytesRead;
-						goto LABEL_12;
-					}
-				}
-				else
-				{
-					result = 57344;
-				}
+				nError = ER_CANNOTWRITE;
+				goto ERROR_CANNOT_WRITE;
 			}
 		}
 
-		if (*waveData)
+		if ((nError = mmioAscend(*phmmioOut, pckOut, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		ckOut1.ckid = mmioFOURCC('f', 'a', 'c', 't');
+		ckOut1.cksize = 0;
+		if ((nError = mmioCreateChunk(*phmmioOut, &ckOut1, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		if (mmioWrite(*phmmioOut, (HPSTR)&dwFactChunk, sizeof(dwFactChunk)) != sizeof(dwFactChunk))
 		{
-			GlobalFree(*waveData);
-			*waveData = 0;
+			nError = ER_CANNOTWRITE;
+			goto ERROR_CANNOT_WRITE;
 		}
 
-		if (*audioConfig)
+		if ((nError = mmioAscend(*phmmioOut, &ckOut1, 0)) != 0)
+			nError = ER_CANNOTWRITE;
+
+	ERROR_CANNOT_WRITE:
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A4360
+	int32_t WaveStartDataWrite(HMMIO* phmmioOut, MMCKINFO* pckOut, MMIOINFO* pmmioinfoOut)
+	{
+		int32_t nError;
+
+		pckOut->ckid = mmioFOURCC('d', 'a', 't', 'a');
+		pckOut->cksize = 0;
+		if ((nError = mmioCreateChunk(*phmmioOut, pckOut, 0)) != 0)
+			return nError;
+
+		nError = mmioGetInfo(*phmmioOut, pmmioinfoOut, 0);
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A43A0
+	int32_t WaveWriteFile(HMMIO hmmioOut, UINT cbWrite, BYTE* pbSrc, MMCKINFO* pckOut, UINT* cbActualWrite, MMIOINFO* pmmioinfoOut)
+	{
+		int32_t nError = 0;
+		UINT cT;
+
+		*cbActualWrite = 0;
+
+		for (cT = 0; cT < cbWrite; cT++)
 		{
-			GlobalFree(*audioConfig);
-			*audioConfig = 0;
+			if (pmmioinfoOut->pchNext == pmmioinfoOut->pchEndWrite)
+			{
+				pmmioinfoOut->dwFlags |= MMIO_DIRTY;
+				if ((nError = mmioAdvance(hmmioOut, pmmioinfoOut, MMIO_WRITE)) != 0)
+					goto ERROR_CANNOT_WRITE;
+			}
+
+			BYTE* next = (BYTE*)pmmioinfoOut->pchNext;
+			*next++ = pbSrc[cT];
+			pmmioinfoOut->pchNext = (HPSTR)next;
+			(*cbActualWrite)++;
 		}
 
-	LABEL_12:
-		if (wavSourceData)
-			mmioClose(wavSourceData, 0);
+	ERROR_CANNOT_WRITE:
+		return nError;
+	}
 
-		return result;
+	// FUNCTION: TOY2 0x004A4410
+	int32_t WaveCloseWriteFile(HMMIO* phmmioOut, MMCKINFO* pckOut, MMCKINFO* pckOutRIFF, MMIOINFO* pmmioinfoOut, DWORD cSamples)
+	{
+		int32_t nError;
+
+		if (*phmmioOut == NULL)
+			return 0;
+
+		pmmioinfoOut->dwFlags |= MMIO_DIRTY;
+		if ((nError = mmioSetInfo(*phmmioOut, pmmioinfoOut, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		if ((nError = mmioAscend(*phmmioOut, pckOut, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		if ((nError = mmioAscend(*phmmioOut, pckOutRIFF, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		mmioSeek(*phmmioOut, 0, SEEK_SET);
+		if ((nError = mmioDescend(*phmmioOut, pckOutRIFF, NULL, 0)) != 0)
+			goto ERROR_CANNOT_WRITE;
+
+		pckOut->ckid = mmioFOURCC('f', 'a', 'c', 't');
+		if (mmioDescend(*phmmioOut, pckOut, pckOutRIFF, MMIO_FINDCHUNK) == 0)
+		{
+			mmioWrite(*phmmioOut, (HPSTR)&cSamples, sizeof(DWORD));
+			mmioAscend(*phmmioOut, pckOut, 0);
+		}
+
+		nError = mmioAscend(*phmmioOut, pckOutRIFF, 0);
+
+	ERROR_CANNOT_WRITE:
+		if (*phmmioOut != NULL)
+		{
+			mmioClose(*phmmioOut, 0);
+			*phmmioOut = NULL;
+		}
+
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A44F0
+	int32_t WaveCopyUselessChunks(HMMIO* phmmioIn, MMCKINFO* pckIn, MMCKINFO* pckInRiff, HMMIO* phmmioOut, MMCKINFO* pckOut, MMCKINFO* pckOutRiff)
+	{
+		int32_t nError;
+
+		if ((nError = mmioSeek(*phmmioIn, pckInRiff->dwDataOffset + sizeof(FOURCC), SEEK_SET)) == -1)
+		{
+			nError = ER_CANNOTREAD;
+			goto ERROR_IN_PROC;
+		}
+
+		nError = 0;
+
+		while (mmioDescend(*phmmioIn, pckIn, pckInRiff, 0) == 0)
+		{
+			if (pckIn->dwDataOffset + pckIn->cksize > pckInRiff->dwDataOffset + pckInRiff->cksize)
+				goto ERROR_IN_PROC;
+
+			switch (pckIn->ckid)
+			{
+				case mmioFOURCC('p', 'l', 's', 't'):
+				case mmioFOURCC('D', 'I', 'S', 'P'):
+					riffCopyChunk(*phmmioIn, *phmmioOut, pckIn);
+					break;
+			}
+
+			mmioAscend(*phmmioIn, pckIn, 0);
+		}
+
+	ERROR_IN_PROC:
+		{
+			int32_t nErrorT;
+			nErrorT = mmioSeek(*phmmioIn, pckInRiff->dwDataOffset + sizeof(FOURCC), SEEK_SET);
+		}
+
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A45B0
+	BOOL riffCopyChunk(HMMIO hmmioSrc, HMMIO hmmioDst, const LPMMCKINFO lpck)
+	{
+		MMCKINFO ck;
+		HPSTR hpBuf;
+
+		hpBuf = (HPSTR)GlobalAllocPtr(GHND, lpck->cksize);
+		if (! hpBuf)
+			return FALSE;
+
+		ck.ckid = lpck->ckid;
+		ck.cksize = lpck->cksize;
+		if (mmioCreateChunk(hmmioDst, &ck, 0))
+			goto rscc_Error;
+
+		if (mmioRead(hmmioSrc, hpBuf, lpck->cksize) != (LONG)lpck->cksize)
+			goto rscc_Error;
+
+		if (mmioWrite(hmmioDst, hpBuf, lpck->cksize) != (LONG)lpck->cksize)
+			goto rscc_Error;
+
+		if (mmioAscend(hmmioDst, &ck, 0))
+			goto rscc_Error;
+
+		if (hpBuf)
+			GlobalFreePtr(hpBuf);
+
+		return TRUE;
+
+	rscc_Error:
+		if (hpBuf)
+			GlobalFreePtr(hpBuf);
+
+		return FALSE;
+	}
+
+	// FUNCTION: TOY2 0x004A4680
+	int32_t WaveLoadFile(char* pszFileName, UINT* cbSize, DWORD* unusedSampleCount, WAVEFORMATEX** ppwfxInfo, BYTE** ppbData)
+	{
+		HMMIO hmmioIn;
+		MMCKINFO ckInRiff;
+		MMCKINFO ckIn;
+		int32_t nError;
+		UINT cbActualRead;
+
+		*ppbData = NULL;
+		*ppwfxInfo = NULL;
+		*cbSize = 0;
+
+		if ((nError = WaveOpenFile(pszFileName, &hmmioIn, ppwfxInfo, &ckInRiff)) != 0)
+		{
+			Logger::DebugLog("Unable to open %s\r\n", pszFileName);
+			goto ERROR_LOADING;
+		}
+
+		if ((nError = WaveStartDataRead(&hmmioIn, &ckIn, &ckInRiff)) != 0)
+			goto ERROR_LOADING;
+
+		if ((*ppbData = (BYTE*)GlobalAlloc(GMEM_FIXED, ckIn.cksize)) == NULL)
+		{
+			nError = ER_MEM;
+			goto ERROR_LOADING;
+		}
+
+		if ((nError = WaveReadFile(hmmioIn, ckIn.cksize, *ppbData, &ckIn, &cbActualRead)) != 0)
+			goto ERROR_LOADING;
+
+		*cbSize = cbActualRead;
+		goto DONE_LOADING;
+
+	ERROR_LOADING:
+		if (*ppbData != NULL)
+		{
+			GlobalFree(*ppbData);
+			*ppbData = NULL;
+		}
+
+		if (*ppwfxInfo != NULL)
+		{
+			GlobalFree(*ppwfxInfo);
+			*ppwfxInfo = NULL;
+		}
+
+	DONE_LOADING:
+		if (hmmioIn != NULL)
+		{
+			mmioClose(hmmioIn, 0);
+			hmmioIn = NULL;
+		}
+
+		return nError;
+	}
+
+	// FUNCTION: TOY2 0x004A47A0
+	int32_t WaveSaveFile(char* pszFileName, UINT cbSize, DWORD cSamples, WAVEFORMATEX* pwfxDest, BYTE* pbData)
+	{
+		HMMIO hmmioOut;
+		MMCKINFO ckOut;
+		MMCKINFO ckOutRIFF;
+		MMIOINFO mmioinfoOut;
+		UINT cbActualWrite;
+		int32_t nError;
+
+		if ((nError = WaveCreateFile(pszFileName, &hmmioOut, pwfxDest, &ckOut, &ckOutRIFF)) != 0)
+			goto ERROR_SAVING;
+
+		if ((nError = WaveStartDataWrite(&hmmioOut, &ckOut, &mmioinfoOut)) != 0)
+			goto ERROR_SAVING;
+
+		if ((nError = WaveWriteFile(hmmioOut, cbSize, pbData, &ckOut, &cbActualWrite, &mmioinfoOut)) != 0)
+			goto ERROR_SAVING;
+
+		nError = WaveCloseWriteFile(&hmmioOut, &ckOut, &ckOutRIFF, &mmioinfoOut, cSamples);
+
+	ERROR_SAVING:
+		return nError;
 	}
 
 	// FUNCTION: TOY2 0x0047E5B0
@@ -882,7 +1131,7 @@ namespace AudioManager
 			strcat(filePath, name);
 			Logger::Log("LoadSoundEffect : Loading %s, effect %d.\n", filePath, effect, 1);
 
-			if (! WaveLoadFile(filePath, &g_wavDataSize, &g_unused, &g_audioConfig, (HGLOBAL*)&g_wavSourceData))
+			if (! WaveLoadFile(filePath, (UINT*)&g_wavDataSize, (DWORD*)&g_unused, (WAVEFORMATEX**)&g_audioConfig, &g_wavSourceData))
 			{
 				int32_t bufferBaseIndex = 6 * effect;
 				LPDIRECTSOUNDBUFFER* primaryBuffer = &g_soundEffectBuffers[bufferBaseIndex];
@@ -981,36 +1230,6 @@ namespace AudioManager
 		g_streamHandles.bufferNotifyEvent = 0;
 	}
 
-	namespace Wave
-	{
-		// FUNCTION: TOY2 0x004A40F0 [MATCHED]
-		MMRESULT SeekToChunk(HMMIO* musicHandle, LPMMCKINFO info, MMCKINFO* infoParent)
-		{
-			mmioSeek(*musicHandle, infoParent->dwDataOffset + 4, 0);
-			info->ckid = mmioFOURCC('d', 'a', 't', 'a');
-			return mmioDescend(*musicHandle, info, infoParent, MMIO_FINDCHUNK);
-		}
-
-		// FUNCTION: TOY2 0x004A4200
-		int32_t CloseFile(HMMIO* hMmio, HGLOBAL* hGlobal)
-		{
-			if (*hGlobal)
-			{
-				GlobalFree(*hGlobal);
-				*hGlobal = 0;
-			}
-
-			if (*hMmio)
-			{
-				mmioClose(*hMmio, 0);
-				*hMmio = 0;
-			}
-
-			return 0;
-		}
-
-	}
-
 	// FUNCTION: TOY2 0x00413310
 	int32_t LoadFile(LPSTR fileName)
 	{
@@ -1021,12 +1240,12 @@ namespace AudioManager
 		DWORD audioBytes1;
 		LPVOID audioPtr2;
 		DWORD audioBytes2;
-		DWORD bytesRead;
+		UINT bytesRead;
 
-		if (g_quiet || Wave::OpenFile(fileName, &g_musicFileHandle, &g_musicWaveFormat, &g_musicRiffChunk))
+		if (g_quiet || WaveOpenFile(fileName, &g_musicFileHandle, &g_musicWaveFormat, &g_musicRiffChunk))
 			return 0;
 
-		if (Wave::SeekToChunk(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
+		if (WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
 			goto LBL_CLOSE_FILE;
 
 		bufferBytes = (3 * g_musicWaveFormat->nBlockAlign * g_musicWaveFormat->nSamplesPerSec) >> 4;
@@ -1052,7 +1271,7 @@ namespace AudioManager
 		if (g_directSound->CreateSoundBuffer(&bufferDesc, &g_musicSoundBuffer, 0))
 		{
 		LBL_CLOSE_FILE:
-			Wave::CloseFile(&g_musicFileHandle, (HGLOBAL*)&g_musicWaveFormat);
+			WaveCloseReadFile(&g_musicFileHandle, &g_musicWaveFormat);
 			return 0;
 		}
 
@@ -1107,7 +1326,7 @@ namespace AudioManager
 				{
 					do
 					{
-						Wave::SeekToChunk(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk);
+						WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk);
 						WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesRead);
 
 						totalRead += bytesRead;
@@ -1119,7 +1338,6 @@ namespace AudioManager
 					if (bytesRead < g_chunkSize)
 						g_eofReached = 1;
 
-					// the rest of the buffer is silence
 					memset((uint8_t*)audioPtr1 + bytesRead, g_musicWaveFormat->wBitsPerSample != 8 ? 0 : 128, audioBytes1 - bytesRead);
 
 					lockedBytes = audioBytes1;
@@ -1241,7 +1459,7 @@ namespace AudioManager
 	{
 		LPVOID audioPtr1;
 		DWORD audioBytes1;
-		DWORD bytesOut = 0;
+		UINT bytesOut = 0;
 		DWORD curPlayCursor;
 		DWORD curWriteCursor;
 
@@ -1279,7 +1497,7 @@ namespace AudioManager
 						{
 							while (totalRead < audioBytes1)
 							{
-								if (Wave::SeekToChunk(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
+								if (WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
 									break;
 
 								if (WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesOut))
@@ -1326,7 +1544,7 @@ namespace AudioManager
 				{
 					g_musicSoundBuffer->Stop();
 
-					Wave::CloseFile(&g_musicFileHandle, (HGLOBAL*)&g_musicWaveFormat);
+					WaveCloseReadFile(&g_musicFileHandle, &g_musicWaveFormat);
 
 					g_directSoundNotify->Release();
 					g_directSoundNotify = 0;
