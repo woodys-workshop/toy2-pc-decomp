@@ -1,4 +1,5 @@
 #include "Nu3D/Math.h"
+#include "Nu3D/Quaternion.h"
 #include <MATH.H>
 #include <STDLIB.h>
 
@@ -345,33 +346,36 @@ namespace Nu3D
 		// FUNCTION: TOY2 0x004AA620
 		void InvertAffineMatrix(D3DMATRIX* output, D3DMATRIX* input)
 		{
-			D3DMATRIX source = *input;
-			BuildIdentityMatrix(output);
+			D3DMATRIX source;
+
+			memcpy(&source, input, sizeof(D3DMATRIX));
 
 			float* row0 = &source._11;
 			float* row1 = &source._21;
 			float* row2 = &source._31;
 
-			if (Abs(row1[0]) <= Abs(row2[0]))
+			BuildIdentityMatrix(output);
+
+			if (Abs(row1[0]) > Abs(row2[0]))
 			{
-				if (Abs(row2[0]) <= Abs(row0[0]))
+				if (Abs(row1[0]) > Abs(row0[0]))
 				{
-					row0 = &source._31;
-					row2 = &source._11;
+					row0 = &source._21;
+					row1 = &source._11;
 					output->_11 = 0.0f;
-					output->_13 = 1.0f;
-					output->_31 = 1.0f;
-					output->_33 = 0.0f;
+					output->_12 = 1.0f;
+					output->_21 = 1.0f;
+					output->_22 = 0.0f;
 				}
 			}
-			else if (Abs(row1[0]) <= Abs(row0[0]))
+			else if (Abs(row2[0]) > Abs(row0[0]))
 			{
-				row0 = &source._21;
-				row1 = &source._11;
+				row0 = &source._31;
+				row2 = &source._11;
 				output->_11 = 0.0f;
-				output->_12 = 1.0f;
-				output->_21 = 1.0f;
-				output->_22 = 0.0f;
+				output->_13 = 1.0f;
+				output->_31 = 1.0f;
+				output->_33 = 0.0f;
 			}
 
 			float scale = 1.0f / row0[0];
@@ -381,26 +385,23 @@ namespace Nu3D
 			output->_12 *= scale;
 			output->_13 *= scale;
 
-			float factor1 = row1[0];
-			float factor2 = row2[0];
-			float factor3 = source._41;
-			row1[1] -= factor1 * row0[1];
-			row2[1] -= factor2 * row0[1];
-			source._42 -= factor3 * row0[1];
-			row1[2] -= factor1 * row0[2];
-			row2[2] -= factor2 * row0[2];
-			source._43 -= factor3 * row0[2];
-			output->_21 -= factor1 * output->_11;
-			output->_22 -= factor1 * output->_12;
-			output->_23 -= factor1 * output->_13;
-			output->_31 -= factor2 * output->_11;
-			output->_32 -= factor2 * output->_12;
-			output->_33 -= factor2 * output->_13;
-			output->_41 -= factor3 * output->_11;
-			output->_42 -= factor3 * output->_12;
-			output->_43 -= factor3 * output->_13;
+			row1[1] -= row1[0] * row0[1];
+			row2[1] -= row2[0] * row0[1];
+			source._42 -= source._41 * row0[1];
+			row1[2] -= row1[0] * row0[2];
+			row2[2] -= row2[0] * row0[2];
+			source._43 -= source._41 * row0[2];
+			output->_21 -= row1[0] * output->_11;
+			output->_22 -= row1[0] * output->_12;
+			output->_23 -= row1[0] * output->_13;
+			output->_31 -= row2[0] * output->_11;
+			output->_32 -= row2[0] * output->_12;
+			output->_33 -= row2[0] * output->_13;
+			output->_41 -= source._41 * output->_11;
+			output->_42 -= source._41 * output->_12;
+			output->_43 -= source._41 * output->_13;
 
-			if (Abs(row2[1]) <= Abs(row1[1]))
+			if (Abs(row2[1]) > Abs(row1[1]))
 			{
 				float* rowSwap = row1;
 				row1 = row2;
@@ -423,39 +424,33 @@ namespace Nu3D
 			output->_22 *= scale;
 			output->_23 *= scale;
 
-			factor1 = row0[1];
-			factor2 = row2[1];
-			factor3 = source._42;
-			row0[2] -= factor1 * row1[2];
-			row2[2] -= factor2 * row1[2];
-			source._43 -= factor3 * row1[2];
-			output->_11 -= factor1 * output->_21;
-			output->_12 -= factor1 * output->_22;
-			output->_13 -= factor1 * output->_23;
-			output->_31 -= factor2 * output->_21;
-			output->_32 -= factor2 * output->_22;
-			output->_33 -= factor2 * output->_23;
-			output->_41 -= factor3 * output->_21;
-			output->_42 -= factor3 * output->_22;
-			output->_43 -= factor3 * output->_23;
+			row0[2] -= row0[1] * row1[2];
+			row2[2] -= row2[1] * row1[2];
+			source._43 -= source._42 * row1[2];
+			output->_11 -= row0[1] * output->_21;
+			output->_12 -= row0[1] * output->_22;
+			output->_13 -= row0[1] * output->_23;
+			output->_31 -= row2[1] * output->_21;
+			output->_32 -= row2[1] * output->_22;
+			output->_33 -= row2[1] * output->_23;
+			output->_41 -= source._42 * output->_21;
+			output->_42 -= source._42 * output->_22;
+			output->_43 -= source._42 * output->_23;
 
 			scale = 1.0f / row2[2];
 			output->_31 *= scale;
 			output->_32 *= scale;
 			output->_33 *= scale;
 
-			factor1 = row0[2];
-			factor2 = row1[2];
-			factor3 = source._43;
-			output->_11 -= factor1 * output->_31;
-			output->_12 -= factor1 * output->_32;
-			output->_13 -= factor1 * output->_33;
-			output->_21 -= factor2 * output->_31;
-			output->_22 -= factor2 * output->_32;
-			output->_23 -= factor2 * output->_33;
-			output->_41 -= factor3 * output->_31;
-			output->_42 -= factor3 * output->_32;
-			output->_43 -= factor3 * output->_33;
+			output->_11 -= row0[2] * output->_31;
+			output->_12 -= row0[2] * output->_32;
+			output->_13 -= row0[2] * output->_33;
+			output->_21 -= row1[2] * output->_31;
+			output->_22 -= row1[2] * output->_32;
+			output->_23 -= row1[2] * output->_33;
+			output->_41 -= source._43 * output->_31;
+			output->_42 -= source._43 * output->_32;
+			output->_43 -= source._43 * output->_33;
 		}
 
 		// FUNCTION: TOY2 0x004A9800
@@ -932,5 +927,201 @@ namespace Nu3D
 
 		// FUNCTION: TOY2 0x004A92E0 [MATCHED]
 		double GetLength(Vector3F* v1) { return sqrt(v1->x * v1->x + v1->y * v1->y + v1->z * v1->z); }
+
+		// FUNCTION: TOY2 0x004AB090
+		void MatToQuat(float matrix[4][4], Quaternion* quat)
+		{
+			float tr, s, q[4];
+			int32_t i, j, k;
+			int32_t nxt[3] = { 1, 2, 0 };
+
+			tr = matrix[0][0] + (matrix[1][1] + matrix[2][2]);
+
+			if (tr > 0.0)
+			{
+				s = sqrt(tr + 1.0f);
+				quat->w = s / 2.0f;
+				s = 0.5f / s;
+				quat->x = (matrix[1][2] - matrix[2][1]) * s;
+				quat->y = (matrix[2][0] - matrix[0][2]) * s;
+				quat->z = (matrix[0][1] - matrix[1][0]) * s;
+			}
+			else
+			{
+				i = 0;
+				if (matrix[1][1] > matrix[0][0])
+					i = 1;
+				if (matrix[2][2] > matrix[i][i])
+					i = 2;
+				j = nxt[i];
+				k = nxt[j];
+
+				s = sqrt((matrix[i][i] - (matrix[j][j] + matrix[k][k])) + 1.0f);
+
+				q[i] = s * 0.5f;
+
+				if (s != 0.0f)
+					s = 0.5f / s;
+
+				q[3] = (matrix[j][k] - matrix[k][j]) * s;
+				q[j] = (matrix[i][j] + matrix[j][i]) * s;
+				q[k] = (matrix[i][k] + matrix[k][i]) * s;
+
+				quat->x = q[0];
+				quat->y = q[1];
+				quat->z = q[2];
+				quat->w = q[3];
+			}
+		}
+
+		// FUNCTION: TOY2 0x004AB1E0 [MATCHED]
+		void QuatToMatrix(Quaternion* quat, D3DMATRIX* matrix)
+		{
+			float ww = quat->w * quat->w;
+			float xx = quat->x * quat->x;
+			float yy = quat->y * quat->y;
+			float zz = quat->z * quat->z;
+			float xy = quat->x * quat->y * 2.0f;
+			float xz = quat->x * quat->z * 2.0f;
+			float xw = quat->x * quat->w * 2.0f;
+			float yz = quat->y * quat->z * 2.0f;
+			float yw = quat->y * quat->w * 2.0f;
+			float zw = quat->z * quat->w * 2.0f;
+
+			matrix->_11 = ww + xx - yy - zz;
+			matrix->_21 = xy - zw;
+			matrix->_31 = xz + yw;
+			matrix->_41 = 0.0f;
+			matrix->_12 = xy + zw;
+			matrix->_22 = ww - xx + yy - zz;
+			matrix->_32 = yz - xw;
+			matrix->_42 = 0.0f;
+			matrix->_13 = xz - yw;
+			matrix->_23 = yz + xw;
+			matrix->_33 = ww - xx - yy + zz;
+			matrix->_43 = 0.0f;
+			matrix->_14 = 0.0f;
+			matrix->_24 = 0.0f;
+			matrix->_34 = 0.0f;
+			matrix->_44 = 1.0f;
+		}
+
+		// FUNCTION: TOY2 0x004AB2E0 [MATCHED]
+		void QuatAdd(Quaternion* result, Quaternion* a, Quaternion* b)
+		{
+			result->w = a->w + b->w;
+			result->x = a->x + b->x;
+			result->y = a->y + b->y;
+			result->z = a->z + b->z;
+		}
+
+		// FUNCTION: TOY2 0x004AB310 [MATCHED]
+		void QuatSub(Quaternion* result, Quaternion* a, Quaternion* b)
+		{
+			result->w = a->w - b->w;
+			result->x = a->x - b->x;
+			result->y = a->y - b->y;
+			result->z = a->z - b->z;
+		}
+
+		// FUNCTION: TOY2 0x004AB340 [MATCHED]
+		void QuatMul(Quaternion* result, Quaternion* a, Quaternion* b)
+		{
+			result->w = (a->w * b->w) - (a->x * b->x) - (a->y * b->y) - (a->z * b->z);
+			result->x = (a->w * b->x) + (a->x * b->w) + (a->y * b->z) - (a->z * b->y);
+			result->y = (a->w * b->y) + (a->y * b->w) + (a->z * b->x) - (a->x * b->z);
+			result->z = (a->w * b->z) + (a->z * b->w) + (a->x * b->y) - (a->y * b->x);
+		}
+
+		// FUNCTION: TOY2 0x004AB3D0 [MATCHED]
+		void QuatInverse(Quaternion* result, Quaternion* quat)
+		{
+			float normSquared = quat->x * quat->x + quat->y * quat->y + quat->z * quat->z + quat->w * quat->w;
+			float scale = 1.0f / normSquared;
+
+			result->w = scale * quat->w;
+			result->x = -scale * quat->x;
+			result->y = -scale * quat->y;
+			result->z = -scale * quat->z;
+		}
+
+		// FUNCTION: TOY2 0x004AB430 [MATCHED]
+		void QuatNormalize(Quaternion* result, Quaternion* quat)
+		{
+			float normSquared = quat->x * quat->x + quat->y * quat->y + quat->z * quat->z + quat->w * quat->w;
+
+			if (normSquared > 0.0)
+			{
+				float length = sqrt(normSquared);
+				float scale = 1.0f / length;
+
+				result->w = scale * quat->w;
+				result->x = scale * quat->x;
+				result->y = scale * quat->y;
+				result->z = scale * quat->z;
+			}
+			else
+			{
+				result->x = quat->x;
+				result->y = quat->y;
+				result->z = quat->z;
+				result->w = quat->w;
+			}
+		}
+
+		// FUNCTION: TOY2 0x004AB4B0 [MATCHED]
+		float QuatNormSquared(Quaternion* quat) { return quat->x * quat->x + quat->y * quat->y + quat->z * quat->z + quat->w * quat->w; }
+
+		// FUNCTION: TOY2 0x004AB4E0 [MATCHED]
+		void QuatLerp(Quaternion* result, Quaternion* from, Quaternion* to, float t)
+		{
+			result->x = (1.0f - t) * from->x + t * to->x;
+			result->y = (1.0f - t) * from->y + t * to->y;
+			result->z = (1.0f - t) * from->z + t * to->z;
+			result->w = (1.0f - t) * from->w + t * to->w;
+		}
+
+		// FUNCTION: TOY2 0x004AB540
+		void QuatSlerp(Quaternion* res, Quaternion* from, Quaternion* to, float t)
+		{
+			float to1[4];
+			double omega, cosom, sinom, scale0, scale1;
+
+			cosom = from->x * to->x + from->y * to->y + from->z * to->z + from->w * to->w;
+
+			if (cosom < 0.0)
+			{
+				cosom = -cosom;
+				to1[0] = -to->x;
+				to1[1] = -to->y;
+				to1[2] = -to->z;
+				to1[3] = -to->w;
+			}
+			else
+			{
+				to1[0] = to->x;
+				to1[1] = to->y;
+				to1[2] = to->z;
+				to1[3] = to->w;
+			}
+
+			if ((1.0 - cosom) > 0.0)
+			{
+				omega = acos(cosom);
+				sinom = sin(omega);
+				scale0 = sin((1.0 - t) * omega) / sinom;
+				scale1 = sin(t * omega) / sinom;
+			}
+			else
+			{
+				scale0 = 1.0 - t;
+				scale1 = t;
+			}
+
+			res->x = scale0 * from->x + scale1 * to1[0];
+			res->y = scale0 * from->y + scale1 * to1[1];
+			res->z = scale0 * from->z + scale1 * to1[2];
+			res->w = scale0 * from->w + scale1 * to1[3];
+		}
 	}
 }

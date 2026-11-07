@@ -692,6 +692,16 @@
 0x004AA520 Nu3D::Camera::CreateInverseMatrix
 0x004AA620 Nu3D::Math::InvertAffineMatrix
 0x004AAC40 Nu3D::Math::BuildMatrixFromDirection
+0x004AB090 Nu3D::Math::MatToQuat
+0x004AB1E0 Nu3D::Math::QuatToMatrix
+0x004AB2E0 Nu3D::Math::QuatAdd
+0x004AB310 Nu3D::Math::QuatSub
+0x004AB340 Nu3D::Math::QuatMul
+0x004AB3D0 Nu3D::Math::QuatInverse
+0x004AB430 Nu3D::Math::QuatNormalize
+0x004AB4B0 Nu3D::Math::QuatNormSquared
+0x004AB4E0 Nu3D::Math::QuatLerp
+0x004AB540 Nu3D::Math::QuatSlerp
 0x004AB7D0 Nu3D::GetCPUFeatures
 0x004AB850 Nu3D::GetHighResolutionTime
 0x004AB8C0 Nu3D::GetCPUTimestamp

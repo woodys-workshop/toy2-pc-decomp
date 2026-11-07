@@ -242,6 +242,7 @@ set(TOY2_SOURCES
     src/Nu3D/Particles.cpp
     src/Nu3D/Math.cpp
     src/Nu3D/Math.h
+    src/Nu3D/Quaternion.h
     src/Nu3D/Scene.cpp
     src/Nu3D/Scene.h
     src/Nu3D/Collision.cpp
