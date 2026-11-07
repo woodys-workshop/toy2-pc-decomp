@@ -22,4 +22,4 @@ Place your SDK files in these locations before building:
 
 CMake links the SDK libraries by explicit filename. Use the filename casing shown above on case-sensitive filesystems. Keep the selected VC6 installation's standard headers and libraries on `INCLUDE` and `LIB`; `/ML` selects its single-threaded `LIBC.LIB`, and Debug uses `/MLd` with `LIBCD.LIB`.
 
-`RelWithDebInfo` is the default build type: 32-bit x86, `/O2 /ML /Zi`, and `/DEBUG /INCREMENTAL:NO /FIXED:NO`. The EXE and PDB support instruction comparison with reccmp. `build.py` takes `VS6_BIN_PATH` pointing to the compiler's `VC98/Bin` directory.
+`RelWithDebInfo` is the default build type: 32-bit x86, `/O2 /ML /Zi`, and `/DEBUG /PROFILE /INCREMENTAL:NO /FIXED:NO`. The EXE and PDB support instruction comparison with reccmp. `build.py` takes `VS6_BIN_PATH` pointing to the compiler's `VC98/Bin` directory.
