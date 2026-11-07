@@ -63,386 +63,341 @@ namespace RawLoader
 	// FUNCTION: TOY2 0x0047B170
 	void DecompressBuffer(uint8_t* inBuffer, uint8_t* outBuffer)
 	{
-		uint8_t* src;
-		uint8_t* dst;
-		uint32_t scratch;
+		uint8_t* input;
+		uint8_t* output;
+		uint8_t* temp;
+		uint32_t len;
+		uint32_t pos;
+		uint32_t disp;
+		uint32_t bitbuf;
 		uint32_t carry;
-		uint32_t length;
-		uint32_t distance;
-		uint32_t accum;
-		uint8_t* matchPtr;
-		int32_t bitIndex;
-		uint32_t tmpAccum;
-		uint32_t distHigh;
-		uint8_t byteA;
-		uint8_t byteB;
+		uint8_t pairByte;
 
-		src = inBuffer + 14;
-		dst = outBuffer;
-		accum = *src++;
-		accum = 4 * accum + 2;
+		input = inBuffer + 14;
+		output = outBuffer;
+		bitbuf = *input++;
+		bitbuf = 4 * bitbuf + 2;
 
-	L1A0:
+	LBL_GET_BITS2:
 		while (1)
 		{
-			accum *= 2;
-			carry = (accum >> 8) & 1;
-
-			if (carry || (accum *= 2, carry = *src++, *dst++ = (uint8_t)carry, carry = (accum >> 8) & 1, carry))
-			{
-				accum &= 0xFF;
-
-				if (accum)
-					break;
-
-				accum = *src++;
-				accum = carry + 2 * accum;
-
-				if (accum & 0x100)
-					break;
-			}
-
-			carry = *src++;
-			*dst++ = (uint8_t)carry;
-		}
-
-		carry = 2 * accum;
-		distance = 0;
-		accum = carry;
-		length = 2;
-		accum = (accum >> 8) & 1;
-		carry &= 0xFF;
-
-		if (! carry)
-		{
-			carry = *src++;
-			carry = accum + 2 * carry;
-			scratch = (carry >> 8) & 1;
-			accum = scratch;
-		}
-
-		if (! accum)
-		{
-			carry *= 2;
-			length = (carry >> 8) & 1;
-			carry &= 0xFF;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
 
 			if (! carry)
 			{
-				accum = *src++;
-				carry = length + 2 * accum;
-				accum = (carry >> 8) & 1;
-				length = accum;
+				carry = *input++;
+				*output++ = (uint8_t)carry;
+				bitbuf += bitbuf;
+				carry = (bitbuf >> 8) & 1;
+
+				if (! carry)
+					goto LBL_X_BYTE;
 			}
 
-			accum = 2 * carry;
-			length += 4;
-			carry = (accum >> 8) & 1;
-			accum &= 0xFF;
+			bitbuf &= 0xFF;
 
-			if (! accum)
+			if (bitbuf)
+				break;
+
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+
+			if (bitbuf & 0x100)
+				break;
+
+		LBL_X_BYTE:
+			carry = *input++;
+			*output++ = (uint8_t)carry;
+		}
+
+		len = 2;
+		pos = 0;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
+
+		if (! bitbuf)
+		{
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
+		}
+
+		if (! carry)
+		{
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
+
+			if (! bitbuf)
 			{
-				accum = *src++;
-				accum = carry + 2 * accum;
-				carry = (accum >> 8) & 1;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
+			}
+
+			len = len * 2 + carry;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
+
+			if (! bitbuf)
+			{
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
 			if (! carry)
-				goto L3A1;
+				goto LBL_COPY;
 
-			accum *= 2;
-			length--;
-			carry = (accum >> 8) & 1;
-			accum &= 0xFF;
+			len--;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
 
-			if (! accum)
+			if (! bitbuf)
 			{
-				accum = *src++;
-				accum = carry + 2 * accum;
-				scratch = (accum >> 8) & 1;
-				carry = scratch;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
-			length = carry + 2 * length;
+			len = len * 2 + carry;
 
-			if (length - 9)
-				goto L3A1;
+			if (len - 9)
+				goto LBL_COPY;
 
-			bitIndex = 3;
+			len = 3;
 
-		L298:
-			accum *= 2;
-			carry = (accum >> 8) & 1;
-			accum &= 0xFF;
+		LBL_X4_BITS:
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
 
-			if (! accum)
+			if (! bitbuf)
 			{
-				accum = *src++;
-				accum = carry + 2 * accum;
-				carry = (accum >> 8) & 1;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
-			bitIndex--;
-			distance = carry + 2 * distance;
+			len--;
+			pos = pos * 2 + carry;
 
-			if (bitIndex >= 0)
-				goto L298;
+			if ((int32_t)len >= 0)
+				goto LBL_X4_BITS;
 
-			byteA = src[0];
-			carry = src[1];
-			dst[0] = byteA;
-			dst[1] = (uint8_t)carry;
-			byteA = src[2];
-			carry = src[3];
-			dst += 4;
-			src += 4;
-			dst[-2] = byteA;
-			dst[-1] = (uint8_t)carry;
+			pos += 2;
 
-			distance++;
+		LBL_GET_RAW_REP:
+			pairByte = input[0];
+			carry = input[1];
+			output[0] = pairByte;
+			output[1] = (uint8_t)carry;
+			pairByte = input[2];
+			carry = input[3];
+			output[2] = pairByte;
+			output[3] = (uint8_t)carry;
+			input += 4;
+			pos--;
+			output += 4;
 
-			if ((int32_t)distance < 0)
-				goto L1A0;
+			if ((int32_t)pos >= 0)
+				goto LBL_GET_RAW_REP;
 
-			distance++;
-
-			do
-			{
-				byteA = src[0];
-				carry = src[1];
-				dst[0] = byteA;
-				dst[1] = (uint8_t)carry;
-				byteA = src[2];
-				carry = src[3];
-				dst += 4;
-				dst[-2] = byteA;
-				dst[-1] = (uint8_t)carry;
-				src += 4;
-				distance--;
-			} while (distance);
-
-			goto L1A0;
+			goto LBL_GET_BITS2;
 		}
 
-		accum = carry + carry;
-		carry = (accum >> 8) & 1;
-		accum &= 0xFF;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = carry + 2 * accum;
-			carry = (accum >> 8) & 1;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
 		if (! carry)
-			goto L4A4;
+			goto LBL_BYTE_DISP2;
 
-		accum *= 2;
-		length = 3;
-		carry = (accum >> 8) & 1;
-		accum &= 0xFF;
+		len++;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = carry + 2 * accum;
-			scratch = (accum >> 8) & 1;
-			carry = scratch;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
 		if (! carry)
-			goto L3A1;
+			goto LBL_COPY;
 
-		length = *src++;
+		len = *input++;
 
-		if (! length)
+		if (! len)
 		{
-			accum *= 2;
-			carry = (accum >> 8) & 1;
-			accum &= 0xFF;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
 
-			if (! accum)
+			if (! bitbuf)
 			{
-				accum = *src++;
-				accum = carry + 2 * accum;
-				carry = (accum >> 8) & 1;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
 			if (carry)
-				goto L1A0;
+				goto LBL_GET_BITS2;
 
 			return;
 		}
 
-		length += 8;
+		len += 8;
 
-	L3A1:
-		accum *= 2;
-		carry = (accum >> 8) & 1;
-		accum &= 0xFF;
+	LBL_COPY:
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = carry + 2 * accum;
-			scratch = (accum >> 8) & 1;
-			carry = scratch;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
 		if (! carry)
-			goto L4A4;
+			goto LBL_BYTE_DISP2;
 
-		accum *= 2;
-		carry = (accum >> 8) & 1;
-		accum &= 0xFF;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = carry + 2 * accum;
-			carry = (accum >> 8) & 1;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
-		accum *= 2;
-		distHigh = carry;
-		carry = (accum >> 8) & 1;
-		accum &= 0xFF;
+		pos = pos * 2 + carry;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = carry + 2 * accum;
-			carry = (accum >> 8) & 1;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
 		if (carry)
 		{
-			tmpAccum = 2 * accum;
-			carry = (tmpAccum >> 8) & 1;
-			tmpAccum &= 0xFF;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
 
-			if (! tmpAccum)
+			if (! bitbuf)
 			{
-				accum = *src++;
-				tmpAccum = carry + 2 * accum;
-				accum = (tmpAccum >> 8) & 1;
-				carry = accum;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
-			accum = 2 * tmpAccum;
-			distHigh = carry + 2 * distHigh;
-			carry = accum;
-			distHigh |= 4;
-			carry = (carry >> 8) & 1;
-			accum &= 0xFF;
+			pos = pos * 2 + carry;
+			pos |= 4;
+			bitbuf += bitbuf;
+			carry = (bitbuf >> 8) & 1;
+			bitbuf &= 0xFF;
 
-			if (! accum)
+			if (! bitbuf)
 			{
-				accum = *src++;
-				accum = carry + 2 * accum;
-				carry = (accum >> 8) & 1;
+				bitbuf = *input++;
+				bitbuf = bitbuf * 2 + carry;
+				carry = (bitbuf >> 8) & 1;
 			}
 
 			if (carry)
-				goto L499;
+				goto LBL_BYTE_DISP;
 		}
 		else
 		{
-			if (distHigh)
-				goto L499;
+			if (pos)
+				goto LBL_BYTE_DISP;
 
-			distHigh = 1;
+			pos++;
 		}
 
-		accum *= 2;
-		tmpAccum = (accum >> 8) & 1;
-		accum &= 0xFF;
+		bitbuf += bitbuf;
+		carry = (bitbuf >> 8) & 1;
+		bitbuf &= 0xFF;
 
-		if (! accum)
+		if (! bitbuf)
 		{
-			accum = *src++;
-			accum = tmpAccum + 2 * accum;
-			carry = (accum >> 8) & 1;
-			tmpAccum = carry;
+			bitbuf = *input++;
+			bitbuf = bitbuf * 2 + carry;
+			carry = (bitbuf >> 8) & 1;
 		}
 
-		distHigh = tmpAccum + 2 * distHigh;
+		pos = pos * 2 + carry;
 
-	L499:
-		scratch = distHigh;
-		carry = 0;
-		carry = (carry & 0xFFFF00FF) | ((scratch & 0xFF) << 8);
-		scratch >>= 8;
-		scratch |= carry;
-		distance = scratch;
+	LBL_BYTE_DISP:
+		pos = ((pos & 0xFF) << 8) | (pos >> 8);
 
-	L4A4:
-		distance = (distance & 0xFF00) | *src++;
-		matchPtr = dst - distance - 1;
-		scratch = length & 1;
-		length >>= 1;
+	LBL_BYTE_DISP2:
+		carry = *input++;
+		disp = carry | (pos & 0xFF00);
+		temp = output - disp - 1;
+		carry = len & 1;
+		len >>= 1;
 
-		if (scratch)
+		if (carry)
 		{
-			scratch = *matchPtr++;
-			*dst++ = (uint8_t)scratch;
+			carry = *temp++;
+			*output++ = (uint8_t)carry;
 		}
 
-		length--;
+		len--;
 
-		if (distance)
+		if (disp)
 		{
-			scratch = matchPtr[0];
-			dst += 2;
-			matchPtr += 2;
-			byteA = matchPtr[-1];
-			dst[-1] = byteA;
-			dst[-2] = (uint8_t)scratch;
-			length--;
+		LBL_BYTE_DISP5:
+			carry = temp[0];
+			pairByte = temp[1];
+			output[1] = pairByte;
+			output[0] = (uint8_t)carry;
+			temp += 2;
+			len--;
+			output += 2;
 
-			if ((int32_t)length < 0)
-				goto L1A0;
+			if ((int32_t)len >= 0)
+				goto LBL_BYTE_DISP5;
 
-			distance = length + 1;
-
-			do
-			{
-				byteB = matchPtr[1];
-				scratch = matchPtr[0];
-				dst[1] = byteB;
-				dst[0] = (uint8_t)scratch;
-				matchPtr += 2;
-				dst += 2;
-				distance--;
-			} while (distance);
-
-			goto L1A0;
+			goto LBL_GET_BITS2;
 		}
-		else
-		{
-			scratch = *matchPtr;
-			carry = scratch | (distance & 0xFF00);
-			dst += 2;
-			length--;
-			dst[-2] = (uint8_t)carry;
-			dst[-1] = (uint8_t)carry;
 
-			if ((int32_t)length < 0)
-				goto L1A0;
+		carry = *temp;
+		pos = carry | (pos & 0xFF00);
 
-			scratch = length + 1;
+	LBL_BYTE_DISP4:
+		output[0] = (uint8_t)pos;
+		output[1] = (uint8_t)pos;
+		len--;
+		output += 2;
 
-			do
-			{
-				dst[0] = (uint8_t)carry;
-				dst[1] = (uint8_t)carry;
-				dst += 2;
-				scratch--;
-			} while (scratch);
+		if ((int32_t)len >= 0)
+			goto LBL_BYTE_DISP4;
 
-			goto L1A0;
-		}
+		goto LBL_GET_BITS2;
 	}
 
 	// FUNCTION: TOY2 0x00452310
