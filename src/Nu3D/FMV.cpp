@@ -167,86 +167,89 @@ namespace Nu3D
 			DrawingDevice::GetBackBuffer()->Blt(&destRect, fmv->ddSurface4, &srcRect, DDBLT_WAIT, NULL);
 		}
 
-		// FUNCTION: TOY2 0x004DB600
+		// FUNCTION: TOY2 0x004DB600 [MATCHED]
 		FMVInstance* CreateFMVInstance(LPCCH filePath)
 		{
-			FMVInstance* alloc = (FMVInstance*)malloc(sizeof(FMVInstance));
+			FMVInstance* fmv;
+			IAMMultiMediaStream* pAMStream;
+			HRESULT hr;
+			WCHAR wPath[MAX_PATH];
+			RECT rect;
+			DWORD information;
 
-			if (alloc)
+			fmv = (FMVInstance*)malloc(sizeof(FMVInstance));
+
+			if (fmv)
 			{
-				memset(alloc, 0, sizeof(FMVInstance));
+				memset(fmv, 0, sizeof(FMVInstance));
 
 				if (! g_nu3dCoInitialized)
 				{
-					CoInitialize(0);
+					CoInitialize(NULL);
 					g_nu3dCoInitialized = 1;
 				}
 
-				IAMMultiMediaStream* multiStreamMedia;
-				CoCreateInstance(CLSID_AMMultiMediaStream, 0, CLSCTX_INPROC_SERVER, IID_IAMMultiMediaStream, (void**)&multiStreamMedia);
+				CoCreateInstance(CLSID_AMMultiMediaStream, NULL, CLSCTX_INPROC_SERVER, IID_IAMMultiMediaStream, (void**)&pAMStream);
 
-				HRESULT result = multiStreamMedia->Initialize(STREAMTYPE_READ, 0, 0);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 130)("Failed ot initialize HRESULT(0x%8.8X)\n", result);
+				hr = pAMStream->Initialize(STREAMTYPE_READ, 0, NULL);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 130)("Failed ot initialize HRESULT(0x%8.8X)\n", hr);
 
-				result = multiStreamMedia->AddMediaStream(DrawingDevice::GetDDraw4(), &MSPID_PrimaryVideo, 0, 0);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 135)("Failed to add video media stream HRESULT(0x%8.8X)\n", result);
+				hr = pAMStream->AddMediaStream(DrawingDevice::GetDDraw4(), &MSPID_PrimaryVideo, 0, NULL);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 135)("Failed to add video media stream HRESULT(0x%8.8X)\n", hr);
 
-				result = multiStreamMedia->AddMediaStream(0, &MSPID_PrimaryAudio, 1, 0);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 141)("Failed to add audio media stream HRESULT(0x%8.8X)\n", result);
+				hr = pAMStream->AddMediaStream(NULL, &MSPID_PrimaryAudio, AMMSF_ADDDEFAULTRENDERER, NULL);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 141)("Failed to add audio media stream HRESULT(0x%8.8X)\n", hr);
 
-				WCHAR wideCharPath[260];
-				MultiByteToWideChar(0, 0, filePath, -1, wideCharPath, 260);
+				MultiByteToWideChar(CP_ACP, 0, filePath, -1, wPath, sizeof(wPath) / sizeof(wPath[0]));
 
-				if (multiStreamMedia->OpenFile(wideCharPath, 0) < 0)
+				if (FAILED(pAMStream->OpenFile(wPath, 0)))
 				{
-					multiStreamMedia->Release();
-					free(alloc);
-					return 0;
+					pAMStream->Release();
+					free(fmv);
+					return NULL;
 				}
 
-				alloc->multiStream = multiStreamMedia;
-				multiStreamMedia->AddRef();
+				fmv->multiStream = pAMStream;
+				pAMStream->AddRef();
 
-				if (! multiStreamMedia)
-					printf("Could not create a CLSID_MultiMediaStream object\nCheck you have run regsvr32 amstream.dll\n");
+				if (pAMStream == NULL)
+					printf(
+						"Could not create a CLSID_MultiMediaStream object\n"
+						"Check you have run regsvr32 amstream.dll\n");
 
-				multiStreamMedia->Release();
+				pAMStream->Release();
 
-				result = alloc->multiStream->GetMediaStream(MSPID_PrimaryVideo, &alloc->primaryVideo);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 167)("Failed to get media stream HRESULT(0x%8.8X)\n", result);
+				hr = fmv->multiStream->GetMediaStream(MSPID_PrimaryVideo, &fmv->primaryVideo);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 167)("Failed to get media stream HRESULT(0x%8.8X)\n", hr);
 
-				result = alloc->primaryVideo->QueryInterface(IID_IDirectDrawMediaStream, (void**)&alloc->ddMediaStream);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 173)("Failed to query DirectDrawMediaStream interface HRESULT(0x%8.8X)\n", result);
+				hr = fmv->primaryVideo->QueryInterface(IID_IDirectDrawMediaStream, (void**)&fmv->ddMediaStream);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 173)("Failed to query DirectDrawMediaStream interface HRESULT(0x%8.8X)\n", hr);
 
-				result = alloc->ddMediaStream->CreateSample(0, 0, 0, &alloc->ddMediaSample);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 179)("Failed to create sample HRESULT(0x%8.8X)\n", result);
+				hr = fmv->ddMediaStream->CreateSample(NULL, NULL, 0, &fmv->ddMediaSample);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 179)("Failed to create sample HRESULT(0x%8.8X)\n", hr);
 
-				RECT surfaceRect;
-				result = alloc->ddMediaSample->GetSurface(&alloc->ddSurface, &surfaceRect);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 185)("Failed get surface HRESULT(0x%8.8X)\n", result);
+				hr = fmv->ddMediaSample->GetSurface(&fmv->ddSurface, &rect);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 185)("Failed get surface HRESULT(0x%8.8X)\n", hr);
 
-				result = alloc->ddSurface->QueryInterface(IID_IDirectDrawSurface4, (void**)&alloc->ddSurface4);
-				if (result < 0)
-					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 191)("Failed to query DirectDrawSurface4 interface HRESULT(0x%8.8X)\n", result);
+				hr = fmv->ddSurface->QueryInterface(IID_IDirectDrawSurface4, (void**)&fmv->ddSurface4);
+				if (FAILED(hr))
+					Logger::GetErrorHandler("C:\\projects\\nu3d\\fmv.c", 191)("Failed to query DirectDrawSurface4 interface HRESULT(0x%8.8X)\n", hr);
 
-				DWORD information = 2;
-				if (alloc->multiStream->GetInformation(&information, 0) == 0)
-				{
-					alloc->flags |= FMV_FLAG_INFO_OK;
-					return alloc;
-				}
-
-				alloc->flags &= ~FMV_FLAG_INFO_OK;
+				information = 2;
+				if (fmv->multiStream->GetInformation(&information, NULL) == S_OK)
+					fmv->flags |= FMV_FLAG_INFO_OK;
+				else
+					fmv->flags &= ~FMV_FLAG_INFO_OK;
 			}
 
-			return alloc;
+			return fmv;
 		}
 
 		// FUNCTION: TOY2 0x004CE5F0 [MATCHED]

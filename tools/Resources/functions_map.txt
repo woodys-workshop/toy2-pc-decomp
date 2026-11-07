@@ -692,11 +692,15 @@
 0x004AA520 Nu3D::Camera::CreateInverseMatrix
 0x004AA620 Nu3D::Math::InvertAffineMatrix
 0x004AAC40 Nu3D::Math::BuildMatrixFromDirection
+0x004AB7C0 Nu3D::HasTimeStampCounter
 0x004AB7D0 Nu3D::GetCPUFeatures
+0x004AB830 Nu3D::HasMMX
+0x004AB840 Nu3D::Has3DNow
 0x004AB850 Nu3D::GetHighResolutionTime
 0x004AB8C0 Nu3D::GetCPUTimestamp
 0x004AB8E0 Nu3D::CalibrateTimestampCounter
 0x004AB950 Nu3D::PrecisionSleep
+0x004ABA10 Nu3D::GetCPUTicksPerSecond
 0x004ABA40 DrawingDevice::GetDDraw4
 0x004ABA70 DrawingDevice::GetD3D
 0x004ABA80 DrawingDevice::GetD3DDevice

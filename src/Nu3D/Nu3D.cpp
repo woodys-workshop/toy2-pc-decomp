@@ -9,16 +9,19 @@ namespace Nu3D
 	int32_t g_isSoftwareRendering;
 
 	// GLOBAL: TOY2 0x00883FF8
-	uint8_t g_hasTimeStampCounter;
+	int8_t g_hasTimeStampCounter;
 
 	// GLOBAL: TOY2 0x00883FF9
-	uint8_t g_hasMMX;
+	int8_t g_hasMMX;
 
 	// GLOBAL: TOY2 0x00883FFA
-	uint8_t g_has3DNow;
+	int8_t g_has3DNow;
 
 	// GLOBAL: TOY2 0x00883FE0
 	int64_t g_cpuTicksPerSecond;
+
+	// GLOBAL: TOY2 0x00884004
+	int32_t g_cpuTicksPerSecondInitialized;
 
 	// GLOBAL: TOY2 0x00508A68
 	int32_t g_useAsDiffuseModulation = 1;
@@ -70,6 +73,27 @@ namespace Nu3D
 
 		LBL_DONE:
 		}
+	}
+
+	// FUNCTION: TOY2 0x004AB7C0 [MATCHED]
+	int32_t HasTimeStampCounter()
+	{
+		GetCPUFeatures();
+		return g_hasTimeStampCounter;
+	}
+
+	// FUNCTION: TOY2 0x004AB830 [MATCHED]
+	int32_t HasMMX()
+	{
+		GetCPUFeatures();
+		return g_hasMMX;
+	}
+
+	// FUNCTION: TOY2 0x004AB840 [MATCHED]
+	int32_t Has3DNow()
+	{
+		GetCPUFeatures();
+		return g_has3DNow;
 	}
 
 	// FUNCTION: TOY2 0x004AB8C0 [MATCHED]
@@ -169,6 +193,21 @@ namespace Nu3D
 		{
 			Sleep(delayMs);
 		}
+	}
+
+	// FUNCTION: TOY2 0x004ABA10 [MATCHED]
+	int32_t GetCPUTicksPerSecond()
+	{
+		if (! g_cpuTicksPerSecondInitialized)
+		{
+			g_cpuTicksPerSecondInitialized = 1;
+			CalibrateTimestampCounter();
+		}
+
+		if (g_hasTimeStampCounter)
+			return (int32_t)g_cpuTicksPerSecond;
+		else
+			return 1;
 	}
 
 	// FUNCTION: TOY2 0x0047D520 [MATCHED]
