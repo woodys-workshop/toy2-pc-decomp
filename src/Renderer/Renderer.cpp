@@ -1067,6 +1067,15 @@ namespace Renderer
 	// FUNCTION: TOY2 0x004B3870
 	int32_t GetIsSoftwareRendering() { return g_isSoftwareRendering; }
 
+	// FUNCTION: TOY2 0x004B3880 [MATCHED]
+	int32_t CreateSlotSurface(int32_t width, int32_t height) { return DrawingDevice::CreateSlotSurface(width, height); }
+
+	// FUNCTION: TOY2 0x004B38A0 [MATCHED]
+	int32_t ReleaseSlotSurface(uint32_t index) { return DrawingDevice::ReleaseSlotSurface(index); }
+
+	// FUNCTION: TOY2 0x004B38B0 [MATCHED]
+	int32_t SetSlotAsRenderTarget(uint32_t index) { return DrawingDevice::SetSlotAsRenderTarget(index); }
+
 	// FUNCTION: TOY2 0x004B3740 [MATCHED]
 	float BuildGammaCorrectionLUT(float gammaCorrection)
 	{

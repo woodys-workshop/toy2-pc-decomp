@@ -2,6 +2,7 @@
 #include "DrawingDevice.h"
 #include "Logger.h"
 #include "FileUtils.h"
+#include "UserDlg.h"
 #include "Toy2/D3DApp.h"
 #include "Toy2/Toy2.h"
 
@@ -174,8 +175,8 @@ namespace ModeSelect
 		}
 	}
 
-	// FUNCTION: TOY2 0x004ACBE0
-	int32_t SelectPrimaryDevice(uint8_t selectionFlags)
+	// FUNCTION: TOY2 0x004ACBE0 [MATCHED]
+	HRESULT SelectPrimaryDevice(DWORD selectionFlags)
 	{
 		using namespace DrawingDevice;
 
@@ -184,78 +185,89 @@ namespace ModeSelect
 		if (! g_forceFullscreen)
 			selectionFlags |= 2;
 
-		DDAppDevice::App* app;
-		DDAppDevice* device;
-
-		if ((selectionFlags & 0x3C) != 0)
+		if (selectionFlags & 0x3C)
 		{
-			for (app = g_ddAppListHead; app; app = app->chainDDApp)
+			for (DDAppDevice::App* pDriver = g_ddAppListHead; pDriver; pDriver = pDriver->chainDDApp)
 			{
-				for (device = app->deviceListHead; device; device = device->nextDevice)
+				for (DDAppDevice* pDevice = pDriver->deviceListHead; pDevice; pDevice = pDevice->nextDevice)
 				{
-					BOOL matches = FALSE;
+					BOOL bFound = FALSE;
 
-					if (! memcmp(device->ref, &IID_IDirect3DRGBDevice, sizeof(GUID)))
+					if (IsEqualGUID(*pDevice->pGUID, IID_IDirect3DRGBDevice))
 					{
-						if (! (selectionFlags & 4))
-							continue;
+						if (selectionFlags & 4)
+							bFound = TRUE;
 					}
-					else if (! memcmp(device->ref, &IID_IDirect3DRefDevice, sizeof(GUID)))
+					else if (IsEqualGUID(*pDevice->pGUID, IID_IDirect3DRefDevice))
 					{
-						if (! (selectionFlags & 8))
-							continue;
+						if (selectionFlags & 8)
+							bFound = TRUE;
 					}
 					else
 					{
-						if ((selectionFlags & 16) && app == g_ddAppListHead)
-							matches = TRUE;
-						if ((selectionFlags & 32) && app != g_ddAppListHead)
-							matches = TRUE;
-
-						if (! matches)
-							continue;
+						if (selectionFlags & 16)
+							if (pDriver == g_ddAppListHead)
+								bFound = TRUE;
+						if (selectionFlags & 32)
+							if (pDriver != g_ddAppListHead)
+								bFound = TRUE;
 					}
 
-					g_primaryDDApp = app;
-					app->primaryDevice = device;
-					return 0;
+					if (bFound)
+					{
+						g_primaryDDApp = pDriver;
+						g_primaryDDApp->primaryDevice = pDevice;
+						return S_OK;
+					}
 				}
 			}
-
 			return 0x81000005;
 		}
 
-		for (uint16_t attemptIndex = 0; attemptIndex < 4; ++attemptIndex)
+		for (WORD pass = 0; pass < 4; pass++)
 		{
-			uint16_t attemptFlags = ~attemptIndex;
-			int32_t wantHardware = attemptFlags & 1;
-			int32_t wantWindowed = (attemptFlags >> 1) & 1;
+			BOOL bSeekHardware = (pass & 0x1) ? FALSE : TRUE;
+			BOOL bSeekWindowed = (pass & 0x2) ? FALSE : TRUE;
 
-			if ((wantHardware != 1 || (selectionFlags & 1) == 0) && (wantWindowed != 1 || (selectionFlags & 2) == 0))
+			if ((TRUE == bSeekHardware) && (selectionFlags & 1))
+				continue;
+			if ((TRUE == bSeekWindowed) && (selectionFlags & 2))
+				continue;
+
+			for (DDAppDevice::App* pDriver = g_ddAppListHead; pDriver; pDriver = pDriver->chainDDApp)
 			{
-				for (app = g_ddAppListHead; app; app = app->chainDDApp)
-				{
-					if (wantWindowed && (app->ddCaps1.dwCaps2 & 0x80000) == 0)
+				DDCAPS* pCaps = &pDriver->ddDriverCaps;
+
+				if (bSeekWindowed)
+					if (0 == (pCaps->dwCaps2 & DDCAPS2_CANRENDERWINDOWED))
 						continue;
 
-					for (device = app->deviceListHead; device; device = device->nextDevice)
-					{
-						if (wantHardware != device->isHardwareAccelerated || (wantWindowed && ! device->supportsCurrentMode))
-							continue;
+				for (DDAppDevice* pDevice = pDriver->deviceListHead; pDevice; pDevice = pDevice->nextDevice)
+				{
+					if (bSeekHardware != pDevice->isHardwareAccelerated)
+						continue;
+					if (bSeekWindowed && FALSE == pDevice->supportsCurrentMode)
+						continue;
 
-						device->canRenderWindowedOnPrimary = wantWindowed;
-						g_primaryDDApp = app;
-						app->primaryDevice = device;
-						return 0;
-					}
+					pDevice->canRenderWindowedOnPrimary = bSeekWindowed;
+					g_primaryDDApp = pDriver;
+					g_primaryDDApp->primaryDevice = pDevice;
+
+					return S_OK;
 				}
 			}
 		}
 
-		if (! g_foundAnyD3DDevice)
+		if (FALSE == g_foundAnyD3DDevice)
 			return 0x81000001;
-		return (g_foundRefDevice != 0) + 0x81000002;
+		if (FALSE == g_foundRefDevice)
+			return 0x81000002;
+
+		return 0x81000003;
 	}
+
+	// FUNCTION: TOY2 0x004AC3C0 [MATCHED]
+	HRESULT SelectPrimaryDevice_T(DWORD selectionFlags) { return SelectPrimaryDevice(selectionFlags); }
 
 	// FUNCTION: TOY2 0x004ACFB0
 	void SetForceFullscreen(int32_t forceFullscreen) { g_forceFullscreen = forceFullscreen; }
@@ -263,124 +275,96 @@ namespace ModeSelect
 	// FUNCTION: TOY2 0x004AC390
 	void SetForceFullscreen_T(int32_t forceFullscreen) { SetForceFullscreen(forceFullscreen); }
 
-	// FUNCTION: TOY2 0x004AC9C0
+	// FUNCTION: TOY2 0x004AC9C0 [MATCHED]
 	HRESULT CALLBACK EnumDisplayModes(LPDDSURFACEDESC2 lpDDSurfaceDesc2, LPVOID lpContext)
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice* device = (DDAppDevice*)lpContext;
+		if (NULL == lpDDSurfaceDesc2 || NULL == lpContext)
+			return DDENUMRET_CANCEL;
 
-		if (! lpDDSurfaceDesc2 || ! device)
-			return D3DENUMRET_CANCEL;
+		DDAppDevice* pDevice = (DDAppDevice*)lpContext;
+		DDAppDevice::DisplayMode* pNewMode;
+		DWORD dwBitDepth = pDevice->deviceDesc.dwDeviceRenderBitDepth;
+		DWORD dwModeDepth = lpDDSurfaceDesc2->ddpfPixelFormat.dwRGBBitCount;
 
-		DWORD deviceRenderBitDepth = device->deviceDesc.dwDeviceRenderBitDepth;
-		DWORD rgbBitCount = lpDDSurfaceDesc2->ddpfPixelFormat.dwRGBBitCount;
+		if ((32 == dwModeDepth) && (0 == (dwBitDepth & DDBD_32)))
+			return DDENUMRET_OK;
+		if ((24 == dwModeDepth) && (0 == (dwBitDepth & DDBD_24)))
+			return DDENUMRET_OK;
+		if ((16 == dwModeDepth) && (0 == (dwBitDepth & DDBD_16)))
+			return DDENUMRET_OK;
+		if (8 == dwModeDepth)
+			return DDENUMRET_OK;
+		if ((dwModeDepth > 16) && D3DApp::g_no32bitColors)
+			return DDENUMRET_OK;
 
-		if (rgbBitCount == 32)
+		if (FALSE == pDevice->isHardwareAccelerated)
 		{
-			if ((deviceRenderBitDepth & 256) == 0)
-				return D3DENUMRET_OK;
-
-			if (D3DApp::g_no32bitColors)
-				return D3DENUMRET_OK;
-		}
-		else if (rgbBitCount == 24)
-		{
-			if ((deviceRenderBitDepth & 512) == 0)
-				return D3DENUMRET_OK;
-
-			if (D3DApp::g_no32bitColors)
-				return D3DENUMRET_OK;
-		}
-		else if (rgbBitCount == 16)
-		{
-			if ((deviceRenderBitDepth & 1024) == 0)
-				return D3DENUMRET_OK;
-		}
-		else if (rgbBitCount == 8)
-		{
-			return D3DENUMRET_OK;
-		}
-		else if (rgbBitCount > 16)
-		{
-			if (D3DApp::g_no32bitColors)
-				return D3DENUMRET_OK;
-		}
-
-		if (! device->isHardwareAccelerated)
-		{
-			if (rgbBitCount != 16)
-				return D3DENUMRET_OK;
-
+			if (16 != dwModeDepth)
+				return DDENUMRET_OK;
 			if (lpDDSurfaceDesc2->dwWidth > 320)
-				return D3DENUMRET_OK;
+				return DDENUMRET_OK;
 		}
 
-		DWORD texMem;
+		DWORD dwVidMemNeeded;
 
-		if (rgbBitCount == 16)
+		switch (dwModeDepth)
 		{
-			texMem = 6 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
-		}
-		else if (rgbBitCount == 24)
-		{
-			texMem = 9 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
-		}
-		else
-		{
-			if (rgbBitCount != 32)
-				return D3DENUMRET_OK;
-
-			texMem = 12 * lpDDSurfaceDesc2->dwHeight * lpDDSurfaceDesc2->dwWidth;
+			case 16:
+				dwVidMemNeeded = lpDDSurfaceDesc2->dwWidth * lpDDSurfaceDesc2->dwHeight * 6;
+				break;
+			case 24:
+				dwVidMemNeeded = lpDDSurfaceDesc2->dwWidth * lpDDSurfaceDesc2->dwHeight * 9;
+				break;
+			case 32:
+				dwVidMemNeeded = lpDDSurfaceDesc2->dwWidth * lpDDSurfaceDesc2->dwHeight * 12;
+				break;
+			default:
+				return DDENUMRET_OK;
 		}
 
 		// $BUG: On some systems this VRAM calculation can short-circuit and cause the game
 		// to not find a suitable d3d device
 
-		if (device->isHardwareAccelerated)
+		if (pDevice->isHardwareAccelerated)
 		{
-			DDAppDevice::App* ddAppParent = device->ddAppParent;
+			DDAppDevice::App* pDriver = pDevice->ddAppParent;
 
-			if (ddAppParent->vidMemTotal == ddAppParent->totalTextureMem)
+			if (pDriver->vidMemTotal != pDriver->totalPrimaryMem)
 			{
-				DWORD remaining = ddAppParent->vidMemFree - texMem;
-				if ((int32_t)remaining < 0x80000)
-					return D3DENUMRET_OK;
+				if ((int32_t)pDriver->freePrimaryMem < (int32_t)dwVidMemNeeded)
+					return DDENUMRET_OK;
 			}
-			else if ((int32_t)ddAppParent->freeTextureMem < (int32_t)texMem)
+			else
 			{
-				return D3DENUMRET_OK;
+				if ((int32_t)(pDriver->vidMemFree - dwVidMemNeeded) < 0x80000)
+					return DDENUMRET_OK;
 			}
 		}
 
-		DDAppDevice::DisplayMode* displayMode = new DDAppDevice::DisplayMode;
+		if (NULL == (pNewMode = new DDAppDevice::DisplayMode))
+			return DDENUMRET_CANCEL;
 
-		if (! displayMode)
-			return D3DENUMRET_CANCEL;
+		memset(pNewMode, 0, sizeof(DDAppDevice::DisplayMode));
+		memcpy(&pNewMode->surfaceDesc, lpDDSurfaceDesc2, sizeof(DDSURFACEDESC2));
+		sprintf(pNewMode->modeText, "%ld x %ld x %ld", lpDDSurfaceDesc2->dwWidth, lpDDSurfaceDesc2->dwHeight, dwModeDepth);
 
-		memset(displayMode, 0, sizeof(DDAppDevice::DisplayMode));
-		memcpy(displayMode, lpDDSurfaceDesc2, sizeof(DDSURFACEDESC2));
+		DDAppDevice::DisplayMode** pMode = &pDevice->displayModeListHead;
+		while (*pMode)
+			pMode = &((*pMode)->nextDisplayMode);
+		(*pMode) = pNewMode;
 
-		sprintf(displayMode->modeText, "%ld x %ld x %ld", lpDDSurfaceDesc2->dwWidth, lpDDSurfaceDesc2->dwHeight, rgbBitCount);
+		if ((640 == lpDDSurfaceDesc2->dwWidth) && (480 == lpDDSurfaceDesc2->dwHeight) && (16 == lpDDSurfaceDesc2->ddpfPixelFormat.dwRGBBitCount))
+			pDevice->primaryDisplayMode = pNewMode;
 
-		DDAppDevice::DisplayMode* displayModeListHead = device->displayModeListHead;
-		DDAppDevice::DisplayMode** nextDm;
+		if (NULL == pDevice->primaryDisplayMode)
+			pDevice->primaryDisplayMode = pNewMode;
 
-		for (nextDm = &device->displayModeListHead; displayModeListHead; displayModeListHead = displayModeListHead->nextDisplayMode)
-			nextDm = &displayModeListHead->nextDisplayMode;
-
-		*nextDm = displayMode;
-
-		if (lpDDSurfaceDesc2->dwWidth == 640 && lpDDSurfaceDesc2->dwHeight == 480 && lpDDSurfaceDesc2->ddpfPixelFormat.dwRGBBitCount == 16)
-			device->primaryDisplayMode = displayMode;
-
-		if (! device->primaryDisplayMode)
-			device->primaryDisplayMode = displayMode;
-
-		return D3DENUMRET_OK;
+		return DDENUMRET_OK;
 	}
 
-	// FUNCTION: TOY2 0x004AC760
+	// FUNCTION: TOY2 0x004AC760 [MATCHED]
 	HRESULT CALLBACK D3DDeviceEnumCallback(
 		GUID* lpGuid,
 		LPSTR lpDeviceDescription,
@@ -391,177 +375,156 @@ namespace ModeSelect
 	{
 		using namespace DrawingDevice;
 
-		DDAppDevice::App* ddApp = reinterpret_cast<DDAppDevice::App*>(lpContext);
+		DDAppDevice::App* pDriver = (DDAppDevice::App*)lpContext;
+		DDAppDevice* pNewDevice;
 
-		if (! lpGuid || ! lpD3DHWDeviceDesc || ! lpD3DHELDeviceDesc || ! ddApp)
+		if (NULL == lpGuid || NULL == lpD3DHWDeviceDesc || NULL == lpD3DHELDeviceDesc || NULL == pDriver)
 			return D3DENUMRET_CANCEL;
 
-		if (! memcmp(lpGuid, &IID_IDirect3DNullDevice, sizeof(GUID)))
+		if (IsEqualGUID(*lpGuid, IID_IDirect3DNullDevice))
 			return D3DENUMRET_OK;
 
-		g_foundAnyD3DDevice = 1;
+		g_foundAnyD3DDevice = TRUE;
 
-		int32_t flags = lpD3DHWDeviceDesc->dwFlags != 0;
+		BOOL bIsHardware = (0 != lpD3DHWDeviceDesc->dwFlags);
+		D3DDEVICEDESC* pDesc = bIsHardware ? lpD3DHWDeviceDesc : lpD3DHELDeviceDesc;
 
-		LPD3DDEVICEDESC deviceDesc = lpD3DHWDeviceDesc;
+		if (pDriver->pGUID != NULL)
+			if (FALSE == bIsHardware)
+				return D3DENUMRET_OK;
 
-		if (! lpD3DHWDeviceDesc->dwFlags)
-			deviceDesc = lpD3DHELDeviceDesc;
+		if (g_ddDeviceFilterCallback)
+			if (FAILED(g_ddDeviceFilterCallback(&pDriver->ddDriverCaps, pDesc)))
+				return D3DENUMRET_OK;
 
-		if (ddApp->ref && ! lpD3DHWDeviceDesc->dwFlags)
-			return D3DENUMRET_OK;
-
-		if (g_ddDeviceFilterCallback && g_ddDeviceFilterCallback(&ddApp->ddCaps1, deviceDesc) < 0)
-			return D3DENUMRET_OK;
-
-		DDAppDevice* appDevice = new DDAppDevice;
-
-		if (! appDevice)
+		if (NULL == (pNewDevice = new DDAppDevice))
 			return D3DENUMRET_CANCEL;
+		memset(pNewDevice, 0, sizeof(DDAppDevice));
 
-		memset(appDevice, 0, sizeof(DDAppDevice));
+		memcpy(&pNewDevice->guid, lpGuid, sizeof(GUID));
+		pNewDevice->pGUID = &pNewDevice->guid;
+		strncpy(pNewDevice->deviceName, lpDeviceName, 39);
+		memcpy(&pNewDevice->deviceDesc, pDesc, sizeof(D3DDEVICEDESC));
+		pNewDevice->isHardwareAccelerated = bIsHardware;
+		pNewDevice->ddAppParent = pDriver;
 
-		appDevice->guid = *lpGuid;
-		appDevice->ref = appDevice;
-
-		strncpy(appDevice->deviceName, lpDeviceName, sizeof(appDevice->deviceName) - 1);
-		memcpy(&appDevice->deviceDesc, deviceDesc, sizeof(appDevice->deviceDesc));
-
-		appDevice->isHardwareAccelerated = flags;
-		appDevice->ddAppParent = ddApp;
-
-		if (flags || ! ddApp->primaryDevice && (lpD3DHELDeviceDesc->dcmColorModel & 2) != 0)
-			ddApp->primaryDevice = appDevice;
-
-		g_ddraw4->EnumDisplayModes(0, 0, appDevice, EnumDisplayModes);
-
-		DDSURFACEDESC2 surfaceDesc;
-		surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
-		g_ddraw4->GetDisplayMode(&surfaceDesc);
-
-		DWORD bitCount = surfaceDesc.ddpfPixelFormat.dwRGBBitCount;
-
-		if ((ddApp->ddCaps1.dwCaps2 & 0x80000) != 0 && ! g_forceFullscreen)
+		if (pNewDevice->isHardwareAccelerated)
+			pDriver->primaryDevice = pNewDevice;
+		else
 		{
-			for (DDAppDevice::DisplayMode* displayMode = appDevice->displayModeListHead; displayMode; displayMode = displayMode->nextDisplayMode)
-			{
-				if (displayMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount == bitCount)
-				{
-					appDevice->supportsCurrentMode = 1;
+			if (NULL == pDriver->primaryDevice)
+				if (D3DCOLOR_RGB & lpD3DHELDeviceDesc->dcmColorModel)
+					pDriver->primaryDevice = pNewDevice;
+		}
 
-					if (! ddApp->ref)
-						appDevice->canRenderWindowedOnPrimary = 1;
+		g_ddraw4->EnumDisplayModes(0, NULL, pNewDevice, EnumDisplayModes);
+
+		DDSURFACEDESC2 ddsd;
+		ddsd.dwSize = sizeof(DDSURFACEDESC2);
+		g_ddraw4->GetDisplayMode(&ddsd);
+		DWORD dwDisplayBPP = ddsd.ddpfPixelFormat.dwRGBBitCount;
+
+		if (pDriver->ddDriverCaps.dwCaps2 & DDCAPS2_CANRENDERWINDOWED && ! g_forceFullscreen)
+		{
+			for (DDAppDevice::DisplayMode* pMode = pNewDevice->displayModeListHead; pMode; pMode = pMode->nextDisplayMode)
+			{
+				if (pMode->surfaceDesc.ddpfPixelFormat.dwRGBBitCount == dwDisplayBPP)
+				{
+					pNewDevice->supportsCurrentMode = TRUE;
+					if (NULL == pDriver->pGUID)
+						pNewDevice->canRenderWindowedOnPrimary = TRUE;
 				}
 			}
 		}
 
-		if (appDevice->displayModeListHead)
+		if (pNewDevice->displayModeListHead)
 		{
-			DDAppDevice* deviceListHead = ddApp->deviceListHead;
-			DDAppDevice** nextDeviceLink;
-
-			for (nextDeviceLink = &ddApp->deviceListHead; deviceListHead; deviceListHead = deviceListHead->nextDevice)
-				nextDeviceLink = &deviceListHead->nextDevice;
-
-			*nextDeviceLink = appDevice;
+			DDAppDevice** pDevice = &pDriver->deviceListHead;
+			while (*pDevice)
+				pDevice = &((*pDevice)->nextDevice);
+			(*pDevice) = pNewDevice;
 		}
 		else
-		{
-			delete appDevice;
-		}
+			delete pNewDevice;
 
-		if (! memcmp(lpGuid, &IID_IDirect3DRefDevice, sizeof(GUID)))
-			g_foundRefDevice = 1;
+		if (IsEqualGUID(*lpGuid, IID_IDirect3DRefDevice))
+			g_foundRefDevice = TRUE;
 
 		return D3DENUMRET_OK;
 	}
 
-	// FUNCTION: TOY2 0x004AC540
-	BOOL WINAPI DDrawEnumCallbackExA(GUID* lpGUID, LPSTR lpDriverName, LPSTR lpDriverDescription, LPVOID lpContext, HMONITOR hm)
+	// FUNCTION: TOY2 0x004AC540 [MATCHED]
+	BOOL WINAPI DDrawEnumCallbackExA(GUID* lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext, HMONITOR hm)
 	{
 		using namespace DrawingDevice;
 
+		LPDIRECTDRAW pDD;
+		if (FAILED(DirectDrawCreate(lpGUID, &pDD, 0L)))
+			return D3DENUMRET_OK;
+
+		if (FAILED(pDD->QueryInterface(IID_IDirectDraw4, (VOID**)&g_ddraw4)))
+		{
+			pDD->Release();
+			return D3DENUMRET_OK;
+		}
+		pDD->Release();
+
+		LPDIRECT3D3 pD3D;
+		if (FAILED(g_ddraw4->QueryInterface(IID_IDirect3D3, (VOID**)&pD3D)))
+		{
+			g_ddraw4->Release();
+			return D3DENUMRET_OK;
+		}
+
+		DDAppDevice::App* pNewDriver = new DDAppDevice::App;
+		if (NULL == pNewDriver)
+			return D3DENUMRET_CANCEL;
+
+		memset(pNewDriver, 0, sizeof(DDAppDevice::App));
+
+		if (NULL != lpGUID)
+		{
+			memcpy(&pNewDriver->guid, lpGUID, sizeof(GUID));
+			pNewDriver->pGUID = &pNewDriver->guid;
+		}
+		strncpy(pNewDriver->driverDesc, lpDriverDescription, 39);
+		strncpy(pNewDriver->driverName, lpDriverName, 39);
+		pNewDriver->hMonitor = hm;
+
+		pNewDriver->ddDriverCaps.dwSize = sizeof(DDCAPS);
+		pNewDriver->ddHELCaps.dwSize = sizeof(DDCAPS);
+		g_ddraw4->GetCaps(&pNewDriver->ddDriverCaps, &pNewDriver->ddHELCaps);
+
+		pNewDriver->vidMemTotal = pNewDriver->ddDriverCaps.dwVidMemTotal;
+		pNewDriver->vidMemFree = pNewDriver->ddDriverCaps.dwVidMemFree;
+
 		DDSCAPS2 ddsCaps;
-		LPDIRECTDRAW directDraw;
+		memset(&ddsCaps, 0, sizeof(DDSCAPS2));
+		ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_VIDEOMEMORY;
+		g_ddraw4->GetAvailableVidMem(&ddsCaps, &pNewDriver->totalPrimaryMem, &pNewDriver->freePrimaryMem);
 
-		if (DirectDrawCreate(lpGUID, &directDraw, 0) < 0)
-			return TRUE;
+		memset(&ddsCaps, 0, sizeof(DDSCAPS2));
+		ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+		g_ddraw4->GetAvailableVidMem(&ddsCaps, &pNewDriver->totalTextureMem, &pNewDriver->freeTextureMem);
 
-		if (directDraw->QueryInterface(IID_IDirectDraw4, (LPVOID*)&g_ddraw4) < 0)
+		pD3D->EnumDevices(D3DDeviceEnumCallback, pNewDriver);
+
+		if (pNewDriver->deviceListHead)
 		{
-			directDraw->Release();
-			return TRUE;
+			DDAppDevice::App** pDriver = &g_ddAppListHead;
+			while (*pDriver)
+				pDriver = &((*pDriver)->chainDDApp);
+			(*pDriver) = pNewDriver;
+
+			if (NULL == lpGUID)
+				g_primaryDDApp = pNewDriver;
 		}
+		else
+			delete pNewDriver;
 
-		directDraw->Release();
-
-		LPDIRECT3D3 d3d3;
-		if (g_ddraw4->QueryInterface(IID_IDirect3D3, (LPVOID*)&d3d3) < 0)
-		{
-			g_ddraw4->Release();
-			return TRUE;
-		}
-
-		DDAppDevice::App* ddApp = new DDAppDevice::App;
-
-		if (ddApp)
-		{
-			memset(ddApp, 0, sizeof(DDAppDevice::App));
-
-			if (lpGUID)
-			{
-				ddApp->guid = *lpGUID;
-				ddApp->ref = ddApp;
-			}
-
-			strncpy(ddApp->driverName, lpDriverName, sizeof(ddApp->driverName) - 1);
-			strncpy(ddApp->driverDesc, lpDriverDescription, sizeof(ddApp->driverDesc) - 1);
-
-			ddApp->hMonitor = hm;
-			ddApp->ddCaps1.dwSize = sizeof(ddApp->ddCaps1);
-			ddApp->ddCaps2.dwSize = sizeof(ddApp->ddCaps2);
-
-			g_ddraw4->GetCaps(&ddApp->ddCaps1, &ddApp->ddCaps2);
-
-			ddApp->vidMemTotal = ddApp->ddCaps1.dwVidMemTotal;
-			ddApp->vidMemFree = ddApp->ddCaps1.dwVidMemFree;
-
-			memset(&ddsCaps.dwCaps2, 0, 12);
-			ddsCaps.dwCaps = 16896;
-
-			g_ddraw4->GetAvailableVidMem(&ddsCaps, &ddApp->totalTextureMem, &ddApp->freeTextureMem);
-
-			memset(&ddsCaps.dwCaps2, 0, 12);
-			ddsCaps.dwCaps = 4096;
-
-			g_ddraw4->GetAvailableVidMem(&ddsCaps, &ddApp->totalVideoMem, &ddApp->freeVideoMem);
-			d3d3->EnumDevices(D3DDeviceEnumCallback, ddApp);
-
-			if (ddApp->deviceListHead)
-			{
-				DDAppDevice::App* chain = g_ddAppListHead;
-				DDAppDevice::App** curChain;
-
-				for (curChain = &g_ddAppListHead; chain; chain = chain->chainDDApp)
-					curChain = &chain->chainDDApp;
-
-				*curChain = ddApp;
-
-				if (! lpGUID)
-					g_primaryDDApp = ddApp;
-			}
-			else
-			{
-				delete ddApp;
-			}
-
-			d3d3->Release();
-			g_ddraw4->Release();
-
-			return TRUE;
-		}
-
-		return reinterpret_cast<BOOL>(ddApp);
+		pD3D->Release();
+		g_ddraw4->Release();
+		return DDENUMRET_OK;
 	}
 
 	// FUNCTION: TOY2 0x004ACBC0
@@ -569,6 +532,36 @@ namespace ModeSelect
 	{
 		return DDrawEnumCallbackExA(lpGUID, lpDriverDescription, lpDriverName, 0, 0);
 	}
+
+	// FUNCTION: TOY2 0x004AC450 [MATCHED]
+	void D3DEnum_FreeResources()
+	{
+		using namespace DrawingDevice;
+
+		while (g_ddAppListHead)
+		{
+			DDAppDevice::App* pDriverVictim = g_ddAppListHead;
+			g_ddAppListHead = g_ddAppListHead->chainDDApp;
+
+			while (pDriverVictim->deviceListHead)
+			{
+				DDAppDevice* pDeviceVictim = pDriverVictim->deviceListHead;
+				pDriverVictim->deviceListHead = pDeviceVictim->nextDevice;
+
+				while (pDeviceVictim->displayModeListHead)
+				{
+					DDAppDevice::DisplayMode* pModeVictim = pDeviceVictim->displayModeListHead;
+					pDeviceVictim->displayModeListHead = pModeVictim->nextDisplayMode;
+					delete pModeVictim;
+				}
+				delete pDeviceVictim;
+			}
+			delete pDriverVictim;
+		}
+	}
+
+	// FUNCTION: TOY2 0x004AC3B0 [MATCHED]
+	void D3DEnum_FreeResources_T() { D3DEnum_FreeResources(); }
 
 	// FUNCTION: TOY2 0x004AC4D0
 	int32_t EnumerateDrivers(DeviceFilterCallback_t callback)
@@ -595,6 +588,88 @@ namespace ModeSelect
 
 	// FUNCTION: TOY2 0x004AC3A0
 	int32_t EnumerateDrivers_T(DeviceFilterCallback_t callback) { return EnumerateDrivers(callback); }
+
+	// FUNCTION: TOY2 0x004ACE30 [MATCHED]
+	INT D3DEnum_UserDlgSelectDriver(HWND hwndParent, BOOL bCurrentlyWindowed)
+	{
+		using namespace DrawingDevice;
+
+		INT nResult = -1;
+
+		if (NULL == g_primaryDDApp)
+			return -1;
+
+		MarkCompatibleBitDepthDevices();
+
+		if (! g_forceFullscreen)
+			bCurrentlyWindowed = FALSE;
+
+		g_primaryDDApp->primaryDevice->canRenderWindowedOnPrimary = bCurrentlyWindowed;
+
+		HINSTANCE hInstance = (HINSTANCE)GetWindowLongA(hwndParent, GWL_HINSTANCE);
+
+		DLGTEMPLATE* pDlgSelect = UserDlg::BuildDriverSelectTemplate();
+		if (pDlgSelect)
+		{
+			nResult = DialogBoxIndirectParamA(hInstance, pDlgSelect, hwndParent, (DLGPROC)UserDlg::DriverSelectProc, 0L);
+			delete pDlgSelect;
+		}
+
+		return nResult;
+	}
+
+	// FUNCTION: TOY2 0x004AC3D0 [MATCHED]
+	INT D3DEnum_UserDlgSelectDriver_T(HWND hwndParent, BOOL bCurrentlyWindowed) { return D3DEnum_UserDlgSelectDriver(hwndParent, bCurrentlyWindowed); }
+
+	// FUNCTION: TOY2 0x004ACEB0 [MATCHED]
+	INT ResourceDlgSelectDriver(LPCSTR lpTemplateName, DLGPROC lpDialogFunc, HWND hwndParent, BOOL bCurrentlyWindowed)
+	{
+		using namespace DrawingDevice;
+
+		if (NULL == g_primaryDDApp)
+			return -1;
+
+		MarkCompatibleBitDepthDevices();
+
+		if (! g_forceFullscreen)
+			bCurrentlyWindowed = FALSE;
+
+		g_primaryDDApp->primaryDevice->canRenderWindowedOnPrimary = bCurrentlyWindowed;
+
+		HINSTANCE hInstance = (HINSTANCE)GetWindowLongA(hwndParent, GWL_HINSTANCE);
+
+		return DialogBoxParamA(hInstance, lpTemplateName, hwndParent, lpDialogFunc, 0L);
+	}
+
+	// FUNCTION: TOY2 0x004ACF10 [MATCHED]
+	HRESULT D3DEnum_GetSelectedDriver(LPGUID* ppDriverGUID, LPGUID* ppDeviceGUID, LPDDSURFACEDESC2* ppddsd, BOOL* pbWindowed, BOOL* pbIsHardware)
+	{
+		using namespace DrawingDevice;
+
+		if ((! ppDriverGUID) || (! ppDeviceGUID))
+			return E_INVALIDARG;
+
+		if (NULL == g_primaryDDApp)
+			return 0x81000001;
+
+		(*ppDriverGUID) = g_primaryDDApp->pGUID;
+		(*ppDeviceGUID) = g_primaryDDApp->primaryDevice->pGUID;
+
+		if (ppddsd)
+			(*ppddsd) = &g_primaryDDApp->primaryDevice->primaryDisplayMode->surfaceDesc;
+		if (pbWindowed)
+			(*pbWindowed) = g_primaryDDApp->primaryDevice->canRenderWindowedOnPrimary;
+		if (pbIsHardware)
+			(*pbIsHardware) = g_primaryDDApp->primaryDevice->isHardwareAccelerated;
+
+		return S_OK;
+	}
+
+	// FUNCTION: TOY2 0x004AC3F0 [MATCHED]
+	HRESULT D3DEnum_GetSelectedDriver_T(LPGUID* ppDriverGUID, LPGUID* ppDeviceGUID, LPDDSURFACEDESC2* ppddsd, BOOL* pbWindowed, BOOL* pbIsHardware)
+	{
+		return D3DEnum_GetSelectedDriver(ppDriverGUID, ppDeviceGUID, ppddsd, pbWindowed, pbIsHardware);
+	}
 
 	// FUNCTION: TOY2 0x00412B00
 	int32_t DeviceFilterCallback(LPDDCAPS caps, void* context) { return FALSE; }
@@ -778,8 +853,8 @@ namespace ModeSelect
 
 				if (g_ddAppIterator->chainDDApp)
 				{
-					DrawTextOutA(g_offscreenDC, deviceTextX - 2, deviceTextY - 2, g_selectedDDApp->driverName);
-					DrawTextOutA(g_offscreenDC, deviceTextX + 2, deviceTextY + 2, g_selectedDDApp->driverName);
+					DrawTextOutA(g_offscreenDC, deviceTextX - 2, deviceTextY - 2, g_selectedDDApp->driverDesc);
+					DrawTextOutA(g_offscreenDC, deviceTextX + 2, deviceTextY + 2, g_selectedDDApp->driverDesc);
 
 					int32_t savedTextColor;
 
@@ -789,7 +864,7 @@ namespace ModeSelect
 						savedTextColor = g_highlightColor;
 
 					ApplyTextStyle(g_offscreenDC, g_mainFont, savedTextColor, 0);
-					DrawTextOutA(g_offscreenDC, deviceTextX, deviceTextY, g_selectedDDApp->driverName);
+					DrawTextOutA(g_offscreenDC, deviceTextX, deviceTextY, g_selectedDDApp->driverDesc);
 
 					deviceTextY += 4 * g_lineHeight / 2;
 				}

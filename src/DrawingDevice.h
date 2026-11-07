@@ -29,25 +29,25 @@ namespace DrawingDevice
 		struct App
 		{
 			GUID guid;
-			App* ref;
-			char driverName[40];
+			GUID* pGUID;
 			char driverDesc[40];
-			DDCAPS ddCaps1;
-			DDCAPS ddCaps2;
+			char driverName[40];
+			DDCAPS ddDriverCaps;
+			DDCAPS ddHELCaps;
 			HMONITOR hMonitor;
 			DWORD vidMemFree;
 			DWORD vidMemTotal;
+			DWORD freePrimaryMem;
+			DWORD totalPrimaryMem;
 			DWORD freeTextureMem;
 			DWORD totalTextureMem;
-			DWORD freeVideoMem;
-			DWORD totalVideoMem;
 			DDAppDevice* primaryDevice;
 			DDAppDevice* deviceListHead;
 			App* chainDDApp;
 		};
 
 		GUID guid;
-		DDAppDevice* ref;
+		GUID* pGUID;
 		char deviceName[40];
 		D3DDEVICEDESC deviceDesc;
 		int32_t isHardwareAccelerated;
@@ -86,20 +86,26 @@ namespace DrawingDevice
 		void Release();
 		int32_t Cleanup();
 
-		HRESULT InitalizeForWindow(HWND hWnd, GUID* ddAppGuid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, uint8_t flags);
-		HRESULT InitalizeDeviceAndSurfaces(GUID* ddAppGuid, GUID* deviceGuid, DDAppDevice::DisplayMode* displayMode, uint8_t flags);
-		HRESULT CreateDirectDraw(LPGUID lpGUID, uint8_t flags);
-		HRESULT SelectD3DDeviceAndZFormat(GUID* deviceGuid, uint8_t flags);
-		HRESULT CreatePrimaryChainAndRects(DDAppDevice::DisplayMode* displayMode, uint8_t flags);
+		HRESULT InitalizeForWindow(HWND hWnd, GUID* ddAppGuid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, DWORD flags);
+		HRESULT InitalizeDeviceAndSurfaces(GUID* ddAppGuid, GUID* deviceGuid, DDAppDevice::DisplayMode* displayMode, DWORD flags);
+		HRESULT CreateDirectDraw(LPGUID lpGUID, DWORD flags);
+		HRESULT SelectD3DDeviceAndZFormat(GUID* deviceGuid, DWORD flags);
+		HRESULT CreatePrimaryChainAndRects(DDAppDevice::DisplayMode* displayMode, DWORD flags);
 		HRESULT CreateZBuffer();
 		HRESULT CreateD3DDevice(const CLSID* guid);
 		HRESULT CreateAndSetViewport();
 		HRESULT PresentFrame();
 		int32_t RestoreToGDISurface(int32_t refreshWindow);
 		HRESULT RestoreSurfaces();
+		void Move(int32_t x, int32_t y);
+		int32_t CreateSlotSurface(int32_t width, int32_t height);
+		int32_t ReleaseSlotSurface(uint32_t index);
+		int32_t SetSlotAsRenderTarget(uint32_t index);
 		int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surfaceOut);
+		int32_t GetSlotSurfaceCaps(uint32_t index, LPDDSCAPS2 caps);
+		int32_t GetSlotDimensions(uint32_t index, int32_t* width, int32_t* height);
 
-		static HRESULT Build(HWND hWnd, GUID* guid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, uint8_t flags);
+		static HRESULT Build(HWND hWnd, GUID* guid, DDAppDevice* device, DDAppDevice::DisplayMode* displayMode, DWORD flags);
 		static void InitSurfaceDesc(LPDDSURFACEDESC2 ddSurfaceDesc, DWORD flags, DWORD caps);
 		static void BuildViewport(D3DVIEWPORT2* viewport, DWORD width, DWORD height);
 		static HRESULT WINAPI EnumZBufferFormats(LPDDPIXELFORMAT lpDDPixFmt, LPVOID lpContext);
@@ -149,9 +155,22 @@ namespace DrawingDevice
 	HRESULT LockPrimarySurface(DDSURFACEDESC2* surfaceDesc);
 	HRESULT UnlockPrimarySurface();
 	int32_t RestoreToGDISurface(int32_t refreshWindow);
+	void Move(int32_t x, int32_t y);
+	int32_t CreateSlotSurface(int32_t width, int32_t height);
+	int32_t ReleaseSlotSurface(uint32_t index);
+	int32_t SetSlotAsRenderTarget(uint32_t index);
 	int32_t GetSlotSurfaceByIndex(uint32_t index, LPDIRECTDRAWSURFACE4* surface);
+	int32_t GetSlotSurfaceCaps(uint32_t index, LPDDSCAPS2 caps);
+	int32_t GetSlotDimensions(uint32_t index, int32_t* width, int32_t* height);
 	HRESULT GetDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC* deviceContext);
 	HRESULT ReleaseDC(LPDIRECTDRAWSURFACE4 drawSurface, HDC hdc);
+
+	void D3DUtil_InitDeviceDesc(D3DDEVICEDESC& ddDevDesc);
+	void D3DUtil_InitMaterial(D3DMATERIAL& mtrl, FLOAT r, FLOAT g, FLOAT b);
+	void D3DUtil_InitLight(D3DLIGHT& light, D3DLIGHTTYPE ltType, FLOAT x, FLOAT y, FLOAT z);
+	void InitLight2(D3DLIGHT2& light, D3DLIGHTTYPE ltType, FLOAT x, FLOAT y, FLOAT z);
+	LPDIRECTDRAW4 D3DUtil_GetDirectDrawFromDevice(LPDIRECT3DDEVICE3 pd3dDevice);
+	DWORD D3DUtil_GetDeviceMemoryType(LPDIRECT3DDEVICE3 pd3dDevice);
 
 	STATIC_ASSERT(sizeof(DrawingDeviceSlot) == 0x18);
 	STATIC_ASSERT(sizeof(CD3DFramework) == 0x234);

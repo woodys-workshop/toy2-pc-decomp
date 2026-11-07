@@ -95,6 +95,9 @@ set(TOY2_SOURCES
     src/ModeSelect.cpp
     src/ModeSelect.h
 
+    src/UserDlg.cpp
+    src/UserDlg.h
+
     src/Random.h
     src/Random.cpp
 

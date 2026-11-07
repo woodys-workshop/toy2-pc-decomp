@@ -121,6 +121,25 @@ namespace Logger
 		Log(buffer);
 	}
 
+	// FUNCTION: TOY2 0x004ADF50 [MATCHED]
+	HRESULT _DbgOut(TCHAR* strFile, DWORD dwLine, HRESULT hr, TCHAR* strMsg)
+	{
+		TCHAR buffer[256];
+		sprintf(buffer, "%s(%ld): ", strFile, dwLine);
+		OutputDebugString(buffer);
+		OutputDebugString(strMsg);
+
+		if (hr)
+		{
+			sprintf(buffer, "(hr=%08lx)\n", hr);
+			OutputDebugString(buffer);
+		}
+
+		OutputDebugString("\n");
+
+		return hr;
+	}
+
 	// FUNCTION: TOY2 0x004ADFD0
 	void LogD3DError(int32_t errorCode)
 	{

@@ -16,6 +16,7 @@ namespace Logger
 
 	void Log(char* format, ...);
 	void LogLn(char* format, ...);
+	HRESULT _DbgOut(TCHAR* strFile, DWORD dwLine, HRESULT hr, TCHAR* strMsg);
 	void LogD3DError(int32_t errorCode);
 	char* D3DAppErrorToString(HRESULT error);
 	void LogDDError(const char* message, HRESULT error);
