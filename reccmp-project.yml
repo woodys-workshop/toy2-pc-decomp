@@ -4,7 +4,9 @@ targets:
     source_root: .
     hash:
       sha256: 023eb6a9459443b34d24cf685591bfeb3b95e1acf579405f6d8fa4407ccbdaf0
-    data_sources: []
+    data_sources:
+      - tools/Resources/wave.csv
+      - tools/Resources/sample-provenance.csv
     encoding:
     ghidra:
       ignore_types: []

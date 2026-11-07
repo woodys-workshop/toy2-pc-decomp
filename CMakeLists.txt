@@ -74,6 +74,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "/incremental:no")
 set(TOY2_SOURCES
     src/SinCosLUT.inc
     src/LibraryMSVC.h
+    src/LibraryDirectX.h
 
     src/Logger.cpp
     src/Logger.h
@@ -268,6 +269,13 @@ set(TOY2_SOURCES
     # AudioManager
     src/AudioManager/AudioManager.cpp
     src/AudioManager/AudioManager.h
+    src/AudioManager/MusicStream.cpp
+    src/AudioManager/MusicStream.h
+)
+
+set_source_files_properties(
+    src/AudioManager/MusicStream.cpp
+    PROPERTIES COMPILE_FLAGS "/Ob2"
 )
 
 # Build the game

@@ -6,6 +6,7 @@
 #include "FileUtils.h"
 #include "Logger.h"
 #include "Random.h"
+#include "AudioManager/MusicStream.h"
 
 #include <MMSYSTEM.H>
 #include <DSOUND.H>
@@ -14,8 +15,6 @@
 #include <STRING.H>
 #include <MATH.H>
 #include <WINDOWSX.H>
-
-// TODO: probably refactor into a couple files, its a little large
 
 namespace AudioManager
 {
@@ -44,91 +43,12 @@ namespace AudioManager
 		int16_t repeatCounter;
 	};
 
-	// the stream thread waits for the first three of them at once, so they have to stay in this order
-	struct StreamHandles
-	{
-		HANDLE bufferNotifyEvent;
-		HANDLE streamStopEvent;
-		HANDLE threadEvent;
-		HANDLE threadSemaphore;
-	};
-
 	STATIC_ASSERT(sizeof(AudioConfig) == 0x10);
 	STATIC_ASSERT(sizeof(SoundEffect) == 0x8);
 	STATIC_ASSERT(sizeof(AudioChannel) == 0xA);
-	STATIC_ASSERT(sizeof(StreamHandles) == 0x10);
-
-	// GLOBAL: TOY2 0x005282CC
-	int32_t g_curTrackIndex;
 
 	// GLOBAL: TOY2 0x00830E3C
 	int16_t g_pitchArray[14];
-
-	// the music that is streamed from the audio folder
-	// GLOBAL: TOY2 0x005281D8
-	LPWAVEFORMATEX g_musicWaveFormat;
-
-	// GLOBAL: TOY2 0x005281DC
-	HMMIO g_musicFileHandle;
-
-	// GLOBAL: TOY2 0x005281E0
-	MMCKINFO g_musicDataChunk;
-
-	// GLOBAL: TOY2 0x005281F4
-	MMCKINFO g_musicRiffChunk;
-
-	// GLOBAL: TOY2 0x00528208
-	LPDIRECTSOUNDBUFFER g_musicSoundBufferCopy;
-
-	// GLOBAL: TOY2 0x0052820C
-	DWORD g_totalBufferSize;
-
-	// GLOBAL: TOY2 0x00528210
-	DWORD g_chunkSize;
-
-	// GLOBAL: TOY2 0x00528214
-	DWORD g_writeOffset;
-
-	// GLOBAL: TOY2 0x00528218
-	DWORD g_totalBytesPlayed;
-
-	// GLOBAL: TOY2 0x0052821C
-	DWORD g_lastPlayCursor;
-
-	// GLOBAL: TOY2 0x00528220
-	int32_t g_streamFinished;
-
-	// GLOBAL: TOY2 0x00528224
-	int32_t g_looping;
-
-	// GLOBAL: TOY2 0x00528228
-	int32_t g_eofReached;
-
-	// 16 positions for the chunks of the buffer and one to stop
-	// GLOBAL: TOY2 0x00528230
-	DSBPOSITIONNOTIFY g_positionNotifiers[17];
-
-	// the stream thread waits on the first three of them, the order matters
-	// GLOBAL: TOY2 0x005282B8
-	StreamHandles g_streamHandles;
-
-	// GLOBAL: TOY2 0x005282C8
-	int32_t g_musicVolume;
-
-	// GLOBAL: TOY2 0x005282D8
-	CRITICAL_SECTION g_audioCriticalSection;
-
-	// GLOBAL: TOY2 0x005282F0
-	LPDIRECTSOUNDBUFFER g_musicSoundBuffer;
-
-	// GLOBAL: TOY2 0x005282F4
-	LPDIRECTSOUNDNOTIFY g_directSoundNotify;
-
-	// GLOBAL: TOY2 0x005282F8
-	int32_t g_audioStreamInitialized;
-
-	// GLOBAL: TOY2 0x005282FC
-	int32_t g_audioStreamActive;
 
 	// GLOBAL: TOY2 0x0053C844
 	int32_t g_pendingLoopFlag;
@@ -215,12 +135,6 @@ namespace AudioManager
 	// the looping sounds (and the sounds of actors) that are tracked
 	// GLOBAL: TOY2 0x00830E58
 	AudioChannel g_audioChannels[32];
-
-	// GLOBAL: TOY2 0x004ECCD8
-	const char* g_gameMusicNames[22] = {
-		"house",	"neighbou", "buzvred", "constr",   "alley",	   "slime",	   "als_toyb", "spacelnd", "buzvbuz", "elev",	  "als_pent",
-		"buzvzurg", "convey",	"tarmac",  "buzvpros", "miniboss", "minirace", "over",	   "complete", "ygafim",  "titlescr", "levcomp"
-	};
 
 	// GLOBAL: TOY2 0x004FD668
 	int16_t g_dSoundVolumeConversion[160] = {
@@ -510,9 +424,6 @@ namespace AudioManager
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x00413300
-	int32_t IsStreamActive() { return g_audioStreamActive; }
-
 	// FUNCTION: TOY2 0x0047D840
 	void StopAndFlush()
 	{
@@ -585,34 +496,43 @@ namespace AudioManager
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x0047E4E0
-	BOOL WriteToBuffer(IDirectSoundBuffer* soundBuffer, DWORD offset, char* sourceData, DWORD dataSize)
+	// FUNCTION: TOY2 0x0047E4E0 [MATCHED]
+	BOOL WriteToBuffer(LPDIRECTSOUNDBUFFER lpDsb, DWORD dwOffset, LPBYTE lpbSoundData, DWORD dwSoundBytes)
 	{
-		LPVOID audioPtr1;
-		DWORD audioBytes1;
-		LPVOID audioPtr2;
-		DWORD audioBytes2;
+		LPVOID lpvPtr1;
+		DWORD dwBytes1;
+		LPVOID lpvPtr2;
+		DWORD dwBytes2;
+		DWORD dwAudio1;
+		DWORD dwAudio2;
+		HRESULT hr;
 
-		HRESULT lockResult = soundBuffer->Lock(offset, dataSize, &audioPtr1, &audioBytes1, &audioPtr2, &audioBytes2, 0);
+		hr = lpDsb->Lock(dwOffset, dwSoundBytes, &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2, 0);
 
-		if (lockResult == DSERR_BUFFERLOST)
+		if (DSERR_BUFFERLOST == hr)
 		{
-			soundBuffer->Restore();
-			lockResult = soundBuffer->Lock(offset, dataSize, &audioPtr1, &audioBytes1, &audioPtr2, &audioBytes2, 0);
+			lpDsb->Restore();
+			hr = lpDsb->Lock(dwOffset, dwSoundBytes, &lpvPtr1, &dwAudio1, &lpvPtr2, &dwAudio2, 0);
 		}
 
-		if (! lockResult)
+		if (DS_OK == hr)
 		{
-			memcpy(audioPtr1, sourceData, audioBytes1);
+			CopyMemory(lpvPtr1, lpbSoundData, dwBytes1);
 
-			if (audioPtr2)
-				memcpy(audioPtr2, sourceData + audioBytes1, audioBytes2);
+			if (NULL != lpvPtr2)
+			{
+				CopyMemory(lpvPtr2, lpbSoundData + dwBytes1, dwBytes2);
+			}
 
-			if (! soundBuffer->Unlock(audioPtr1, audioBytes1, audioPtr2, audioBytes2))
-				return 1;
+			hr = lpDsb->Unlock(lpvPtr1, dwBytes1, lpvPtr2, dwBytes2);
+
+			if (DS_OK == hr)
+			{
+				return TRUE;
+			}
 		}
 
-		return 0;
+		return FALSE;
 	}
 
 	enum
@@ -1164,7 +1084,7 @@ namespace AudioManager
 
 				if (CreateDirectSoundBuffer(g_directSound, primaryBuffer, g_wavDataSize) == 1)
 				{
-					WriteToBuffer(*primaryBuffer, 0, (char*)g_wavSourceData, g_wavDataSize);
+					WriteToBuffer(*primaryBuffer, 0, g_wavSourceData, g_wavDataSize);
 
 					WORD sampleRate = g_audioConfig->sampleRate;
 
@@ -1225,168 +1145,59 @@ namespace AudioManager
 		}
 	}
 
-	// FUNCTION: TOY2 0x00413140
-	void OnExit() { SignalThreadExit(); }
-
 	namespace Stream
 	{
 		// FUNCTION: TOY2 0x00436CC0
 		int32_t IsThreadReady() { return g_streamThreadReady; }
 
+		// FUNCTION: TOY2 0x00436CD0 [MATCHED]
+		int32_t GetSetThreadEvent() { return g_setThreadEvent; }
+
 	}
 
-	// FUNCTION: TOY2 0x00412EE0
-	void ShutdownHandles()
+	// FUNCTION: TOY2 0x0049ACC0 [MATCHED]
+	const char* DSErrorToString(HRESULT error)
 	{
-		if (g_streamHandles.threadSemaphore)
-			CloseHandle(g_streamHandles.threadSemaphore);
-
-		if (g_streamHandles.threadEvent)
-			CloseHandle(g_streamHandles.threadEvent);
-
-		if (g_streamHandles.streamStopEvent)
-			CloseHandle(g_streamHandles.streamStopEvent);
-
-		if (g_streamHandles.bufferNotifyEvent)
-			CloseHandle(g_streamHandles.bufferNotifyEvent);
-
-		g_streamHandles.threadSemaphore = 0;
-		g_streamHandles.threadEvent = 0;
-		g_streamHandles.streamStopEvent = 0;
-		g_streamHandles.bufferNotifyEvent = 0;
+		switch (error)
+		{
+			case DSERR_ALLOCATED:
+				return "The request failed because resources, such as a priority level, were already in use by another caller. ";
+			case DSERR_ALREADYINITIALIZED:
+				return "The object is already initialized. ";
+			case DSERR_BADFORMAT:
+				return "The specified wave format is not supported. ";
+			case DSERR_BUFFERLOST:
+				return "The buffer memory has been lost and must be restored. ";
+			case DSERR_CONTROLUNAVAIL:
+				return "The control (volume, pan, and so forth) requested by the caller is not available. ";
+			case DSERR_GENERIC:
+				return "An undetermined error occurred inside the DirectSound subsystem. ";
+			case DSERR_INVALIDCALL:
+				return "This function is not valid for the current state of this object. ";
+			case DSERR_INVALIDPARAM:
+				return "An invalid parameter was passed to the returning function. ";
+			case DSERR_NOAGGREGATION:
+				return "The object does not support aggregation. ";
+			case DSERR_NODRIVER:
+				return "No sound driver is available for use. ";
+			case DSERR_NOINTERFACE:
+				return "The requested COM interface is not available. ";
+			case DSERR_OTHERAPPHASPRIO:
+				return "Another application has a higher priority level, preventing this call from succeeding ";
+			case DSERR_OUTOFMEMORY:
+				return "The DirectSound subsystem could not allocate sufficient memory to complete the caller's request. ";
+			case DSERR_PRIOLEVELNEEDED:
+				return "The caller does not have the priority level required for the function to succeed. ";
+			case DSERR_UNINITIALIZED:
+				return "The IDirectSound::Initialize method has not been called or has not been called successfully before other methods were called. ";
+			case DSERR_UNSUPPORTED:
+				return "The function called is not supported at this time. ";
+			default:
+				return "Unknown error!!";
+		}
 	}
 
-	// FUNCTION: TOY2 0x00413310
-	int32_t LoadFile(LPSTR fileName)
-	{
-		DSBUFFERDESC bufferDesc;
-		DWORD bufferBytes;
-		DWORD blockAlign;
-		LPVOID audioPtr1;
-		DWORD audioBytes1;
-		LPVOID audioPtr2;
-		DWORD audioBytes2;
-		UINT bytesRead;
-
-		if (g_quiet || WaveOpenFile(fileName, &g_musicFileHandle, &g_musicWaveFormat, &g_musicRiffChunk))
-			return 0;
-
-		if (WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
-			goto LBL_CLOSE_FILE;
-
-		bufferBytes = (3 * g_musicWaveFormat->nBlockAlign * g_musicWaveFormat->nSamplesPerSec) >> 4;
-		g_chunkSize = bufferBytes;
-
-		blockAlign = g_musicWaveFormat->nBlockAlign;
-
-		if (bufferBytes % blockAlign)
-		{
-			bufferBytes += blockAlign - bufferBytes % blockAlign;
-			g_chunkSize = bufferBytes;
-		}
-
-		bufferDesc.dwSize = 20;
-		bufferDesc.dwFlags = 98784;
-		bufferDesc.dwReserved = 0;
-
-		g_totalBufferSize = 16 * bufferBytes;
-
-		bufferDesc.dwBufferBytes = 16 * bufferBytes;
-		bufferDesc.lpwfxFormat = g_musicWaveFormat;
-
-		if (g_directSound->CreateSoundBuffer(&bufferDesc, &g_musicSoundBuffer, 0))
-		{
-		LBL_CLOSE_FILE:
-			WaveCloseReadFile(&g_musicFileHandle, &g_musicWaveFormat);
-			return 0;
-		}
-
-		g_eofReached = 0;
-
-		g_musicSoundBufferCopy = g_musicSoundBuffer;
-
-		g_writeOffset = 0;
-		g_looping = 0;
-
-		if (g_musicSoundBuffer->QueryInterface(IID_IDirectSoundNotify, (LPVOID*)&g_directSoundNotify))
-		{
-			g_musicSoundBuffer->Release();
-			goto LBL_CLOSE_FILE;
-		}
-
-		DWORD chunkSize = g_chunkSize;
-		HANDLE notifyEvent = g_streamHandles.bufferNotifyEvent;
-
-		g_positionNotifiers[0].dwOffset = g_chunkSize;
-		g_positionNotifiers[0].hEventNotify = g_streamHandles.bufferNotifyEvent;
-
-		DSBPOSITIONNOTIFY* value = &g_positionNotifiers[1];
-
-		do
-		{
-			DWORD offset = value[-1].dwOffset;
-
-			++value;
-
-			value[-1].dwOffset = chunkSize + offset;
-			value[-1].hEventNotify = notifyEvent;
-		} while (value < &g_positionNotifiers[16]);
-
-		--g_positionNotifiers[15].dwOffset;
-
-		g_positionNotifiers[16].dwOffset = -1;
-		g_positionNotifiers[16].hEventNotify = g_streamHandles.streamStopEvent;
-
-		g_directSoundNotify->SetNotificationPositions(17, g_positionNotifiers);
-
-		if (! g_musicSoundBuffer->Lock(0, g_totalBufferSize, &audioPtr1, &audioBytes1, &audioPtr2, &audioBytes2, 0))
-		{
-			WaveReadFile(g_musicFileHandle, audioBytes1, (uint8_t*)audioPtr1, &g_musicDataChunk, &bytesRead);
-
-			DWORD totalRead = bytesRead;
-			DWORD lockedBytes = audioBytes1;
-
-			if (bytesRead < audioBytes1)
-			{
-				if (g_looping)
-				{
-					do
-					{
-						WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk);
-						WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesRead);
-
-						totalRead += bytesRead;
-						lockedBytes = audioBytes1;
-					} while (totalRead < audioBytes1);
-				}
-				else
-				{
-					if (bytesRead < g_chunkSize)
-						g_eofReached = 1;
-
-					memset((uint8_t*)audioPtr1 + bytesRead, g_musicWaveFormat->wBitsPerSample != 8 ? 0 : 128, audioBytes1 - bytesRead);
-
-					lockedBytes = audioBytes1;
-				}
-			}
-
-			g_musicSoundBuffer->Unlock(audioPtr1, lockedBytes, 0, 0);
-			DWORD nextOffset = g_writeOffset + audioBytes1;
-			g_writeOffset += audioBytes1;
-
-			if (g_writeOffset >= g_totalBufferSize)
-				g_writeOffset = nextOffset - g_totalBufferSize;
-
-			g_totalBytesPlayed = 0;
-			g_lastPlayCursor = 0;
-		}
-
-		g_streamFinished = 0;
-
-		return 1;
-	}
-
-	// FUNCTION: TOY2 0x0049AE40
+	// FUNCTION: TOY2 0x0049AE40 [MATCHED]
 	void SetMusicVolume(int32_t volume)
 	{
 		g_musicVolume = volume;
@@ -1404,27 +1215,23 @@ namespace AudioManager
 
 				switch (result)
 				{
-					case DSERR_PRIOLEVELNEEDED:
-						error = "The caller does not have the priority level required for the function to succeed. ";
-						break;
-					case DSERR_BADFORMAT:
-						error = "The specified wave format is not supported. ";
-						break;
-					case DSERR_NODRIVER:
-						error = "No sound driver is available for use. ";
+					case DSERR_ALLOCATED:
+						error = "The request failed because resources, such as a priority level, were already in use by another caller. ";
 						break;
 					case DSERR_ALREADYINITIALIZED:
 						error = "The object is already initialized. ";
 						break;
+					case DSERR_BADFORMAT:
+						error = "The specified wave format is not supported. ";
+						break;
 					case DSERR_BUFFERLOST:
 						error = "The buffer memory has been lost and must be restored. ";
 						break;
-					case DSERR_OTHERAPPHASPRIO:
-						error = "Another application has a higher priority level, preventing this call from succeeding ";
+					case DSERR_CONTROLUNAVAIL:
+						error = "The control (volume, pan, and so forth) requested by the caller is not available. ";
 						break;
-					case DSERR_UNINITIALIZED:
-						error =
-							"The IDirectSound::Initialize method has not been called or has not been called successfully before other methods were called. ";
+					case DSERR_GENERIC:
+						error = "An undetermined error occurred inside the DirectSound subsystem. ";
 						break;
 					case DSERR_INVALIDCALL:
 						error = "This function is not valid for the current state of this object. ";
@@ -1432,26 +1239,30 @@ namespace AudioManager
 					case DSERR_INVALIDPARAM:
 						error = "An invalid parameter was passed to the returning function. ";
 						break;
-					case DSERR_ALLOCATED:
-						error = "The request failed because resources, such as a priority level, were already in use by another caller. ";
+					case DSERR_NOAGGREGATION:
+						error = "The object does not support aggregation. ";
 						break;
-					case DSERR_CONTROLUNAVAIL:
-						error = "The control (volume, pan, and so forth) requested by the caller is not available. ";
+					case DSERR_NODRIVER:
+						error = "No sound driver is available for use. ";
+						break;
+					case DSERR_NOINTERFACE:
+						error = "The requested COM interface is not available. ";
+						break;
+					case DSERR_OTHERAPPHASPRIO:
+						error = "Another application has a higher priority level, preventing this call from succeeding ";
 						break;
 					case DSERR_OUTOFMEMORY:
 						error = "The DirectSound subsystem could not allocate sufficient memory to complete the caller's request. ";
 						break;
-					case DSERR_NOAGGREGATION:
-						error = "The object does not support aggregation. ";
+					case DSERR_PRIOLEVELNEEDED:
+						error = "The caller does not have the priority level required for the function to succeed. ";
 						break;
-					case DSERR_GENERIC:
-						error = "An undetermined error occurred inside the DirectSound subsystem. ";
+					case DSERR_UNINITIALIZED:
+						error =
+							"The IDirectSound::Initialize method has not been called or has not been called successfully before other methods were called. ";
 						break;
 					case DSERR_UNSUPPORTED:
 						error = "The function called is not supported at this time. ";
-						break;
-					case DSERR_NOINTERFACE:
-						error = "The requested COM interface is not available. ";
 						break;
 					default:
 						error = "Unknown error!!";
@@ -1459,23 +1270,6 @@ namespace AudioManager
 				}
 
 				Logger::Log("SETMUSICVOL : Failed to set volume - error is %s.\n", error);
-			}
-		}
-	}
-
-	// FUNCTION: TOY2 0x00413240 [MATCHED]
-	void ThreadPlay(LPSTR fileName, int32_t looping)
-	{
-		if (g_directSound)
-		{
-			if (LoadFile(fileName))
-			{
-				g_looping = looping & 1;
-
-				g_musicSoundBuffer->SetCurrentPosition(0);
-				SetMusicVolume(g_musicVolume);
-
-				g_musicSoundBuffer->Play(0, 0, 1);
 			}
 		}
 	}
@@ -1495,38 +1289,38 @@ namespace AudioManager
 			{
 				DWORD bytesPlayed;
 
-				if (curPlayCursor < g_lastPlayCursor)
-					bytesPlayed = g_totalBufferSize - g_lastPlayCursor + curPlayCursor;
+				if (curPlayCursor < g_wiWave.dwLastPos)
+					bytesPlayed = g_wiWave.dwBufferSize - g_wiWave.dwLastPos + curPlayCursor;
 				else
-					bytesPlayed = curPlayCursor - g_lastPlayCursor;
+					bytesPlayed = curPlayCursor - g_wiWave.dwLastPos;
 
-				g_totalBytesPlayed += bytesPlayed;
-				g_lastPlayCursor = curPlayCursor;
+				g_wiWave.dwProgress += bytesPlayed;
+				g_wiWave.dwLastPos = curPlayCursor;
 			}
 
-			if (! g_eofReached)
+			if (! g_wiWave.bFoundEnd)
 			{
-				if (! g_musicSoundBuffer->Lock(g_writeOffset, g_chunkSize, &audioPtr1, &audioBytes1, 0, 0, 0))
+				if (! g_musicSoundBuffer->Lock(g_wiWave.dwNextWriteOffset, g_wiWave.dwNotifySize, &audioPtr1, &audioBytes1, 0, 0, 0))
 				{
-					WaveReadFile(g_musicFileHandle, audioBytes1, (uint8_t*)audioPtr1, &g_musicDataChunk, &bytesOut);
+					WaveReadFile(g_wiWave.hmmio, audioBytes1, (uint8_t*)audioPtr1, &g_wiWave.mmck, &bytesOut);
 					DWORD totalRead = bytesOut;
 
 					if (bytesOut < audioBytes1)
 					{
-						if (! g_looping)
+						if (! g_wiWave.bLoopFile)
 						{
-							g_eofReached = 1;
+							g_wiWave.bFoundEnd = TRUE;
 
-							memset((uint8_t*)audioPtr1 + bytesOut, (uint8_t)(g_musicWaveFormat->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1 - bytesOut);
+							memset((uint8_t*)audioPtr1 + bytesOut, (uint8_t)(g_wiWave.pwfx->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1 - bytesOut);
 						}
 						else
 						{
 							while (totalRead < audioBytes1)
 							{
-								if (WaveStartDataRead(&g_musicFileHandle, &g_musicDataChunk, &g_musicRiffChunk))
+								if (WaveStartDataRead(&g_wiWave.hmmio, &g_wiWave.mmck, &g_wiWave.mmckInRIFF))
 									break;
 
-								if (WaveReadFile(g_musicFileHandle, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_musicDataChunk, &bytesOut))
+								if (WaveReadFile(g_wiWave.hmmio, audioBytes1 - totalRead, (uint8_t*)audioPtr1 + totalRead, &g_wiWave.mmck, &bytesOut))
 									break;
 
 								totalRead += bytesOut;
@@ -1535,25 +1329,25 @@ namespace AudioManager
 					}
 
 					g_musicSoundBuffer->Unlock(audioPtr1, audioBytes1, 0, 0);
-					g_writeOffset += audioBytes1;
+					g_wiWave.dwNextWriteOffset += audioBytes1;
 
-					if (g_writeOffset >= g_totalBufferSize)
-						g_writeOffset -= g_totalBufferSize;
+					if (g_wiWave.dwNextWriteOffset >= g_wiWave.dwBufferSize)
+						g_wiWave.dwNextWriteOffset -= g_wiWave.dwBufferSize;
 				}
 			}
 			else
 			{
-				if (! g_musicSoundBuffer->Lock(g_writeOffset, g_chunkSize, &audioPtr1, &audioBytes1, 0, 0, 0))
+				if (! g_musicSoundBuffer->Lock(g_wiWave.dwNextWriteOffset, g_wiWave.dwNotifySize, &audioPtr1, &audioBytes1, 0, 0, 0))
 				{
-					memset(audioPtr1, (uint8_t)(g_musicWaveFormat->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1);
+					memset(audioPtr1, (uint8_t)(g_wiWave.pwfx->wBitsPerSample == 8 ? 0x80 : 0), audioBytes1);
 
 					g_musicSoundBuffer->Unlock(audioPtr1, audioBytes1, 0, 0);
 				}
 
-				if (g_musicRiffChunk.cksize > g_chunkSize && g_totalBytesPlayed >= g_musicRiffChunk.cksize - g_chunkSize
-					|| g_totalBytesPlayed >= g_musicRiffChunk.cksize)
+				if (g_wiWave.mmckInRIFF.cksize > g_wiWave.dwNotifySize && g_wiWave.dwProgress >= g_wiWave.mmckInRIFF.cksize - g_wiWave.dwNotifySize
+					|| g_wiWave.dwProgress >= g_wiWave.mmckInRIFF.cksize)
 				{
-					g_streamFinished = 1;
+					g_wiWave.bDonePlaying = TRUE;
 				}
 			}
 		}
@@ -1561,159 +1355,66 @@ namespace AudioManager
 
 	namespace Stream
 	{
-		// FUNCTION: TOY2 0x004132A0
-		void Stop()
-		{
-			if (g_directSound)
-			{
-				if (g_musicSoundBuffer)
-				{
-					g_musicSoundBuffer->Stop();
+		// FUNCTION: TOY2 0x00437000 [MATCHED]
+		void Stop_T() { Stop(); }
 
-					WaveCloseReadFile(&g_musicFileHandle, &g_musicWaveFormat);
-
-					g_directSoundNotify->Release();
-					g_directSoundNotify = 0;
-
-					g_musicSoundBuffer->Release();
-					g_musicSoundBuffer = 0;
-				}
-			}
-		}
-
-		// FUNCTION: TOY2 0x00437010
+		// FUNCTION: TOY2 0x00437010 [MATCHED]
 		DWORD __cdecl ThreadProc()
 		{
+			DWORD hRet;
+
 			g_streamThreadReady = 1;
 
 			do
 			{
 				while (g_streamHandles.bufferNotifyEvent)
 				{
-					DWORD wait = WaitForMultipleObjects(3, &g_streamHandles.bufferNotifyEvent, 0, 0xFFFFFFFF);
+					hRet = WaitForMultipleObjects(3, &g_streamHandles.bufferNotifyEvent, FALSE, INFINITE);
 
-					if (wait == -1)
+					if (hRet == WAIT_FAILED)
 						break;
 
-					if (wait)
+					switch (hRet - WAIT_OBJECT_0)
 					{
-						DWORD waitMinus1 = wait - 1;
-
-						if (waitMinus1)
-						{
-							if (waitMinus1 == 1)
+						case 0:
+							if (g_wiWave.bDonePlaying == TRUE)
 							{
-								switch (g_setThreadEvent)
-								{
-									case 1:
-										Stop();
-										ResetEvent(g_streamHandles.streamStopEvent);
-										break;
-									case 2:
-										ThreadPlay(g_fileNameBuffer, g_pendingLoopFlag);
-										break;
-									case 3:
-										ShutdownHandles();
-										break;
-								}
-
-								g_setThreadEvent = 0;
-								ReleaseSemaphore(g_streamHandles.threadSemaphore, 1, 0);
+								Stop();
+								ResetEvent(g_streamHandles.streamStopEvent);
 							}
-						}
-						else
-						{
+							else
+							{
+								FillBuffer();
+							}
+							break;
+
+						case 1:
 							Stop();
-						}
-					}
-					else if (g_streamFinished == 1)
-					{
-						Stop();
-						ResetEvent(g_streamHandles.streamStopEvent);
-					}
-					else
-					{
-						FillBuffer();
+							break;
+
+						case 2:
+							switch (g_setThreadEvent)
+							{
+								case 1:
+									Stop();
+									ResetEvent(g_streamHandles.streamStopEvent);
+									break;
+								case 2:
+									ThreadPlay(g_fileNameBuffer, g_pendingLoopFlag);
+									break;
+								case 3:
+									ShutdownHandles();
+									break;
+							}
+
+							g_setThreadEvent = 0;
+							ReleaseSemaphore(g_streamHandles.threadSemaphore, 1, NULL);
+							break;
 					}
 				}
 			} while (g_streamThreadReady);
 
-			return 1;
-		}
-
-		// FUNCTION: TOY2 0x00412FF0
-		int32_t Init()
-		{
-			DWORD threadId;
-
-			if (g_audioStreamInitialized)
-				return 0;
-
-			InitializeCriticalSection(&g_audioCriticalSection);
-			g_streamHandles.bufferNotifyEvent = CreateEventA(0, 0, 0, 0);
-
-			if (! g_streamHandles.bufferNotifyEvent)
-				return 0;
-
-			g_streamHandles.streamStopEvent = CreateEventA(0, 0, 0, 0);
-
-			if (! g_streamHandles.streamStopEvent)
-			{
-			LBL_BUFFER_NOTIFY:
-				CloseHandle(g_streamHandles.bufferNotifyEvent);
-				g_streamHandles.bufferNotifyEvent = 0;
-				return 0;
-			}
-
-			g_streamHandles.threadEvent = CreateEventA(0, 0, 0, 0);
-
-			if (! g_streamHandles.threadEvent)
-			{
-			LBL_STREAM_STOP:
-				CloseHandle(g_streamHandles.streamStopEvent);
-				g_streamHandles.streamStopEvent = 0;
-				goto LBL_BUFFER_NOTIFY;
-			}
-
-			g_streamHandles.threadSemaphore = CreateSemaphoreA(0, 0, 1, 0);
-
-			if (! g_streamHandles.threadSemaphore)
-			{
-				CloseHandle(g_streamHandles.threadEvent);
-				g_streamHandles.threadEvent = 0;
-				goto LBL_STREAM_STOP;
-			}
-
-			if (! CreateThread(0, 0, (LPTHREAD_START_ROUTINE)ThreadProc, 0, 0, &threadId))
-			{
-				if (g_streamHandles.threadSemaphore)
-					CloseHandle(g_streamHandles.threadSemaphore);
-
-				if (g_streamHandles.threadEvent)
-					CloseHandle(g_streamHandles.threadEvent);
-
-				if (g_streamHandles.streamStopEvent)
-					CloseHandle(g_streamHandles.streamStopEvent);
-
-				if (g_streamHandles.bufferNotifyEvent)
-					CloseHandle(g_streamHandles.bufferNotifyEvent);
-
-				g_streamHandles.threadSemaphore = 0;
-				g_streamHandles.threadEvent = 0;
-
-				g_streamHandles.streamStopEvent = 0;
-
-				g_streamHandles.bufferNotifyEvent = 0;
-				return 0;
-			}
-
-			while (! IsThreadReady())
-				;
-
-			g_audioStreamInitialized = 1;
-			atexit(OnExit);
-
-			return 1;
+			return TRUE;
 		}
 
 	}
@@ -2244,28 +1945,6 @@ namespace AudioManager
 			SetEvent(threadEvent);
 			WaitForSingleObject(g_streamHandles.threadSemaphore, 0xFFFFFFFF);
 		}
-	}
-
-	// FUNCTION: TOY2 0x00413150
-	int32_t PlayTrackByIndex(int32_t index, int32_t loop)
-	{
-		char fileName[512];
-
-		StopAndWait();
-
-		if (index >= 22 || index < 0)
-			return 0;
-
-		FileUtils::AppendCDPath(fileName);
-
-		strcat(fileName, "audio\\");
-		strcat(fileName, g_gameMusicNames[index]);
-		strcat(fileName, ".wav");
-
-		QueuePlay(fileName, loop);
-		g_curTrackIndex = index;
-
-		return 1;
 	}
 
 	// FUNCTION: TOY2 0x0047D7F0

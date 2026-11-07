@@ -66,6 +66,7 @@
 0x00412D70 Toy2::ShowModeSelect
 0x00412E80 Toy2::CleanupManagers
 0x00412EE0 AudioManager::ShutdownHandles
+0x00412F40 AudioManager::CreateHandles
 0x00412FF0 AudioManager::Stream::Init
 0x00413140 AudioManager::OnExit
 0x00413150 AudioManager::PlayTrackByIndex
@@ -220,9 +221,11 @@
 0x00436220 Toy2::Buzz::HandleGameplay
 0x00436C90 AudioManager::SignalThreadExit
 0x00436CC0 AudioManager::Stream::IsThreadReady
+0x00436CD0 AudioManager::Stream::GetSetThreadEvent
 0x00436CE0 AudioManager::QueuePlay
 0x00436D40 AudioManager::StopAndWait
 0x00436D80 AudioManager::FillBuffer
+0x00437000 AudioManager::Stream::Stop_T
 0x00437010 AudioManager::Stream::ThreadProc
 0x004371B0 Toy2::MainMenu::ShowSettings
 0x00437B20 Toy2::GameOver::Tick
@@ -476,6 +479,7 @@
 0x00499950 Toy2::InitDirect3DRenderer
 0x0049A930 Toy2::PlayMovie
 0x0049AB90 Toy2::PlayMovieWithTransition
+0x0049ACC0 AudioManager::DSErrorToString
 0x0049AE20 AudioManager::SetSfxVolume
 0x0049AE40 AudioManager::SetMusicVolume
 0x0049B260 Renderer::BlitTextureByIndexOffset
