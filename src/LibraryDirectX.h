@@ -22,13 +22,13 @@
 // IID_IDirectDraw4
 
 // GLOBAL: TOY2 0x004DC188
-// _IID_IDirectDrawSurface
+// IID_IDirectDrawSurface
 
 // GLOBAL: TOY2 0x004DC198
 // _IID_IDirectDrawSurface2
 
 // GLOBAL: TOY2 0x004DC1A8
-// _IID_IDirectDrawSurface3
+// IID_IDirectDrawSurface3
 
 // GLOBAL: TOY2 0x004DC1B8
 // IID_IDirectDrawSurface4

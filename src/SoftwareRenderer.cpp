@@ -2,6 +2,8 @@
 #include "DrawingDevice.h"
 #include "Renderer/Renderer.h"
 #include "Nu3D/BmpDataNode.h"
+#include "Toy2/D3DAppI.h"
+#include "Logger.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -174,6 +176,15 @@ namespace SoftwareRenderer
 
 	// GLOBAL: TOY2 0x00DBB080
 	float g_cameraNearZ;
+
+	// GLOBAL: TOY2 0x0051A83C
+	int16_t g_unkSurfaceLost;
+
+	// GLOBAL: TOY2 0x0051ABF0
+	RECT g_front[D3DAPP_MAXCLEARRECTS];
+
+	// GLOBAL: TOY2 0x00704E44
+	LPDIRECTDRAWPALETTE g_nativePalette;
 
 	// FUNCTION: TOY2 0x004B5E40 [MATCHED]
 	void SubmitSortedTriangle(
@@ -614,11 +625,64 @@ namespace SoftwareRenderer
 		g_cameraFarZ = cameraFarZ;
 	}
 
-	// STUB: TOY2 0x0040BAE0
-	int32_t ClearRenderSurfaces() { return 0; }
+	// FUNCTION: TOY2 0x0040CD80 [MATCHED]
+	int32_t ShowBackBuffer()
+	{
+		if (! D3DApp::g_d3dAppI.bRenderingIsOK)
+		{
+			Logger::LogErrorNotSetLn("Cannot call D3DAppShowBackBuffer while bRenderingIsOK is FALSE.\n");
+			return FALSE;
+		}
+		if (D3DApp::g_d3dAppI.bPaused)
+			return TRUE;
+		if (D3DApp::g_pcStruct.fullscreenMode)
+		{
+			D3DApp::g_lastError = D3DApp::g_d3dAppI.lpFrontBuffer->Flip(D3DApp::g_d3dAppI.lpBackBuffer, 1);
+			if (D3DApp::g_lastError == DDERR_SURFACELOST)
+			{
+				g_unkSurfaceLost = 1;
+				D3DApp::g_d3dAppI.lpFrontBuffer->Restore();
+				D3DApp::g_d3dAppI.lpBackBuffer->Restore();
+				ClearRenderSurfaces();
+			}
+			else if (D3DApp::g_lastError != DD_OK)
+			{
+				Logger::LogErrorNotSetLn("Flipping complex display surface failed.\n%s", Logger::ErrorToMessage(D3DApp::g_lastError));
+				return FALSE;
+			}
+		}
+		else
+		{
+			int32_t numBufferRects, i;
+			RECT buffer[D3DAPP_MAXCLEARRECTS];
 
-	// STUB: TOY2 0x0040CD80
-	int32_t ShowBackBuffer() { return 0; }
+			numBufferRects = 1;
+			SetRect(&buffer[0], 0, 0, D3DApp::g_d3dAppI.szClient.cx, D3DApp::g_d3dAppI.szClient.cy);
+			SetRect(
+				&g_front[0],
+				D3DApp::g_d3dAppI.pClientOnPrimary.x,
+				D3DApp::g_d3dAppI.pClientOnPrimary.y,
+				D3DApp::g_d3dAppI.szClient.cx + D3DApp::g_d3dAppI.pClientOnPrimary.x,
+				D3DApp::g_d3dAppI.szClient.cy + D3DApp::g_d3dAppI.pClientOnPrimary.y);
+			for (i = 0; i < numBufferRects; i++)
+			{
+				D3DApp::g_lastError = D3DApp::g_d3dAppI.lpFrontBuffer->Blt(&g_front[i], D3DApp::g_d3dAppI.lpBackBuffer, &buffer[i], DDBLT_WAIT, 0);
+				if (D3DApp::g_lastError == DDERR_SURFACELOST)
+				{
+					g_unkSurfaceLost = 1;
+					D3DApp::g_d3dAppI.lpFrontBuffer->Restore();
+					D3DApp::g_d3dAppI.lpBackBuffer->Restore();
+					ClearRenderSurfaces();
+				}
+				else if (D3DApp::g_lastError != DD_OK)
+				{
+					Logger::LogErrorNotSetLn("Blt of back buffer to front buffer failed.\n%s", Logger::ErrorToMessage(D3DApp::g_lastError));
+					return FALSE;
+				}
+			}
+		}
+		return TRUE;
+	}
 
 	// STUB: TOY2 0x004319E0
 	void UnkFunc11() {}

@@ -1,5 +1,5 @@
 #include "Toy2/Toy2.h"
-#include "Toy2/D3DApp.h"
+#include "Toy2/D3DAppI.h"
 #include "Logger.h"
 #include "FileUtils.h"
 #include "InputManager.h"
@@ -75,6 +75,15 @@
 #include <STDLIB.H>
 #include <MATH.H>
 #include <DINPUT.H>
+#include <AMSTREAM.H>
+#include <DDSTREAM.H>
+#include <MMSTREAM.H>
+
+namespace InputManager
+{
+	void UpdateInputState();
+	int32_t FindKeyPressed();
+}
 
 namespace Toy2
 {
@@ -236,7 +245,7 @@ namespace Toy2
 	};
 
 	// GLOBAL: TOY2 0x00534550
-	int32_t g_unused0;
+	D3DAppInfo* g_d3dApp;
 
 	// GLOBAL: TOY2 0x00559C5C
 	int32_t g_renderGame;
@@ -8209,6 +8218,392 @@ namespace Toy2
 
 	// FUNCTION: TOY2 0x004CD110
 	int32_t ShowTokenSparkle(int32_t linkId) { return 1; }
+
+	struct GraphicOption
+	{
+		int32_t x;
+		int32_t y;
+		char* label;
+		int32_t selection;
+		char* options[50];
+	};
+
+	STATIC_ASSERT(sizeof(GraphicOption) == 0xD8);
+
+	// GLOBAL: TOY2 0x004ECFD0
+	GraphicOption g_lightShadowOption = { 30, 160, "Licht und Schatteneffekte", 0, { "Aus", "Ein", 0 } };
+
+	// GLOBAL: TOY2 0x00528304
+	int32_t g_graphicOptionIndex;
+
+	// GLOBAL: TOY2 0x00528308
+	GraphicOption* g_graphicOptions[32];
+
+	void S3DSetResolution(int32_t width, int32_t height, int32_t bpp);
+
+	// FUNCTION: TOY2 0x004138B0 [MATCHED]
+	void GraphicOptionsApplyMode()
+	{
+		DevDraw::DrawSlots();
+		Nu3D::Camera::SetTint(0, 0, 0, 3);
+		while (Nu3D::Camera::g_cameraTintBlue != 0 || Nu3D::Camera::g_cameraTintGreen != 0 || Nu3D::Camera::g_cameraTintRed != 0)
+		{
+			ProcessMiscEventsEx();
+			Nu3D::Camera::FadeToTargetTint();
+			DevDraw::DrawSlots();
+		}
+
+		switch (D3DApp::g_renderMode)
+		{
+			case RENDERMODE_SOFTWARE: {
+				int32_t previousBpp = SoftwareRenderer::g_bitsPerPixel;
+				D3DApp::g_pcStruct.defaultDriver->selectedDisplayModeIndex = g_graphicOptions[g_graphicOptionIndex]->selection;
+				D3DApp::g_pcStruct.mode = &D3DApp::g_pcStruct.defaultDriver->displayModes[D3DApp::g_pcStruct.defaultDriver->selectedDisplayModeIndex];
+				S3DSetResolution(D3DApp::g_pcStruct.mode->width, D3DApp::g_pcStruct.mode->height, D3DApp::g_pcStruct.mode->rgbBitCount);
+				if (previousBpp != SoftwareRenderer::g_bitsPerPixel)
+				{
+					if (previousBpp != 8 && SoftwareRenderer::g_bitsPerPixel == 8)
+					{
+						SaveManager::g_save0Data.lightShadowEffects = 0;
+						g_lightShadowOption.selection = 0;
+					}
+					D3DApp::UnkFunc40A8B0();
+					D3DApp::UnkFunc409C80();
+					Levels::g_levelLoadConfig = 0x43C;
+					Levels::InitLevelPlay(0);
+					SetBackdropByIndex(2);
+					D3DApp::UnkFunc409C80();
+				}
+				break;
+			}
+			case RENDERMODE_D3D:
+				D3DApp::g_pcStruct.defaultDriver->selectedDisplayModeIndex = g_graphicOptions[g_graphicOptionIndex]->selection;
+				D3DApp::g_pcStruct.mode = &D3DApp::g_pcStruct.defaultDriver->displayModes[D3DApp::g_pcStruct.defaultDriver->selectedDisplayModeIndex];
+				D3DApp::D3DRestart();
+				break;
+		}
+
+		Nu3D::Camera::SetTint(128, 128, 128, 6);
+		while (Nu3D::Camera::g_cameraTintBlue != 128 || Nu3D::Camera::g_cameraTintGreen != 128 || Nu3D::Camera::g_cameraTintRed != 128)
+		{
+			ProcessMiscEventsEx();
+			Nu3D::Camera::FadeToTargetTint();
+			DevDraw::DrawSlots();
+		}
+		ProcessMiscEventsEx();
+	}
+
+	// GLOBAL: TOY2 0x00731F00
+	int32_t g_mpegFinished;
+
+	// FUNCTION: TOY2 0x0047C570 [MATCHED]
+	HRESULT OpenMMStream(const char* pszFileName, IDirectDraw2* pDD, IMultiMediaStream** ppMMStream)
+	{
+		*ppMMStream = NULL;
+		IAMMultiMediaStream* pAMStream;
+		HRESULT hr;
+		WCHAR wPath[MAX_PATH];
+
+		if (FAILED(hr = CoCreateInstance(CLSID_AMMultiMediaStream, NULL, CLSCTX_INPROC_SERVER, IID_IAMMultiMediaStream, (void**)&pAMStream)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pAMStream->Initialize(STREAMTYPE_READ, 0, NULL)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pAMStream->AddMediaStream(pDD, &MSPID_PrimaryVideo, 0, NULL)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pAMStream->AddMediaStream(NULL, &MSPID_PrimaryAudio, AMMSF_ADDDEFAULTRENDERER, NULL)))
+			goto LBL_EXIT;
+
+		MultiByteToWideChar(CP_ACP, 0, pszFileName, -1, wPath, sizeof(wPath) / sizeof(wPath[0]));
+		if (FAILED(hr = pAMStream->OpenFile(wPath, 0)))
+			goto LBL_EXIT;
+
+		*ppMMStream = pAMStream;
+		pAMStream->AddRef();
+
+	LBL_EXIT:
+		if (pAMStream)
+			pAMStream->Release();
+		return hr;
+	}
+
+	// FUNCTION: TOY2 0x0047C660 [MATCHED]
+	HRESULT RenderStreamToSurface(IDirectDraw2* pDD, IDirectDrawSurface* pPrimary, IMultiMediaStream* pMMStream, int32_t frames)
+	{
+		HRESULT hr;
+		IMediaStream* pPrimaryVidStream = NULL;
+		IDirectDrawMediaStream* pDDStream = NULL;
+		IDirectDrawSurface* pSurface = NULL;
+		IDirectDrawStreamSample* pSample = NULL;
+		RECT rect;
+
+		if (FAILED(hr = pMMStream->GetMediaStream(MSPID_PrimaryVideo, &pPrimaryVidStream)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pPrimaryVidStream->QueryInterface(IID_IDirectDrawMediaStream, (void**)&pDDStream)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pDDStream->CreateSample(NULL, NULL, 0, &pSample)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pSample->GetSurface(&pSurface, &rect)))
+			goto LBL_EXIT;
+		if (FAILED(hr = pMMStream->SetState(STREAMSTATE_RUN)))
+			goto LBL_EXIT;
+
+		while (true)
+		{
+			InputManager::UpdateInputState();
+			if (pSample->Update(0, NULL, NULL, 0) != S_OK)
+				break;
+			if (InputManager::FindKeyPressed())
+				break;
+			if (frames && ! --frames)
+				break;
+			pPrimary->Blt(NULL, pSurface, NULL, DDBLT_WAIT, NULL);
+		}
+
+	LBL_EXIT:
+		pMMStream->SetState(STREAMSTATE_STOP);
+		if (pPrimaryVidStream)
+		{
+			pPrimaryVidStream->Release();
+			pPrimaryVidStream = NULL;
+		}
+		if (pDDStream)
+		{
+			pDDStream->Release();
+			pDDStream = NULL;
+		}
+		if (pSample)
+		{
+			pSample->Release();
+			pSample = NULL;
+		}
+		if (pSurface)
+		{
+			pSurface->Release();
+			pSurface = NULL;
+		}
+		return hr;
+	}
+
+	// FUNCTION: TOY2 0x0047C7A0 [MATCHED]
+	void PlayMpeg(char* fileName, int32_t frames)
+	{
+		IMultiMediaStream* pMMStream;
+
+		g_mpegFinished = 0;
+		if (SUCCEEDED(OpenMMStream(fileName, D3DApp::g_d3dAppI.lpDD, &pMMStream)))
+		{
+			RenderStreamToSurface(D3DApp::g_d3dAppI.lpDD, (IDirectDrawSurface*)D3DApp::g_d3dAppI.lpFrontBuffer, pMMStream, frames);
+			pMMStream->Release();
+		}
+		g_mpegFinished = 1;
+	}
+
+	// FUNCTION: TOY2 0x0049A390
+	DisplayMode* SelectMpegMode()
+	{
+		DisplayMode* mode = D3DApp::g_pcStruct.mode;
+		int32_t preferredBpp = g_cpuSpeed > 233000000 ? 32 : 16;
+		int32_t i, j;
+
+		if (! g_highQualityMpegEnabled)
+			preferredBpp = 32;
+		Logger::Log("SelectMpegMode : Preferred bit depth for mpeg's is %d bits.\n", preferredBpp);
+
+		for (i = 0; i < D3DApp::g_pcStruct.defaultDriver->displayModeCount; i++)
+		{
+			if (D3DApp::g_pcStruct.defaultDriver->displayModes[i].rgbBitCount == preferredBpp)
+			{
+				if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
+					goto LBL_USE_PREFERRED_MODE;
+				for (j = 0; j < D3DApp::g_pcStruct.selectedInterfaceDevice->numTextureFormats; j++)
+				{
+					if (D3DApp::g_pcStruct.selectedInterfaceDevice->textureFormat[j].rgbBPP == preferredBpp)
+						goto LBL_USE_PREFERRED_MODE;
+				}
+			}
+			continue;
+
+		LBL_USE_PREFERRED_MODE:
+			mode = &D3DApp::g_pcStruct.defaultDriver->displayModes[i];
+			break;
+		}
+
+		if (mode->rgbBitCount == 8)
+		{
+			for (i = 0; i < D3DApp::g_pcStruct.defaultDriver->displayModeCount; i++)
+			{
+				if (D3DApp::g_pcStruct.defaultDriver->displayModes[i].rgbBitCount == 16)
+				{
+					if (D3DApp::g_renderMode == RENDERMODE_SOFTWARE)
+						goto LBL_USE_FALLBACK_MODE;
+					for (j = 0; j < D3DApp::g_pcStruct.selectedInterfaceDevice->numTextureFormats; j++)
+					{
+						if (D3DApp::g_pcStruct.selectedInterfaceDevice->textureFormat[j].rgbBPP == 16)
+							goto LBL_USE_FALLBACK_MODE;
+					}
+				}
+				continue;
+
+			LBL_USE_FALLBACK_MODE:
+				mode = &D3DApp::g_pcStruct.defaultDriver->displayModes[i];
+				break;
+			}
+		}
+		Logger::Log("SelectMpegMode : Selected mode %dx%dx%d.\n", mode->width, mode->height, mode->rgbBitCount);
+		return mode;
+	}
+
+	// FUNCTION: TOY2 0x0049A4F0 [MATCHED]
+	void PlayAnim(char* fileName)
+	{
+		BOOL modeChanged = FALSE;
+		DisplayMode* mode;
+		HRESULT hr;
+		int32_t frames;
+		char filePath[128];
+		MSG msg;
+
+		if (g_isDemo != 1)
+		{
+			Logger::Log("PlayAnim : Attempting to play mpeg %s.\n", fileName);
+			AudioManager::StopAndWait();
+			AudioManager::ReleaseBuffers();
+			mode = SelectMpegMode();
+			if (D3DApp::g_pcStruct.mode != mode)
+			{
+				modeChanged = TRUE;
+				D3DApp::g_pcStruct.oldMode = D3DApp::g_pcStruct.mode;
+				D3DApp::g_pcStruct.mode = mode;
+				switch (D3DApp::g_renderMode)
+				{
+					case RENDERMODE_SOFTWARE:
+						if (D3DApp::g_lpClipper)
+						{
+							D3DApp::g_lpClipper->Release();
+							D3DApp::g_lpClipper = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpZBuffer)
+						{
+							D3DApp::g_d3dAppI.lpZBuffer->Release();
+							D3DApp::g_d3dAppI.lpZBuffer = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpBackBuffer)
+						{
+							D3DApp::g_d3dAppI.lpBackBuffer->Release();
+							D3DApp::g_d3dAppI.lpBackBuffer = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpFrontBuffer)
+						{
+							D3DApp::g_d3dAppI.lpFrontBuffer->Release();
+							D3DApp::g_d3dAppI.lpFrontBuffer = 0;
+						}
+						hr = D3DApp::g_d3dAppI.lpDD->SetDisplayMode(
+							D3DApp::g_pcStruct.mode->width, D3DApp::g_pcStruct.mode->height, D3DApp::g_pcStruct.mode->rgbBitCount, 0, 0);
+						if (hr < 0)
+							Logger::LogDDError("d3dappi.lpDD->SetDisplayMode(PC.Mode->w, PC.Mode->h, PC.Mode->bpp, 0, 0)", hr);
+						D3DApp::D3DAppICreateBuffers(
+							D3DApp::g_windowData.mainHwnd,
+							D3DApp::g_pcStruct.mode->width,
+							D3DApp::g_pcStruct.mode->height,
+							D3DApp::g_pcStruct.mode->rgbBitCount,
+							TRUE,
+							D3DApp::g_pcStruct.defaultDriver->hasHardwareAccel);
+						D3DApp::UnkFunc409C80();
+						break;
+					case RENDERMODE_D3D:
+						D3DApp::D3DRestart();
+						break;
+				}
+			}
+
+			if (strcmp(fileName, "LEV_15C.bug") == 0)
+			{
+				frames = 0x96C;
+				Logger::Log("MPEG : Counting %d frames.\n", frames);
+			}
+			else
+			{
+				frames = 0;
+			}
+
+			memset(filePath, 0, sizeof(filePath));
+			if (g_useRelativePathForIni)
+			{
+				strcat(filePath, g_empty512Chars);
+				strcat(filePath, g_iniCdPath);
+				strcat(filePath, "temp\\");
+			}
+			else
+			{
+				strcat(filePath, g_empty512Chars_2);
+				strcat(filePath, "\\cd\\temp\\");
+			}
+			strcat(filePath, fileName);
+
+			while (PeekMessageA(&msg, 0, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessageA(&msg);
+			}
+			PlayMpeg(filePath, frames);
+			while (! g_mpegFinished)
+			{
+				PeekMessageA(&msg, 0, 0, 0, PM_REMOVE);
+				TranslateMessage(&msg);
+				DispatchMessageA(&msg);
+			}
+
+			if (modeChanged)
+			{
+				D3DApp::g_pcStruct.mode = D3DApp::g_pcStruct.oldMode;
+				switch (D3DApp::g_renderMode)
+				{
+					case RENDERMODE_SOFTWARE:
+						if (D3DApp::g_lpClipper)
+						{
+							D3DApp::g_lpClipper->Release();
+							D3DApp::g_lpClipper = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpZBuffer)
+						{
+							D3DApp::g_d3dAppI.lpZBuffer->Release();
+							D3DApp::g_d3dAppI.lpZBuffer = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpBackBuffer)
+						{
+							D3DApp::g_d3dAppI.lpBackBuffer->Release();
+							D3DApp::g_d3dAppI.lpBackBuffer = 0;
+						}
+						if (D3DApp::g_d3dAppI.lpFrontBuffer)
+						{
+							D3DApp::g_d3dAppI.lpFrontBuffer->Release();
+							D3DApp::g_d3dAppI.lpFrontBuffer = 0;
+						}
+						hr = D3DApp::g_d3dAppI.lpDD->SetDisplayMode(
+							D3DApp::g_pcStruct.mode->width, D3DApp::g_pcStruct.mode->height, D3DApp::g_pcStruct.mode->rgbBitCount, 0, 0);
+						if (hr < 0)
+							Logger::LogDDError("d3dappi.lpDD->SetDisplayMode(PC.Mode->w, PC.Mode->h, PC.Mode->bpp, 0, 0)", hr);
+						D3DApp::D3DAppICreateBuffers(
+							D3DApp::g_windowData.mainHwnd,
+							D3DApp::g_pcStruct.mode->width,
+							D3DApp::g_pcStruct.mode->height,
+							D3DApp::g_pcStruct.mode->rgbBitCount,
+							TRUE,
+							D3DApp::g_pcStruct.defaultDriver->hasHardwareAccel);
+						if (! D3DApp::g_pcStruct.softwareRenderMode)
+							D3DApp::D3DAppICreateZBuffer(D3DApp::g_pcStruct.mode->width, D3DApp::g_pcStruct.mode->height);
+						if (D3DApp::g_pcStruct.mode->rgbBitCount == 8)
+							SoftwareRenderer::SetPaletteOnAPI();
+						D3DApp::UnkFunc409C80();
+						break;
+					case RENDERMODE_D3D:
+						D3DApp::D3DRestart();
+						break;
+				}
+			}
+			AudioManager::Init();
+		}
+	}
 }
 
 // $FUNC DEBUG
@@ -8235,7 +8630,7 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 	AllocateConsole();
 #endif
 
-	Toy2::g_unused0 = 0;
+	Toy2::g_d3dApp = 0;
 
 	memset(&D3DApp::g_d3dAppI, 0, sizeof(D3DApp::g_d3dAppI));
 
@@ -8254,9 +8649,9 @@ int32_t WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrev, char* cmdLine, int3
 	D3DApp::g_windowData.nShowCmd = cmdShow;
 
 	D3DApp::g_windowData.unkInt8 = 0;
-	D3DApp::g_windowData.unkInt3 = 1;
-	D3DApp::g_windowData.unkInt4 = 1;
-	D3DApp::g_windowData.unkInt5 = 1;
+	D3DApp::g_windowData.bClearsOn = 1;
+	D3DApp::g_windowData.bShowFrameRate = 1;
+	D3DApp::g_windowData.bShowInfo = 1;
 	D3DApp::g_windowData.wndIsExiting = 0;
 
 	Toy2::OneInit();

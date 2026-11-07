@@ -82,6 +82,8 @@ set(TOY2_SOURCES
     src/FileUtils.h
     src/FileUtils.cpp
 
+    src/VWin32.cpp
+
     src/Nullsub.cpp
     src/Nullsub.h
 
@@ -125,6 +127,13 @@ set(TOY2_SOURCES
     src/Toy2/D3DApp.cpp
     src/Toy2/D3DApp.h
     src/Toy2/D3DAppTypes.h
+    src/Toy2/D3DAppI.h
+    src/Toy2/D3DAppDDCalls.cpp
+    src/Toy2/D3DAppMisc.cpp
+    src/Toy2/D3DAppTexture.cpp
+    src/Toy2/D3DAppStats.cpp
+    src/Toy2/D3DAppRestart.cpp
+    src/Toy2/LcLib.cpp
     src/Toy2/Buzz.cpp
     src/Toy2/Buzz.h
     src/Toy2/Actor.cpp
@@ -274,6 +283,12 @@ set(TOY2_SOURCES
     # AudioManager
     src/AudioManager/AudioManager.cpp
     src/AudioManager/AudioManager.h
+)
+
+set_source_files_properties(
+    src/VWin32.cpp
+    src/Toy2/D3DAppDDCalls.cpp
+    PROPERTIES COMPILE_FLAGS "/Ob2"
 )
 
 # Build the game

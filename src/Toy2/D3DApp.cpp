@@ -1,4 +1,4 @@
-#include "Toy2/D3DApp.h"
+#include "Toy2/D3DAppI.h"
 #include "Toy2/Toy2.h"
 #include "Logger.h"
 #include <cstdio>
@@ -36,10 +36,40 @@ namespace D3DApp
 	int32_t g_usesPalette;
 
 	// GLOBAL: TOY2 0x0051AAC8
-	int32_t g_backBufferSupportsAlpha;
+	int32_t g_primaryPalettized;
 
 	// GLOBAL: TOY2 0x0050AA58
 	LPDIRECTDRAWPALETTE g_lpPalette = 0;
+
+	// GLOBAL: TOY2 0x00882E30
+	int32_t g_unused1;
+
+	// GLOBAL: TOY2 0x00882C28
+	int32_t g_unused2;
+
+	// GLOBAL: TOY2 0x00504E58
+	int32_t g_windowCreationError = 1;
+
+	// GLOBAL: TOY2 0x0051ABD0
+	HRESULT g_lastError;
+
+	// GLOBAL: TOY2 0x0050AB64
+	PALETTEENTRY g_originalPpe[256];
+
+	// GLOBAL: TOY2 0x0051ABE0
+	SIZE g_szLastClient;
+
+	// GLOBAL: TOY2 0x0051A940
+	BOOL (*g_d3dDeviceDestroyCallback)(LPVOID);
+
+	// GLOBAL: TOY2 0x0051A9C4
+	LPVOID g_d3dDeviceDestroyCallbackContext;
+
+	// GLOBAL: TOY2 0x0050A718
+	BOOL (*g_d3dDeviceCreateCallback)(int32_t, int32_t, LPDIRECT3DVIEWPORT2*, LPVOID);
+
+	// GLOBAL: TOY2 0x0051AFB0
+	LPVOID g_d3dDeviceCreateCallbackContext;
 }
 
 namespace D3DApp
@@ -409,20 +439,13 @@ namespace D3DApp
 		return 1;
 	}
 
-	// FUNCTION: TOY2 0x004A6B30
+	// FUNCTION: TOY2 0x004A6B30 [MATCHED]
 	int32_t BuildWindow()
 	{
-		memset(&g_windowData.wndClass, 0, sizeof(g_windowData.wndClass));
-
-		// GLOBAL: TOY2 0x00882E30
-		static int32_t g_unused1;
-		// GLOBAL: TOY2 0x00882C28
-		static int32_t g_unused2;
-		// GLOBAL: TOY2 0x00504E58
-		static int32_t g_windowCreationError = 1;
-
 		g_unused1 = 0;
 		g_unused2 = 0;
+
+		memset(&g_windowData.wndClass, 0, sizeof(g_windowData.wndClass));
 
 		g_windowData.wndClass.cbSize = 48;
 
@@ -710,78 +733,45 @@ namespace D3DApp
 		return examineContext->displayModeCount != 128;
 	}
 
-	// FUNCTION: TOY2 0x00409130
+	// FUNCTION: TOY2 0x00409130 [MATCHED]
 	HRESULT WINAPI
 	EnumDevices(LPGUID guid, LPSTR deviceDesc, LPSTR deviceName, LPD3DDEVICEDESC d3DHWDeviceDesc, LPD3DDEVICEDESC d3DHELDeviceDesc, LPVOID context)
 	{
-		LPD3DDEVICEDESC hwDeviceDesc = d3DHWDeviceDesc;
 		ExamineDevice* examineContext = (ExamineDevice*)context;
 		InterfaceDevice* item = &examineContext->interfaceDevices[examineContext->deviceCount];
 
 		memset(item, 0, sizeof(InterfaceDevice));
 
-		item->isHardwareAccelerated = d3DHWDeviceDesc->dcmColorModel != 0;
-
-		item->guid = *guid;
-
+		item->isHardwareAccelerated = d3DHWDeviceDesc->dcmColorModel ? TRUE : FALSE;
+		memcpy(&item->guid, guid, sizeof(GUID));
 		lstrcpyA(item->baseName, deviceName);
 		lstrcpyA(item->description, deviceDesc);
 
-		if (! d3DHWDeviceDesc->dcmColorModel)
-			hwDeviceDesc = d3DHELDeviceDesc;
+		if (d3DHWDeviceDesc->dcmColorModel)
+			memcpy(&item->hwDeviceDesc, d3DHWDeviceDesc, sizeof(D3DDEVICEDESC));
+		else
+			memcpy(&item->hwDeviceDesc, d3DHELDeviceDesc, sizeof(D3DDEVICEDESC));
 
-		memcpy(&item->hwDeviceDesc, hwDeviceDesc, sizeof(item->hwDeviceDesc));
-
-		int32_t dwDeviceZBufferBitDepth = item->hwDeviceDesc.dwDeviceZBufferBitDepth;
-		int32_t hasTexturing = item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & 1;
-
-		item->isSquareTexturesOnly = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps >> 5) & 1;
-
-		int32_t hasAlphaBlending = (item->hwDeviceDesc.dpcTriCaps.dwSrcBlendCaps >> 11) & 1;
-
-		item->hasTexturing = hasTexturing;
-		item->hasAlphaBlending = hasAlphaBlending;
-		item->hasZBuffer = dwDeviceZBufferBitDepth != 0;
+		item->hasTexturing = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_PERSPECTIVE) ? TRUE : FALSE;
+		item->isSquareTexturesOnly = (item->hwDeviceDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY) ? TRUE : FALSE;
+		item->hasAlphaBlending = (item->hwDeviceDesc.dpcTriCaps.dwSrcBlendCaps & D3DPBLENDCAPS_BOTHSRCALPHA) ? TRUE : FALSE;
+		item->hasZBuffer = item->hwDeviceDesc.dwDeviceZBufferBitDepth ? TRUE : FALSE;
 
 		Logger::Log("\n");
 		Logger::Log("DIRECT 3D DEVICE BASE NAME : %s.\n", item->baseName);
 		Logger::Log("DIRECT 3D DEVICE DESCRIPTION : %s.\n", item->description);
 
-		const char* texFlag = "TRUE";
-		if (! item->hasTexturing)
-			texFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE TextureFlag\t:\t%s.\n", texFlag);
-
-		const char* zBufferFlag = "TRUE";
-		if (! item->hasZBuffer)
-			zBufferFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE ZBufferFlag : %s.\n", zBufferFlag);
-
-		const char* hardwareAccelFlag = "TRUE";
-		if (! item->isHardwareAccelerated)
-			hardwareAccelFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE HardwareAccel : %s.\n", hardwareAccelFlag);
-
-		const char* squareOnlyFlag = "TRUE";
-		if (! item->isSquareTexturesOnly)
-			squareOnlyFlag = "FALSE";
-
-		Logger::Log("DIRECT 3D DEVICE SquareOnly : %s.\n", squareOnlyFlag);
-
-		const char* alphaBlending = "ON";
-		if (! item->hasAlphaBlending)
-			alphaBlending = "OFF";
-
-		Logger::Log("DIRECT 3D DEVICE Alpha blending is %s.\n", alphaBlending);
+		Logger::Log("DIRECT 3D DEVICE TextureFlag\t:\t%s.\n", item->hasTexturing ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE ZBufferFlag : %s.\n", item->hasZBuffer ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE HardwareAccel : %s.\n", item->isHardwareAccelerated ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE SquareOnly : %s.\n", item->isSquareTexturesOnly ? "TRUE" : "FALSE");
+		Logger::Log("DIRECT 3D DEVICE Alpha blending is %s.\n", item->hasAlphaBlending ? "ON" : "OFF");
 		Logger::Log("\n");
 
-		item->valid = 1;
+		item->valid = TRUE;
 		++examineContext->deviceCount;
 
-		return 1;
+		return D3DENUMRET_OK;
 	}
 
 	// FUNCTION: TOY2 0x00408CD0 [MATCHED]
@@ -831,136 +821,97 @@ namespace D3DApp
 		return DefWindowProcA(hWnd, msg, wParam, lParam);
 	}
 
-	// FUNCTION: TOY2 0x0040CAC0
-	int32_t ProcessWndProc(WPARAM* wParamPtr, LPARAM* lParamPtr, HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	// FUNCTION: TOY2 0x0040CAC0 [MATCHED]
+	BOOL ProcessWndProc(BOOL* bStopProcessing, LRESULT* lresult, HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		int32_t result;
-		PAINTSTRUCT paintStruct;
-
-		*wParamPtr = 0;
-
+		PAINTSTRUCT ps;
+		*bStopProcessing = FALSE;
 		if (! g_readyForRender)
-			return 1;
-
-		if (msg > WM_ACTIVATEAPP)
+			return TRUE;
+		switch (message)
 		{
-			if (msg > WM_NCPAINT)
-			{
-				if (msg == WM_MOVING && g_pcStruct.fullscreenMode)
+			case WM_SIZE:
+				if (! g_changingCoopLevel)
 				{
-					GetWindowRect(hWnd, (RECT*)lParam);
-
-					*lParamPtr = 1;
-					*wParamPtr = 1;
+					*bStopProcessing = TRUE;
 				}
-			}
-			else
-			{
-				switch (msg)
+				break;
+			case WM_MOVE:
+				g_d3dAppI.pClientOnPrimary.x = g_d3dAppI.pClientOnPrimary.y = 0;
+				ClientToScreen(hwnd, &g_d3dAppI.pClientOnPrimary);
+				break;
+			case WM_ACTIVATE:
+				if (g_usesPalette && g_primaryPalettized && g_d3dAppI.lpFrontBuffer)
 				{
-					case WM_NCPAINT:
-						if (g_pcStruct.fullscreenMode && ! g_d3dAppI.bPaused)
-						{
-							result = 1;
-							*lParamPtr = 0;
-							*wParamPtr = 1;
-							return result;
-						}
-						break;
-					case WM_SETCURSOR:
-						if (g_pcStruct.fullscreenMode && ! g_d3dAppI.bPaused)
-						{
-							result = 1;
-							*lParamPtr = 1;
-							*wParamPtr = 1;
-							return result;
-						}
-						break;
-					case WM_GETMINMAXINFO:
-
-						MINMAXINFO* minMaxInfo = (MINMAXINFO*)lParam;
-
-						if (g_pcStruct.fullscreenMode)
-						{
-							minMaxInfo->ptMaxTrackSize.x = g_pcStruct.mode->width;
-							minMaxInfo->ptMaxTrackSize.y = g_pcStruct.mode->height;
-							minMaxInfo->ptMinTrackSize.x = g_pcStruct.mode->width;
-							minMaxInfo->ptMinTrackSize.y = g_pcStruct.mode->height;
-						}
-						else
-						{
-							minMaxInfo->ptMaxTrackSize.x = g_d3dAppI.windowsDisplay.w;
-							minMaxInfo->ptMaxTrackSize.y = g_d3dAppI.windowsDisplay.h;
-						}
-
-						*lParamPtr = 0;
-						*wParamPtr = 1;
-						return 1;
-				}
-			}
-			return 1;
-		}
-
-		if (msg == WM_ACTIVATEAPP)
-		{
-			g_d3dAppI.bAppActive = 1;
-			*wParamPtr = 1;
-			return 1;
-		}
-		else
-		{
-			switch (msg)
-			{
-				case WM_MOVE:
-					g_d3dAppI.pClientOnPrimary.y = 0;
-					g_d3dAppI.pClientOnPrimary.x = 0;
-
-					ClientToScreen(hWnd, &g_d3dAppI.pClientOnPrimary);
-
-					result = 1;
-					break;
-
-				case WM_SIZE:
-					if (g_changingCoopLevel)
-						return 1;
-
-					*wParamPtr = 1;
-					result = 1;
-					break;
-
-				case WM_ACTIVATE:
-					if (! g_usesPalette || ! g_backBufferSupportsAlpha || ! g_d3dAppI.lpFrontBuffer)
-						return 1;
-
 					g_d3dAppI.lpFrontBuffer->SetPalette(g_lpPalette);
-
-					result = 1;
-					break;
-
-				case WM_PAINT:
-					BeginPaint(hWnd, &paintStruct);
-					EndPaint(hWnd, &paintStruct);
-
-					result = 1;
-
-					*lParamPtr = 1;
-					*wParamPtr = 1;
-					break;
-
-				default:
-					return 1;
-			}
+				}
+				break;
+			case WM_ACTIVATEAPP:
+				g_d3dAppI.bAppActive = TRUE;
+				*bStopProcessing = TRUE;
+				break;
+			case WM_SETCURSOR:
+				if (g_pcStruct.fullscreenMode && ! g_d3dAppI.bPaused)
+				{
+					*lresult = 1;
+					*bStopProcessing = TRUE;
+					return TRUE;
+				}
+				break;
+			case WM_MOVING:
+				if (g_pcStruct.fullscreenMode)
+				{
+					GetWindowRect(hwnd, (LPRECT)lParam);
+					*lresult = 1;
+					*bStopProcessing = TRUE;
+					return TRUE;
+				}
+				break;
+			case WM_GETMINMAXINFO:
+				if (g_pcStruct.fullscreenMode)
+				{
+					((LPMINMAXINFO)lParam)->ptMaxTrackSize.x = g_pcStruct.mode->width;
+					((LPMINMAXINFO)lParam)->ptMaxTrackSize.y = g_pcStruct.mode->height;
+					((LPMINMAXINFO)lParam)->ptMinTrackSize.x = g_pcStruct.mode->width;
+					((LPMINMAXINFO)lParam)->ptMinTrackSize.y = g_pcStruct.mode->height;
+					*lresult = 0;
+					*bStopProcessing = TRUE;
+					return TRUE;
+				}
+				else
+				{
+					((LPMINMAXINFO)lParam)->ptMaxTrackSize.x = g_d3dAppI.windowsDisplay.w;
+					((LPMINMAXINFO)lParam)->ptMaxTrackSize.y = g_d3dAppI.windowsDisplay.h;
+					*lresult = 0;
+					*bStopProcessing = TRUE;
+					return TRUE;
+				}
+				break;
+			case WM_PAINT:
+				BeginPaint(hwnd, &ps);
+				EndPaint(hwnd, &ps);
+				*lresult = 1;
+				*bStopProcessing = TRUE;
+				return TRUE;
+			case WM_NCPAINT:
+				if (g_pcStruct.fullscreenMode && ! g_d3dAppI.bPaused)
+				{
+					*lresult = 0;
+					*bStopProcessing = TRUE;
+					return TRUE;
+				}
+				break;
 		}
-		return result;
+		return TRUE;
 	}
 
-	// FUNCTION: TOY2 0x004A6D40
+	// FUNCTION: TOY2 0x004A6D40 [MATCHED]
 	LRESULT WINAPI NormalWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
-		LPARAM copyLParam = lParam;
-		WPARAM copyWParam = wParam;
+		BOOL bStop;
+		LRESULT lresult;
 
-		if (! ProcessWndProc(&wParam, &lParam, hWnd, msg, wParam, lParam))
+		if (! ProcessWndProc(&bStop, &lresult, hWnd, msg, wParam, lParam))
 		{
 			LogErrorNotSet();
 			return 0;
@@ -974,9 +925,611 @@ namespace D3DApp
 				break;
 		}
 
-		return DefWindowProcA(hWnd, msg, copyWParam, copyLParam);
+		return DefWindowProcA(hWnd, msg, wParam, lParam);
 	}
 
 	// FUNCTION: TOY2 0x004A6B10
 	void SysParmsOnExit() { SystemParametersInfoA(SPI_SETSCREENSAVERRUNNING, g_sysParamsInfo, &g_sysParamsInfo, 0); }
+
+	// FUNCTION: TOY2 0x00409E30
+	BOOL CreateD3DApp(LPSTR lpCmdLine)
+	{
+		Defaults defaults;
+		HRESULT hr;
+
+		if (! D3DAppCreateFromHWND(0, g_windowData.mainHwnd, &Toy2::g_d3dApp))
+		{
+			LogErrorNotSet();
+			return FALSE;
+		}
+
+		if (! D3DAppGetRenderState(&defaults.rs))
+		{
+			LogErrorNotSet();
+			return FALSE;
+		}
+		lstrcpyA(defaults.name, "BUGS");
+		defaults.bTexturesDisabled = FALSE;
+		defaults.bResizingDisabled = g_windowData.bResizingDisabled;
+		defaults.bClearsOn = g_windowData.bClearsOn;
+		OverrideDefaults(&defaults);
+		g_windowData.bClearsOn = defaults.bClearsOn;
+		g_windowData.bResizingDisabled = defaults.bResizingDisabled;
+		SetWindowTextA(g_windowData.mainHwnd, defaults.name);
+
+		if (g_renderMode == RENDERMODE_D3D)
+		{
+			memcpy(&g_windowData.stateCache, &defaults.rs, sizeof(RenderStateCache));
+			if (! D3DAppSetRenderState(&g_windowData.stateCache))
+			{
+				LogErrorNotSet();
+				return FALSE;
+			}
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, 1);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_COLORKEYENABLE, 1)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, 1);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, 1)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND, D3DBLEND_BOTHSRCALPHA);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_SRCBLEND, D3DBLEND_BOTHSRCALPHA)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREADDRESS, D3DTADDRESS_CLAMP);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREADDRESS, D3DTADDRESS_CLAMP)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMAG, (DWORD)D3DFILTER_NEAREST);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMAG, (DWORD) D3DFILTER_NEAREST)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMIN, (DWORD)D3DFILTER_NEAREST);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMIN, (DWORD) D3DFILTER_NEAREST)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, 1);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, 1)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_SUBPIXELX, 1);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_SUBPIXELX, 1)", hr);
+
+			hr = g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMAPBLEND, D3DTBLEND_MODULATE);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DDevice->SetRenderState(D3DRENDERSTATE_TEXTUREMAPBLEND, D3DTBLEND_MODULATE)", hr);
+
+			if (g_pcStruct.selectedInterfaceDevice->hwDeviceDesc.dpcTriCaps.dwAlphaCmpCaps & D3DPCMPCAPS_GREATEREQUAL)
+			{
+				g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, 0x1000);
+				g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, 1);
+				g_d3dAppI.lpD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+			}
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x0040C1F0
+	BOOL D3DAppCreateFromHWND(DWORD flags, HWND hwnd, D3DAppInfo** lpD3DApp)
+	{
+		LPDIRECTDRAW tempDD;
+		LPDIRECTDRAWSURFACE tempsurf;
+		LPDIRECT3DVIEWPORT2 lpD3DViewport;
+		D3DVIEWPORT2 viewData;
+		int32_t w, h;
+		HDC hdc;
+		HRESULT hr;
+
+		if (g_pcStruct.softwareRenderMode)
+		{
+			g_d3dAppI.bOnlySystemMemory = ! g_pcStruct.defaultDriver->hasHardwareAccel;
+		}
+		else
+		{
+			g_d3dAppI.bOnlySystemMemory = TRUE;
+			if (g_pcStruct.defaultDriver->hasHardwareAccel || g_pcStruct.selectedInterfaceDevice->isHardwareAccelerated)
+				g_d3dAppI.bOnlySystemMemory = FALSE;
+		}
+		Logger::Log("SYSTEM : OnlySystemMemory status %s.\n", g_d3dAppI.bOnlySystemMemory ? "SYSTEM MEMORY ONLY" : "VIDEO MEMORY ONLY");
+		g_d3dAppI.bIsPrimary = g_pcStruct.defaultDriver->isPrimaryDisplay;
+
+		if (g_d3dAppI.lpDD)
+		{
+			g_d3dAppI.lpDD->Release();
+			g_d3dAppI.lpDD = 0;
+		}
+		hr = DirectDrawCreate(&g_pcStruct.defaultDriver->deviceGUID, &tempDD, 0);
+		if (hr < 0)
+			Logger::LogDDError("DirectDrawCreate(&PC.DD->Guid, &tempDD, 0)", hr);
+		hr = tempDD->QueryInterface(IID_IDirectDraw2, (LPVOID*)&g_d3dAppI.lpDD);
+		if (hr < 0)
+			Logger::LogDDError("tempDD->QueryInterface(IID_IDirectDraw2, (LPVOID*)&d3dappi.lpDD)", hr);
+		if (tempDD)
+			tempDD->Release();
+
+		hdc = GetDC(0);
+		GetSystemPaletteEntries(hdc, 0, (1 << 8), (LPPALETTEENTRY)(&g_originalPpe[0]));
+		memcpy(g_ppe, g_originalPpe, sizeof(g_ppe));
+		ReleaseDC(0, hdc);
+
+		D3DAppIRememberWindowsMode();
+
+		if (! g_pcStruct.softwareRenderMode)
+		{
+			hr = g_d3dAppI.lpDD->QueryInterface(IID_IDirect3D2, (LPVOID*)&g_d3dAppI.lpD3D);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpDD->QueryInterface(IID_IDirect3D2, (LPVOID *) &d3dappi.lpD3D)", hr);
+		}
+
+		if (! g_pcStruct.fullscreenMode)
+		{
+			D3DAppIGetClientWin(hwnd);
+			D3DAppISetCoopLevel(hwnd, FALSE);
+			w = g_d3dAppI.szClient.cx;
+			h = g_d3dAppI.szClient.cy;
+			if (! D3DAppICreateBuffers(hwnd, w, h, D3DAPP_BOGUS, FALSE, g_pcStruct.defaultDriver->hasHardwareAccel))
+				goto LBL_EXIT_WITH_ERROR;
+		}
+		else
+		{
+			w = g_pcStruct.mode->width;
+			h = g_pcStruct.mode->height;
+			Logger::Log("D3DAPPCREATE : Mode set to %dx%d.\n", w, h);
+			D3DAppIGetClientWin(hwnd);
+			D3DAppISetCoopLevel(hwnd, TRUE);
+			g_szLastClient = g_d3dAppI.szClient;
+			g_d3dAppI.szClient.cx = w;
+			g_d3dAppI.szClient.cy = h;
+			g_changingCoopLevel = TRUE;
+			hr = g_d3dAppI.lpDD->SetDisplayMode(w, h, g_pcStruct.mode->rgbBitCount, 0, 0);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpDD->SetDisplayMode(w, h, PC.Mode->bpp, 0, 0)", hr);
+			Logger::Log("MODE: Width = %d Height = %d Bpp = %d.\n", w, h, g_pcStruct.mode->rgbBitCount);
+			g_changingCoopLevel = FALSE;
+			if (! D3DAppICreateBuffers(hwnd, w, h, g_pcStruct.mode->rgbBitCount, TRUE, g_pcStruct.defaultDriver->hasHardwareAccel))
+				goto LBL_EXIT_WITH_ERROR;
+		}
+
+		if (! D3DAppICheckForPalettized())
+			goto LBL_EXIT_WITH_ERROR;
+
+		if (! g_pcStruct.softwareRenderMode)
+		{
+			if (! D3DAppICreateZBuffer(w, h))
+				goto LBL_EXIT_WITH_ERROR;
+
+			if (g_d3dAppI.lpD3DDevice)
+			{
+				g_d3dAppI.lpD3DDevice->Release();
+				g_d3dAppI.lpD3DDevice = 0;
+			}
+			if (g_pcStruct.selectedInterfaceDevice->isHardwareAccelerated && ! g_d3dAppI.bBackBufferInVideo)
+				Logger::LogLn("Could not fit the rendering surfaces in video memory for this hardware device.\n");
+			g_pcStruct.selectedInterfaceDevice->numTextureFormats = 0;
+			hr = g_d3dAppI.lpBackBuffer->QueryInterface(IID_IDirectDrawSurface, (void**)&tempsurf);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpBackBuffer->QueryInterface(IID_IDirectDrawSurface, (void**)&tempsurf)", hr);
+			hr = g_d3dAppI.lpD3D->CreateDevice(g_pcStruct.selectedInterfaceDevice->guid, tempsurf, &g_d3dAppI.lpD3DDevice);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3D->CreateDevice(PC.D3D->Guid, tempsurf, &d3dappi.lpD3DDevice)", hr);
+			if (tempsurf)
+				tempsurf->Release();
+			if (g_pcStruct.selectedInterfaceDevice->hasTexturing)
+			{
+				hr = g_d3dAppI.lpD3DDevice->EnumTextureFormats(EnumTextureFormatsCallback, (LPVOID)g_pcStruct.selectedInterfaceDevice);
+				if (hr < 0)
+					Logger::LogDDError("d3dappi.lpD3DDevice->EnumTextureFormats(&CreateD3DEnumTextureFormatsCallback, (LPVOID) PC.D3D)", hr);
+			}
+
+			hr = g_d3dAppI.lpD3D->CreateViewport(&lpD3DViewport, 0);
+			if (hr != D3D_OK)
+			{
+				Logger::LogLn("Create D3D viewport failed.\n%s", Logger::ErrorToMessage(hr));
+				CleanUpAndPostQuit();
+			}
+			else
+			{
+				hr = g_d3dAppI.lpD3DDevice->AddViewport(lpD3DViewport);
+				if (hr != D3D_OK)
+				{
+					Logger::LogLn("Add D3D viewport failed.\n%s", Logger::ErrorToMessage(hr));
+					CleanUpAndPostQuit();
+				}
+				else
+				{
+					memset(&viewData, 0, sizeof(D3DVIEWPORT2));
+					viewData.dwSize = sizeof(D3DVIEWPORT2);
+					viewData.dwX = viewData.dwY = 0;
+					viewData.dwWidth = w;
+					viewData.dwHeight = h;
+					viewData.dvClipX = -1.0f;
+					viewData.dvClipWidth = 2.0f;
+					viewData.dvClipHeight = h * 2.0f / w;
+					viewData.dvClipY = viewData.dvClipHeight / 2.0f;
+					viewData.dvMinZ = 0.0f;
+					viewData.dvMaxZ = 1.0f;
+					hr = lpD3DViewport->SetViewport2(&viewData);
+					if (hr != D3D_OK)
+					{
+						Logger::LogLn("SetViewport failed.\n%s", Logger::ErrorToMessage(hr));
+						CleanUpAndPostQuit();
+					}
+					else
+					{
+						g_d3dAppI.lpD3DViewport = lpD3DViewport;
+						InitFontAndTextBuffers();
+					}
+				}
+			}
+		}
+
+		UnkFunc409C80();
+		if (! D3DAppISetRenderState())
+			goto LBL_EXIT_WITH_ERROR;
+
+		g_readyForRender = TRUE;
+		g_d3dAppI.bRenderingIsOK = TRUE;
+		return TRUE;
+
+	LBL_EXIT_WITH_ERROR:
+		ReleaseFontAndTextBuffers();
+		if (g_d3dAppI.lpD3DViewport)
+		{
+			g_d3dAppI.lpD3DDevice->DeleteViewport(g_d3dAppI.lpD3DViewport);
+			g_d3dAppI.lpD3DViewport->Release();
+			g_d3dAppI.lpD3DViewport = 0;
+		}
+		if (g_d3dAppI.lpD3DDevice)
+		{
+			g_d3dAppI.lpD3DDevice->Release();
+			g_d3dAppI.lpD3DDevice = 0;
+		}
+		if (g_d3dAppI.lpZBuffer)
+		{
+			g_d3dAppI.lpZBuffer->Release();
+			g_d3dAppI.lpZBuffer = 0;
+		}
+		if (g_lpPalette)
+		{
+			g_lpPalette->Release();
+			g_lpPalette = 0;
+		}
+		if (g_lpClipper)
+		{
+			g_lpClipper->Release();
+			g_lpClipper = 0;
+		}
+		if (g_d3dAppI.lpBackBuffer)
+		{
+			g_d3dAppI.lpBackBuffer->Release();
+			g_d3dAppI.lpBackBuffer = 0;
+		}
+		if (g_d3dAppI.lpFrontBuffer)
+		{
+			g_d3dAppI.lpFrontBuffer->Release();
+			g_d3dAppI.lpFrontBuffer = 0;
+		}
+		if (g_pcStruct.fullscreenMode)
+		{
+			D3DAppIRestoreDispMode();
+			D3DAppISetCoopLevel(hwnd, FALSE);
+		}
+		if (g_d3dAppI.lpD3D)
+		{
+			g_d3dAppI.lpD3D->Release();
+			g_d3dAppI.lpD3D = 0;
+		}
+		if (g_d3dAppI.lpDD)
+		{
+			g_d3dAppI.lpDD->Release();
+			g_d3dAppI.lpDD = 0;
+		}
+		return FALSE;
+	}
+
+	// FUNCTION: TOY2 0x0040CD20 [MATCHED]
+	BOOL D3DAppSetRenderState(RenderStateCache* lpState)
+	{
+		if (! lpState)
+			lpState = &g_d3dAppRS;
+		if (lpState != &g_d3dAppRS)
+			memcpy(&g_d3dAppRS, lpState, sizeof(RenderStateCache));
+		if (g_d3dAppI.bRenderingIsOK)
+		{
+			if (! D3DAppISetRenderState())
+				return FALSE;
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x0040CD60 [MATCHED]
+	BOOL D3DAppGetRenderState(RenderStateCache* lpState)
+	{
+		memcpy(lpState, &g_d3dAppRS, sizeof(RenderStateCache));
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x0040CF10 [MATCHED]
+	BOOL D3DAppClearBackBuffer(DWORD flags)
+	{
+		if (! g_d3dAppI.bRenderingIsOK)
+		{
+			Logger::LogErrorNotSetLn("Cannot call D3DAppClearBackBuffer while bRenderingIsOK is FALSE.\n");
+			return FALSE;
+		}
+		if (g_d3dAppRS.zWriteEnable)
+		{
+			int32_t clearflags;
+			D3DRECT dummy;
+			HRESULT hr;
+
+			clearflags = D3DCLEAR_ZBUFFER;
+			dummy.x1 = dummy.y1 = 0;
+			dummy.x2 = g_d3dAppI.szClient.cx;
+			dummy.y2 = g_d3dAppI.szClient.cy;
+			hr = g_d3dAppI.lpD3DViewport->SetBackground(g_d3dAppI.lpGroundMatHandle);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DViewport->SetBackground(d3dappi.lpGroundMatHandle)", hr);
+			hr = g_d3dAppI.lpD3DViewport->Clear(1, &dummy, clearflags);
+			if (hr < 0)
+				Logger::LogDDError("d3dappi.lpD3DViewport->Clear(1, &dummy, clearflags)", hr);
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x0040CFB0 [MATCHED]
+	BOOL D3DAppCheckForLostSurfaces(void)
+	{
+		int32_t i;
+		BOOL b = FALSE;
+
+		if (g_d3dAppI.lpFrontBuffer)
+		{
+			if (g_d3dAppI.lpFrontBuffer->IsLost() == DDERR_SURFACELOST)
+			{
+				g_lastError = g_d3dAppI.lpFrontBuffer->Restore();
+				if (g_lastError != DD_OK)
+					goto LBL_EXIT_WITH_ERROR;
+				b = TRUE;
+			}
+		}
+		if (g_d3dAppI.lpBackBuffer)
+		{
+			if (g_d3dAppI.lpBackBuffer->IsLost() == DDERR_SURFACELOST)
+			{
+				g_lastError = g_d3dAppI.lpBackBuffer->Restore();
+				if (g_lastError != DD_OK)
+					goto LBL_EXIT_WITH_ERROR;
+				b = TRUE;
+			}
+		}
+		if (g_d3dAppI.lpZBuffer)
+		{
+			if (g_d3dAppI.lpZBuffer->IsLost() == DDERR_SURFACELOST)
+			{
+				g_lastError = g_d3dAppI.lpZBuffer->Restore();
+				if (g_lastError != DD_OK)
+					goto LBL_EXIT_WITH_ERROR;
+				b = TRUE;
+			}
+		}
+		if (b)
+		{
+			Logger::LogLn("Lost surface - CheckForLostSurfaces.\n");
+			SoftwareRenderer::ClearRenderSurfaces();
+		}
+		for (i = 0; i < D3DAPP_MAXTEXTURES; i++)
+		{
+			b = FALSE;
+			if (g_d3dAppI.lpTextureSurf[i])
+			{
+				if (g_d3dAppI.lpTextureSurf[i]->IsLost() == DDERR_SURFACELOST)
+				{
+					g_lastError = g_d3dAppI.lpTextureSurf[i]->Restore();
+					if (g_lastError != DD_OK)
+						goto LBL_EXIT_WITH_ERROR;
+					b = TRUE;
+				}
+			}
+			if (b)
+			{
+				Logger::LogLn("Lost surface %d.\n", i);
+			}
+		}
+		return TRUE;
+
+	LBL_EXIT_WITH_ERROR:
+		Logger::LogLn("Restoring of a lost surface failed.\n%s", Logger::ErrorToMessage(g_lastError));
+		return FALSE;
+	}
+
+	// FUNCTION: TOY2 0x0040D0D0
+	BOOL D3DAppPause(BOOL flag)
+	{
+		// GLOBAL: TOY2 0x00528158
+		static int32_t g_pauseCount;
+		HRESULT hr;
+
+		if (g_pauseCount != 0)
+		{
+			if (flag)
+			{
+				++g_pauseCount;
+				return TRUE;
+			}
+			else
+			{
+				--g_pauseCount;
+				if (g_pauseCount != 0)
+					return TRUE;
+			}
+		}
+
+		g_d3dAppI.bPaused = flag;
+		if (! flag)
+		{
+			if (g_pcStruct.fullscreenMode && g_primaryPalettized && g_lpPalette)
+			{
+				hr = g_lpPalette->SetEntries(0, 0, 256, &g_ppe[0]);
+				if (hr < 0)
+					Logger::LogDDError("lpPalette->SetEntries(0, 0, 256, &ppe[0])", hr);
+			}
+		}
+		if (flag && g_pcStruct.fullscreenMode)
+		{
+			if (g_primaryPalettized && g_lpPalette)
+			{
+				hr = g_lpPalette->GetEntries(0, 0, 256, &g_ppe[0]);
+				if (hr < 0)
+					Logger::LogDDError("lpPalette->GetEntries(0, 0, 256, &ppe[0])", hr);
+				memcpy(&g_originalPpe[10], &g_ppe[10], sizeof(PALETTEENTRY) * (246 - 10));
+				hr = g_lpPalette->SetEntries(0, 0, 256, &g_originalPpe[0]);
+				if (hr < 0)
+					Logger::LogDDError("lpPalette->SetEntries(0, 0, 256, &Originalppe[0])", hr);
+			}
+			if (g_d3dAppI.lpDD)
+			{
+				hr = g_d3dAppI.lpDD->FlipToGDISurface();
+				if (hr < 0)
+					Logger::LogDDError("d3dappi.lpDD->FlipToGDISurface()", hr);
+			}
+			DrawMenuBar(g_d3dAppI.hwnd);
+			RedrawWindow(g_d3dAppI.hwnd, 0, 0, RDW_FRAME);
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x0040D2B0 [MATCHED]
+	HRESULT D3DAppLastError(void) { return g_lastError; }
+
+	// FUNCTION: TOY2 0x0040D2D0
+	BOOL D3DAppDestroy(void)
+	{
+		int16_t i;
+
+		g_d3dAppI.bRenderingIsOK = FALSE;
+		g_d3dAppI.hwnd = 0;
+		ReleaseFontAndTextBuffers();
+		if (g_d3dAppI.lpD3DViewport)
+		{
+			g_d3dAppI.lpD3DDevice->DeleteViewport(g_d3dAppI.lpD3DViewport);
+			g_d3dAppI.lpD3DViewport->Release();
+			g_d3dAppI.lpD3DViewport = 0;
+		}
+		if (g_renderMode == RENDERMODE_D3D)
+		{
+			for (i = 0; i < D3DAPP_MAXTEXTURES; i++)
+			{
+				if (g_d3dAppI.textureState[i] && g_d3dAppI.textureState[i] != 4)
+					g_d3dAppI.textureState[i] = 5;
+			}
+			UnkFunc409C80();
+		}
+		if (g_d3dAppI.lpD3DDevice)
+		{
+			g_d3dAppI.lpD3DDevice->Release();
+			g_d3dAppI.lpD3DDevice = 0;
+		}
+		if (g_d3dAppI.lpZBuffer)
+		{
+			g_d3dAppI.lpZBuffer->Release();
+			g_d3dAppI.lpZBuffer = 0;
+		}
+		if (g_lpPalette)
+		{
+			g_lpPalette->Release();
+			g_lpPalette = 0;
+		}
+		if (g_lpClipper)
+		{
+			g_lpClipper->Release();
+			g_lpClipper = 0;
+		}
+		if (g_d3dAppI.lpBackBuffer)
+		{
+			g_d3dAppI.lpBackBuffer->Release();
+			g_d3dAppI.lpBackBuffer = 0;
+		}
+		if (g_d3dAppI.lpFrontBuffer)
+		{
+			g_d3dAppI.lpFrontBuffer->Release();
+			g_d3dAppI.lpFrontBuffer = 0;
+		}
+		if (g_pcStruct.fullscreenMode)
+		{
+			D3DAppIRestoreDispMode();
+			D3DAppISetCoopLevel(g_d3dAppI.hwnd, FALSE);
+		}
+		if (g_d3dAppI.lpD3D)
+		{
+			g_d3dAppI.lpD3D->Release();
+			g_d3dAppI.lpD3D = 0;
+		}
+		if (g_d3dAppI.lpDD)
+		{
+			g_d3dAppI.lpDD->Release();
+			g_d3dAppI.lpDD = 0;
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x00497D70 [MATCHED]
+	void OverrideDefaults(Defaults* defaults)
+	{
+		lstrcpyA(defaults->name, "Loading - A Bugs Life");
+		defaults->rs.texturePerspective = TRUE;
+		defaults->rs.ditherEnable = TRUE;
+		g_windowData.bShowInfo = FALSE;
+		g_windowData.bShowFrameRate = TRUE;
+		defaults->rs.specularEnable = FALSE;
+	}
+
+	// FUNCTION: TOY2 0x00431820 [MATCHED]
+	BOOL RestoreSurfaces()
+	{
+		HRESULT d3drval;
+
+		if (! D3DAppCheckForLostSurfaces())
+		{
+			return FALSE;
+		}
+		if (g_windowData.unusedDDSurface->IsLost() == DDERR_SURFACELOST)
+		{
+			d3drval = g_windowData.unusedDDSurface->Restore();
+			if (d3drval != DD_OK)
+			{
+				return FALSE;
+			}
+		}
+		if (g_windowData.unusedDDSurface2->IsLost() == DDERR_SURFACELOST)
+		{
+			d3drval = g_windowData.unusedDDSurface2->Restore();
+			if (d3drval != DD_OK)
+			{
+				return FALSE;
+			}
+		}
+		return TRUE;
+	}
+
+	// FUNCTION: TOY2 0x004318E0 [MATCHED]
+	void CleanUpAndPostQuit(void) {}
+
+	// FUNCTION: TOY2 0x004A6A90 [MATCHED]
+	void ShowLastError()
+	{
+		LPVOID lpMsgBuf;
+
+		FormatMessageA(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, 0);
+		MessageBoxA(0, (LPCSTR)lpMsgBuf, "GetLastError", MB_OK | MB_ICONINFORMATION);
+		LocalFree(lpMsgBuf);
+	}
 }
