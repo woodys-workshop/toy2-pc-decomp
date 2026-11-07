@@ -1,0 +1,1179 @@
+#if 0
+
+// GLOBAL: TOY2 0x004A7450
+// c_dfDIJoystick
+
+// GLOBAL: TOY2 0x004A8470
+// c_dfDIKeyboard
+
+// GLOBAL: TOY2 0x004DC138
+// _CLSID_DirectDraw
+
+// GLOBAL: TOY2 0x004DC148
+// _CLSID_DirectDrawClipper
+
+// GLOBAL: TOY2 0x004DC158
+// _IID_IDirectDraw
+
+// GLOBAL: TOY2 0x004DC168
+// IID_IDirectDraw2
+
+// GLOBAL: TOY2 0x004DC178
+// IID_IDirectDraw4
+
+// GLOBAL: TOY2 0x004DC188
+// _IID_IDirectDrawSurface
+
+// GLOBAL: TOY2 0x004DC198
+// _IID_IDirectDrawSurface2
+
+// GLOBAL: TOY2 0x004DC1A8
+// _IID_IDirectDrawSurface3
+
+// GLOBAL: TOY2 0x004DC1B8
+// IID_IDirectDrawSurface4
+
+// GLOBAL: TOY2 0x004DC1C8
+// _CLSID_DirectDrawFactory2
+
+// GLOBAL: TOY2 0x004DC1D8
+// _IID_IDirectDrawFactory2
+
+// GLOBAL: TOY2 0x004DC1E8
+// _GUID_DirectDrawSurfaceStream
+
+// GLOBAL: TOY2 0x004DC1F8
+// _GUID_DirectDrawPaletteStream
+
+// GLOBAL: TOY2 0x004DC208
+// _IID_IDirectDrawOptSurface
+
+// GLOBAL: TOY2 0x004DC218
+// _IID_IDirectDrawPalette2
+
+// GLOBAL: TOY2 0x004DC228
+// _IID_IDirectDrawPalette
+
+// GLOBAL: TOY2 0x004DC238
+// _IID_IDirectDrawClipper
+
+// GLOBAL: TOY2 0x004DC248
+// _IID_IDirectDrawColorControl
+
+// GLOBAL: TOY2 0x004DC258
+// _IID_IDirectDrawGammaControl
+
+// GLOBAL: TOY2 0x004DC268
+// _IID_IDDVideoPortContainer
+
+// GLOBAL: TOY2 0x004DC278
+// _IID_IDirectDrawVideoPort
+
+// GLOBAL: TOY2 0x004DC288
+// _DDVPTYPE_E_HREFH_VREFH
+
+// GLOBAL: TOY2 0x004DC298
+// _DDVPTYPE_E_HREFH_VREFL
+
+// GLOBAL: TOY2 0x004DC2A8
+// _DDVPTYPE_E_HREFL_VREFH
+
+// GLOBAL: TOY2 0x004DC2B8
+// _DDVPTYPE_E_HREFL_VREFL
+
+// GLOBAL: TOY2 0x004DC2C8
+// _DDVPTYPE_CCIR656
+
+// GLOBAL: TOY2 0x004DC2D8
+// _DDVPTYPE_BROOKTREE
+
+// GLOBAL: TOY2 0x004DC2E8
+// _DDVPTYPE_PHILIPS
+
+// GLOBAL: TOY2 0x004DC2F8
+// _IID_IDirectDrawKernel
+
+// GLOBAL: TOY2 0x004DC308
+// _IID_IDirectDrawSurfaceKernel
+
+// GLOBAL: TOY2 0x004DC318
+// _IID_IDDMotionCompContainer
+
+// GLOBAL: TOY2 0x004DC328
+// _IID_IDirectDrawMotionComp
+
+// GLOBAL: TOY2 0x004DC338
+// _GUID_MiscellaneousCallbacks
+
+// GLOBAL: TOY2 0x004DC348
+// _GUID_VideoPortCallbacks
+
+// GLOBAL: TOY2 0x004DC358
+// _GUID_ColorControlCallbacks
+
+// GLOBAL: TOY2 0x004DC368
+// _GUID_VideoPortCaps
+
+// GLOBAL: TOY2 0x004DC378
+// _GUID_D3DCallbacks2
+
+// GLOBAL: TOY2 0x004DC388
+// _GUID_D3DCommandBufferCallbacks
+
+// GLOBAL: TOY2 0x004DC398
+// _GUID_D3DCallbacks3
+
+// GLOBAL: TOY2 0x004DC3A8
+// _GUID_NonLocalVidMemCaps
+
+// GLOBAL: TOY2 0x004DC3B8
+// _GUID_KernelCallbacks
+
+// GLOBAL: TOY2 0x004DC3C8
+// _GUID_KernelCaps
+
+// GLOBAL: TOY2 0x004DC3D8
+// _GUID_D3DExtendedCaps
+
+// GLOBAL: TOY2 0x004DC3E8
+// _GUID_ZPixelFormats
+
+// GLOBAL: TOY2 0x004DC3F8
+// _GUID_DDMoreSurfaceCaps
+
+// GLOBAL: TOY2 0x004DC408
+// _GUID_OptSurfaceKmodeInfo
+
+// GLOBAL: TOY2 0x004DC418
+// _GUID_OptSurfaceUmodeInfo
+
+// GLOBAL: TOY2 0x004DC428
+// _GUID_UserModeDriverInfo
+
+// GLOBAL: TOY2 0x004DC438
+// _GUID_UserModeDriverPassword
+
+// GLOBAL: TOY2 0x004DC448
+// _GUID_D3DParseUnknownCommandCallback
+
+// GLOBAL: TOY2 0x004DC458
+// _GUID_NTCallbacks
+
+// GLOBAL: TOY2 0x004DC468
+// _GUID_MotionCompCallbacks
+
+// GLOBAL: TOY2 0x004DC478
+// _IID_IDirect3D
+
+// GLOBAL: TOY2 0x004DC488
+// IID_IDirect3D2
+
+// GLOBAL: TOY2 0x004DC498
+// IID_IDirect3D3
+
+// GLOBAL: TOY2 0x004DC4A8
+// _IID_IDirect3DRampDevice
+
+// GLOBAL: TOY2 0x004DC4B8
+// IID_IDirect3DRGBDevice
+
+// GLOBAL: TOY2 0x004DC4C8
+// _IID_IDirect3DHALDevice
+
+// GLOBAL: TOY2 0x004DC4D8
+// _IID_IDirect3DMMXDevice
+
+// GLOBAL: TOY2 0x004DC4E8
+// IID_IDirect3DRefDevice
+
+// GLOBAL: TOY2 0x004DC4F8
+// IID_IDirect3DNullDevice
+
+// GLOBAL: TOY2 0x004DC508
+// _IID_IDirect3DDevice
+
+// GLOBAL: TOY2 0x004DC518
+// _IID_IDirect3DDevice2
+
+// GLOBAL: TOY2 0x004DC528
+// _IID_IDirect3DDevice3
+
+// GLOBAL: TOY2 0x004DC538
+// _IID_IDirect3DTexture
+
+// GLOBAL: TOY2 0x004DC548
+// IID_IDirect3DTexture2
+
+// GLOBAL: TOY2 0x004DC558
+// _IID_IDirect3DLight
+
+// GLOBAL: TOY2 0x004DC568
+// _IID_IDirect3DMaterial
+
+// GLOBAL: TOY2 0x004DC578
+// _IID_IDirect3DMaterial2
+
+// GLOBAL: TOY2 0x004DC588
+// _IID_IDirect3DMaterial3
+
+// GLOBAL: TOY2 0x004DC598
+// _IID_IDirect3DExecuteBuffer
+
+// GLOBAL: TOY2 0x004DC5A8
+// _IID_IDirect3DViewport
+
+// GLOBAL: TOY2 0x004DC5B8
+// _IID_IDirect3DViewport2
+
+// GLOBAL: TOY2 0x004DC5C8
+// _IID_IDirect3DViewport3
+
+// GLOBAL: TOY2 0x004DC5D8
+// _IID_IDirect3DVertexBuffer
+
+// GLOBAL: TOY2 0x004DC5E8
+// _CLSID_CDirect3DRMDevice
+
+// GLOBAL: TOY2 0x004DC5F8
+// _CLSID_CDirect3DRMViewport
+
+// GLOBAL: TOY2 0x004DC608
+// _CLSID_CDirect3DRMFrame
+
+// GLOBAL: TOY2 0x004DC618
+// _CLSID_CDirect3DRMMesh
+
+// GLOBAL: TOY2 0x004DC628
+// _CLSID_CDirect3DRMMeshBuilder
+
+// GLOBAL: TOY2 0x004DC638
+// _CLSID_CDirect3DRMFace
+
+// GLOBAL: TOY2 0x004DC648
+// _CLSID_CDirect3DRMLight
+
+// GLOBAL: TOY2 0x004DC658
+// _CLSID_CDirect3DRMTexture
+
+// GLOBAL: TOY2 0x004DC668
+// _CLSID_CDirect3DRMWrap
+
+// GLOBAL: TOY2 0x004DC678
+// _CLSID_CDirect3DRMMaterial
+
+// GLOBAL: TOY2 0x004DC688
+// _CLSID_CDirect3DRMAnimation
+
+// GLOBAL: TOY2 0x004DC698
+// _CLSID_CDirect3DRMAnimationSet
+
+// GLOBAL: TOY2 0x004DC6A8
+// _CLSID_CDirect3DRMUserVisual
+
+// GLOBAL: TOY2 0x004DC6B8
+// _CLSID_CDirect3DRMShadow
+
+// GLOBAL: TOY2 0x004DC6C8
+// _CLSID_CDirect3DRMViewportInterpolator
+
+// GLOBAL: TOY2 0x004DC6D8
+// _CLSID_CDirect3DRMFrameInterpolator
+
+// GLOBAL: TOY2 0x004DC6E8
+// _CLSID_CDirect3DRMMeshInterpolator
+
+// GLOBAL: TOY2 0x004DC6F8
+// _CLSID_CDirect3DRMLightInterpolator
+
+// GLOBAL: TOY2 0x004DC708
+// _CLSID_CDirect3DRMMaterialInterpolator
+
+// GLOBAL: TOY2 0x004DC718
+// _CLSID_CDirect3DRMTextureInterpolator
+
+// GLOBAL: TOY2 0x004DC728
+// _CLSID_CDirect3DRMProgressiveMesh
+
+// GLOBAL: TOY2 0x004DC738
+// _CLSID_CDirect3DRMClippedVisual
+
+// GLOBAL: TOY2 0x004DC748
+// _IID_IDirect3DRMObject
+
+// GLOBAL: TOY2 0x004DC758
+// _IID_IDirect3DRMObject2
+
+// GLOBAL: TOY2 0x004DC768
+// _IID_IDirect3DRMDevice
+
+// GLOBAL: TOY2 0x004DC778
+// _IID_IDirect3DRMDevice2
+
+// GLOBAL: TOY2 0x004DC788
+// _IID_IDirect3DRMDevice3
+
+// GLOBAL: TOY2 0x004DC798
+// _IID_IDirect3DRMViewport
+
+// GLOBAL: TOY2 0x004DC7A8
+// _IID_IDirect3DRMViewport2
+
+// GLOBAL: TOY2 0x004DC7B8
+// _IID_IDirect3DRMFrame
+
+// GLOBAL: TOY2 0x004DC7C8
+// _IID_IDirect3DRMFrame2
+
+// GLOBAL: TOY2 0x004DC7D8
+// _IID_IDirect3DRMFrame3
+
+// GLOBAL: TOY2 0x004DC7E8
+// _IID_IDirect3DRMVisual
+
+// GLOBAL: TOY2 0x004DC7F8
+// _IID_IDirect3DRMMesh
+
+// GLOBAL: TOY2 0x004DC808
+// _IID_IDirect3DRMMeshBuilder
+
+// GLOBAL: TOY2 0x004DC818
+// _IID_IDirect3DRMMeshBuilder2
+
+// GLOBAL: TOY2 0x004DC828
+// _IID_IDirect3DRMMeshBuilder3
+
+// GLOBAL: TOY2 0x004DC838
+// _IID_IDirect3DRMFace
+
+// GLOBAL: TOY2 0x004DC848
+// _IID_IDirect3DRMFace2
+
+// GLOBAL: TOY2 0x004DC858
+// _IID_IDirect3DRMLight
+
+// GLOBAL: TOY2 0x004DC868
+// _IID_IDirect3DRMTexture
+
+// GLOBAL: TOY2 0x004DC878
+// _IID_IDirect3DRMTexture2
+
+// GLOBAL: TOY2 0x004DC888
+// _IID_IDirect3DRMTexture3
+
+// GLOBAL: TOY2 0x004DC898
+// _IID_IDirect3DRMWrap
+
+// GLOBAL: TOY2 0x004DC8A8
+// _IID_IDirect3DRMMaterial
+
+// GLOBAL: TOY2 0x004DC8B8
+// _IID_IDirect3DRMMaterial2
+
+// GLOBAL: TOY2 0x004DC8C8
+// _IID_IDirect3DRMAnimation
+
+// GLOBAL: TOY2 0x004DC8D8
+// _IID_IDirect3DRMAnimation2
+
+// GLOBAL: TOY2 0x004DC8E8
+// _IID_IDirect3DRMAnimationSet
+
+// GLOBAL: TOY2 0x004DC8F8
+// _IID_IDirect3DRMAnimationSet2
+
+// GLOBAL: TOY2 0x004DC908
+// _IID_IDirect3DRMObjectArray
+
+// GLOBAL: TOY2 0x004DC918
+// _IID_IDirect3DRMDeviceArray
+
+// GLOBAL: TOY2 0x004DC928
+// _IID_IDirect3DRMViewportArray
+
+// GLOBAL: TOY2 0x004DC938
+// _IID_IDirect3DRMFrameArray
+
+// GLOBAL: TOY2 0x004DC948
+// _IID_IDirect3DRMVisualArray
+
+// GLOBAL: TOY2 0x004DC958
+// _IID_IDirect3DRMLightArray
+
+// GLOBAL: TOY2 0x004DC968
+// _IID_IDirect3DRMPickedArray
+
+// GLOBAL: TOY2 0x004DC978
+// _IID_IDirect3DRMFaceArray
+
+// GLOBAL: TOY2 0x004DC988
+// _IID_IDirect3DRMAnimationArray
+
+// GLOBAL: TOY2 0x004DC998
+// _IID_IDirect3DRMUserVisual
+
+// GLOBAL: TOY2 0x004DC9A8
+// _IID_IDirect3DRMShadow
+
+// GLOBAL: TOY2 0x004DC9B8
+// _IID_IDirect3DRMShadow2
+
+// GLOBAL: TOY2 0x004DC9C8
+// _IID_IDirect3DRMInterpolator
+
+// GLOBAL: TOY2 0x004DC9D8
+// _IID_IDirect3DRMProgressiveMesh
+
+// GLOBAL: TOY2 0x004DC9E8
+// _IID_IDirect3DRMPicked2Array
+
+// GLOBAL: TOY2 0x004DC9F8
+// _IID_IDirect3DRMClippedVisual
+
+// GLOBAL: TOY2 0x004DCA08
+// _IID_IDirect3DRM
+
+// GLOBAL: TOY2 0x004DCA18
+// _IID_IDirect3DRM2
+
+// GLOBAL: TOY2 0x004DCA28
+// _IID_IDirect3DRM3
+
+// GLOBAL: TOY2 0x004DCA38
+// _CLSID_CDirect3DRM
+
+// GLOBAL: TOY2 0x004DCA48
+// _IID_IDirect3DRMWinDevice
+
+// GLOBAL: TOY2 0x004DCA58
+// _TID_D3DRMInfo
+
+// GLOBAL: TOY2 0x004DCA78
+// _TID_D3DRMVector
+
+// GLOBAL: TOY2 0x004DCA88
+// _TID_D3DRMMeshFace
+
+// GLOBAL: TOY2 0x004DCA98
+// _TID_D3DRMMaterial
+
+// GLOBAL: TOY2 0x004DCAA8
+// _TID_D3DRMMaterialArray
+
+// GLOBAL: TOY2 0x004DCAC8
+// _TID_D3DRMFrameTransformMatrix
+
+// GLOBAL: TOY2 0x004DCAD8
+// _TID_D3DRMMeshMaterialList
+
+// GLOBAL: TOY2 0x004DCAE8
+// _TID_D3DRMMeshTextureCoords
+
+// GLOBAL: TOY2 0x004DCAF8
+// _TID_D3DRMMeshNormals
+
+// GLOBAL: TOY2 0x004DCB08
+// _TID_D3DRMCoords2d
+
+// GLOBAL: TOY2 0x004DCB18
+// _TID_D3DRMMatrix4x4
+
+// GLOBAL: TOY2 0x004DCB28
+// _TID_D3DRMAnimation
+
+// GLOBAL: TOY2 0x004DCB38
+// _TID_D3DRMAnimationSet
+
+// GLOBAL: TOY2 0x004DCB48
+// _TID_D3DRMAnimationKey
+
+// GLOBAL: TOY2 0x004DCB58
+// _TID_D3DRMFloatKeys
+
+// GLOBAL: TOY2 0x004DCB68
+// _TID_D3DRMMaterialAmbientColor
+
+// GLOBAL: TOY2 0x004DCB78
+// _TID_D3DRMMaterialDiffuseColor
+
+// GLOBAL: TOY2 0x004DCB88
+// _TID_D3DRMMaterialSpecularColor
+
+// GLOBAL: TOY2 0x004DCB98
+// _TID_D3DRMMaterialEmissiveColor
+
+// GLOBAL: TOY2 0x004DCBA8
+// _TID_D3DRMMaterialPower
+
+// GLOBAL: TOY2 0x004DCBB8
+// _TID_D3DRMColorRGBA
+
+// GLOBAL: TOY2 0x004DCBC8
+// _TID_D3DRMColorRGB
+
+// GLOBAL: TOY2 0x004DCBD8
+// _TID_D3DRMGuid
+
+// GLOBAL: TOY2 0x004DCBE8
+// _TID_D3DRMTextureFilename
+
+// GLOBAL: TOY2 0x004DCBF8
+// _TID_D3DRMTextureReference
+
+// GLOBAL: TOY2 0x004DCC08
+// _TID_D3DRMIndexedColor
+
+// GLOBAL: TOY2 0x004DCC18
+// _TID_D3DRMMeshVertexColors
+
+// GLOBAL: TOY2 0x004DCC28
+// _TID_D3DRMMaterialWrap
+
+// GLOBAL: TOY2 0x004DCC38
+// _TID_D3DRMBoolean
+
+// GLOBAL: TOY2 0x004DCC48
+// _TID_D3DRMMeshFaceWraps
+
+// GLOBAL: TOY2 0x004DCC58
+// _TID_D3DRMBoolean2d
+
+// GLOBAL: TOY2 0x004DCC68
+// _TID_D3DRMTimedFloatKeys
+
+// GLOBAL: TOY2 0x004DCC78
+// _TID_D3DRMAnimationOptions
+
+// GLOBAL: TOY2 0x004DCC88
+// _TID_D3DRMFramePosition
+
+// GLOBAL: TOY2 0x004DCC98
+// _TID_D3DRMFrameVelocity
+
+// GLOBAL: TOY2 0x004DCCA8
+// _TID_D3DRMFrameRotation
+
+// GLOBAL: TOY2 0x004DCCB8
+// _TID_D3DRMLight
+
+// GLOBAL: TOY2 0x004DCCC8
+// _TID_D3DRMCamera
+
+// GLOBAL: TOY2 0x004DCCD8
+// _TID_D3DRMAppData
+
+// GLOBAL: TOY2 0x004DCCE8
+// _TID_D3DRMLightUmbra
+
+// GLOBAL: TOY2 0x004DCCF8
+// _TID_D3DRMLightRange
+
+// GLOBAL: TOY2 0x004DCD08
+// _TID_D3DRMLightPenumbra
+
+// GLOBAL: TOY2 0x004DCD18
+// _TID_D3DRMLightAttenuation
+
+// GLOBAL: TOY2 0x004DCD28
+// _TID_D3DRMInlineData
+
+// GLOBAL: TOY2 0x004DCD38
+// _TID_D3DRMUrl
+
+// GLOBAL: TOY2 0x004DCD48
+// _TID_D3DRMProgressiveMesh
+
+// GLOBAL: TOY2 0x004DCD58
+// _TID_D3DRMExternalVisual
+
+// GLOBAL: TOY2 0x004DCD68
+// _TID_D3DRMStringProperty
+
+// GLOBAL: TOY2 0x004DCD78
+// _TID_D3DRMPropertyBag
+
+// GLOBAL: TOY2 0x004DCD88
+// _TID_D3DRMRightHanded
+
+// GLOBAL: TOY2 0x004DCD98
+// _CLSID_CDirectXFile
+
+// GLOBAL: TOY2 0x004DCDA8
+// _IID_IDirectXFile
+
+// GLOBAL: TOY2 0x004DCDB8
+// _IID_IDirectXFileEnumObject
+
+// GLOBAL: TOY2 0x004DCDC8
+// _IID_IDirectXFileSaveObject
+
+// GLOBAL: TOY2 0x004DCDF8
+// _IID_IDirectXFileDataReference
+
+// GLOBAL: TOY2 0x004DCE28
+// _CLSID_DirectInput
+
+// GLOBAL: TOY2 0x004DCE38
+// _CLSID_DirectInputDevice
+
+// GLOBAL: TOY2 0x004DCE48
+// _IID_IDirectInputA
+
+// GLOBAL: TOY2 0x004DCE58
+// _IID_IDirectInputW
+
+// GLOBAL: TOY2 0x004DCE68
+// _IID_IDirectInput2A
+
+// GLOBAL: TOY2 0x004DCE78
+// _IID_IDirectInput2W
+
+// GLOBAL: TOY2 0x004DCE88
+// _IID_IDirectInputDeviceA
+
+// GLOBAL: TOY2 0x004DCE98
+// _IID_IDirectInputDeviceW
+
+// GLOBAL: TOY2 0x004DCEA8
+// IID_IDirectInputDevice2A
+
+// GLOBAL: TOY2 0x004DCEB8
+// _IID_IDirectInputDevice2W
+
+// GLOBAL: TOY2 0x004DCEC8
+// _IID_IDirectInputEffect
+
+// GLOBAL: TOY2 0x004DCED8
+// _GUID_XAxis
+
+// GLOBAL: TOY2 0x004DCEE8
+// _GUID_YAxis
+
+// GLOBAL: TOY2 0x004DCEF8
+// _GUID_ZAxis
+
+// GLOBAL: TOY2 0x004DCF08
+// _GUID_RxAxis
+
+// GLOBAL: TOY2 0x004DCF18
+// _GUID_RyAxis
+
+// GLOBAL: TOY2 0x004DCF28
+// _GUID_RzAxis
+
+// GLOBAL: TOY2 0x004DCF38
+// _GUID_Slider
+
+// GLOBAL: TOY2 0x004DCF48
+// _GUID_Button
+
+// GLOBAL: TOY2 0x004DCF58
+// _GUID_Key
+
+// GLOBAL: TOY2 0x004DCF68
+// _GUID_POV
+
+// GLOBAL: TOY2 0x004DCF78
+// _GUID_Unknown
+
+// GLOBAL: TOY2 0x004DCF88
+// _GUID_SysMouse
+
+// GLOBAL: TOY2 0x004DCF98
+// GUID_SysKeyboard
+
+// GLOBAL: TOY2 0x004DCFA8
+// _GUID_Joystick
+
+// GLOBAL: TOY2 0x004DCFB8
+// _GUID_ConstantForce
+
+// GLOBAL: TOY2 0x004DCFC8
+// _GUID_RampForce
+
+// GLOBAL: TOY2 0x004DCFD8
+// _GUID_Square
+
+// GLOBAL: TOY2 0x004DCFE8
+// _GUID_Sine
+
+// GLOBAL: TOY2 0x004DCFF8
+// _GUID_Triangle
+
+// GLOBAL: TOY2 0x004DD008
+// _GUID_SawtoothUp
+
+// GLOBAL: TOY2 0x004DD018
+// _GUID_SawtoothDown
+
+// GLOBAL: TOY2 0x004DD028
+// _GUID_Spring
+
+// GLOBAL: TOY2 0x004DD038
+// _GUID_Damper
+
+// GLOBAL: TOY2 0x004DD048
+// _GUID_Inertia
+
+// GLOBAL: TOY2 0x004DD058
+// _GUID_Friction
+
+// GLOBAL: TOY2 0x004DD068
+// _GUID_CustomForce
+
+// GLOBAL: TOY2 0x004DD078
+// _IID_IDirectInputEffectDriver
+
+// GLOBAL: TOY2 0x004DD088
+// _IID_IDirectInputJoyConfig
+
+// GLOBAL: TOY2 0x004DD098
+// _GUID_GAMEENUM_BUS_ENUMERATOR
+
+// GLOBAL: TOY2 0x004DD0A8
+// _GUID_KeyboardClass
+
+// GLOBAL: TOY2 0x004DD0B8
+// _GUID_MediaClass
+
+// GLOBAL: TOY2 0x004DD0C8
+// _GUID_MouseClass
+
+// GLOBAL: TOY2 0x004DD0D8
+// _GUID_HIDClass
+
+// GLOBAL: TOY2 0x004DD0E8
+// _IID_IDirectPlay2
+
+// GLOBAL: TOY2 0x004DD0F8
+// _IID_IDirectPlay2A
+
+// GLOBAL: TOY2 0x004DD108
+// _IID_IDirectPlay3
+
+// GLOBAL: TOY2 0x004DD118
+// _IID_IDirectPlay3A
+
+// GLOBAL: TOY2 0x004DD128
+// _IID_IDirectPlay4
+
+// GLOBAL: TOY2 0x004DD138
+// _IID_IDirectPlay4A
+
+// GLOBAL: TOY2 0x004DD148
+// _CLSID_DirectPlay
+
+// GLOBAL: TOY2 0x004DD158
+// _DPSPGUID_IPX
+
+// GLOBAL: TOY2 0x004DD168
+// _DPSPGUID_TCPIP
+
+// GLOBAL: TOY2 0x004DD178
+// _DPSPGUID_SERIAL
+
+// GLOBAL: TOY2 0x004DD188
+// _DPSPGUID_MODEM
+
+// GLOBAL: TOY2 0x004DD198
+// _IID_IDirectPlay
+
+// GLOBAL: TOY2 0x004DD1A8
+// _IID_IDirectPlayLobby
+
+// GLOBAL: TOY2 0x004DD1B8
+// _IID_IDirectPlayLobbyA
+
+// GLOBAL: TOY2 0x004DD1C8
+// _IID_IDirectPlayLobby2
+
+// GLOBAL: TOY2 0x004DD1D8
+// _IID_IDirectPlayLobby2A
+
+// GLOBAL: TOY2 0x004DD1E8
+// _IID_IDirectPlayLobby3
+
+// GLOBAL: TOY2 0x004DD1F8
+// _IID_IDirectPlayLobby3A
+
+// GLOBAL: TOY2 0x004DD208
+// _CLSID_DirectPlayLobby
+
+// GLOBAL: TOY2 0x004DD218
+// _DPLPROPERTY_MessagesSupported
+
+// GLOBAL: TOY2 0x004DD228
+// _DPLPROPERTY_LobbyGuid
+
+// GLOBAL: TOY2 0x004DD238
+// _DPLPROPERTY_PlayerGuid
+
+// GLOBAL: TOY2 0x004DD248
+// _DPLPROPERTY_PlayerScore
+
+// GLOBAL: TOY2 0x004DD258
+// _DPAID_TotalSize
+
+// GLOBAL: TOY2 0x004DD268
+// _DPAID_ServiceProvider
+
+// GLOBAL: TOY2 0x004DD278
+// _DPAID_LobbyProvider
+
+// GLOBAL: TOY2 0x004DD288
+// _DPAID_Phone
+
+// GLOBAL: TOY2 0x004DD298
+// _DPAID_PhoneW
+
+// GLOBAL: TOY2 0x004DD2A8
+// _DPAID_Modem
+
+// GLOBAL: TOY2 0x004DD2B8
+// _DPAID_ModemW
+
+// GLOBAL: TOY2 0x004DD2C8
+// _DPAID_INet
+
+// GLOBAL: TOY2 0x004DD2D8
+// _DPAID_INetW
+
+// GLOBAL: TOY2 0x004DD2E8
+// _DPAID_INetPort
+
+// GLOBAL: TOY2 0x004DD2F8
+// _DPAID_ComPort
+
+// GLOBAL: TOY2 0x004DD308
+// _CLSID_DirectSound
+
+// GLOBAL: TOY2 0x004DD318
+// _CLSID_DirectSoundCapture
+
+// GLOBAL: TOY2 0x004DD328
+// _IID_IDirectSound
+
+// GLOBAL: TOY2 0x004DD338
+// _IID_IDirectSoundBuffer
+
+// GLOBAL: TOY2 0x004DD348
+// _IID_IDirectSound3DListener
+
+// GLOBAL: TOY2 0x004DD358
+// _IID_IDirectSound3DBuffer
+
+// GLOBAL: TOY2 0x004DD368
+// _IID_IDirectSoundCapture
+
+// GLOBAL: TOY2 0x004DD378
+// _IID_IDirectSoundCaptureBuffer
+
+// GLOBAL: TOY2 0x004DD388
+// IID_IDirectSoundNotify
+
+// GLOBAL: TOY2 0x004DD398
+// _IID_IKsPropertySet
+
+// GLOBAL: TOY2 0x004DD3A8
+// _IID_IReferenceClock
+
+// GLOBAL: TOY2 0x004DD3B8
+// _CLSID_DirectMusic
+
+// GLOBAL: TOY2 0x004DD3C8
+// _CLSID_DirectMusicCollection
+
+// GLOBAL: TOY2 0x004DD3D8
+// _CLSID_DirectMusicSynth
+
+// GLOBAL: TOY2 0x004DD3E8
+// _IID_IDirectMusic
+
+// GLOBAL: TOY2 0x004DD3F8
+// _IID_IDirectMusicBuffer
+
+// GLOBAL: TOY2 0x004DD408
+// _IID_IDirectMusicPort
+
+// GLOBAL: TOY2 0x004DD418
+// _IID_IDirectMusicThru
+
+// GLOBAL: TOY2 0x004DD428
+// _IID_IDirectMusicPortDownload
+
+// GLOBAL: TOY2 0x004DD438
+// _IID_IDirectMusicDownload
+
+// GLOBAL: TOY2 0x004DD448
+// _IID_IDirectMusicCollection
+
+// GLOBAL: TOY2 0x004DD458
+// _IID_IDirectMusicInstrument
+
+// GLOBAL: TOY2 0x004DD468
+// _IID_IDirectMusicDownloadedInstrument
+
+// GLOBAL: TOY2 0x004DD478
+// _GUID_DMUS_PROP_GM_Hardware
+
+// GLOBAL: TOY2 0x004DD488
+// _GUID_DMUS_PROP_GS_Hardware
+
+// GLOBAL: TOY2 0x004DD498
+// _GUID_DMUS_PROP_XG_Hardware
+
+// GLOBAL: TOY2 0x004DD4A8
+// _GUID_DMUS_PROP_XG_Capable
+
+// GLOBAL: TOY2 0x004DD4B8
+// _GUID_DMUS_PROP_GS_Capable
+
+// GLOBAL: TOY2 0x004DD4C8
+// _GUID_DMUS_PROP_DLS1
+
+// GLOBAL: TOY2 0x004DD4D8
+// _GUID_DMUS_PROP_SynthSink_DSOUND
+
+// GLOBAL: TOY2 0x004DD4E8
+// _GUID_DMUS_PROP_SynthSink_WAVE
+
+// GLOBAL: TOY2 0x004DD4F8
+// _GUID_DMUS_PROP_WriteLatency
+
+// GLOBAL: TOY2 0x004DD508
+// _GUID_DMUS_PROP_WritePeriod
+
+// GLOBAL: TOY2 0x004DD518
+// _GUID_DMUS_PROP_MemorySize
+
+// GLOBAL: TOY2 0x004DD528
+// _GUID_DMUS_PROP_WavesReverb
+
+// GLOBAL: TOY2 0x004DD538
+// _GUID_DMUS_PROP_Effects
+
+// GLOBAL: TOY2 0x004DD548
+// _GUID_DMUS_PROP_LegacyCaps
+
+// GLOBAL: TOY2 0x004DD558
+// _GUID_DMUS_PROP_Volume
+
+// GLOBAL: TOY2 0x004DD568
+// _CLSID_DirectMusicPerformance
+
+// GLOBAL: TOY2 0x004DD578
+// _CLSID_DirectMusicSegment
+
+// GLOBAL: TOY2 0x004DD588
+// _CLSID_DirectMusicSegmentState
+
+// GLOBAL: TOY2 0x004DD598
+// _CLSID_DirectMusicGraph
+
+// GLOBAL: TOY2 0x004DD5A8
+// _CLSID_DirectMusicTempoTrack
+
+// GLOBAL: TOY2 0x004DD5B8
+// _CLSID_DirectMusicSeqTrack
+
+// GLOBAL: TOY2 0x004DD5C8
+// _CLSID_DirectMusicSysExTrack
+
+// GLOBAL: TOY2 0x004DD5D8
+// _CLSID_DirectMusicTimeSigTrack
+
+// GLOBAL: TOY2 0x004DD5E8
+// _CLSID_DirectMusicStyle
+
+// GLOBAL: TOY2 0x004DD5F8
+// _CLSID_DirectMusicChordTrack
+
+// GLOBAL: TOY2 0x004DD608
+// _CLSID_DirectMusicCommandTrack
+
+// GLOBAL: TOY2 0x004DD618
+// _CLSID_DirectMusicStyleTrack
+
+// GLOBAL: TOY2 0x004DD628
+// _CLSID_DirectMusicMotifTrack
+
+// GLOBAL: TOY2 0x004DD638
+// _CLSID_DirectMusicChordMap
+
+// GLOBAL: TOY2 0x004DD648
+// _CLSID_DirectMusicComposer
+
+// GLOBAL: TOY2 0x004DD658
+// _CLSID_DirectMusicSignPostTrack
+
+// GLOBAL: TOY2 0x004DD668
+// _CLSID_DirectMusicLoader
+
+// GLOBAL: TOY2 0x004DD678
+// _CLSID_DirectMusicBandTrack
+
+// GLOBAL: TOY2 0x004DD688
+// _CLSID_DirectMusicBand
+
+// GLOBAL: TOY2 0x004DD698
+// _CLSID_DirectMusicChordMapTrack
+
+// GLOBAL: TOY2 0x004DD6A8
+// _CLSID_DirectMusicMuteTrack
+
+// GLOBAL: TOY2 0x004DD6B8
+// _GUID_DirectMusicAllTypes
+
+// GLOBAL: TOY2 0x004DD6C8
+// _GUID_NOTIFICATION_SEGMENT
+
+// GLOBAL: TOY2 0x004DD6D8
+// _GUID_NOTIFICATION_PERFORMANCE
+
+// GLOBAL: TOY2 0x004DD6E8
+// _GUID_NOTIFICATION_MEASUREANDBEAT
+
+// GLOBAL: TOY2 0x004DD6F8
+// _GUID_NOTIFICATION_CHORD
+
+// GLOBAL: TOY2 0x004DD708
+// _GUID_NOTIFICATION_COMMAND
+
+// GLOBAL: TOY2 0x004DD718
+// _GUID_CommandParam
+
+// GLOBAL: TOY2 0x004DD728
+// _GUID_ChordParam
+
+// GLOBAL: TOY2 0x004DD738
+// _GUID_RhythmParam
+
+// GLOBAL: TOY2 0x004DD748
+// _GUID_IDirectMusicStyle
+
+// GLOBAL: TOY2 0x004DD758
+// _GUID_TimeSignature
+
+// GLOBAL: TOY2 0x004DD768
+// _GUID_TempoParam
+
+// GLOBAL: TOY2 0x004DD778
+// _GUID_IDirectMusicBand
+
+// GLOBAL: TOY2 0x004DD788
+// _GUID_IDirectMusicChordMap
+
+// GLOBAL: TOY2 0x004DD798
+// _GUID_MuteParam
+
+// GLOBAL: TOY2 0x004DD7A8
+// _GUID_Download
+
+// GLOBAL: TOY2 0x004DD7B8
+// _GUID_Unload
+
+// GLOBAL: TOY2 0x004DD7C8
+// _GUID_ConnectToDLSCollection
+
+// GLOBAL: TOY2 0x004DD7D8
+// _GUID_Enable_Auto_Download
+
+// GLOBAL: TOY2 0x004DD7E8
+// _GUID_Disable_Auto_Download
+
+// GLOBAL: TOY2 0x004DD7F8
+// _GUID_Clear_All_Bands
+
+// GLOBAL: TOY2 0x004DD808
+// _GUID_StandardMIDIFile
+
+// GLOBAL: TOY2 0x004DD818
+// _GUID_DisableTimeSig
+
+// GLOBAL: TOY2 0x004DD828
+// _GUID_EnableTimeSig
+
+// GLOBAL: TOY2 0x004DD838
+// _GUID_DisableTempo
+
+// GLOBAL: TOY2 0x004DD848
+// _GUID_EnableTempo
+
+// GLOBAL: TOY2 0x004DD858
+// _GUID_PerfMasterTempo
+
+// GLOBAL: TOY2 0x004DD868
+// _GUID_PerfMasterVolume
+
+// GLOBAL: TOY2 0x004DD878
+// _GUID_PerfMasterGrooveLevel
+
+// GLOBAL: TOY2 0x004DD888
+// _GUID_PerfAutoDownload
+
+// GLOBAL: TOY2 0x004DD898
+// _GUID_DefaultGMCollection
+
+// GLOBAL: TOY2 0x004DD8A8
+// _IID_IDirectMusicLoader
+
+// GLOBAL: TOY2 0x004DD8B8
+// _IID_IDirectMusicGetLoader
+
+// GLOBAL: TOY2 0x004DD8C8
+// _IID_IDirectMusicObject
+
+// GLOBAL: TOY2 0x004DD8D8
+// _IID_IDirectMusicSegment
+
+// GLOBAL: TOY2 0x004DD8E8
+// _IID_IDirectMusicSegmentState
+
+// GLOBAL: TOY2 0x004DD8F8
+// _IID_IDirectMusicTrack
+
+// GLOBAL: TOY2 0x004DD908
+// _IID_IDirectMusicPerformance
+
+// GLOBAL: TOY2 0x004DD918
+// _IID_IDirectMusicTool
+
+// GLOBAL: TOY2 0x004DD928
+// _IID_IDirectMusicGraph
+
+// GLOBAL: TOY2 0x004DD938
+// _IID_IDirectMusicStyle
+
+// GLOBAL: TOY2 0x004DD948
+// _IID_IDirectMusicChordMap
+
+// GLOBAL: TOY2 0x004DD958
+// _IID_IDirectMusicComposer
+
+// GLOBAL: TOY2 0x004DD968
+// _IID_IDirectMusicBand
+
+// GLOBAL: TOY2 0x004DD978
+// _IID_IKsControl
+
+// GLOBAL: TOY2 0x004DD988
+// _KSDATAFORMAT_SUBTYPE_MIDI
+
+// GLOBAL: TOY2 0x004DD998
+// _KSDATAFORMAT_SUBTYPE_DIRECTMUSIC
+
+// GLOBAL: TOY2 0x004DD9A8
+// MSPID_PrimaryAudio
+
+// GLOBAL: TOY2 0x004DD9B8
+// MSPID_PrimaryVideo
+
+// GLOBAL: TOY2 0x004DD9C8
+// CLSID_AMMultiMediaStream
+
+// GLOBAL: TOY2 0x004DD9D8
+// IID_IAMMultiMediaStream
+
+// GLOBAL: TOY2 0x004DD9E8
+// IID_IDirectDrawMediaStream
+
+#endif

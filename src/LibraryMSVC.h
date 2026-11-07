@@ -105,6 +105,9 @@
 // LIBRARY: TOY2 0x004CF4C0
 // _strstr
 
+// LIBRARY: TOY2 0x004CF540
+// _srand
+
 // LIBRARY: TOY2 0x004CF54A
 // _rand
 

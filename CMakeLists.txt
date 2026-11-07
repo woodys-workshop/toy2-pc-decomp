@@ -73,6 +73,7 @@ set(CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL "/incremental:no")
 # Toy2 Sources
 set(TOY2_SOURCES
     src/SinCosLUT.inc
+    src/LibraryDirectX.h
     src/LibraryMSVC.h
 
     src/Logger.cpp
