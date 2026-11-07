@@ -9,6 +9,7 @@
 #include "Renderer/Renderer.h"
 #include "Nu3D/Math.h"
 #include "NGNLoader/ObjectLoad.h"
+#include "DrawingDevice.h"
 
 #include <windows.h>
 #include <stddef.h>
@@ -120,6 +121,42 @@ namespace NGNLoader
 		}
 
 		return result;
+	}
+
+	// FUNCTION: TOY2 0x004BB1F0 [MATCHED]
+	uint32_t CreateTextureFromSlot(uint32_t slotIndex, char* texName, uint32_t flags)
+	{
+		NGNTextureData* textureData = AllocateTextureData();
+
+		if (textureData)
+		{
+			textureData->isTex14 = 0;
+			textureData->color.b = 0;
+			textureData->color.g = 0;
+			textureData->color.r = 0;
+			textureData->bmpDataNode = 0;
+
+			LPDIRECT3DDEVICE3 device = DrawingDevice::GetD3DDevice();
+
+			if (device)
+			{
+				if (! Nu3D::BuildSlotBmpNode(slotIndex, texName, (flags >> 1) & 1))
+				{
+					Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+					textureData->bmpDataNode = bmpDataNode;
+
+					if (bmpDataNode)
+					{
+						Nu3D::InitBmpNodeSurface(bmpDataNode, device);
+						return textureData->textureIndex;
+					}
+				}
+			}
+
+			ReleaseTextureData(textureData);
+		}
+
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004AC240
@@ -1455,6 +1492,20 @@ namespace NGNLoader
 		return &g_textureDataFreeList[texDataIndex - 1];
 	}
 
+	// FUNCTION: TOY2 0x004BB500
+	int32_t UpdateTextureByIndex(int32_t texIndex)
+	{
+		if (texIndex)
+		{
+			NGNTextureData* textureData = &g_textureDataFreeList[texIndex - 1];
+
+			if (textureData->bmpDataNode)
+				Nu3D::UpdateBmpNodeSurface(textureData->bmpDataNode, DrawingDevice::GetD3DDevice());
+		}
+
+		return 1;
+	}
+
 	// FUNCTION: TOY2 0x004BB5E0
 	void RetrieveTextureData(
 		int32_t texDataIndex,
@@ -1493,6 +1544,15 @@ namespace NGNLoader
 	{
 		if (index)
 			return g_textureDataFreeList[index - 1].bmpDataNode->bitmapHandle;
+		else
+			return 0;
+	}
+
+	// FUNCTION: TOY2 0x004BB650
+	int32_t StretchBmpToDCByIndex(int32_t texIndex, HDC destDC, int32_t destWidth, int32_t destHeight)
+	{
+		if (texIndex)
+			return Nu3D::StretchBmpToDC(g_textureDataFreeList[texIndex - 1].bmpDataNode, destDC, destWidth, destHeight);
 		else
 			return 0;
 	}

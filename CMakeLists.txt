@@ -212,6 +212,8 @@ set(TOY2_SOURCES
     src/Nu3D/Nu3D.cpp
     src/Nu3D/BmpDataNode.h
     src/Nu3D/BmpDataNode.cpp
+    src/Nu3D/D3DTextr.h
+    src/Nu3D/D3DTextr.cpp
     src/Nu3D/Patch.h
     src/Nu3D/Patch.cpp
     src/Nu3D/Portal.h

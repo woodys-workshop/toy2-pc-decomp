@@ -33,6 +33,7 @@ namespace Nu3D
 		BmpDataNode* next;
 		BmpDataNode* prev;
 
+		static LPDIRECTDRAWSURFACE4 GetSurface(BmpDataNode* bmpDataNode);
 		static LPDIRECT3DTEXTURE2 GetTexture(BmpDataNode* bmpDataNode);
 	};
 
@@ -61,6 +62,8 @@ namespace Nu3D
 
 	void SetMinTexSize(int32_t minTexSize);
 	int32_t InitBmpNodeSurface(BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice);
+	int32_t UpdateBmpNodeSurface(BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice);
+	int32_t StretchBmpToDC(BmpDataNode* bmpDataNode, HDC destDC, int32_t destWidth, int32_t destHeight);
 	BmpDataNode* LoadTextureByStream(FILE* handle, const char* rawTexStr, int32_t flags);
 	Nu3D::BmpDataNode* LoadLocalBmpTexture(const char* rawTexStr, int32_t flags);
 	HRESULT SetTexture(int32_t stageIndex, BmpDataNode* bmpDataNode);
@@ -68,6 +71,7 @@ namespace Nu3D
 	void FreeAllBmpDataNodes_T();
 	int32_t ReleaseBmpDataNode_T(Nu3D::BmpDataNode* Block);
 	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName);
+	HRESULT BuildSlotBmpNode(uint32_t slotIndex, const char* texName, int32_t flags);
 	int32_t CreateTextureResource(HANDLE bmpHandle, char* texName, int32_t flags);
 	void CopyNormalsFromNearestVertex(Nu3D::Creature* creature, int32_t vertexIndex, Nu3D::Vertex* targetVertex);
 	int32_t CopyShapeVertex(int32_t vertexIndex, Nu3D::Vertex* vertex);

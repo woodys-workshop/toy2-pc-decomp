@@ -3,6 +3,7 @@
 #include "Renderer/Renderer.h"
 #include "Logger.h"
 #include "Nu3D/Creature.h"
+#include "Nu3D/D3DTextr.h"
 #include "Nu3D/Primitive.h"
 #include "NGNLoader/NGNLoader.h"
 #include "NGNLoader/ObjectLoad.h"
@@ -137,7 +138,7 @@ namespace Nu3D
 
 		bmpDataNode->surface->Unlock(0);
 	}
-	// FUNCTION: TOY2 0x004B0400
+	// FUNCTION: TOY2 0x004B0400 [MATCHED]
 	int32_t CountAlphaBits(LPDDPIXELFORMAT pixelFormat)
 	{
 		DWORD alphaBitMask = pixelFormat->dwRGBAlphaBitMask;
@@ -153,7 +154,7 @@ namespace Nu3D
 		return result;
 	}
 
-	// FUNCTION: TOY2 0x004B0380
+	// FUNCTION: TOY2 0x004B0380 [MATCHED]
 	LONG WINAPI FindSuitablePixelFormat(LPDDPIXELFORMAT pixelFormat, void* context)
 	{
 		if (! pixelFormat)
@@ -215,76 +216,112 @@ namespace Nu3D
 		}
 	}
 
-	// FUNCTION: TOY2 0x004B0200
+	// FUNCTION: TOY2 0x004B0110 [MATCHED]
+	int32_t UpdateTextureSurface(BmpDataNode* bmpDataNode)
+	{
+		DDBLTFX bltFx;
+
+		if (bmpDataNode->texData)
+		{
+			CopyTextureToSurface(bmpDataNode);
+			return 1;
+		}
+
+		if (bmpDataNode->slotCopyMode == 1)
+		{
+			bltFx.dwSize = sizeof(DDBLTFX);
+			bltFx.dwROP = SRCCOPY;
+
+			HRESULT bltResult = bmpDataNode->surface->Blt(0, bmpDataNode->slotSurface, 0, DDBLT_ROP | DDBLT_ASYNC, &bltFx);
+
+			if (bltResult < 0)
+				Logger::LogD3DError(bltResult);
+		}
+
+		if (bmpDataNode->slotCopyMode == 2)
+		{
+			bltFx.dwSize = sizeof(DDBLTFX);
+			bltFx.dwROP = SRCCOPY;
+
+			HRESULT bltResult = bmpDataNode->stagingSurface->Blt(0, bmpDataNode->slotSurface, 0, DDBLT_ROP | DDBLT_ASYNC, &bltFx);
+
+			if (bltResult < 0)
+				Logger::LogD3DError(bltResult);
+
+			bltResult = bmpDataNode->surface->Blt(0, bmpDataNode->stagingSurface, 0, DDBLT_ROP | DDBLT_ASYNC, &bltFx);
+
+			if (bltResult < 0)
+				Logger::LogD3DError(bltResult);
+		}
+
+		return 1;
+	}
+
+	// FUNCTION: TOY2 0x004B0200 [MATCHED]
 	int32_t InitialiseTextureSurface(BmpDataNode* bmpDataNode)
 	{
-		FindPixelFormat findPixelFormat;
-		DDSURFACEDESC2 surfaceDesc;
-		D3DDEVICEDESC deviceDesc2;
-		D3DDEVICEDESC deviceDesc;
-
 		if ((bmpDataNode->flags & 0x40) != 0)
 			return 0;
 
 		DestroyBmpDataNode(bmpDataNode);
 
 		LPDIRECTDRAW4 ddraw4 = DrawingDevice::GetDDraw4();
-
 		DrawingDevice::GetD3D();
-
 		LPDIRECT3DDEVICE3 d3dDevice = DrawingDevice::GetD3DDevice();
 
-		deviceDesc.dwSize = 252;
-		deviceDesc2.dwSize = 252;
-
-		if (d3dDevice->GetCaps(&deviceDesc, &deviceDesc2))
+		D3DDEVICEDESC ddHwDesc, ddSwDesc;
+		ddHwDesc.dwSize = sizeof(D3DDEVICEDESC);
+		ddSwDesc.dwSize = sizeof(D3DDEVICEDESC);
+		if (d3dDevice->GetCaps(&ddHwDesc, &ddSwDesc))
 			return 0;
 
-		memset(&surfaceDesc, 0, sizeof(surfaceDesc));
-		uint32_t width = bmpDataNode->textureWidth;
-		uint32_t height = bmpDataNode->textureHeight;
+		DWORD dwWidth = bmpDataNode->textureWidth;
+		DWORD dwHeight = bmpDataNode->textureHeight;
 
-		surfaceDesc.ddsCaps.dwCaps2 = 16;
+		DDSURFACEDESC2 ddsd;
+		memset(&ddsd, 0, sizeof(ddsd));
+		ddsd.dwSize = sizeof(ddsd);
+		ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+		ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT | DDSD_TEXTURESTAGE;
+		ddsd.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+		ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
+		ddsd.dwTextureStage = 0;
+		ddsd.dwWidth = dwWidth;
+		ddsd.dwHeight = dwHeight;
 
-		findPixelFormat.bpp = 16;
-
-		surfaceDesc.dwSize = 124;
-		findPixelFormat.out = &surfaceDesc.ddpfPixelFormat;
-
-		int32_t flags = bmpDataNode->flags;
-
-		surfaceDesc.ddpfPixelFormat.dwSize = 32;
-		surfaceDesc.dwFlags = 0x101007;
-		surfaceDesc.ddsCaps.dwCaps = 4096;
-		surfaceDesc.dwTextureStage = 0;
-		surfaceDesc.dwWidth = width;
-		surfaceDesc.dwHeight = height;
-		findPixelFormat.needAlpha = 0;
-		findPixelFormat.minAlphaBits = 0;
-		findPixelFormat.valid = 0;
-
-		if ((flags & 0xF) != 0)
+		FindPixelFormat tsi;
+		tsi.bpp = 16;
+		tsi.out = &ddsd.ddpfPixelFormat;
+		tsi.needAlpha = 0;
+		tsi.minAlphaBits = 0;
+		tsi.valid = 0;
+		if ((bmpDataNode->flags & 0xF) != 0)
 		{
-			findPixelFormat.needAlpha = 1;
-			findPixelFormat.minAlphaBits = (flags & 1) != 0 ? 4 : 1;
+			tsi.needAlpha = 1;
+			tsi.minAlphaBits = (bmpDataNode->flags & 1) != 0 ? 4 : 1;
 		}
 
-		d3dDevice->EnumTextureFormats(FindSuitablePixelFormat, &findPixelFormat);
+		d3dDevice->EnumTextureFormats(FindSuitablePixelFormat, &tsi);
 
-		if (! findPixelFormat.valid || ddraw4->CreateSurface(&surfaceDesc, &bmpDataNode->surface, 0)
+		if (! tsi.valid || ddraw4->CreateSurface(&ddsd, &bmpDataNode->surface, 0)
 			|| bmpDataNode->surface->QueryInterface(IID_IDirect3DTexture2, (LPVOID*)&bmpDataNode->d3dTexture))
 		{
 			return 0;
 		}
 
-		uint32_t* texData = bmpDataNode->texData;
+		memcpy(&bmpDataNode->surfaceDesc, &ddsd, sizeof(ddsd));
 
-		memcpy(&bmpDataNode->surfaceDesc, &surfaceDesc, sizeof(bmpDataNode->surfaceDesc));
-
-		if (texData)
+		if (bmpDataNode->texData)
 			CopyTextureToSurface(bmpDataNode);
 
 		return 1;
+	}
+
+	// FUNCTION: TOY2 0x004B0420 [MATCHED]
+	void InitialiseAllTextureSurfaces()
+	{
+		for (BmpDataNode* nodeIter = g_bmpDataHead; nodeIter; nodeIter = nodeIter->next)
+			InitialiseTextureSurface(nodeIter);
 	}
 
 	// FUNCTION: TOY2 0x004B0760
@@ -395,7 +432,7 @@ namespace Nu3D
 		return color;
 	}
 
-	// FUNCTION: TOY2 0x004B0B60
+	// FUNCTION: TOY2 0x004B0B60 [MATCHED]
 	HBITMAP ProcessBmpInfoFromStream(FILE* stream)
 	{
 		int32_t offset = ftell(stream);
@@ -417,21 +454,21 @@ namespace Nu3D
 		{
 			case 1:
 				fread(bmpInfo.bmiColors, 2, 4, stream);
-				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth / 8;
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight / 8;
 				break;
 			case 4:
 				fread(bmpInfo.bmiColors, 16, 4, stream);
-				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth / 2;
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight / 2;
 				break;
 			case 8:
 				fread(bmpInfo.bmiColors, 256, 4, stream);
 
 				memcpy(g_lastBmpPalette, bmpInfo.bmiColors, sizeof(g_lastBmpPalette));
-				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biWidth;
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight;
 
 				break;
 			default:
-				pixelDataSize = bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biBitCount * bmpInfo.bmiHeader.biWidth / 8;
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biBitCount / 8;
 				break;
 		}
 
@@ -444,6 +481,70 @@ namespace Nu3D
 			fread(bitmapBits, pixelDataSize, 1, stream);
 
 		return hBitmap;
+	}
+
+	// FUNCTION: TOY2 0x004AD350 [MATCHED]
+	HBITMAP ReadBmpFromStream(FILE* stream)
+	{
+		int32_t offset = ftell(stream);
+
+		BITMAPFILEHEADER bmpHeader;
+
+		struct
+		{
+			BITMAPINFOHEADER bmiHeader;
+			RGBQUAD bmiColors[256];
+		} bmpInfo;
+
+		fread(&bmpHeader, 1, sizeof(BITMAPFILEHEADER), stream);
+		fread(&bmpInfo, 1, sizeof(BITMAPINFOHEADER), stream);
+
+		size_t pixelDataSize;
+
+		switch (bmpInfo.bmiHeader.biBitCount)
+		{
+			case 1:
+				fread(bmpInfo.bmiColors, 2, 4, stream);
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight / 8;
+				break;
+			case 4:
+				fread(bmpInfo.bmiColors, 16, 4, stream);
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight / 2;
+				break;
+			case 8:
+				fread(bmpInfo.bmiColors, 256, 4, stream);
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight;
+				break;
+			default:
+				pixelDataSize = bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight * bmpInfo.bmiHeader.biBitCount / 8;
+				break;
+		}
+
+		fseek(stream, offset + bmpHeader.bfOffBits, 0);
+
+		void* bitmapBits;
+		HBITMAP hBitmap = CreateDIBSection(0, (BITMAPINFO*)&bmpInfo, 0, &bitmapBits, 0, 0);
+
+		if (hBitmap)
+			fread(bitmapBits, pixelDataSize, 1, stream);
+
+		return hBitmap;
+	}
+
+	// FUNCTION: TOY2 0x004AD310 [MATCHED]
+	HBITMAP ReadBmpFromFile(const char* path)
+	{
+		FILE* stream = fopen(path, "rb");
+
+		if (stream)
+		{
+			HBITMAP hBitmap = ReadBmpFromStream(stream);
+			fclose(stream);
+
+			return hBitmap;
+		}
+
+		return 0;
 	}
 
 	// FUNCTION: TOY2 0x004B06D0
@@ -564,7 +665,7 @@ namespace Nu3D
 		return 0;
 	}
 
-	// FUNCTION: TOY2 0x004AFC70
+	// FUNCTION: TOY2 0x004AFC70 [MATCHED]
 	BmpDataNode* GetBmpDataNodeByName(const char* texName)
 	{
 		BmpDataNode* nodeIter;
@@ -620,6 +721,29 @@ namespace Nu3D
 				return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, bmpDataNode->d3dTexture);
 
 			return DrawingDevice::g_drawingDevice->m_pd3dDevice->SetTexture(stageIndex, 0);
+		}
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004B0D00 [MATCHED]
+	int32_t StretchBmpToDC(BmpDataNode* bmpDataNode, HDC destDC, int32_t destWidth, int32_t destHeight)
+	{
+		if (bmpDataNode && bmpDataNode->bitmapHandle)
+		{
+			HDC dc = CreateCompatibleDC(destDC);
+
+			if (dc)
+			{
+				HGDIOBJ oldObject = SelectObject(dc, bmpDataNode->bitmapHandle);
+
+				StretchBlt(destDC, 0, 0, destWidth - 1, destHeight - 1, dc, 0, 0, bmpDataNode->bitmapWidth - 1, bmpDataNode->bitmapHeight - 1, SRCCOPY);
+
+				SelectObject(dc, oldObject);
+				DeleteDC(dc);
+
+				return 1;
+			}
 		}
 
 		return 0;
@@ -860,6 +984,76 @@ namespace Nu3D
 		return 0;
 	}
 
+	// FUNCTION: TOY2 0x004B0440 [MATCHED]
+	Nu3D::BmpDataNode* BuildRawSlotBmpNode(uint32_t slotIndex, const char* texName, int32_t flags)
+	{
+		DDBLTFX bltFx;
+		DDSURFACEDESC2 ddsd;
+		DDSCAPS2 caps;
+		int32_t width;
+		int32_t height;
+		LPDIRECTDRAWSURFACE4 slotSurface;
+
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::AllocateBmpDataNode();
+
+		if (bmpDataNode)
+		{
+			DrawingDevice::GetSlotDimensions(slotIndex, &width, &height);
+			DrawingDevice::GetSlotSurfaceCaps(slotIndex, &caps);
+			DrawingDevice::GetSlotSurfaceByIndex(slotIndex, &slotSurface);
+
+			bmpDataNode->slotIndex = slotIndex;
+			bmpDataNode->slotSurface = slotSurface;
+			bmpDataNode->stagingSurface = 0;
+
+			if ((caps.dwCaps & DDSCAPS_TEXTURE) != 0)
+				bmpDataNode->slotCopyMode = 0;
+			else
+				bmpDataNode->slotCopyMode = 1;
+
+			bmpDataNode->texData = 0;
+			bmpDataNode->textureWidth = width;
+			bmpDataNode->textureHeight = height;
+			bmpDataNode->flags = flags;
+
+			strcpy(bmpDataNode->texName, texName);
+
+			if (bmpDataNode->slotCopyMode == 0)
+			{
+				bmpDataNode->flags |= 0x40;
+				bmpDataNode->surface = slotSurface;
+				slotSurface->QueryInterface(IID_IDirect3DTexture2, (LPVOID*)&bmpDataNode->d3dTexture);
+				bmpDataNode->surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
+				slotSurface->GetSurfaceDesc(&bmpDataNode->surfaceDesc);
+
+				return bmpDataNode;
+			}
+
+			Nu3D::InitialiseTextureSurface(bmpDataNode);
+
+			bltFx.dwSize = sizeof(DDBLTFX);
+			bltFx.dwROP = SRCCOPY;
+
+			HRESULT bltResult = bmpDataNode->surface->Blt(0, bmpDataNode->slotSurface, 0, DDBLT_ROP | DDBLT_ASYNC, &bltFx);
+
+			if (bltResult < 0)
+			{
+				memset(&ddsd, 0, sizeof(ddsd));
+				ddsd.dwSize = sizeof(DDSURFACEDESC2);
+				ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH;
+				ddsd.ddsCaps.dwCaps = DDSCAPS_SYSTEMMEMORY;
+				ddsd.dwWidth = bmpDataNode->textureWidth;
+				ddsd.dwHeight = bmpDataNode->textureHeight;
+
+				HRESULT createResult = DrawingDevice::GetDDraw4()->CreateSurface(&ddsd, &bmpDataNode->stagingSurface, 0);
+
+				bmpDataNode->slotCopyMode = createResult < 0 ? 0 : 2;
+			}
+		}
+
+		return bmpDataNode;
+	}
+
 	// FUNCTION: TOY2 0x004B0620
 	Nu3D::BmpDataNode* BuildRawBmpNode(HANDLE mainBmp, HANDLE alphaBmp, const char* texName, int32_t flags)
 	{
@@ -894,6 +1088,15 @@ namespace Nu3D
 		return 0;
 	}
 
+	// FUNCTION: TOY2 0x004AD010 [MATCHED]
+	HRESULT D3DTextr_CreateTexture_T(char* texName, DWORD stage, DWORD flags) { return D3DTextr::D3DTextr_CreateTexture(texName, stage, flags); }
+
+	// FUNCTION: TOY2 0x004AD030 [MATCHED]
+	HRESULT BuildSlotBmpNode(uint32_t slotIndex, const char* texName, int32_t flags)
+	{
+		return Nu3D::BuildRawSlotBmpNode(slotIndex, texName, flags) != 0 ? 0 : DDERR_OUTOFMEMORY;
+	}
+
 	// FUNCTION: TOY2 0x004AD060
 	HRESULT BuildBmpNode(HANDLE mainBmp, const char* texName, int32_t unused, int32_t flags)
 	{
@@ -909,6 +1112,71 @@ namespace Nu3D
 	// FUNCTION: TOY2 0x004AD0C0
 	Nu3D::BmpDataNode* GetBmpDataNodeByName_T(char* texName) { return Nu3D::GetBmpDataNodeByName(texName); }
 
+	// FUNCTION: TOY2 0x004AD0D0 [MATCHED]
+	HRESULT AddRefContainer_T(D3DTextr::TextureContainer* container) { return D3DTextr::AddRefContainer(container); }
+
+	// FUNCTION: TOY2 0x004AD0E0 [MATCHED]
+	LPDIRECTDRAWSURFACE4 GetBmpSurfaceByName(char* texName)
+	{
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName(texName);
+
+		if (bmpDataNode)
+			return bmpDataNode->surface;
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AD110 [MATCHED]
+	LPDIRECT3DTEXTURE2 GetBmpTextureByName(char* texName)
+	{
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName(texName);
+
+		if (bmpDataNode)
+			return bmpDataNode->d3dTexture;
+
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AD140 [MATCHED]
+	int32_t UpdateBmpSurfaceByName(char* texName)
+	{
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName(texName);
+
+		if (bmpDataNode)
+		{
+			Nu3D::UpdateTextureSurface(bmpDataNode);
+			return 0;
+		}
+
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x004AD170 [MATCHED]
+	int32_t UpdateBmpNodeSurface(Nu3D::BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice)
+	{
+		if (bmpNode)
+		{
+			Nu3D::UpdateTextureSurface(bmpNode);
+			return 0;
+		}
+
+		return -1;
+	}
+
+	// FUNCTION: TOY2 0x004AD190 [MATCHED]
+	int32_t InitBmpSurfaceByName(char* texName, LPDIRECT3DDEVICE3 unusedDevice)
+	{
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName(texName);
+
+		if (bmpDataNode)
+		{
+			Nu3D::InitialiseTextureSurface(bmpDataNode);
+			return 0;
+		}
+
+		return -1;
+	}
+
 	// FUNCTION: TOY2 0x004AD1C0 [MATCHED]
 	int32_t InitBmpNodeSurface(Nu3D::BmpDataNode* bmpNode, LPDIRECT3DDEVICE3 unusedDevice)
 	{
@@ -919,6 +1187,130 @@ namespace Nu3D
 		}
 
 		return -1;
+	}
+
+	// FUNCTION: TOY2 0x004AD1E0 [MATCHED]
+	int32_t InitAllBmpNodeSurfaces()
+	{
+		Nu3D::InitialiseAllTextureSurfaces();
+		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AD1F0 [MATCHED]
+	HRESULT D3DTextr_Invalidate_T(char* texName) { return D3DTextr::D3DTextr_Invalidate(texName); }
+
+	// FUNCTION: TOY2 0x004AD200 [MATCHED]
+	HRESULT InvalidateContainer_T(D3DTextr::TextureContainer* container) { return D3DTextr::InvalidateContainer(container); }
+
+	// FUNCTION: TOY2 0x004AD210 [MATCHED]
+	HRESULT D3DTextr_InvalidateAllTextures_T() { return D3DTextr::D3DTextr_InvalidateAllTextures(); }
+
+	// FUNCTION: TOY2 0x004AD220 [MATCHED]
+	Nu3D::BmpDataNode* LoadBmpTextureWithAlphaFromFile(const char* name)
+	{
+		char fileName[256];
+		char texName[256];
+
+		sprintf(texName, "LOADALPHA_%s", name);
+
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+
+		if (bmpDataNode)
+		{
+			// $BUG: BmpDataNode is 0x110 bytes, so AddRefContainer increments 4 bytes past its end rather than refCount
+			Nu3D::AddRefContainer_T((D3DTextr::TextureContainer*)bmpDataNode);
+		}
+		else
+		{
+			sprintf(fileName, "%s.bmp", name);
+			HBITMAP mainBmp = Nu3D::ReadBmpFromFile(fileName);
+			sprintf(fileName, "%sa.bmp", name);
+			HBITMAP alphaBmp = Nu3D::ReadBmpFromFile(fileName);
+
+			if (mainBmp && alphaBmp)
+			{
+				Nu3D::BuildBmpNodeWithAlpha(mainBmp, texName, 0, 0, alphaBmp);
+				Nu3D::InitBmpSurfaceByName(texName, DrawingDevice::GetD3DDevice());
+				bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+			}
+
+			if (! bmpDataNode)
+			{
+				if (mainBmp)
+					DeleteObject(mainBmp);
+
+				if (alphaBmp)
+					DeleteObject(alphaBmp);
+			}
+		}
+
+		return bmpDataNode;
+	}
+
+	// FUNCTION: TOY2 0x004AD460 [MATCHED]
+	Nu3D::BmpDataNode* LoadBmpTextureFromStream(FILE* stream, const char* name, int32_t greenKey)
+	{
+		char texName[256];
+
+		sprintf(texName, "LOADTEXT_%s", name);
+
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+
+		if (bmpDataNode)
+		{
+			// $BUG: BmpDataNode is 0x110 bytes, so AddRefContainer increments 4 bytes past its end rather than refCount
+			Nu3D::AddRefContainer_T((D3DTextr::TextureContainer*)bmpDataNode);
+		}
+		else
+		{
+			HBITMAP bmp = Nu3D::ReadBmpFromStream(stream);
+
+			if (bmp)
+			{
+				Nu3D::BuildBmpNode(bmp, texName, 0, greenKey ? 8 : 0);
+				Nu3D::InitBmpSurfaceByName(texName, DrawingDevice::GetD3DDevice());
+				bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+
+				if (! bmpDataNode)
+					DeleteObject(bmp);
+			}
+		}
+
+		return bmpDataNode;
+	}
+
+	// FUNCTION: TOY2 0x004AD510 [MATCHED]
+	Nu3D::BmpDataNode* LoadBmpTextureFromFile(const char* name)
+	{
+		char fileName[256];
+		char texName[256];
+
+		sprintf(texName, "LOADTEXT_%s", name);
+
+		Nu3D::BmpDataNode* bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+
+		if (bmpDataNode)
+		{
+			// $BUG: BmpDataNode is 0x110 bytes, so AddRefContainer increments 4 bytes past its end rather than refCount
+			Nu3D::AddRefContainer_T((D3DTextr::TextureContainer*)bmpDataNode);
+		}
+		else
+		{
+			sprintf(fileName, "%s.bmp", name);
+			HBITMAP bmp = Nu3D::ReadBmpFromFile(fileName);
+
+			if (bmp)
+			{
+				Nu3D::BuildBmpNode(bmp, texName, 0, 0);
+				Nu3D::InitBmpSurfaceByName(texName, DrawingDevice::GetD3DDevice());
+				bmpDataNode = Nu3D::GetBmpDataNodeByName_T(texName);
+
+				if (! bmpDataNode)
+					DeleteObject(bmp);
+			}
+		}
+
+		return bmpDataNode;
 	}
 
 	// FUNCTION: TOY2 0x004BB270
@@ -1021,6 +1413,15 @@ namespace Nu3D
 		}
 
 		return 0;
+	}
+
+	// FUNCTION: TOY2 0x004AD100 [MATCHED]
+	LPDIRECTDRAWSURFACE4 BmpDataNode::GetSurface(Nu3D::BmpDataNode* bmpDataNode)
+	{
+		if (bmpDataNode)
+			return bmpDataNode->surface;
+		else
+			return 0;
 	}
 
 	// FUNCTION: TOY2 0x004AD130
