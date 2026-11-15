@@ -34,8 +34,12 @@ namespace Toy2
 {
 	namespace Levels
 	{
+		// $BUG: Elevator Hop overflows past the original 96-length array. Later regional versions updated to a 128-length array here.
+		// When loading Elevator Hop, the original game overwrites loader state, pointer storage, and replaces one portal pointer with
+		// the heap cursor, but otherwise appears to have no side effects. The decomp build overwrites different memory due to
+		// different memory layout, which can have different unintended effects and can crash the game when loading the level.
 		// GLOBAL: TOY2 0x00559C70
-		RecordData* g_recordData[96];
+		RecordData* g_recordData[RECORD_DATA_SIZE];
 
 		// GLOBAL: TOY2 0x0055A114
 		int32_t g_levelLoadConfig;

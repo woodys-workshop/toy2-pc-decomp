@@ -3,6 +3,13 @@
 #include "Common.h"
 #include "Numerics.h"
 
+// uses the updated size from later regional versions when APPLY_FIXES is defined to fix memory overflow in Elevator Hop
+#ifdef APPLY_FIXES
+	#define RECORD_DATA_SIZE 128
+#else
+	#define RECORD_DATA_SIZE 96
+#endif
+
 namespace Toy2
 {
 	namespace Levels
@@ -177,7 +184,7 @@ namespace Toy2
 			uint8_t pad[14];
 		};
 
-		extern RecordData* g_recordData[96];
+		extern RecordData* g_recordData[RECORD_DATA_SIZE];
 		extern int32_t g_hasZoneData;
 		extern ObjectList* g_objectListBase;
 		extern PortalZone g_portalEntries[20];
